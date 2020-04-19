@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.feature.SystemNotificationActivity"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/system_notification_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:textSize="20sp"
+        android:textColor="@android:color/black"
+        tools:text="NOTIFICATION_TYPE" />
+
+    <TextView
+        android:id="@+id/system_notification_author"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/system_notification_title"
+        tools:text="abc.exampleuser" />
+
+    <TextView
+        android:id="@+id/system_notification_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/system_notification_author"
+        tools:text="abc.examplegroup" />
+
+    <TextView
+        android:id="@+id/system_notification_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/system_notification_title"
+        tools:text="1.1.2020 12:00" />
+
+    <TextView
+        android:id="@+id/system_notification_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/system_notification_group"
+        tools:text="Notification message"
+        android:textSize="15sp"
+        android:textColor="@android:color/black" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
