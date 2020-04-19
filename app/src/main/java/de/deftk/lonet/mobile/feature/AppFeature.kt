@@ -22,7 +22,7 @@ enum class AppFeature(
             return TasksOverviewElement(tasks.count { it.completed }, tasks.size)
         }
     }),
-    FEATURE_MAIL(Feature.MAILBOX, MailFragment::class.java, R.drawable.ic_mail, R.string.mail, MailOverview::class.java, object: OverviewCreator {
+    FEATURE_MAIL(Feature.MAILBOX, MailFragment::class.java, R.drawable.ic_email, R.string.mail, MailOverview::class.java, object: OverviewCreator {
         override fun createOverview(overwriteCache: Boolean): AbstractOverviewElement {
             return MailOverview(AuthStore.appUser.getEmailQuota(overwriteCache), AuthStore.appUser.getUnreadEmailCount(overwriteCache))
         }

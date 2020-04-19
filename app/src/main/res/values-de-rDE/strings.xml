@@ -52,4 +52,8 @@
     <string name="directory_empty">Verzeichnis ist leer</string>
     <string name="download_started">Download angefangen</string>
     <string name="download_finished">Download abgeschlossen</string>
+    <string name="mail_folder_inbox">Posteingang</string>
+    <string name="mail_folder_drafts">Entwürfe</string>
+    <string name="mail_folder_sent">Gesendet</string>
+    <string name="mail_folder_trash">Papierkorb</string>
 </resources>
