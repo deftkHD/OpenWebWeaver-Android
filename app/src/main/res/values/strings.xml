@@ -49,5 +49,7 @@
     <string name="file_modified">Modified: %s</string>
     <string name="directory">Directory</string>
     <string name="directory_empty">Directory is empty</string>
+    <string name="download_started">Download started</string>
+    <string name="download_finished">Download finished</string>
 
 </resources>

@@ -48,7 +48,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
                 navigate(item)
             } else {
                 FileDownloadOpenTask().execute(item)
-                Toast.makeText(context, "Download started", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.download_started), Toast.LENGTH_SHORT).show()
             }
         }
         list.setOnItemLongClickListener { _, _, position, _ ->
@@ -108,6 +108,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         }
 
         override fun onPostExecute(result: File) {
+            Toast.makeText(context, getString(R.string.download_finished), Toast.LENGTH_SHORT).show()
             val intent = Intent(Intent.ACTION_VIEW)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {

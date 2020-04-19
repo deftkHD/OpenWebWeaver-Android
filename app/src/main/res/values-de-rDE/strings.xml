@@ -50,4 +50,6 @@
     <string name="file_modified">Geändert: %s</string>
     <string name="directory">Verzeichnis</string>
     <string name="directory_empty">Verzeichnis ist leer</string>
+    <string name="download_started">Download angefangen</string>
+    <string name="download_finished">Download abgeschlossen</string>
 </resources>
