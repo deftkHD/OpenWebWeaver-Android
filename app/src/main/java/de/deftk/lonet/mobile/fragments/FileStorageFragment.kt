@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,15 +23,14 @@ import de.deftk.lonet.mobile.abstract.IBackHandler
 import de.deftk.lonet.mobile.adapter.FileStorageAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import de.deftk.lonet.mobile.feature.RootFileProvider
+import de.deftk.lonet.mobile.utils.FileUtil
 import kotlinx.android.synthetic.main.fragment_file_storage.*
 import java.io.File
 import java.io.FileOutputStream
-import java.net.HttpURLConnection
 import java.net.URL
-import java.nio.channels.Channels
 import java.util.*
 
-class FileStorageFragment(): FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBackHandler {
+class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBackHandler {
 
     private val history = Stack<FileProvider>()
 
@@ -95,18 +95,15 @@ class FileStorageFragment(): FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), I
     //TODO progress dialog
     private inner class FileDownloadOpenTask: AsyncTask<OnlineFile, Void, File>() {
 
-        //FIXME please fix me
         override fun doInBackground(vararg params: OnlineFile): File {
             val url = URL(params[0].downloadUrl ?: error("Server did not return download url!"))
-            val connection = url.openConnection() as HttpURLConnection
-            connection.doInput = true
-            val targetFile = File(context!!.cacheDir, params[0].name.replace("/", "_"))
+            val targetFile = File(context?.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: error("no download directory?"), params[0].name.replace("/", "_"))
             if (targetFile.exists()) targetFile.delete()
-            if (targetFile.parentFile?.exists() != true)
-                targetFile.parentFile?.mkdirs()
-            targetFile.deleteOnExit()
-            val fout = FileOutputStream(targetFile)
-            fout.channel.transferFrom(Channels.newChannel(connection.inputStream), 0, connection.contentLength.toLong())
+            url.openStream().use { input ->
+                FileOutputStream(targetFile).use { output ->
+                    input.copyTo(output)
+                }
+            }
             return targetFile
         }
 
@@ -115,10 +112,11 @@ class FileStorageFragment(): FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), I
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-                val a = context!!.packageManager
-                intent.setDataAndType(androidx.core.content.FileProvider.getUriForFile(context!!, context!!.packageName + ".provider", result), "application/vnd.android.package-archive")
+                val uri = androidx.core.content.FileProvider.getUriForFile(context!!, context!!.packageName + ".provider", result)
+                intent.setDataAndType(uri, FileUtil.getMimeType(uri.toString()))
             } else {
-                intent.setDataAndType(Uri.fromFile(result), "application/vnd.android.package-archive")
+                val uri = Uri.fromFile(result)
+                intent.setDataAndType(uri, FileUtil.getMimeType(uri.toString()))
             }
             startActivity(intent)
         }
