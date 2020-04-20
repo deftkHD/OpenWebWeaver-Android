@@ -55,5 +55,6 @@
     <string name="mail_folder_drafts">Drafts</string>
     <string name="mail_folder_sent">Sent</string>
     <string name="mail_folder_trash">Trash</string>
+    <string name="forum">Forum</string>
 
 </resources>

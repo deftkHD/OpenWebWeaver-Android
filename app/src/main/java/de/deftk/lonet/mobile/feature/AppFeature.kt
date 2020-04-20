@@ -37,6 +37,7 @@ enum class AppFeature(
             return NotificationsOverview(AuthStore.appUser.getNotifications(overwriteCache).size)
         }
     }),
+    FEATURE_FORUM(Feature.FORUM, ForumFragment::class.java, R.drawable.ic_forum, R.string.forum),
     FEATURE_SYSTEM_NOTIFICATIONS(Feature.MESSAGES, SystemNotificationsFragment::class.java, R.drawable.ic_system_notifications, R.string.system_notifications, SystemNotificationsOverview::class.java, object : OverviewCreator {
         override fun createOverview(overwriteCache: Boolean): AbstractOverviewElement {
             return SystemNotificationsOverview(AuthStore.appUser.getSystemNofications(overwriteCache).count { !it.read })

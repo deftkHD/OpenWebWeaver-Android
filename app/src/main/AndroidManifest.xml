@@ -15,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".activities.feature.ReadMailActivity"></activity>
+        <activity android:name=".activities.feature.ForumPostActivity" />
+        <activity android:name=".activities.feature.ReadMailActivity" />
         <activity android:name=".activities.feature.NotificationActivity" />
         <activity android:name=".activities.feature.SystemNotificationActivity" />
         <activity android:name=".activities.feature.TaskActivity" />
