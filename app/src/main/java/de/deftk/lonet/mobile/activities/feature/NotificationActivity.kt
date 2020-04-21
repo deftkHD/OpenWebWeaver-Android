@@ -2,6 +2,7 @@ package de.deftk.lonet.mobile.activities.feature
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import de.deftk.lonet.api.model.feature.Notification
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import kotlinx.android.synthetic.main.activity_notification.*
@@ -10,7 +11,7 @@ import java.text.DateFormat
 class NotificationActivity : AppCompatActivity() {
 
     companion object {
-        const val EXTRA_HASHCODE = "extra_hashcode"
+        const val EXTRA_NOTIFICATION = "de.deftk.lonet.mobile.notification.notification_extra"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,13 +22,14 @@ class NotificationActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
-        val hashcode = intent.getIntExtra(SystemNotificationActivity.EXTRA_HASHCODE, -1)
-        val notification = AuthStore.appUser.getNotifications().firstOrNull { it.hashCode() == hashcode } ?: error("Notification disappeared (Hashcode $hashcode)")
+        val notification = intent.getSerializableExtra(EXTRA_NOTIFICATION) as? Notification
 
-        notification_title.text = notification.title ?: ""
-        notification_author.text = notification.creationMember.name ?: notification.creationMember.login
-        notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.creationDate)
-        notification_text.text = notification.text ?: "" //FIXME text sometimes contains internal references
+        if (notification != null) {
+            notification_title.text = notification.title ?: ""
+            notification_author.text = notification.creationMember.name ?: notification.creationMember.login
+            notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.creationDate)
+            notification_text.text = notification.text ?: "" //FIXME text sometimes contains internal references
+        }
     }
 
     // back button in toolbar functionality

@@ -25,18 +25,17 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
     //TODO filters
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, bundle: Bundle?): View {
-        TaskLoader().execute(AuthStore.appUser, false)
+        TaskLoader().execute(false)
         val view = inflater.inflate(R.layout.fragment_tasks, container, false)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.tasks_swipe_refresh)
         val list = view.findViewById<ListView>(R.id.tasks_list)
         swipeRefresh.setOnRefreshListener {
             list.adapter = null
-            TaskLoader().execute(AuthStore.appUser, true)
+            TaskLoader().execute(true)
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(context, TaskActivity::class.java)
-            intent.putExtra(TaskActivity.EXTRA_LOGIN, AuthStore.appUser.login)
-            intent.putExtra(TaskActivity.EXTRA_HASHCODE, list.getItemAtPosition(position).hashCode())
+            intent.putExtra(TaskActivity.EXTRA_TASK, list.getItemAtPosition(position) as Task)
             startActivity(intent)
         }
         return view
@@ -45,7 +44,7 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
     private inner class TaskLoader: AsyncTask<Any, Void, List<Task>>() {
 
         override fun doInBackground(vararg params: Any): List<Task> {
-            return (params[0] as Member).getTasks(AuthStore.appUser.sessionId, params[1] == true).sortedByDescending { it.creationDate.time }
+            return AuthStore.appUser.getAllTasks(params[0] == true).sortedByDescending { it.creationDate.time }
         }
 
         override fun onPostExecute(result: List<Task>) {

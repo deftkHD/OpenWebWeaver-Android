@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
+import de.deftk.lonet.api.model.feature.Quota
 import de.deftk.lonet.api.model.feature.files.OnlineFile
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
@@ -23,9 +24,10 @@ class FileStorageAdapter(context: Context, elements: List<OnlineFile>): ArrayAda
         if (item.id != "/") {
             listItemView.findViewById<TextView>(R.id.file_size).text = if(item.type == OnlineFile.FileType.FILE) UnitUtil.getFormattedSize(item.size) else context.getString(R.string.directory)
         } else {
-            val member = AuthStore.getMember(item.parentId)
-            val quota = member.getFileQuota(AuthStore.appUser.sessionId)
-            listItemView.findViewById<TextView>(R.id.file_size).text = String.format(context.getString(R.string.quota), UnitUtil.getFormattedSize(quota.free), UnitUtil.getFormattedSize(quota.limit))
+            //val member = AuthStore.getMember(item.parentId)
+            //val quota = member.getFileStorageState(AuthStore.appUser).second
+            //listItemView.findViewById<TextView>(R.id.file_size).text = String.format(context.getString(R.string.quota), UnitUtil.getFormattedSize(quota.free), UnitUtil.getFormattedSize(quota.limit))
+            listItemView.findViewById<TextView>(R.id.file_size).text = String.format(context.getString(R.string.quota), UnitUtil.getFormattedSize(0), UnitUtil.getFormattedSize(0))
         }
         if (item.id != "/")
             listItemView.findViewById<TextView>(R.id.file_modified_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.modificationDate)

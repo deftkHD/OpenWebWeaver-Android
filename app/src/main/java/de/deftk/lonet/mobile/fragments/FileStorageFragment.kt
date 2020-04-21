@@ -62,6 +62,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
     }
 
     private fun navigate(directory: FileProvider) {
+        file_list?.adapter = null
         progress_file_storage?.visibility = ProgressBar.VISIBLE
         DirectoryLoadingTask().execute(directory)
         history.push(directory)
@@ -79,7 +80,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
     private inner class DirectoryLoadingTask: AsyncTask<FileProvider, Void, List<OnlineFile>>() {
 
         override fun doInBackground(vararg params: FileProvider): List<OnlineFile> {
-            return params[0].getFiles(AuthStore.appUser.sessionId, true) // don't want to cache file request here
+            return params[0].getFileStorageFiles(AuthStore.appUser, true) // don't want to cache file request here
                 .sortedByDescending { it.type }
         }
 

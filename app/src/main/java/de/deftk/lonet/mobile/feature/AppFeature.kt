@@ -1,7 +1,13 @@
 package de.deftk.lonet.mobile.feature
 
 import androidx.fragment.app.Fragment
+import com.google.gson.JsonObject
 import de.deftk.lonet.api.model.Feature
+import de.deftk.lonet.api.model.feature.Notification
+import de.deftk.lonet.api.model.feature.Quota
+import de.deftk.lonet.api.model.feature.SystemNotification
+import de.deftk.lonet.api.model.feature.Task
+import de.deftk.lonet.api.request.UserApiRequest
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.feature.overview.*
@@ -13,34 +19,86 @@ enum class AppFeature(
     val drawableResource: Int,
     val translationResource: Int,
     val overviewClass: Class<out AbstractOverviewElement>? = null,
-    val overviewCreator: OverviewCreator? = null
+    val overviewBuilder: OverviewBuilder? = null
 ) {
 
-    FEATURE_TASKS(Feature.TASKS, TasksFragment::class.java, R.drawable.ic_tasks, R.string.tasks, TasksOverviewElement::class.java, object : OverviewCreator {
-        override fun createOverview(overwriteCache: Boolean): AbstractOverviewElement {
-            val tasks = AuthStore.appUser.getTasks(overwriteCache)
-            return TasksOverviewElement(tasks.count { it.completed }, tasks.size)
+    FEATURE_TASKS(Feature.TASKS, TasksFragment::class.java, R.drawable.ic_tasks, R.string.tasks, TasksOverview::class.java, object : OverviewBuilder {
+        override fun appendRequests(request: UserApiRequest): List<Int> {
+            return request.addGetAllTasksRequest()
+        }
+
+        override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
+            val tasks = mutableListOf<Task>()
+            response.values.withIndex().forEach { (index, subResponse) ->
+                if (index % 2 == 1) {
+                    val focus = response.values.toList()[index - 1]
+                    check(focus.get("method").asString == "set_focus")
+                    val member = AuthStore.getMember(focus.get("user").asJsonObject.get("login").asString)
+                    subResponse.get("entries").asJsonArray.forEach { taskResponse ->
+                        tasks.add(Task(taskResponse.asJsonObject, member))
+                    }
+                }
+            }
+            return TasksOverview(tasks.count { it.completed }, tasks.size)
         }
     }),
-    FEATURE_MAIL(Feature.MAILBOX, MailFragment::class.java, R.drawable.ic_email, R.string.mail, MailOverview::class.java, object: OverviewCreator {
-        override fun createOverview(overwriteCache: Boolean): AbstractOverviewElement {
-            return MailOverview(AuthStore.appUser.getEmailQuota(overwriteCache), AuthStore.appUser.getUnreadEmailCount(overwriteCache))
+    FEATURE_MAIL(Feature.MAILBOX, MailFragment::class.java, R.drawable.ic_email, R.string.mail, MailOverview::class.java, object: OverviewBuilder {
+        override fun appendRequests(request: UserApiRequest): List<Int> {
+            return request.addGetEmailStateRequest()
+        }
+
+        override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
+            val subResponse = response.values.toList()[1]
+            val quota = Quota(subResponse.get("quota").asJsonObject)
+            val unread = subResponse.get("unread_messages").asInt
+            return MailOverview(quota, unread)
         }
     }),
-    FEATURE_FILE_STORAGE(Feature.FILES, FileStorageFragment::class.java, R.drawable.ic_files, R.string.file_storage, FileStorageOverview::class.java, object: OverviewCreator {
-        override fun createOverview(overwriteCache: Boolean): AbstractOverviewElement {
-            return FileStorageOverview(AuthStore.appUser.getFileQuota(AuthStore.appUser.sessionId, overwriteCache))
+    FEATURE_FILE_STORAGE(Feature.FILES, FileStorageFragment::class.java, R.drawable.ic_files, R.string.file_storage, FileStorageOverview::class.java, object: OverviewBuilder {
+        override fun appendRequests(request: UserApiRequest): List<Int> {
+            return request.addGetFileStorageStateRequest()
+        }
+
+        override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
+            val subResponse = response.values.toList()[1]
+            val quota = Quota(subResponse.get("quota").asJsonObject)
+            return FileStorageOverview(quota)
         }
     }),
-    FEATURE_NOTIFICATIONS(Feature.BOARD, NotificationsFragment::class.java, R.drawable.ic_notifications, R.string.notifications, NotificationsOverview::class.java, object : OverviewCreator {
-        override fun createOverview(overwriteCache: Boolean): AbstractOverviewElement {
-            return NotificationsOverview(AuthStore.appUser.getNotifications(overwriteCache).size)
+    FEATURE_NOTIFICATIONS(Feature.BOARD, NotificationsFragment::class.java, R.drawable.ic_notifications, R.string.notifications, NotificationsOverview::class.java, object : OverviewBuilder {
+        override fun appendRequests(request: UserApiRequest): List<Int> {
+            return request.addGetAllNotificationsRequest()
+        }
+
+        override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
+            val notifications = mutableListOf<Notification>()
+            //TODO no need to parse notifications; just count them
+            response.values.withIndex().forEach { (index, subResponse) ->
+                if (index % 2 == 1) {
+                    val focus = response.values.toList()[index - 1]
+                    check(focus.get("method").asString == "set_focus")
+                    val member = AuthStore.getMember(focus.get("user").asJsonObject.get("login").asString)
+                    subResponse.get("entries").asJsonArray.forEach { taskResponse ->
+                        notifications.add(Notification(taskResponse.asJsonObject, member))
+                    }
+                }
+            }
+            return NotificationsOverview(notifications.size)
         }
     }),
     FEATURE_FORUM(Feature.FORUM, ForumFragment::class.java, R.drawable.ic_forum, R.string.forum),
-    FEATURE_SYSTEM_NOTIFICATIONS(Feature.MESSAGES, SystemNotificationsFragment::class.java, R.drawable.ic_system_notifications, R.string.system_notifications, SystemNotificationsOverview::class.java, object : OverviewCreator {
-        override fun createOverview(overwriteCache: Boolean): AbstractOverviewElement {
-            return SystemNotificationsOverview(AuthStore.appUser.getSystemNofications(overwriteCache).count { !it.read })
+    FEATURE_SYSTEM_NOTIFICATIONS(Feature.MESSAGES, SystemNotificationsFragment::class.java, R.drawable.ic_system_notifications, R.string.system_notifications, SystemNotificationsOverview::class.java, object : OverviewBuilder {
+        override fun appendRequests(request: UserApiRequest): List<Int> {
+            return request.addGetSystemNotificationsRequest()
+        }
+
+        override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
+            val subResponse = response.values.toList()[1]
+            val systemNotifications = mutableListOf<SystemNotification>()
+            subResponse.get("messages").asJsonArray.forEach { messageResponse ->
+                systemNotifications.add(SystemNotification(messageResponse.asJsonObject))
+            }
+            return NotificationsOverview(systemNotifications.count { !it.read })
         }
     });
 

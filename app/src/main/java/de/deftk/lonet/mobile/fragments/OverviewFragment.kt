@@ -9,6 +9,9 @@ import android.widget.ListView
 import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import de.deftk.lonet.api.request.UserApiRequest
+import de.deftk.lonet.api.response.ResponseUtil
+import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.activities.StartActivity
 import de.deftk.lonet.mobile.adapter.OverviewAdapter
@@ -41,10 +44,17 @@ class OverviewFragment: Fragment() {
         // a bit inefficient (although it gets cached later)
         override fun doInBackground(vararg params: Boolean?): List<AbstractOverviewElement> {
             val elements = mutableListOf<AbstractOverviewElement>()
+            val request = UserApiRequest(AuthStore.appUser.responsibleHost!!, AuthStore.appUser) // could be easier
+            val idMap = mutableMapOf<AppFeature, List<Int>>()
             AppFeature.values().forEach { feature ->
-                if (feature.overviewCreator != null) {
-                    elements.add(feature.overviewCreator.createOverview(params[0] == true))
+                if (feature.overviewBuilder != null) {
+                    idMap[feature] = feature.overviewBuilder.appendRequests(request)
                 }
+            }
+            //TODO handle timeout
+            val response = request.fireRequest(params[0] == true).toJson()
+            idMap.forEach { (feature, ids) ->
+                elements.add(feature.overviewBuilder!!.createElementFromResponse(ids.map { Pair(it, ResponseUtil.getSubResponseResult(response, it)) }.toMap()))
             }
             return elements
         }

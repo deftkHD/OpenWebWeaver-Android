@@ -47,9 +47,8 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
             } else {
                 item as Email
                 val intent = Intent(context, ReadMailActivity::class.java)
-                intent.putExtra(ReadMailActivity.EXTRA_FOLDER_ID, currentDirectory!!.id)
-                intent.putExtra(ReadMailActivity.EXTRA_MAIL_ID, item.id)
-                context?.startActivity(intent)
+                intent.putExtra(ReadMailActivity.EXTRA_MAIL, item)
+                startActivity(intent)
             }
         }
         /* mail_write_mail?.isEnabled = true
@@ -82,7 +81,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
 
     private inner class LoadEmailsTask: AsyncTask<EmailFolder, Void, List<Email>>() {
         override fun doInBackground(vararg params: EmailFolder): List<Email> {
-            return params[0].getEmails(AuthStore.appUser.sessionId, true) // always want to get the newest mails
+            return params[0].getEmails(AuthStore.appUser, true) // always want to get the newest mails
         }
 
         override fun onPostExecute(result: List<Email>) {

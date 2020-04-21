@@ -2,6 +2,7 @@ package de.deftk.lonet.mobile.activities.feature
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import de.deftk.lonet.api.model.feature.forum.ForumPost
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.adapter.ForumPostAdapter
@@ -11,8 +12,7 @@ import java.text.DateFormat
 class ForumPostActivity : AppCompatActivity() {
 
     companion object {
-        const val EXTRA_LOGIN = "de.deftk.lonet.mobile.forum.forum"
-        const val EXTRA_POST_ID = "de.deftk.lonet.mobile.forum.post_id"
+        const val EXTRA_FORUM_POST = "de.deftk.lonet.mobile.forum.forum_post_extra"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,15 +23,15 @@ class ForumPostActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
-        val member = AuthStore.getMember(intent.getStringExtra(EXTRA_LOGIN)!!)
-        val postId = intent.getStringExtra(EXTRA_POST_ID)
-        val post = member.getForumPosts(AuthStore.appUser.sessionId).first { it.id == postId }
+        val post = intent.getSerializableExtra(EXTRA_FORUM_POST) as? ForumPost
 
-        forum_post_image.setImageResource(ForumPostAdapter.postIconMap[post.icon] ?: R.drawable.ic_forum_post_unknown)
-        forum_post_title.text = post.title
-        forum_post_author.text = post.creationMember.name ?: post.creationMember.login
-        forum_post_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.creationDate)
-        forum_post_text.text = post.text
+        if (post != null) {
+            forum_post_image.setImageResource(ForumPostAdapter.postIconMap[post.icon] ?: R.drawable.ic_forum_post_unknown)
+            forum_post_title.text = post.title
+            forum_post_author.text = post.creationMember.name ?: post.creationMember.login
+            forum_post_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.creationDate)
+            forum_post_text.text = post.text
+        }
     }
 
     // back button in toolbar functionality

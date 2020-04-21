@@ -45,10 +45,8 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
                 navigate(item, false)
             } else {
                 item as ForumPost
-
                 val intent = Intent(context, ForumPostActivity::class.java)
-                intent.putExtra(ForumPostActivity.EXTRA_LOGIN, currentForum!!.login)
-                intent.putExtra(ForumPostActivity.EXTRA_POST_ID, item.id)
+                intent.putExtra(ForumPostActivity.EXTRA_FORUM_POST, item)
                 startActivity(intent)
             }
         }
@@ -81,7 +79,7 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
 
         override fun doInBackground(vararg params: Any): List<ForumPost> {
             return (params[0] as Member).getForumPosts(
-                AuthStore.appUser.sessionId,
+                AuthStore.appUser,
                 overwriteCache = params[1] as Boolean
             )
         }

@@ -4,6 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import de.deftk.lonet.api.model.Member
 import de.deftk.lonet.api.model.Permission
+import de.deftk.lonet.api.model.User
 import de.deftk.lonet.api.model.feature.files.FileProvider
 import de.deftk.lonet.api.model.feature.files.OnlineFile
 import de.deftk.lonet.mobile.AuthStore
@@ -17,7 +18,7 @@ class RootFileProvider : FileProvider("", null, "") {
         private val gson = Gson()
     }
 
-    override fun getFiles(sessionId: String, overwriteCache: Boolean): List<OnlineFile> {
+    override fun getFileStorageFiles(user: User, overwriteCache: Boolean): List<OnlineFile> {
         return listOf(
             createMemberRootFile(AuthStore.appUser),
             *AuthStore.appUser.memberships
@@ -32,7 +33,7 @@ class RootFileProvider : FileProvider("", null, "") {
         // constructor for all properties instead of giving it just json (add static createFromJson() function))
 
         // cache file quota for later. yep, that't not good practise :/
-        val quota = member.getFileQuota(AuthStore.appUser.sessionId, true)
+        val state = member.getFileStorageState(AuthStore.appUser, true)
 
         val json = """
             {

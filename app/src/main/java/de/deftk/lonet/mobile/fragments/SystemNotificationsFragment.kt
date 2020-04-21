@@ -8,9 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
-import androidx.fragment.app.Fragment
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import de.deftk.lonet.api.model.Member
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
@@ -20,7 +18,7 @@ import de.deftk.lonet.mobile.adapter.SystemNotificationAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import kotlinx.android.synthetic.main.fragment_system_notifications.*
 
-class SystemNotificationsFragment(): FeatureFragment(AppFeature.FEATURE_SYSTEM_NOTIFICATIONS) {
+class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOTIFICATIONS) {
 
     //TODO swipe left to delete notification
     // maybe this helps https://www.journaldev.com/23164/android-recyclerview-swipe-to-delete-undo
@@ -36,9 +34,9 @@ class SystemNotificationsFragment(): FeatureFragment(AppFeature.FEATURE_SYSTEM_N
             SystemNotificationLoader().execute(true)
         }
         list.setOnItemClickListener { _, _, position, _ ->
-            val item = list.getItemAtPosition(position)
+            val item = list.getItemAtPosition(position) as SystemNotification
             val intent = Intent(context, SystemNotificationActivity::class.java)
-            intent.putExtra(SystemNotificationActivity.EXTRA_HASHCODE, item.hashCode())
+            intent.putExtra(SystemNotificationActivity.EXTRA_SYSTEM_NOTIFICATION, item)
             startActivity(intent)
         }
         return view
@@ -47,7 +45,7 @@ class SystemNotificationsFragment(): FeatureFragment(AppFeature.FEATURE_SYSTEM_N
     private inner class SystemNotificationLoader: AsyncTask<Boolean, Void, List<SystemNotification>>() {
 
         override fun doInBackground(vararg params: Boolean?): List<SystemNotification> {
-            return AuthStore.appUser.getSystemNofications(params[0] == true).sortedByDescending { it.date.time }
+            return AuthStore.appUser.getSystemNotifications(params[0] == true).sortedByDescending { it.date.time }
         }
 
         override fun onPostExecute(result: List<SystemNotification>) {

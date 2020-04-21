@@ -13,8 +13,7 @@ import java.text.DateFormat
 class ReadMailActivity : AppCompatActivity() {
 
     companion object {
-        const val EXTRA_FOLDER_ID = "de.deftk.lonet.mobile.mail.extra_folder_id"
-        const val EXTRA_MAIL_ID = "de.deftk.lonet.mobile.mail.extra_mail_id"
+        const val EXTRA_MAIL = "de.deftk.lonet.mobile.mail.mail_extra"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,16 +24,15 @@ class ReadMailActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
-        val mailId = intent.getIntExtra(EXTRA_MAIL_ID, -1)
-        val folderId = intent.getStringExtra(EXTRA_FOLDER_ID)
-        val folder = AuthStore.appUser.getEmailFolders().first { it.id == folderId }
-        val mail = folder.getEmails(AuthStore.appUser.sessionId).first { it.id == mailId }
+        val mail = intent.getSerializableExtra(EXTRA_MAIL) as? Email
 
-        mail_subject?.text = mail.subject
-        mail_author?.text = mail.from?.joinToString { it.name } ?: AuthStore.appUser.name ?: ""
-        mail_author_address?.text = mail.from?.joinToString { it.address } ?: AuthStore.appUser.login
-        mail_date?.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(mail.date)
-        MailContentLoader().execute(mail)
+        if (mail != null) {
+            mail_subject?.text = mail.subject
+            mail_author?.text = mail.from?.joinToString { it.name } ?: AuthStore.appUser.name ?: ""
+            mail_author_address?.text = mail.from?.joinToString { it.address } ?: AuthStore.appUser.login
+            mail_date?.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(mail.date)
+            MailContentLoader().execute(mail)
+        }
     }
 
     // back button in toolbar functionality
@@ -46,7 +44,7 @@ class ReadMailActivity : AppCompatActivity() {
     private inner class MailContentLoader: AsyncTask<Email, Void, Email.EmailContent>() {
 
         override fun doInBackground(vararg params: Email): Email.EmailContent {
-            return params[0].read(AuthStore.appUser.sessionId)
+            return params[0].read(AuthStore.appUser)
         }
 
         override fun onPostExecute(result: Email.EmailContent) {

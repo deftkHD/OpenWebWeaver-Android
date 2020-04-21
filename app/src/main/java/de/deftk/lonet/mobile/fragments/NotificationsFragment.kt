@@ -36,7 +36,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(context, NotificationActivity::class.java)
-            intent.putExtra(NotificationActivity.EXTRA_HASHCODE, list.getItemAtPosition(position).hashCode())
+            intent.putExtra(NotificationActivity.EXTRA_NOTIFICATION, list.getItemAtPosition(position) as Notification)
             startActivity(intent)
         }
         return view
@@ -45,7 +45,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
     private inner class NotificationLoader: AsyncTask<Boolean, Void, List<Notification>>() {
 
         override fun doInBackground(vararg params: Boolean?): List<Notification> {
-            return AuthStore.appUser.getNotifications(params[0] == true).sortedByDescending { it.creationDate.time }
+            return AuthStore.appUser.getAllNotifications(params[0] == true).sortedByDescending { it.creationDate.time }
         }
 
         override fun onPostExecute(result: List<Notification>) {
