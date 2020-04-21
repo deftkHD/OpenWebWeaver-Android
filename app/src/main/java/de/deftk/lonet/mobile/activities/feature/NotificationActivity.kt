@@ -28,6 +28,7 @@ class NotificationActivity : AppCompatActivity() {
         if (notification != null) {
             notification_title.text = notification.title ?: ""
             notification_author.text = notification.creationMember.name ?: notification.creationMember.login
+            notification_group.text = notification.group.name ?: notification.group.login
             notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.creationDate)
             notification_text.text = TextUtils.parse(notification.text)
         }
