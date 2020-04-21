@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
@@ -11,22 +10,22 @@
         android:id="@+id/task_completed"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
         android:layout_marginStart="3dp"
         android:layout_marginTop="5dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         android:contentDescription="@string/task_not_completed_desc" />
 
     <TextView
         android:id="@+id/task_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:layout_marginStart="42dp"
         android:layout_marginTop="5dp"
         android:textSize="20sp"
         android:maxLines="1"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:ellipsize="end"
         tools:text="Title"
         android:textColor="@android:color/black" />
 
@@ -34,20 +33,18 @@
         android:id="@+id/task_author"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/task_title"
         android:layout_marginStart="42dp"
-        android:layout_marginTop="30sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:maxLength="28"
+        android:ellipsize="end"
         tools:text="Author" />
 
     <TextView
         android:id="@+id/task_due"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:layout_marginEnd="5dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_below="@+id/task_title"
+        android:layout_alignParentEnd="true"
         tools:text="Until 1.1.2020" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>

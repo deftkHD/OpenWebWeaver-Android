@@ -3,8 +3,8 @@ package de.deftk.lonet.mobile.activities.feature
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.feature.Notification
-import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
+import de.deftk.lonet.mobile.utils.TextUtils
 import kotlinx.android.synthetic.main.activity_notification.*
 import java.text.DateFormat
 
@@ -21,6 +21,7 @@ class NotificationActivity : AppCompatActivity() {
         // back button in toolbar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
+        supportActionBar?.setTitle(R.string.see_notification)
 
         val notification = intent.getSerializableExtra(EXTRA_NOTIFICATION) as? Notification
 
@@ -28,7 +29,7 @@ class NotificationActivity : AppCompatActivity() {
             notification_title.text = notification.title ?: ""
             notification_author.text = notification.creationMember.name ?: notification.creationMember.login
             notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.creationDate)
-            notification_text.text = notification.text ?: "" //FIXME text sometimes contains internal references
+            notification_text.text = TextUtils.parse(notification.text)
         }
     }
 

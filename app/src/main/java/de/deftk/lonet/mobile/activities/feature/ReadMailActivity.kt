@@ -2,7 +2,6 @@ package de.deftk.lonet.mobile.activities.feature
 
 import android.os.AsyncTask
 import android.os.Bundle
-import android.text.method.ScrollingMovementMethod
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -30,7 +29,6 @@ class ReadMailActivity : AppCompatActivity() {
         val mail = intent.getSerializableExtra(EXTRA_MAIL) as? Email
 
         if (mail != null) {
-            mail_message?.movementMethod = ScrollingMovementMethod()
             mail_subject?.text = mail.subject
             mail_author?.text = mail.from?.joinToString { it.name } ?: AuthStore.appUser.name ?: ""
             mail_author_address?.text = mail.from?.joinToString { it.address } ?: AuthStore.appUser.login

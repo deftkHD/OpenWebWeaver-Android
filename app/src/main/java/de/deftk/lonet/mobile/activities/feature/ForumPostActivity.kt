@@ -1,11 +1,11 @@
 package de.deftk.lonet.mobile.activities.feature
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.feature.forum.ForumPost
-import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.adapter.ForumPostAdapter
+import de.deftk.lonet.mobile.utils.TextUtils
 import kotlinx.android.synthetic.main.activity_forum_post.*
 import java.text.DateFormat
 
@@ -22,6 +22,8 @@ class ForumPostActivity : AppCompatActivity() {
         // back button in toolbar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
+        supportActionBar?.setTitle(R.string.see_post)
+
 
         val post = intent.getSerializableExtra(EXTRA_FORUM_POST) as? ForumPost
 
@@ -30,7 +32,7 @@ class ForumPostActivity : AppCompatActivity() {
             forum_post_title.text = post.title
             forum_post_author.text = post.creationMember.name ?: post.creationMember.login
             forum_post_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.creationDate)
-            forum_post_text.text = post.text
+            forum_post_text.text = TextUtils.parse(post.text)
         }
     }
 

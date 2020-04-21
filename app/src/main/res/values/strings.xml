@@ -60,5 +60,9 @@
     <string name="request_failed_timeout">Request failed (Timeout)</string>
     <string name="request_failed_other">Request failed (%s)</string>
     <string name="read_mail">Read mail</string>
+    <string name="task_details">Task details</string>
+    <string name="see_post">See post</string>
+    <string name="see_system_notification">System notification</string>
+    <string name="see_notification">Notification</string>
 
 </resources>

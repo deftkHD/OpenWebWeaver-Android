@@ -6,6 +6,7 @@ import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.adapter.SystemNotificationAdapter
+import de.deftk.lonet.mobile.utils.TextUtils
 import kotlinx.android.synthetic.main.activity_system_notification.*
 import java.text.DateFormat
 
@@ -22,6 +23,7 @@ class SystemNotificationActivity : AppCompatActivity() {
         // back button in toolbar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
+        supportActionBar?.setTitle(R.string.see_system_notification)
 
         val notification = intent.getSerializableExtra(EXTRA_SYSTEM_NOTIFICATION) as? SystemNotification
 
@@ -30,7 +32,7 @@ class SystemNotificationActivity : AppCompatActivity() {
             system_notification_author.text = notification.member.name ?: notification.member.login
             system_notification_group.text = notification.group.name ?: notification.group.login
             system_notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.date)
-            system_notification_message.text = notification.message
+            system_notification_message.text = TextUtils.parse(notification.message)
         }
     }
 

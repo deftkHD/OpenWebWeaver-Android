@@ -1,46 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:padding="16dp"
-    android:background="@android:drawable/dialog_holo_light_frame">
+    android:background="@android:drawable/dialog_holo_light_frame"
+    android:padding="16dp">
 
     <TextView
         android:id="@+id/notification_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:textColor="@android:color/black"
         android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         tools:text="Notification Title" />
 
     <TextView
         android:id="@+id/notification_author"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/notification_title"
+        android:layout_below="@+id/notification_title"
+        android:layout_alignParentStart="true"
+        android:maxLines="30"
+        android:ellipsize="end"
         tools:text="abc.exampleuser" />
 
     <TextView
         android:id="@+id/notification_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/notification_title"
+        android:layout_below="@+id/notification_title"
+        android:layout_alignParentEnd="true"
         tools:text="1.1.2020 12:00" />
 
     <View
         android:id="@+id/notification_accent"
         android:layout_width="match_parent"
         android:layout_height="3dp"
-        android:layout_marginTop="2dp"
-        android:background="@android:color/holo_blue_light"
-        app:layout_constraintTop_toBottomOf="@+id/notification_author"
-        tools:layout_editor_absoluteX="16dp" />
+        android:layout_below="@+id/notification_author"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="3dp"
+        android:background="@android:color/holo_blue_light" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>
