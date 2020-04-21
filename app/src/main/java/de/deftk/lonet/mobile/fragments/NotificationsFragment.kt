@@ -55,11 +55,10 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
         }
 
         override fun onPostExecute(result: List<Notification>?) {
+            progress_notifications?.visibility = ProgressBar.INVISIBLE
+            notifications_swipe_refresh?.isRefreshing = false
             if (result != null) {
-                // could be null if fragment is switched while loader continues to run
-                progress_notifications?.visibility = ProgressBar.GONE
                 notification_list?.adapter = NotificationAdapter(context ?: error("Oops, no context?"), result)
-                notifications_swipe_refresh?.isRefreshing = false
             } else {
                 Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
             }

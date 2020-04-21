@@ -89,11 +89,11 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         }
 
         override fun onPostExecute(result: List<OnlineFile>?) {
+            progress_file_storage?.visibility = ProgressBar.INVISIBLE
+            file_storage_swipe_refresh?.isRefreshing = false
             if (result != null) {
-                progress_file_storage?.visibility = ProgressBar.INVISIBLE
                 file_list?.adapter = FileStorageAdapter(context ?: error("Oops, no context?"), result)
                 file_empty.isVisible = result.isEmpty()
-                file_storage_swipe_refresh?.isRefreshing = false
             } else {
                 Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
             }

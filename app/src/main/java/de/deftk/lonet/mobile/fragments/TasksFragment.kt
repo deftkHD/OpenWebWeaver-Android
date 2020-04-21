@@ -53,11 +53,10 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
         }
 
         override fun onPostExecute(result: List<Task>?) {
+            progress_tasks?.visibility = ProgressBar.INVISIBLE
+            tasks_swipe_refresh?.isRefreshing = false
             if (result != null) {
-                // could be null if fragment is switched while loader continues to run
-                progress_tasks?.visibility = ProgressBar.GONE
                 tasks_list?.adapter = TaskAdapter(context ?: error("Oops, no context?"), result)
-                tasks_swipe_refresh?.isRefreshing = false
             } else {
                 Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
             }

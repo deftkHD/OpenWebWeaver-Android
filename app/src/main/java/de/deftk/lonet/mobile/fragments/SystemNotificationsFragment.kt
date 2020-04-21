@@ -56,11 +56,10 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
         }
 
         override fun onPostExecute(result: List<SystemNotification>?) {
+            progress_system_notifications?.visibility = ProgressBar.INVISIBLE
+            system_notifications_swipe_refresh.isRefreshing = false
             if (result != null) {
-                // could be null if fragment is switched while loader continues to run
-                progress_system_notifications?.visibility = ProgressBar.GONE
                 system_notification_list?.adapter = SystemNotificationAdapter(context ?: error("Oops, no context?"), result)
-                system_notifications_swipe_refresh.isRefreshing = false
             } else {
                 Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
             }
