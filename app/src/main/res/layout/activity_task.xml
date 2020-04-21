@@ -22,7 +22,19 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/task_title"
         android:layout_alignParentStart="true"
+        android:maxLength="27"
+        android:ellipsize="end"
         tools:text="abc.exampleuser" />
+
+    <TextView
+        android:id="@+id/task_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/task_author"
+        android:layout_alignParentStart="true"
+        android:ellipsize="end"
+        android:maxLength="27"
+        tools:text="abc.examplegroup" />
 
     <TextView
         android:id="@+id/task_created"

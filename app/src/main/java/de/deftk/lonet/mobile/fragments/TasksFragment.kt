@@ -9,15 +9,13 @@ import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import de.deftk.lonet.api.model.Member
 import de.deftk.lonet.api.model.feature.Task
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.abstract.FeatureFragment
 import de.deftk.lonet.mobile.activities.feature.TaskActivity
-import de.deftk.lonet.mobile.adapter.TasksAdapter
+import de.deftk.lonet.mobile.adapter.TaskAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import kotlinx.android.synthetic.main.fragment_tasks.*
 import java.lang.Exception
@@ -58,7 +56,7 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
             if (result != null) {
                 // could be null if fragment is switched while loader continues to run
                 progress_tasks?.visibility = ProgressBar.GONE
-                tasks_list?.adapter = TasksAdapter(context ?: error("Oops, no context?"), result)
+                tasks_list?.adapter = TaskAdapter(context ?: error("Oops, no context?"), result)
                 tasks_swipe_refresh?.isRefreshing = false
             } else {
                 Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
