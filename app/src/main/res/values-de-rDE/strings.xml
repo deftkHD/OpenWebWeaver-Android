@@ -60,4 +60,5 @@
     <string name="request_failed_connection">Anfrage fehlgeschlagen (keine Internetverbindung)</string>
     <string name="request_failed_timeout">Anfrage fehlgeschlagen (Timeout)</string>
     <string name="request_failed_other">Anfrage fehlgeschlagen (%s)</string>
+    <string name="read_mail">E-Mail lesen</string>
 </resources>

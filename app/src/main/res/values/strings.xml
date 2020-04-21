@@ -59,5 +59,6 @@
     <string name="request_failed_connection">Request failed (Bad connection)</string>
     <string name="request_failed_timeout">Request failed (Timeout)</string>
     <string name="request_failed_other">Request failed (%s)</string>
+    <string name="read_mail">Read mail</string>
 
 </resources>
