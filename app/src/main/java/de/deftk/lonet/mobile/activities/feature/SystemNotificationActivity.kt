@@ -2,8 +2,8 @@ package de.deftk.lonet.mobile.activities.feature
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.method.LinkMovementMethod
 import de.deftk.lonet.api.model.feature.SystemNotification
-import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.adapter.SystemNotificationAdapter
 import de.deftk.lonet.mobile.utils.TextUtils
@@ -32,7 +32,8 @@ class SystemNotificationActivity : AppCompatActivity() {
             system_notification_author.text = notification.member.name ?: notification.member.login
             system_notification_group.text = notification.group.name ?: notification.group.login
             system_notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.date)
-            system_notification_message.text = TextUtils.parse(notification.message)
+            system_notification_message.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.message))
+            system_notification_message.movementMethod = LinkMovementMethod.getInstance()
         }
     }
 

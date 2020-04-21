@@ -1,6 +1,7 @@
 package de.deftk.lonet.mobile.activities.feature
 
 import android.os.Bundle
+import android.text.method.LinkMovementMethod
 import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.feature.forum.ForumPost
 import de.deftk.lonet.mobile.R
@@ -32,7 +33,8 @@ class ForumPostActivity : AppCompatActivity() {
             forum_post_title.text = post.title
             forum_post_author.text = post.creationMember.name ?: post.creationMember.login
             forum_post_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.creationDate)
-            forum_post_text.text = TextUtils.parse(post.text)
+            forum_post_text.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(post.text))
+            forum_post_text.movementMethod = LinkMovementMethod.getInstance()
         }
     }
 

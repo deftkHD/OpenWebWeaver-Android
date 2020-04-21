@@ -1,6 +1,7 @@
 package de.deftk.lonet.mobile.activities.feature
 
 import android.os.Bundle
+import android.text.method.LinkMovementMethod
 import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.feature.Task
 import de.deftk.lonet.mobile.R
@@ -31,7 +32,8 @@ class TaskActivity : AppCompatActivity() {
             task_group.text = task.group.name ?: task.group.login
             task_created.text = String.format(getString(R.string.created_date), DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.creationDate))
             task_due.text = String.format(getString(R.string.until_date), if (task.endDate != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.endDate!!) else getString(R.string.not_set))
-            task_detail.text = TextUtils.parse(task.description)
+            task_detail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description))
+            task_detail.movementMethod = LinkMovementMethod.getInstance()
         }
     }
 
