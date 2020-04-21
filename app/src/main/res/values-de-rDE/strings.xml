@@ -64,5 +64,5 @@
     <string name="task_details">Aufgabe ansehen</string>
     <string name="see_post">Post ansehen</string>
     <string name="see_system_notification">Systemnachricht</string>
-    <string name="see_notification">Mitteilung</string>
+    <string name="see_notification">Mitteilung ansehen</string>
 </resources>
