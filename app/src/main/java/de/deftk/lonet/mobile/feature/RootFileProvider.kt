@@ -33,7 +33,7 @@ class RootFileProvider : FileProvider("", null, "") {
         // constructor for all properties instead of giving it just json (add static createFromJson() function))
 
         // cache file quota for later. yep, that't not good practise :/
-        val state = member.getFileStorageState(AuthStore.appUser, true)
+        //val state = member.getFileStorageState(AuthStore.appUser, true)
 
         val json = """
             {

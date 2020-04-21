@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.request.UserApiRequest
@@ -39,10 +40,10 @@ class OverviewFragment: Fragment() {
         return view
     }
 
-    private inner class OverviewLoader: AsyncTask<Boolean, Void, List<AbstractOverviewElement>>() {
+    private inner class OverviewLoader: AsyncTask<Boolean, Void, List<AbstractOverviewElement>?>() {
 
         // a bit inefficient (although it gets cached later)
-        override fun doInBackground(vararg params: Boolean?): List<AbstractOverviewElement> {
+        override fun doInBackground(vararg params: Boolean?): List<AbstractOverviewElement>? {
             val elements = mutableListOf<AbstractOverviewElement>()
             val request = UserApiRequest(AuthStore.appUser.responsibleHost!!, AuthStore.appUser) // could be easier
             val idMap = mutableMapOf<AppFeature, List<Int>>()
@@ -51,18 +52,26 @@ class OverviewFragment: Fragment() {
                     idMap[feature] = feature.overviewBuilder.appendRequests(request)
                 }
             }
-            //TODO handle timeout
-            val response = request.fireRequest(params[0] == true).toJson()
+            val response = try {
+                request.fireRequest(params[0] == true).toJson()
+            } catch (e:Exception) {
+                e.printStackTrace()
+                return null
+            }
             idMap.forEach { (feature, ids) ->
                 elements.add(feature.overviewBuilder!!.createElementFromResponse(ids.map { Pair(it, ResponseUtil.getSubResponseResult(response, it)) }.toMap()))
             }
             return elements
         }
 
-        override fun onPostExecute(result: List<AbstractOverviewElement>) {
+        override fun onPostExecute(result: List<AbstractOverviewElement>?) {
             progress_overview?.visibility = ProgressBar.GONE
-            overview_list?.adapter = OverviewAdapter(context ?: error("Oops, no context?"), result)
             overview_swipe_refresh?.isRefreshing = false
+            if (result != null) {
+                overview_list?.adapter = OverviewAdapter(context ?: error("Oops, no context?"), result)
+            } else {
+                Toast.makeText(context, "Failed to get overview information", Toast.LENGTH_LONG).show()
+            }
         }
     }
 

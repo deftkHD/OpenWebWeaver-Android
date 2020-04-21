@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.lonet.mobile.AuthStore
@@ -42,17 +43,27 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
         return view
     }
 
-    private inner class SystemNotificationLoader: AsyncTask<Boolean, Void, List<SystemNotification>>() {
+    private inner class SystemNotificationLoader: AsyncTask<Boolean, Void, List<SystemNotification>?>() {
 
-        override fun doInBackground(vararg params: Boolean?): List<SystemNotification> {
-            return AuthStore.appUser.getSystemNotifications(params[0] == true).sortedByDescending { it.date.time }
+        override fun doInBackground(vararg params: Boolean?): List<SystemNotification>? {
+            return try {
+                AuthStore.appUser.getSystemNotifications(params[0] == true)
+                    .sortedByDescending { it.date.time }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
 
-        override fun onPostExecute(result: List<SystemNotification>) {
-            // could be null if fragment is switched while loader continues to run
-            progress_system_notifications?.visibility = ProgressBar.GONE
-            system_notification_list?.adapter = SystemNotificationAdapter(context ?: error("Oops, no context?"), result)
-            system_notifications_swipe_refresh.isRefreshing = false
+        override fun onPostExecute(result: List<SystemNotification>?) {
+            if (result != null) {
+                // could be null if fragment is switched while loader continues to run
+                progress_system_notifications?.visibility = ProgressBar.GONE
+                system_notification_list?.adapter = SystemNotificationAdapter(context ?: error("Oops, no context?"), result)
+                system_notifications_swipe_refresh.isRefreshing = false
+            } else {
+                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            }
         }
     }
 

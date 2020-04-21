@@ -150,30 +150,47 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         nav_view.menu.getItem(0).isChecked = true
     }
 
-    private inner class LogoutTask: AsyncTask<Boolean, Void, Unit>() {
-        override fun doInBackground(vararg params: Boolean?) {
-            return AuthStore.appUser.logout(params[0] == true)
+    private inner class LogoutTask: AsyncTask<Boolean, Void, Boolean>() {
+        override fun doInBackground(vararg params: Boolean?): Boolean {
+            return try {
+                AuthStore.appUser.logout(params[0] == true)
+                true
+            } catch (e: Exception) {
+                false
+            }
         }
 
-        override fun onPostExecute(result: Unit?) {
-            this@StartActivity.getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("token").apply()
-            this@StartActivity.getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("login").apply()
-            val intent = Intent(this@StartActivity, LoginActivity::class.java)
-            this@StartActivity.startActivity(intent)
-            this@StartActivity.finish()
+        override fun onPostExecute(result: Boolean) {
+            if (result) {
+                this@StartActivity.getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("token").apply()
+                this@StartActivity.getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("login").apply()
+                val intent = Intent(this@StartActivity, LoginActivity::class.java)
+                this@StartActivity.startActivity(intent)
+                this@StartActivity.finish()
+            } else {
+                Toast.makeText(baseContext, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            }
         }
     }
 
-    private inner class GenerateAutologinUrlTask: AsyncTask<Void, Void, String>() {
-        override fun doInBackground(vararg params: Void?): String {
-            return AuthStore.appUser.getAutoLoginUrl()
+    private inner class GenerateAutologinUrlTask: AsyncTask<Void, Void, String?>() {
+        override fun doInBackground(vararg params: Void?): String? {
+            return try {
+                AuthStore.appUser.getAutoLoginUrl()
+            } catch (e: Exception) {
+                null
+            }
         }
 
         //TODO setting to choose if open inside new browser tap or in single browser window
-        override fun onPostExecute(result: String) {
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse(result)
-            startActivity(intent)
+        override fun onPostExecute(result: String?) {
+            if (result != null) {
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(result)
+                startActivity(intent)
+            } else {
+                Toast.makeText(baseContext, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            }
         }
     }
 

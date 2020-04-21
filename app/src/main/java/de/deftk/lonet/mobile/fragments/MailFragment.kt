@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.feature.mailbox.Email
@@ -79,27 +80,45 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
         }
     }
 
-    private inner class LoadEmailsTask: AsyncTask<EmailFolder, Void, List<Email>>() {
-        override fun doInBackground(vararg params: EmailFolder): List<Email> {
-            return params[0].getEmails(AuthStore.appUser, true) // always want to get the newest mails
+    private inner class LoadEmailsTask: AsyncTask<EmailFolder, Void, List<Email>?>() {
+        override fun doInBackground(vararg params: EmailFolder): List<Email>? {
+            return try {
+                params[0].getEmails(AuthStore.appUser, true) // always want to get the newest mails
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
 
-        override fun onPostExecute(result: List<Email>) {
-            progress_mail?.visibility = ProgressBar.INVISIBLE
-            mail_list?.adapter = MailAdapter(context ?: error("Oops, no context?"), result)
-            mail_swipe_refresh?.isRefreshing = false
+        override fun onPostExecute(result: List<Email>?) {
+            if (result != null) {
+                progress_mail?.visibility = ProgressBar.INVISIBLE
+                mail_list?.adapter = MailAdapter(context ?: error("Oops, no context?"), result)
+                mail_swipe_refresh?.isRefreshing = false
+            } else {
+                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            }
         }
     }
 
-    private inner class LoadEmailFoldersTask: AsyncTask<Void, Void, List<EmailFolder>>() {
-        override fun doInBackground(vararg params: Void?): List<EmailFolder> {
-            return AuthStore.appUser.getEmailFolders(true)
+    private inner class LoadEmailFoldersTask: AsyncTask<Void, Void, List<EmailFolder>?>() {
+        override fun doInBackground(vararg params: Void?): List<EmailFolder>? {
+            return try {
+                AuthStore.appUser.getEmailFolders(true)
+            }  catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
 
-        override fun onPostExecute(result: List<EmailFolder>) {
-            progress_mail?.visibility = ProgressBar.INVISIBLE
-            mail_list?.adapter = MailFolderAdapter(context ?: error("Oops, no context?"), result)
-            mail_swipe_refresh?.isRefreshing = false
+        override fun onPostExecute(result: List<EmailFolder>?) {
+            if (result != null) {
+                progress_mail?.visibility = ProgressBar.INVISIBLE
+                mail_list?.adapter = MailFolderAdapter(context ?: error("Oops, no context?"), result)
+                mail_swipe_refresh?.isRefreshing = false
+            } else {
+                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            }
         }
     }
 

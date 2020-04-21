@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.Feature
 import de.deftk.lonet.api.model.Member
@@ -75,19 +76,25 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
         return false
     }
 
-    private inner class EntryLoader : AsyncTask<Any, Void, List<ForumPost>>() {
+    private inner class EntryLoader : AsyncTask<Any, Void, List<ForumPost>?>() {
 
-        override fun doInBackground(vararg params: Any): List<ForumPost> {
-            return (params[0] as Member).getForumPosts(
-                AuthStore.appUser,
-                overwriteCache = params[1] as Boolean
-            )
+        override fun doInBackground(vararg params: Any): List<ForumPost>? {
+            return try {
+                (params[0] as Member).getForumPosts(AuthStore.appUser, overwriteCache = params[1] as Boolean)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
 
-        override fun onPostExecute(result: List<ForumPost>) {
-            forum_list?.adapter = ForumPostAdapter(context ?: error("Oops, no context?"), result)
-            progress_forum?.visibility = ProgressBar.INVISIBLE
-            forum_swipe_refresh?.isRefreshing = false
+        override fun onPostExecute(result: List<ForumPost>?) {
+            if (result != null) {
+                forum_list?.adapter = ForumPostAdapter(context ?: error("Oops, no context?"), result)
+                progress_forum?.visibility = ProgressBar.INVISIBLE
+                forum_swipe_refresh?.isRefreshing = false
+            } else {
+                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            }
         }
     }
 

@@ -21,6 +21,9 @@ import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.tasks.LoginTask
 import de.deftk.lonet.mobile.update.Updater
 import java.io.File
+import java.io.IOException
+import java.net.UnknownHostException
+import java.util.concurrent.TimeoutException
 
 class MainActivity : AppCompatActivity(), LoginTask.ILoginCallback, Updater.IUpdateCallback {
 
@@ -64,17 +67,29 @@ class MainActivity : AppCompatActivity(), LoginTask.ILoginCallback, Updater.IUpd
 
     override fun onLoginResult(result: LoginTask.LoginResult) {
         if (result.failed()) {
-            getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("token").apply()
-            Toast.makeText(this, getString(R.string.token_expired), Toast.LENGTH_LONG).show()
+            result.exception?.printStackTrace()
+            if (result.exception is IOException) {
+                when (result.exception) {
+                    is UnknownHostException ->
+                        Toast.makeText(this, getString(R.string.request_failed_connection), Toast.LENGTH_LONG).show()
+                    is TimeoutException ->
+                        Toast.makeText(this, getString(R.string.request_failed_timeout), Toast.LENGTH_LONG).show()
+                    else ->
+                        Toast.makeText(this, String.format(getString(R.string.request_failed_other), result.exception.message), Toast.LENGTH_LONG).show()
+                }
+            } else {
+                getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("token").apply()
+                Toast.makeText(this, getString(R.string.token_expired), Toast.LENGTH_LONG).show()
 
-            val intent = Intent(this, LoginActivity::class.java)
-            if (AuthStore.getSavedUsername(this) != null) {
-                intent.putExtra(LoginActivity.EXTRA_LOGIN, AuthStore.getSavedUsername(this))
+                val intent = Intent(this, LoginActivity::class.java)
+                if (AuthStore.getSavedUsername(this) != null) {
+                    intent.putExtra(LoginActivity.EXTRA_LOGIN, AuthStore.getSavedUsername(this))
+                }
+                startActivity(intent)
+                finish()
             }
-            startActivity(intent)
-            finish()
         } else {
-            AuthStore.appUser = result.user ?: error("How should I understand this?")
+            AuthStore.appUser = result.user!!
 
             val intent = Intent(this, StartActivity::class.java)
             startActivity(intent)

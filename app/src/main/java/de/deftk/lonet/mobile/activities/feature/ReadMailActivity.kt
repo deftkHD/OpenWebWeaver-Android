@@ -4,6 +4,7 @@ import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ProgressBar
+import android.widget.Toast
 import de.deftk.lonet.api.model.feature.mailbox.Email
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
@@ -41,16 +42,25 @@ class ReadMailActivity : AppCompatActivity() {
         return true
     }
 
-    private inner class MailContentLoader: AsyncTask<Email, Void, Email.EmailContent>() {
+    private inner class MailContentLoader: AsyncTask<Email, Void, Email.EmailContent?>() {
 
-        override fun doInBackground(vararg params: Email): Email.EmailContent {
-            return params[0].read(AuthStore.appUser)
+        override fun doInBackground(vararg params: Email): Email.EmailContent? {
+            return try {
+                params[0].read(AuthStore.appUser)
+            } catch (e: Exception) {
+                null
+            }
         }
 
-        override fun onPostExecute(result: Email.EmailContent) {
-            mail_message?.text = result.text ?: result.plainBody
-            progress_read_mail?.visibility = ProgressBar.INVISIBLE
-            //TODO refresh fragment (so subject is not bold anymore)
+        override fun onPostExecute(result: Email.EmailContent?) {
+            if (result != null) {
+                mail_message?.text = result.text ?: result.plainBody
+                progress_read_mail?.visibility = ProgressBar.INVISIBLE
+                //TODO refresh fragment (so subject is not bold anymore)
+            } else {
+                Toast.makeText(baseContext, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            }
+
         }
 
     }

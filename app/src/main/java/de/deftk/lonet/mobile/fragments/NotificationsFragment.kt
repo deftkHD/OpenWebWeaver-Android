@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.Member
@@ -42,17 +43,26 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
         return view
     }
 
-    private inner class NotificationLoader: AsyncTask<Boolean, Void, List<Notification>>() {
+    private inner class NotificationLoader: AsyncTask<Boolean, Void, List<Notification>?>() {
 
-        override fun doInBackground(vararg params: Boolean?): List<Notification> {
-            return AuthStore.appUser.getAllNotifications(params[0] == true).sortedByDescending { it.creationDate.time }
+        override fun doInBackground(vararg params: Boolean?): List<Notification>? {
+            return try {
+                AuthStore.appUser.getAllNotifications(params[0] == true).sortedByDescending { it.creationDate.time }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
 
-        override fun onPostExecute(result: List<Notification>) {
-            // could be null if fragment is switched while loader continues to run
-            progress_notifications?.visibility = ProgressBar.GONE
-            notification_list?.adapter = NotificationAdapter(context ?: error("Oops, no context?"), result)
-            notifications_swipe_refresh?.isRefreshing = false
+        override fun onPostExecute(result: List<Notification>?) {
+            if (result != null) {
+                // could be null if fragment is switched while loader continues to run
+                progress_notifications?.visibility = ProgressBar.GONE
+                notification_list?.adapter = NotificationAdapter(context ?: error("Oops, no context?"), result)
+                notifications_swipe_refresh?.isRefreshing = false
+            } else {
+                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            }
         }
     }
 

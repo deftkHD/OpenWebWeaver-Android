@@ -77,50 +77,67 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         return false
     }
 
-    private inner class DirectoryLoadingTask: AsyncTask<FileProvider, Void, List<OnlineFile>>() {
+    private inner class DirectoryLoadingTask: AsyncTask<FileProvider, Void, List<OnlineFile>?>() {
 
-        override fun doInBackground(vararg params: FileProvider): List<OnlineFile> {
-            return params[0].getFileStorageFiles(AuthStore.appUser, true) // don't want to cache file request here
-                .sortedByDescending { it.type }
+        override fun doInBackground(vararg params: FileProvider): List<OnlineFile>? {
+            return try {
+                params[0].getFileStorageFiles(AuthStore.appUser, true) // don't want to cache file request here
+                    .sortedByDescending { it.type }
+            } catch (e: Exception) {
+                null
+            }
         }
 
-        override fun onPostExecute(result: List<OnlineFile>) {
-            progress_file_storage?.visibility = ProgressBar.INVISIBLE
-            file_list?.adapter = FileStorageAdapter(context ?: error("Oops, no context?"), result)
-            file_empty.isVisible = result.isEmpty()
-            file_storage_swipe_refresh?.isRefreshing = false
+        override fun onPostExecute(result: List<OnlineFile>?) {
+            if (result != null) {
+                progress_file_storage?.visibility = ProgressBar.INVISIBLE
+                file_list?.adapter = FileStorageAdapter(context ?: error("Oops, no context?"), result)
+                file_empty.isVisible = result.isEmpty()
+                file_storage_swipe_refresh?.isRefreshing = false
+            } else {
+                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            }
         }
 
     }
 
     //TODO progress dialog
-    private inner class FileDownloadOpenTask: AsyncTask<OnlineFile, Void, File>() {
+    private inner class FileDownloadOpenTask: AsyncTask<OnlineFile, Void, File?>() {
 
-        override fun doInBackground(vararg params: OnlineFile): File {
-            val url = URL(params[0].downloadUrl ?: error("Server did not return download url!"))
-            val targetFile = File(context?.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: error("no download directory?"), params[0].name.replace("/", "_"))
-            if (targetFile.exists()) targetFile.delete()
-            url.openStream().use { input ->
-                FileOutputStream(targetFile).use { output ->
-                    input.copyTo(output)
+        override fun doInBackground(vararg params: OnlineFile): File? {
+            return try {
+                 val url = URL(params[0].downloadUrl ?: error("Server did not return download url!"))
+                val targetFile = File(context?.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: error("no download directory?"), params[0].name.replace("/", "_"))
+                if (targetFile.exists()) targetFile.delete()
+                url.openStream().use { input ->
+                    FileOutputStream(targetFile).use { output ->
+                        input.copyTo(output)
+                    }
                 }
+                targetFile
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
             }
-            return targetFile
         }
 
-        override fun onPostExecute(result: File) {
-            Toast.makeText(context, getString(R.string.download_finished), Toast.LENGTH_SHORT).show()
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-                val uri = androidx.core.content.FileProvider.getUriForFile(context!!, context!!.packageName + ".provider", result)
-                intent.setDataAndType(uri, FileUtil.getMimeType(uri.toString()))
+        override fun onPostExecute(result: File?) {
+            if (result != null) {
+                Toast.makeText(context, getString(R.string.download_finished), Toast.LENGTH_SHORT).show()
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+                    val uri = androidx.core.content.FileProvider.getUriForFile(context!!, context!!.packageName + ".provider", result)
+                    intent.setDataAndType(uri, FileUtil.getMimeType(uri.toString()))
+                } else {
+                    val uri = Uri.fromFile(result)
+                    intent.setDataAndType(uri, FileUtil.getMimeType(uri.toString()))
+                }
+                startActivity(intent)
             } else {
-                val uri = Uri.fromFile(result)
-                intent.setDataAndType(uri, FileUtil.getMimeType(uri.toString()))
+                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
             }
-            startActivity(intent)
         }
 
     }

@@ -57,4 +57,7 @@
     <string name="mail_folder_sent">Gesendet</string>
     <string name="mail_folder_trash">Papierkorb</string>
     <string name="forum">Forum</string>
+    <string name="request_failed_connection">Anfrage fehlgeschlagen (keine Internetverbindung)</string>
+    <string name="request_failed_timeout">Anfrage fehlgeschlagen (Timeout)</string>
+    <string name="request_failed_other">Anfrage fehlgeschlagen (%s)</string>
 </resources>

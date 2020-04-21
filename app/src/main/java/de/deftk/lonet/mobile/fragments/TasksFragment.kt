@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.Member
@@ -19,6 +20,7 @@ import de.deftk.lonet.mobile.activities.feature.TaskActivity
 import de.deftk.lonet.mobile.adapter.TasksAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import kotlinx.android.synthetic.main.fragment_tasks.*
+import java.lang.Exception
 
 class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
 
@@ -41,17 +43,27 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
         return view
     }
 
-    private inner class TaskLoader: AsyncTask<Any, Void, List<Task>>() {
+    private inner class TaskLoader: AsyncTask<Any, Void, List<Task>?>() {
 
-        override fun doInBackground(vararg params: Any): List<Task> {
-            return AuthStore.appUser.getAllTasks(params[0] == true).sortedByDescending { it.creationDate.time }
+        override fun doInBackground(vararg params: Any): List<Task>? {
+            return try {
+                AuthStore.appUser.getAllTasks(params[0] == true).sortedByDescending { it.creationDate.time }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
         }
 
-        override fun onPostExecute(result: List<Task>) {
-            // could be null if fragment is switched while loader continues to run
-            progress_tasks?.visibility = ProgressBar.GONE
-            tasks_list?.adapter = TasksAdapter(context ?: error("Oops, no context?"), result)
-            tasks_swipe_refresh?.isRefreshing = false
+        override fun onPostExecute(result: List<Task>?) {
+            if (result != null) {
+                // could be null if fragment is switched while loader continues to run
+                progress_tasks?.visibility = ProgressBar.GONE
+                tasks_list?.adapter = TasksAdapter(context ?: error("Oops, no context?"), result)
+                tasks_swipe_refresh?.isRefreshing = false
+            } else {
+                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            }
+
         }
     }
 }

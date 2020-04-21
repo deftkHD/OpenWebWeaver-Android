@@ -8,6 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.tasks.LoginTask
+import java.io.IOException
+import java.net.UnknownHostException
+import java.util.concurrent.TimeoutException
 
 class LoginActivity : AppCompatActivity(), LoginTask.ILoginCallback {
 
@@ -61,7 +64,18 @@ class LoginActivity : AppCompatActivity(), LoginTask.ILoginCallback {
         progressBar.visibility = ProgressBar.INVISIBLE
         btnLogin.isEnabled = true
         if (result.failed()) {
-            Toast.makeText(this, "${getString(R.string.login_failed)}: ${result.exception?.message ?: result.exception ?: "No details"}", Toast.LENGTH_LONG).show()
+            if (result.exception is IOException) {
+                when (result.exception) {
+                    is UnknownHostException ->
+                        Toast.makeText(this, getString(R.string.request_failed_connection), Toast.LENGTH_LONG).show()
+                    is TimeoutException ->
+                        Toast.makeText(this, getString(R.string.request_failed_timeout), Toast.LENGTH_LONG).show()
+                    else ->
+                        Toast.makeText(this, String.format(getString(R.string.request_failed_other), result.exception.message), Toast.LENGTH_LONG).show()
+                }
+            } else {
+                Toast.makeText(this, "${getString(R.string.login_failed)}: ${result.exception?.message ?: result.exception ?: "No details"}", Toast.LENGTH_LONG).show()
+            }
         } else {
             Toast.makeText(this, "${getString(R.string.login_success)}!", Toast.LENGTH_SHORT).show()
             AuthStore.appUser = result.user ?: error("How should I understand this?")
