@@ -87,6 +87,7 @@ enum class AppFeature(
         }
     }),
     FEATURE_FORUM(Feature.FORUM, ForumFragment::class.java, R.drawable.ic_forum, R.string.forum),
+    FEATURE_MEMBERS(Feature.MEMBERS, MembersFragment::class.java, R.drawable.ic_members, R.string.members),
     FEATURE_SYSTEM_NOTIFICATIONS(Feature.MESSAGES, SystemNotificationsFragment::class.java, R.drawable.ic_system_notifications, R.string.system_notifications, SystemNotificationsOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest): List<Int> {
             return request.addGetSystemNotificationsRequest()

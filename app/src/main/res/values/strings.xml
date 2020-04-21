@@ -64,5 +64,8 @@
     <string name="see_post">See post</string>
     <string name="see_system_notification">System notification</string>
     <string name="see_notification">Notification</string>
+    <string name="members">Members</string>
+    <string name="online">Online</string>
+    <string name="offline">Offline</string>
 
 </resources>

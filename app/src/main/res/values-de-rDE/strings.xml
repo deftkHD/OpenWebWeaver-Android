@@ -65,4 +65,7 @@
     <string name="see_post">Post ansehen</string>
     <string name="see_system_notification">Systemnachricht</string>
     <string name="see_notification">Mitteilung ansehen</string>
+    <string name="members">Mitglieder</string>
+    <string name="online">Online</string>
+    <string name="offline">Offline</string>
 </resources>
