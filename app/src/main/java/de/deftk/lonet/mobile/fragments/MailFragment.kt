@@ -93,10 +93,12 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
         override fun onPostExecute(result: List<Email>?) {
             progress_mail?.visibility = ProgressBar.INVISIBLE
             mail_swipe_refresh?.isRefreshing = false
-            if (result != null) {
-                mail_list?.adapter = MailAdapter(context ?: error("Oops, no context?"), result)
-            } else {
-                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            if (context != null) {
+                if (result != null) {
+                    mail_list?.adapter = MailAdapter(context!!, result)
+                } else {
+                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
@@ -114,10 +116,12 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
         override fun onPostExecute(result: List<EmailFolder>?) {
             progress_mail?.visibility = ProgressBar.INVISIBLE
             mail_swipe_refresh?.isRefreshing = false
-            if (result != null) {
-                mail_list?.adapter = MailFolderAdapter(context ?: error("Oops, no context?"), result)
-            } else {
-                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            if (context != null) {
+                if (result != null) {
+                    mail_list?.adapter = MailFolderAdapter(context!!, result)
+                } else {
+                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+                }
             }
         }
     }

@@ -58,10 +58,12 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
         override fun onPostExecute(result: List<SystemNotification>?) {
             progress_system_notifications?.visibility = ProgressBar.INVISIBLE
             system_notifications_swipe_refresh.isRefreshing = false
-            if (result != null) {
-                system_notification_list?.adapter = SystemNotificationAdapter(context ?: error("Oops, no context?"), result)
-            } else {
-                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            if (context != null) {
+                if (result != null) {
+                    system_notification_list?.adapter = SystemNotificationAdapter(context!!, result)
+                } else {
+                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+                }
             }
         }
     }

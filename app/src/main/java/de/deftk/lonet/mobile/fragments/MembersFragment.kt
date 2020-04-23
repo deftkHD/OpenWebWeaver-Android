@@ -82,10 +82,12 @@ class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler
         override fun onPostExecute(result: List<IManageable>?) {
             members_swipe_refresh?.isRefreshing = false
             progress_members.visibility = ProgressBar.INVISIBLE
-            if (result != null) {
-                members_list.adapter = MemberAdapter(context ?: error("Oops, no context?"), result)
-            } else {
-                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            if (context != null) {
+                if (result != null) {
+                    members_list.adapter = MemberAdapter(context!!, result)
+                } else {
+                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
@@ -104,10 +106,12 @@ class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler
         override fun onPostExecute(result: List<IManageable>?) {
             members_swipe_refresh?.isRefreshing = false
             progress_members.visibility = ProgressBar.INVISIBLE
-            if (result != null) {
-                members_list.adapter = MemberAdapter(context ?: error("Oops, no context?"), result)
-            } else {
-                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            if (context != null) {
+                if (result != null) {
+                    members_list.adapter = MemberAdapter(context!!, result)
+                } else {
+                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+                }
             }
         }
     }

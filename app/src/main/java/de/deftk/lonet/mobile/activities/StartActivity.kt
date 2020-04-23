@@ -92,7 +92,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.order) { //TODO own abstract menu system
+        when (item.order) { //TODO own abstract menu system -> fix supportActionBar title is reset when rotating
             0 -> {
                 displayOverviewFragment()
             }

@@ -18,7 +18,6 @@ import de.deftk.lonet.mobile.activities.feature.TaskActivity
 import de.deftk.lonet.mobile.adapter.TaskAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import kotlinx.android.synthetic.main.fragment_tasks.*
-import java.lang.Exception
 
 class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
 
@@ -55,12 +54,13 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
         override fun onPostExecute(result: List<Task>?) {
             progress_tasks?.visibility = ProgressBar.INVISIBLE
             tasks_swipe_refresh?.isRefreshing = false
-            if (result != null) {
-                tasks_list?.adapter = TaskAdapter(context ?: error("Oops, no context?"), result)
-            } else {
-                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            if (context != null) {
+                if (result != null) {
+                    tasks_list?.adapter = TaskAdapter(context!!, result)
+                } else {
+                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+                }
             }
-
         }
     }
 }

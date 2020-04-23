@@ -90,10 +90,12 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
         override fun onPostExecute(result: List<ForumPost>?) {
             progress_forum?.visibility = ProgressBar.INVISIBLE
             forum_swipe_refresh?.isRefreshing = false
-            if (result != null) {
-                forum_list?.adapter = ForumPostAdapter(context ?: error("Oops, no context?"), result)
-            } else {
-                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            if (context != null) {
+                if (result != null) {
+                    forum_list?.adapter = ForumPostAdapter(context!!, result)
+                } else {
+                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+                }
             }
         }
     }

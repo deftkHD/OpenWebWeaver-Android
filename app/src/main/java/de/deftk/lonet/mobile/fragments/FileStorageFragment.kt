@@ -90,11 +90,13 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         override fun onPostExecute(result: List<OnlineFile>?) {
             progress_file_storage?.visibility = ProgressBar.INVISIBLE
             file_storage_swipe_refresh?.isRefreshing = false
-            if (result != null) {
-                file_list?.adapter = FileStorageAdapter(context ?: error("Oops, no context?"), result)
-                file_empty.isVisible = result.isEmpty()
-            } else {
-                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            if (context != null) {
+                if (result != null) {
+                    file_list?.adapter = FileStorageAdapter(context!!, result)
+                    file_empty.isVisible = result.isEmpty()
+                } else {
+                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+                }
             }
         }
 
@@ -121,21 +123,23 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         }
 
         override fun onPostExecute(result: File?) {
-            if (result != null) {
-                Toast.makeText(context, getString(R.string.download_finished), Toast.LENGTH_SHORT).show()
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-                    val uri = androidx.core.content.FileProvider.getUriForFile(context!!, context!!.packageName + ".provider", result)
-                    intent.setDataAndType(uri, FileUtil.getMimeType(uri.toString()))
+            if (context != null) {
+                if (result != null) {
+                    Toast.makeText(context, getString(R.string.download_finished), Toast.LENGTH_SHORT).show()
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+                        val uri = androidx.core.content.FileProvider.getUriForFile(context!!, context!!.packageName + ".provider", result)
+                        intent.setDataAndType(uri, FileUtil.getMimeType(uri.toString()))
+                    } else {
+                        val uri = Uri.fromFile(result)
+                        intent.setDataAndType(uri, FileUtil.getMimeType(uri.toString()))
+                    }
+                    startActivity(intent)
                 } else {
-                    val uri = Uri.fromFile(result)
-                    intent.setDataAndType(uri, FileUtil.getMimeType(uri.toString()))
+                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
                 }
-                startActivity(intent)
-            } else {
-                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
             }
         }
 

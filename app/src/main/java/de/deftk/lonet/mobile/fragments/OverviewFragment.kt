@@ -67,10 +67,12 @@ class OverviewFragment: Fragment() {
         override fun onPostExecute(result: List<AbstractOverviewElement>?) {
             progress_overview?.visibility = ProgressBar.GONE
             overview_swipe_refresh?.isRefreshing = false
-            if (result != null) {
-                overview_list?.adapter = OverviewAdapter(context ?: error("Oops, no context?"), result)
-            } else {
-                Toast.makeText(context, "Failed to get overview information", Toast.LENGTH_LONG).show()
+            if (context != null) {
+                if (result != null) {
+                    overview_list?.adapter = OverviewAdapter(context!!, result)
+                } else {
+                    Toast.makeText(context, "Failed to get overview information", Toast.LENGTH_LONG).show()
+                }
             }
         }
     }

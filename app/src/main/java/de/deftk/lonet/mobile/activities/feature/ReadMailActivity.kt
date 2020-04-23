@@ -54,12 +54,12 @@ class ReadMailActivity : AppCompatActivity() {
         }
 
         override fun onPostExecute(result: Email.EmailContent?) {
+            progress_read_mail?.visibility = ProgressBar.INVISIBLE
             if (result != null) {
                 mail_message?.text = result.text ?: result.plainBody
-                progress_read_mail?.visibility = ProgressBar.INVISIBLE
                 //TODO refresh fragment (so subject is not bold anymore)
             } else {
-                Toast.makeText(baseContext, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+                Toast.makeText(this@ReadMailActivity, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
             }
 
         }
