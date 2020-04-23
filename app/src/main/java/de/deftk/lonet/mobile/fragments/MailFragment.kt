@@ -112,10 +112,10 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
         }
 
         override fun onPostExecute(result: List<EmailFolder>?) {
+            progress_mail?.visibility = ProgressBar.INVISIBLE
+            mail_swipe_refresh?.isRefreshing = false
             if (result != null) {
-                progress_mail?.visibility = ProgressBar.INVISIBLE
                 mail_list?.adapter = MailFolderAdapter(context ?: error("Oops, no context?"), result)
-                mail_swipe_refresh?.isRefreshing = false
             } else {
                 Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
             }
