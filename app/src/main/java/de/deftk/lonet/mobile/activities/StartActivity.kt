@@ -19,10 +19,9 @@ import de.deftk.lonet.api.LoNet
 import de.deftk.lonet.api.model.Feature
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
-import de.deftk.lonet.mobile.abstract.FeatureFragment
 import de.deftk.lonet.mobile.abstract.IBackHandler
 import de.deftk.lonet.mobile.feature.AppFeature
-import de.deftk.lonet.mobile.fragments.*
+import de.deftk.lonet.mobile.fragments.OverviewFragment
 import de.deftk.lonet.mobile.utils.LoggingRequestHandler
 import kotlinx.android.synthetic.main.activity_start.*
 
@@ -42,7 +41,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
 
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = AuthStore.appUser.fullName ?: getString(R.string.unknown_name)
-        navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = AuthStore.appUser.login
+        navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = AuthStore.appUser.getLogin()
         navigationView.setNavigationItemSelectedListener(this)
         navigationView.menu.add(R.id.main_group, 0, 0, R.string.overview).apply {
             isCheckable = true
@@ -136,7 +135,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         AuthStore.appUser.permissions.forEach { permission ->
             Feature.getAvailableFeatures(permission).filter { !features.contains(it) }.forEach { features.add(it) }
         }
-        AuthStore.appUser.memberships.forEach { membership ->
+        AuthStore.appUser.getContext().getGroups().forEach { membership ->
             membership.memberPermissions.forEach { permission ->
                 Feature.getAvailableFeatures(permission).filter { !features.contains(it) }.forEach { features.add(it) }
             }

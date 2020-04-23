@@ -28,8 +28,8 @@ class TaskActivity : AppCompatActivity() {
 
         if (task != null) {
             task_title.text = task.title
-            task_author.text = task.creationMember.name ?: task.creationMember.fullName ?: task.creationMember.login
-            task_group.text = task.group.name ?: task.group.login
+            task_author.text = task.creationMember.getName()
+            task_group.text = task.operator.getName()
             task_created.text = String.format(getString(R.string.created_date), DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.creationDate))
             task_due.text = String.format(getString(R.string.until_date), if (task.endDate != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.endDate!!) else getString(R.string.not_set))
             task_detail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description))

@@ -33,9 +33,9 @@ enum class AppFeature(
                 if (index % 2 == 1) {
                     val focus = response.values.toList()[index - 1]
                     check(focus.get("method").asString == "set_focus")
-                    val member = AuthStore.getMember(focus.get("user").asJsonObject.get("login").asString)
+                    val operator = AuthStore.appUser.getContext().getOperator(focus.get("user").asJsonObject.get("login").asString)!!
                     subResponse.get("entries").asJsonArray.forEach { taskResponse ->
-                        tasks.add(Task(taskResponse.asJsonObject, member))
+                        tasks.add(Task.fromJson(taskResponse.asJsonObject, operator))
                     }
                 }
             }
@@ -49,7 +49,7 @@ enum class AppFeature(
 
         override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
             val subResponse = response.values.toList()[1]
-            val quota = Quota(subResponse.get("quota").asJsonObject)
+            val quota = Quota.fromJson(subResponse.get("quota").asJsonObject)
             val unread = subResponse.get("unread_messages").asInt
             return MailOverview(quota, unread)
         }
@@ -61,7 +61,7 @@ enum class AppFeature(
 
         override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
             val subResponse = response.values.toList()[1]
-            val quota = Quota(subResponse.get("quota").asJsonObject)
+            val quota = Quota.fromJson(subResponse.get("quota").asJsonObject)
             return FileStorageOverview(quota)
         }
     }),
@@ -77,9 +77,9 @@ enum class AppFeature(
                 if (index % 2 == 1) {
                     val focus = response.values.toList()[index - 1]
                     check(focus.get("method").asString == "set_focus")
-                    val member = AuthStore.getMember(focus.get("user").asJsonObject.get("login").asString)
+                    val operator = AuthStore.appUser.getContext().getOperator(focus.get("user").asJsonObject.get("login").asString)!!
                     subResponse.get("entries").asJsonArray.forEach { taskResponse ->
-                        notifications.add(Notification(taskResponse.asJsonObject, member))
+                        notifications.add(Notification.fromJson(taskResponse.asJsonObject, operator))
                     }
                 }
             }
@@ -97,7 +97,7 @@ enum class AppFeature(
             val subResponse = response.values.toList()[1]
             val systemNotifications = mutableListOf<SystemNotification>()
             subResponse.get("messages").asJsonArray.forEach { messageResponse ->
-                systemNotifications.add(SystemNotification(messageResponse.asJsonObject))
+                systemNotifications.add(SystemNotification.fromJson(messageResponse.asJsonObject, AuthStore.appUser))
             }
             return NotificationsOverview(systemNotifications.count { !it.read })
         }

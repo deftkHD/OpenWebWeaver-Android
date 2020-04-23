@@ -27,7 +27,7 @@ class NotificationAdapter(context: Context, elements: List<Notification>): Array
         val item = getItem(position) ?: return listItemView
 
         listItemView.findViewById<TextView>(R.id.notification_title).text = item.title
-        listItemView.findViewById<TextView>(R.id.notification_author).text = item.creationMember.name ?: item.creationMember.login
+        listItemView.findViewById<TextView>(R.id.notification_author).text = item.creationMember.getName()
         listItemView.findViewById<TextView>(R.id.notification_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.creationDate)
         listItemView.findViewById<View>(R.id.notification_accent).setBackgroundResource(notificationColorMap.getValue(item.color))
         return listItemView

@@ -1,8 +1,8 @@
 package de.deftk.lonet.mobile.activities.feature
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
+import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.adapter.SystemNotificationAdapter
@@ -29,8 +29,8 @@ class SystemNotificationActivity : AppCompatActivity() {
 
         if (notification != null) {
             system_notification_title.text = getString(SystemNotificationAdapter.typeTranslationMap.getValue(notification.messageType))
-            system_notification_author.text = notification.member.name ?: notification.member.login
-            system_notification_group.text = notification.group.name ?: notification.group.login
+            system_notification_author.text = notification.member.getName()
+            system_notification_group.text = notification.group.getName()
             system_notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.date)
             system_notification_message.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.message))
             system_notification_message.movementMethod = LinkMovementMethod.getInstance()

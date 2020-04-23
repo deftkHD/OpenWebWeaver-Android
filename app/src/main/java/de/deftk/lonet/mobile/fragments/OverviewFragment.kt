@@ -45,7 +45,7 @@ class OverviewFragment: Fragment() {
         // a bit inefficient (although it gets cached later)
         override fun doInBackground(vararg params: Boolean?): List<AbstractOverviewElement>? {
             val elements = mutableListOf<AbstractOverviewElement>()
-            val request = UserApiRequest(AuthStore.appUser.responsibleHost!!, AuthStore.appUser) // could be easier
+            val request = UserApiRequest(AuthStore.appUser)
             val idMap = mutableMapOf<AppFeature, List<Int>>()
             AppFeature.values().forEach { feature ->
                 if (feature.overviewBuilder != null) {

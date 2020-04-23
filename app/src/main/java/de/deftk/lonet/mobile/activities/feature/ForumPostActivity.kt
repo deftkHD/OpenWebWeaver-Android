@@ -31,7 +31,7 @@ class ForumPostActivity : AppCompatActivity() {
         if (post != null) {
             forum_post_image.setImageResource(ForumPostAdapter.postIconMap[post.icon] ?: R.drawable.ic_forum_post_unknown)
             forum_post_title.text = post.title
-            forum_post_author.text = post.creationMember.name ?: post.creationMember.login
+            forum_post_author.text = post.creationMember.getName()
             forum_post_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.creationDate)
             forum_post_text.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(post.text))
             forum_post_text.movementMethod = LinkMovementMethod.getInstance()

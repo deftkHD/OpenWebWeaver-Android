@@ -24,7 +24,7 @@ class MailAdapter(context: Context, elements: List<Email>): ArrayAdapter<Email>(
             subjectView.setTypeface(null, Typeface.NORMAL)
         else
             subjectView.setTypeface(null, Typeface.BOLD)
-        listItemView.findViewById<TextView>(R.id.mail_author).text = item.from?.joinToString { it.name } ?: AuthStore.appUser.name ?: "" //TODO not verified if this is useful
+        listItemView.findViewById<TextView>(R.id.mail_author).text = item.from?.joinToString { it.name } ?: AuthStore.appUser.getName() //TODO not verified if this is useful
         listItemView.findViewById<TextView>(R.id.mail_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.date)
 
         return listItemView

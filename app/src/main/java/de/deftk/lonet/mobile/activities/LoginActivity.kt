@@ -80,7 +80,7 @@ class LoginActivity : AppCompatActivity(), LoginTask.ILoginCallback {
             Toast.makeText(this, "${getString(R.string.login_success)}!", Toast.LENGTH_SHORT).show()
             AuthStore.appUser = result.user ?: error("How should I understand this?")
             if (result.saveKey) {
-                AuthStore.saveUsername(result.user.login, this)
+                AuthStore.saveUsername(result.user.getLogin(), this)
                 AuthStore.saveToken(result.user.authKey, this)
             }
 

@@ -1,13 +1,8 @@
 package de.deftk.lonet.mobile
 
 import android.content.Context
-import android.content.Intent
-import android.os.AsyncTask
 import android.util.Base64
-import de.deftk.lonet.api.model.Member
 import de.deftk.lonet.api.model.User
-import de.deftk.lonet.mobile.activities.LoginActivity
-import de.deftk.lonet.mobile.activities.MainActivity
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
@@ -30,12 +25,6 @@ object AuthStore {
     private val random = SecureRandom()
 
     lateinit var appUser: User
-
-    fun getMember(login: String): Member {
-        if (login == appUser.login)
-            return appUser
-        return appUser.memberships.first { it.login == login }
-    }
 
     fun getSavedUsername(context: Context): String? {
         val prefs = context.getSharedPreferences(PREFERENCE_NAME, 0)

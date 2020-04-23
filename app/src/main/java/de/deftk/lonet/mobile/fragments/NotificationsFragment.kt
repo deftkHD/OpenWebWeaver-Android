@@ -9,9 +9,7 @@ import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import de.deftk.lonet.api.model.Member
 import de.deftk.lonet.api.model.feature.Notification
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R

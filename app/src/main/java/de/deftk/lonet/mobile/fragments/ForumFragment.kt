@@ -11,7 +11,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.Feature
-import de.deftk.lonet.api.model.Member
+import de.deftk.lonet.api.model.Group
 import de.deftk.lonet.api.model.feature.forum.ForumPost
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
@@ -27,7 +27,7 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
 
     //TODO icons for pinned & locked
 
-    private var currentForum: Member? = null
+    private var currentGroup: Group? = null
     private lateinit var list: ListView
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var progress: ProgressBar
@@ -38,11 +38,11 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
         progress = view.findViewById(R.id.progress_forum)
         swipeRefresh = view.findViewById(R.id.forum_swipe_refresh)
         swipeRefresh.setOnRefreshListener {
-            navigate(currentForum, true)
+            navigate(currentGroup, true)
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val item = list.getItemAtPosition(position)
-            if (item is Member) {
+            if (item is Group) {
                 navigate(item, false)
             } else {
                 item as ForumPost
@@ -55,11 +55,11 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
         return view
     }
 
-    private fun navigate(forum: Member?, overwriteCache: Boolean) {
-        currentForum = forum
+    private fun navigate(forum: Group?, overwriteCache: Boolean) {
+        currentGroup = forum
         if (forum == null) {
             list.adapter = ForumAdapter(context ?: error("Oops, no context?"),
-                AuthStore.appUser.memberships.filter { Feature.FORUM.isAvailable(it.permissions) }) //TODO not sure if i should include user itself; filter by permission (but it should work...)
+                AuthStore.appUser.getContext().getGroups().filter { Feature.FORUM.isAvailable(it.permissions) }) //TODO not sure if i should include user itself; filter by permission (but it should work...)
             swipeRefresh.isRefreshing = false
             progress.visibility = ProgressBar.INVISIBLE
         } else {
@@ -69,7 +69,7 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
     }
 
     override fun onBackPressed(): Boolean {
-        if (currentForum != null) {
+        if (currentGroup != null) {
             navigate(null, false)
             return true
         }
@@ -80,7 +80,7 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
 
         override fun doInBackground(vararg params: Any): List<ForumPost>? {
             return try {
-                (params[0] as Member).getForumPosts(AuthStore.appUser, overwriteCache = params[1] as Boolean)
+                (params[0] as Group).getForumPosts(overwriteCache = params[1] as Boolean)
             } catch (e: Exception) {
                 e.printStackTrace()
                 null

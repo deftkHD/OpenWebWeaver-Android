@@ -29,7 +29,7 @@ class ForumPostAdapter(context: Context, elements: List<ForumPost>): ArrayAdapte
         val item = getItem(position) ?: return listItemView
         listItemView.findViewById<ImageView>(R.id.forum_post_image).setImageResource(postIconMap[item.icon] ?: R.drawable.ic_forum_post_unknown)
         listItemView.findViewById<TextView>(R.id.forum_post_title).text = item.title
-        listItemView.findViewById<TextView>(R.id.forum_post_author).text = item.creationMember.name ?: item.creationMember.login
+        listItemView.findViewById<TextView>(R.id.forum_post_author).text = item.creationMember.getName()
         listItemView.findViewById<TextView>(R.id.forum_post_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.creationDate)
         return listItemView
     }

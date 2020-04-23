@@ -10,7 +10,8 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import de.deftk.lonet.api.model.Member
+import de.deftk.lonet.api.model.Group
+import de.deftk.lonet.api.model.abstract.IManageable
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.abstract.FeatureFragment
@@ -21,7 +22,7 @@ import kotlinx.android.synthetic.main.fragment_members.*
 
 class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler {
 
-    private var currentGroup: Member? = null
+    private var currentGroup: Group? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         if (currentGroup == null)
@@ -35,7 +36,7 @@ class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val item = list.getItemAtPosition(position)
-            if (item is Member && !item.isRemote()) {
+            if (item is Group) {
                 navigate(item)
             }
         }
@@ -54,31 +55,31 @@ class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler
         return false
     }
 
-    private fun navigate(group: Member?) {
+    private fun navigate(group: Group?) {
         currentGroup = group
         members_list?.adapter = null
         if (group == null) {
             (activity as AppCompatActivity).supportActionBar?.title = getString(R.string.members)
             MemberGroupLoadingTask().execute()
         } else {
-            (activity as AppCompatActivity).supportActionBar?.title = group.name ?: group.login
+            (activity as AppCompatActivity).supportActionBar?.title = group.getName()
             MemberLoadingTask().execute(group)
         }
     }
 
     // does not need it's own task in theory
-    private inner class MemberGroupLoadingTask: AsyncTask<Member, Void, List<Member>?>() {
+    private inner class MemberGroupLoadingTask: AsyncTask<Group, Void, List<IManageable>?>() {
 
-        override fun doInBackground(vararg params: Member?): List<Member>? {
+        override fun doInBackground(vararg params: Group?): List<IManageable>? {
             return try {
-                AuthStore.appUser.memberships.sortedBy { it.name ?: it.login }
+                AuthStore.appUser.getContext().getGroups().sortedBy { it.getName() }
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
             }
         }
 
-        override fun onPostExecute(result: List<Member>?) {
+        override fun onPostExecute(result: List<IManageable>?) {
             members_swipe_refresh?.isRefreshing = false
             progress_members.visibility = ProgressBar.INVISIBLE
             if (result != null) {
@@ -89,18 +90,18 @@ class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler
         }
     }
 
-    private inner class MemberLoadingTask: AsyncTask<Member, Void, List<Member>?>() {
+    private inner class MemberLoadingTask: AsyncTask<Group, Void, List<IManageable>?>() {
 
-        override fun doInBackground(vararg params: Member?): List<Member>? {
+        override fun doInBackground(vararg params: Group?): List<IManageable>? {
             return try {
-                params[0]?.getMembers(AuthStore.appUser)?.sortedBy { it.name ?: it.login }
+                params[0]?.getMembers()?.sortedBy { it.getName() }
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
             }
         }
 
-        override fun onPostExecute(result: List<Member>?) {
+        override fun onPostExecute(result: List<IManageable>?) {
             members_swipe_refresh?.isRefreshing = false
             progress_members.visibility = ProgressBar.INVISIBLE
             if (result != null) {

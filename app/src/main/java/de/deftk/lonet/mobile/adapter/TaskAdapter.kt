@@ -29,7 +29,7 @@ class TaskAdapter(context: Context, tasks: List<Task>): ArrayAdapter<Task>(conte
             else
                 titleView.paintFlags = titleView.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
             // author
-            listItemView.findViewById<TextView>(R.id.task_author).text = task.creationMember.name ?: task.creationMember.fullName ?: task.creationMember.login
+            listItemView.findViewById<TextView>(R.id.task_author).text = task.creationMember.getName()
             // completed
             if (task.completed)
                 listItemView.findViewById<ImageView>(R.id.task_completed).setImageResource(R.drawable.ic_task_completed)

@@ -83,7 +83,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
     private inner class LoadEmailsTask: AsyncTask<EmailFolder, Void, List<Email>?>() {
         override fun doInBackground(vararg params: EmailFolder): List<Email>? {
             return try {
-                params[0].getEmails(AuthStore.appUser, true) // always want to get the newest mails
+                params[0].getEmails(true) // always want to get the newest mails
             } catch (e: Exception) {
                 e.printStackTrace()
                 null

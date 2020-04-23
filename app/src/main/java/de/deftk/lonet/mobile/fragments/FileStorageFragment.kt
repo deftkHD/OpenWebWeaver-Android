@@ -14,9 +14,8 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import de.deftk.lonet.api.model.feature.files.FileProvider
+import de.deftk.lonet.api.model.feature.abstract.IFilePrimitive
 import de.deftk.lonet.api.model.feature.files.OnlineFile
-import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.abstract.FeatureFragment
 import de.deftk.lonet.mobile.abstract.IBackHandler
@@ -32,7 +31,7 @@ import java.util.*
 
 class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBackHandler {
 
-    private val history = Stack<FileProvider>()
+    private val history = Stack<IFilePrimitive>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = inflater.inflate(R.layout.fragment_file_storage, container, false)
@@ -61,7 +60,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         return view
     }
 
-    private fun navigate(directory: FileProvider) {
+    private fun navigate(directory: IFilePrimitive) {
         file_list?.adapter = null
         progress_file_storage?.visibility = ProgressBar.VISIBLE
         DirectoryLoadingTask().execute(directory)
@@ -77,11 +76,11 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         return false
     }
 
-    private inner class DirectoryLoadingTask: AsyncTask<FileProvider, Void, List<OnlineFile>?>() {
+    private inner class DirectoryLoadingTask: AsyncTask<IFilePrimitive, Void, List<OnlineFile>?>() {
 
-        override fun doInBackground(vararg params: FileProvider): List<OnlineFile>? {
+        override fun doInBackground(vararg params: IFilePrimitive): List<OnlineFile>? {
             return try {
-                params[0].getFileStorageFiles(AuthStore.appUser, true) // don't want to cache file request here
+                params[0].getFileStorageFiles(true) // don't want to cache file request here
                     .sortedByDescending { it.type }
             } catch (e: Exception) {
                 null
@@ -106,7 +105,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
 
         override fun doInBackground(vararg params: OnlineFile): File? {
             return try {
-                 val url = URL(params[0].downloadUrl ?: error("Server did not return download url!"))
+                 val url = URL(params[0].getTmpDownloadUrl(true).downloadUrl)
                 val targetFile = File(context?.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: error("no download directory?"), params[0].name.replace("/", "_"))
                 if (targetFile.exists()) targetFile.delete()
                 url.openStream().use { input ->

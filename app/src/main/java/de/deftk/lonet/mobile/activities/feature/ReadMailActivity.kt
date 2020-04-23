@@ -30,8 +30,8 @@ class ReadMailActivity : AppCompatActivity() {
 
         if (mail != null) {
             mail_subject?.text = mail.subject
-            mail_author?.text = mail.from?.joinToString { it.name } ?: AuthStore.appUser.name ?: ""
-            mail_author_address?.text = mail.from?.joinToString { it.address } ?: AuthStore.appUser.login
+            mail_author?.text = mail.from?.joinToString { it.name } ?: AuthStore.appUser.getName()
+            mail_author_address?.text = mail.from?.joinToString { it.address } ?: AuthStore.appUser.getLogin()
             mail_date?.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(mail.date)
             MailContentLoader().execute(mail)
         }
@@ -47,7 +47,7 @@ class ReadMailActivity : AppCompatActivity() {
 
         override fun doInBackground(vararg params: Email): Email.EmailContent? {
             return try {
-                params[0].read(AuthStore.appUser)
+                params[0].read()
             } catch (e: Exception) {
                 null
             }

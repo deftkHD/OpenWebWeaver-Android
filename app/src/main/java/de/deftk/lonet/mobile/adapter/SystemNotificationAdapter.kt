@@ -28,7 +28,7 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
         val item = getItem(position) ?: return listItemView
 
         listItemView.findViewById<TextView>(R.id.system_notification_title).text = context.getString(typeTranslationMap.getValue(item.messageType))
-        listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.group.type != -1) item.group.name ?: item.group.login else item.member.name ?: item.member.login
+        listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.group.getType() != -1) item.group.getName() else item.member.getName()
         listItemView.findViewById<TextView>(R.id.system_notification_date).text = DateFormat.getDateInstance().format(item.date)
         return listItemView
     }
