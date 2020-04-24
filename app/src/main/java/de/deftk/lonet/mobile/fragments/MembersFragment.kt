@@ -58,13 +58,17 @@ class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler
     private fun navigate(group: Group?) {
         currentGroup = group
         members_list?.adapter = null
+        (activity as AppCompatActivity?)?.supportActionBar?.title = getTitle()
         if (group == null) {
-            (activity as AppCompatActivity).supportActionBar?.title = getString(R.string.members)
             MemberGroupLoadingTask().execute()
         } else {
-            (activity as AppCompatActivity).supportActionBar?.title = group.getName()
             MemberLoadingTask().execute(group)
         }
+    }
+
+    override fun getTitle(): String {
+        return if (currentGroup == null) getString(R.string.members)
+        else currentGroup!!.getName()
     }
 
     // does not need it's own task in theory

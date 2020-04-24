@@ -14,21 +14,28 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import de.deftk.lonet.api.LoNet
 import de.deftk.lonet.api.model.Feature
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.abstract.IBackHandler
+import de.deftk.lonet.mobile.abstract.IFragmentHandler
+import de.deftk.lonet.mobile.abstract.menu.AbstractNavigableMenuItem
+import de.deftk.lonet.mobile.abstract.menu.IMenuClickable
+import de.deftk.lonet.mobile.abstract.menu.IMenuItem
+import de.deftk.lonet.mobile.abstract.menu.IMenuNavigable
+import de.deftk.lonet.mobile.abstract.menu.start.FeatureMenuItem
 import de.deftk.lonet.mobile.feature.AppFeature
 import de.deftk.lonet.mobile.fragments.OverviewFragment
 import de.deftk.lonet.mobile.utils.LoggingRequestHandler
 import kotlinx.android.synthetic.main.activity_start.*
 
-class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, IFragmentHandler {
 
     private val drawer by lazy { findViewById<DrawerLayout>(R.id.drawer_layout) }
-    private val menuMap = mutableMapOf<Int, Feature>()
+    private val menuMap = mutableMapOf<Int, IMenuItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,37 +50,60 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = AuthStore.appUser.fullName ?: getString(R.string.unknown_name)
         navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = AuthStore.appUser.getLogin()
         navigationView.setNavigationItemSelectedListener(this)
-        navigationView.menu.add(R.id.main_group, 0, 0, R.string.overview).apply {
-            isCheckable = true
-            setIcon(R.drawable.ic_overview)
-        }
-        getAllFeatures().withIndex().forEach { (index, apiFeature) ->
-            val featureImpl = AppFeature.getByAPIFeature(apiFeature)
-            if (featureImpl != null) {
-                val item = navigationView.menu.add(R.id.feature_group, index + 1, featureImpl.ordinal + 1, featureImpl.translationResource)
-                item.isCheckable = true
-                item.setIcon(featureImpl.drawableResource)
-                menuMap[index] = apiFeature
+        addMenuItem(object : AbstractNavigableMenuItem(R.string.overview, R.id.main_group, R.drawable.ic_overview) {
+            override fun onClick(activity: AppCompatActivity) {
+                displayOverviewFragment()
             }
+        })
+        getAllFeatures().forEach { apiFeature ->
+            val appFeature = AppFeature.getByAPIFeature(apiFeature)
+            if (appFeature != null)
+                addMenuItem(FeatureMenuItem(appFeature))
         }
-        navigationView.menu.add(R.id.utility_group, navigationView.menu.size(), navigationView.menu.size(), R.string.open_website).apply {
-            setIcon(R.drawable.ic_open_website)
-        }
-        navigationView.menu.add(R.id.utility_group, navigationView.menu.size(), navigationView.menu.size(), R.string.settings).apply {
-            setIcon(R.drawable.ic_settings)
-        }
-        navigationView.menu.add(R.id.utility_group, navigationView.menu.size(), navigationView.menu.size(), R.string.logout).apply {
-            setIcon(R.drawable.ic_logout)
-        }
+        addMenuItem(object : AbstractNavigableMenuItem(R.string.open_website, R.id.utility_group, R.drawable.ic_open_website) {
+            override fun onClick(activity: AppCompatActivity) {
+                val listener = DialogInterface.OnClickListener { _, which ->
+                    when (which) {
+                        DialogInterface.BUTTON_POSITIVE -> {
+                            val preferences = getSharedPreferences(AuthStore.PREFERENCE_NAME, 0)
+                            LogoutTask().execute(preferences.contains("token"))
+                        }
+                        DialogInterface.BUTTON_NEGATIVE -> { /* do nothing */ }
+                    }
+                }
+                AlertDialog.Builder(this@StartActivity).setMessage(R.string.logout_description).setPositiveButton(R.string.yes, listener).setNegativeButton(R.string.no, listener).show()
+            }
+        })
+        addMenuItem(object : AbstractNavigableMenuItem(R.string.settings, R.id.utility_group, R.drawable.ic_settings) {
+            override fun onClick(activity: AppCompatActivity) {
+                Toast.makeText(this@StartActivity, "Not implemented yet", Toast.LENGTH_SHORT).show()
+            }
+        })
+        addMenuItem(object : AbstractNavigableMenuItem(R.string.logout, R.id.utility_group, R.drawable.ic_logout) {
+            override fun onClick(activity: AppCompatActivity) {
+                GenerateAutologinUrlTask().execute()
+            }
+        })
 
         val toggle = ActionBarDrawerToggle(this, drawer, toolbar, R.string.open_navigation_drawer, R.string.close_navigation_drawer)
         drawer.addDrawerListener(toggle)
         toggle.syncState()
 
         if (savedInstanceState == null) {
-            displayOverviewFragment()
+            (menuMap.values.first { it.getName() == R.string.overview } as IMenuNavigable).onClick(this)
+            (menuMap.values.first { it.getName() == R.string.overview } as IMenuNavigable).onClick(this)
         }
         navigationView.menu.getItem(0).isChecked = true
+    }
+
+    private fun addMenuItem(baseItem: IMenuItem) {
+        val menu = nav_view?.menu ?: return
+        val id = menu.size()
+        val item = menu.add(baseItem.getGroup(), id, id, baseItem.getName())
+        val isCheckable = baseItem is IMenuNavigable
+        item.isCheckable = isCheckable
+        item.setIcon(baseItem.getIcon())
+        menuMap[id] = baseItem
     }
 
     override fun onBackPressed() {
@@ -85,40 +115,17 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         if (currentFragment is IBackHandler && currentFragment.onBackPressed())
             return
         if (OverviewFragment::class.java != currentFragment!!::class.java) {
-            displayOverviewFragment()
+            (menuMap.values.first { it.getName() == R.string.overview } as IMenuNavigable).onClick(this)
             return
         }
         super.onBackPressed()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.order) { //TODO own abstract menu system -> fix supportActionBar title is reset when rotating
-            0 -> {
-                displayOverviewFragment()
-            }
-            nav_view.menu.size() - 1 -> {
-                val listener = DialogInterface.OnClickListener { _, which ->
-                    when (which) {
-                        DialogInterface.BUTTON_POSITIVE -> {
-                            val preferences = getSharedPreferences(AuthStore.PREFERENCE_NAME, 0)
-                            LogoutTask().execute(preferences.contains("token"))
-                        }
-                        DialogInterface.BUTTON_NEGATIVE -> { /* do nothing */ }
-                    }
-                }
-                AlertDialog.Builder(this).setMessage(R.string.logout_description).setPositiveButton(R.string.yes, listener).setNegativeButton(R.string.no, listener).show()
-            }
-            nav_view.menu.size() - 2 -> {
-                Toast.makeText(this, "Not implemented yet", Toast.LENGTH_SHORT).show()
-            }
-            nav_view.menu.size() - 3 -> {
-                GenerateAutologinUrlTask().execute()
-            }
-            else -> {
-                val clickedApiFeature = menuMap[item.itemId - 1] ?: return false
-                val appFeature = AppFeature.getByAPIFeature(clickedApiFeature) ?: return false
-                displayFeatureFragment(appFeature)
-            }
+        val baseItem = menuMap[item.itemId] ?: return false
+        if (baseItem is IMenuClickable) {
+            baseItem.onClick(this)
+            item.isChecked = baseItem is IMenuNavigable
         }
         drawer.closeDrawer(GravityCompat.START)
         return true
@@ -128,6 +135,10 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         supportFragmentManager.beginTransaction().replace(R.id.fragment_container, appFeature.fragmentClass.newInstance()).commit()
         supportActionBar?.title = getString(appFeature.translationResource)
         nav_view.menu.getItem(appFeature.ordinal + 1).isChecked = true
+    }
+
+    override fun displayFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, fragment).commit()
     }
 
     private fun getAllFeatures(): List<Feature> {
@@ -143,6 +154,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         return features
     }
 
+    @Deprecated("too simple")
     private fun displayOverviewFragment() {
         supportFragmentManager.beginTransaction().replace(R.id.fragment_container, OverviewFragment()).commit()
         supportActionBar?.title = getString(R.string.overview)

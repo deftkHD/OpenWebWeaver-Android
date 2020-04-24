@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.feature.abstract.IFilePrimitive
@@ -78,6 +79,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         progress_file_storage?.visibility = ProgressBar.VISIBLE
         DirectoryLoadingTask().execute(directory)
         history.push(directory)
+        (activity as AppCompatActivity).supportActionBar?.title = getTitle()
     }
 
     override fun onBackPressed(): Boolean {
@@ -92,6 +94,13 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putSerializable(SAVE_HISTORY, history)
+    }
+
+    override fun getTitle(): String {
+        val currentDirectory = if(history.isEmpty()) null else history.peek()
+        return if (currentDirectory is OnlineFile)
+            currentDirectory.name
+        else getString(R.string.file_storage)
     }
 
     private inner class DirectoryLoadingTask: AsyncTask<IFilePrimitive, Void, List<OnlineFile>?>() {

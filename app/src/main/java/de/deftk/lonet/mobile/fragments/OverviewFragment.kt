@@ -8,19 +8,19 @@ import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.request.UserApiRequest
 import de.deftk.lonet.api.response.ResponseUtil
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
+import de.deftk.lonet.mobile.abstract.StartFragment
 import de.deftk.lonet.mobile.activities.StartActivity
 import de.deftk.lonet.mobile.adapter.OverviewAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import de.deftk.lonet.mobile.feature.overview.AbstractOverviewElement
 import kotlinx.android.synthetic.main.fragment_overview.*
 
-class OverviewFragment: Fragment() {
+class OverviewFragment: StartFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, bundle: Bundle?): View {
         OverviewLoader().execute(false)
@@ -38,6 +38,10 @@ class OverviewFragment: Fragment() {
                 (activity as StartActivity).displayFeatureFragment(feature)
         }
         return view
+    }
+
+    override fun getTitle(): String {
+        return getString(R.string.overview)
     }
 
     private inner class OverviewLoader: AsyncTask<Boolean, Void, List<AbstractOverviewElement>?>() {

@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.Feature
 import de.deftk.lonet.api.model.Group
@@ -65,6 +66,7 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
 
     private fun navigate(forum: Group?, overwriteCache: Boolean) {
         currentGroup = forum
+        (activity as AppCompatActivity).supportActionBar?.title = getTitle()
         if (forum == null) {
             list.adapter = ForumAdapter(context ?: error("Oops, no context?"),
                 AuthStore.appUser.getContext().getGroups().filter { Feature.FORUM.isAvailable(it.permissions) })
@@ -86,6 +88,11 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putSerializable(SAVE_CURRENT_GROUP, currentGroup)
+    }
+
+    override fun getTitle(): String {
+        return if (currentGroup == null) getString(R.string.forum)
+        else currentGroup!!.getName()
     }
 
     private inner class EntryLoader : AsyncTask<Any, Void, List<ForumPost>?>() {

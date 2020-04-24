@@ -77,11 +77,10 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
     private fun navigate(folder: EmailFolder?) {
         currentDirectory = folder
         mail_list?.adapter = null
+        (activity as AppCompatActivity?)?.supportActionBar?.title = getTitle()
         if (folder == null) {
-            (activity as AppCompatActivity).supportActionBar?.title = getString(R.string.email)
             LoadEmailFoldersTask().execute()
         } else {
-            (activity as AppCompatActivity).supportActionBar?.title = MailFolderAdapter.getDefaultFolderTranslation(context ?: error("Oops, no context?"), folder)
             LoadEmailsTask().execute(folder)
         }
     }
@@ -89,6 +88,11 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putSerializable(SAVE_CURRENT_DIRECTORY, currentDirectory)
+    }
+
+    override fun getTitle(): String {
+        return if (currentDirectory == null) getString(R.string.mail)
+        else MailFolderAdapter.getDefaultFolderTranslation(context ?: error("Oops, no context?"), currentDirectory!!)
     }
 
     private inner class LoadEmailsTask: AsyncTask<EmailFolder, Void, List<Email>?>() {
