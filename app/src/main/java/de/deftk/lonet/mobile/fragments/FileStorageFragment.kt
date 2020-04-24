@@ -33,7 +33,19 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
 
     private val history = Stack<IFilePrimitive>()
 
+    companion object {
+        private const val SAVE_HISTORY = "de.deftk.lonet.mobile.files.history"
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        if (savedInstanceState != null) {
+            val history = savedInstanceState.getSerializable(SAVE_HISTORY) as Stack<*>
+            history.forEach {
+                this.history.push(it as IFilePrimitive)
+            }
+            println()
+        }
+
         val view = inflater.inflate(R.layout.fragment_file_storage, container, false)
         val list = view.findViewById<ListView>(R.id.file_list)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.file_storage_swipe_refresh)
@@ -56,7 +68,8 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
             true
         }
         if (history.isEmpty())
-            navigate(RootFileProvider())
+            history.push(RootFileProvider())
+        navigate(history.pop())
         return view
     }
 
@@ -74,6 +87,11 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
             return true
         }
         return false
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putSerializable(SAVE_HISTORY, history)
     }
 
     private inner class DirectoryLoadingTask: AsyncTask<IFilePrimitive, Void, List<OnlineFile>?>() {

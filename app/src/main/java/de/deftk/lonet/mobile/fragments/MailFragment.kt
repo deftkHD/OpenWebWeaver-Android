@@ -29,11 +29,17 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
     //TODO context menu
     //TODO write emails
 
+    companion object {
+        private const val SAVE_CURRENT_DIRECTORY = "de.deftk.lonet.mobile.mail.current_directory"
+    }
+
     private var currentDirectory: EmailFolder? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        if (currentDirectory == null)
-            navigate(null)
+        if (savedInstanceState != null) {
+            currentDirectory = savedInstanceState.getSerializable(SAVE_CURRENT_DIRECTORY) as EmailFolder?
+        }
+        navigate(currentDirectory)
         val view = inflater.inflate(R.layout.fragment_mail, container, false)
         val list = view.findViewById<ListView>(R.id.mail_list)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.mail_swipe_refresh)
@@ -78,6 +84,11 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
             (activity as AppCompatActivity).supportActionBar?.title = MailFolderAdapter.getDefaultFolderTranslation(context ?: error("Oops, no context?"), folder)
             LoadEmailsTask().execute(folder)
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putSerializable(SAVE_CURRENT_DIRECTORY, currentDirectory)
     }
 
     private inner class LoadEmailsTask: AsyncTask<EmailFolder, Void, List<Email>?>() {

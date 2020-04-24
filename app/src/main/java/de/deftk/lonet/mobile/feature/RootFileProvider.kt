@@ -6,10 +6,11 @@ import de.deftk.lonet.api.model.abstract.AbstractOperator
 import de.deftk.lonet.api.model.feature.abstract.IFilePrimitive
 import de.deftk.lonet.api.model.feature.files.OnlineFile
 import de.deftk.lonet.mobile.AuthStore
+import java.io.Serializable
 import java.util.*
 
 @Deprecated("use own adapter")
-class RootFileProvider : IFilePrimitive {
+class RootFileProvider : IFilePrimitive, Serializable { //TODO serializable should be fixed inside api
 
     override fun getFileStorageFiles(overwriteCache: Boolean): List<OnlineFile> {
         return listOf(

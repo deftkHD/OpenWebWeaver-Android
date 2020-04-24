@@ -27,12 +27,20 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
 
     //TODO icons for pinned & locked
 
+    companion object {
+        private const val SAVE_CURRENT_GROUP = "de.deftk.lonet.mobile.forum.current_group"
+    }
+
     private var currentGroup: Group? = null
     private lateinit var list: ListView
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var progress: ProgressBar
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        if (savedInstanceState != null) {
+            currentGroup = savedInstanceState.getSerializable(SAVE_CURRENT_GROUP) as Group?
+        }
+
         val view = inflater.inflate(R.layout.fragment_forum, container, false)
         list = view.findViewById(R.id.forum_list)
         progress = view.findViewById(R.id.progress_forum)
@@ -51,7 +59,7 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
                 startActivity(intent)
             }
         }
-        navigate(null, false)
+        navigate(currentGroup, false)
         return view
     }
 
@@ -59,7 +67,7 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
         currentGroup = forum
         if (forum == null) {
             list.adapter = ForumAdapter(context ?: error("Oops, no context?"),
-                AuthStore.appUser.getContext().getGroups().filter { Feature.FORUM.isAvailable(it.permissions) }) //TODO not sure if i should include user itself; filter by permission (but it should work...)
+                AuthStore.appUser.getContext().getGroups().filter { Feature.FORUM.isAvailable(it.permissions) })
             swipeRefresh.isRefreshing = false
             progress.visibility = ProgressBar.INVISIBLE
         } else {
@@ -74,6 +82,10 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
             return true
         }
         return false
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putSerializable(SAVE_CURRENT_GROUP, currentGroup)
     }
 
     private inner class EntryLoader : AsyncTask<Any, Void, List<ForumPost>?>() {
