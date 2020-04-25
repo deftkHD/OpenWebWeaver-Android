@@ -91,7 +91,6 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
 
         if (savedInstanceState == null) {
             (menuMap.values.first { it.getName() == R.string.overview } as IMenuNavigable).onClick(this)
-            (menuMap.values.first { it.getName() == R.string.overview } as IMenuNavigable).onClick(this)
         }
         navigationView.menu.getItem(0).isChecked = true
     }

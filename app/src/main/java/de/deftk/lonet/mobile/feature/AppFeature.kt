@@ -3,7 +3,6 @@ package de.deftk.lonet.mobile.feature
 import androidx.fragment.app.Fragment
 import com.google.gson.JsonObject
 import de.deftk.lonet.api.model.Feature
-import de.deftk.lonet.api.model.feature.Notification
 import de.deftk.lonet.api.model.feature.Quota
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.lonet.api.model.feature.Task
@@ -71,19 +70,15 @@ enum class AppFeature(
         }
 
         override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
-            val notifications = mutableListOf<Notification>()
-            //TODO no need to parse notifications; just count them
+            var count = 0
             response.values.withIndex().forEach { (index, subResponse) ->
                 if (index % 2 == 1) {
                     val focus = response.values.toList()[index - 1]
                     check(focus.get("method").asString == "set_focus")
-                    val operator = AuthStore.appUser.getContext().getOperator(focus.get("user").asJsonObject.get("login").asString)!!
-                    subResponse.get("entries").asJsonArray.forEach { taskResponse ->
-                        notifications.add(Notification.fromJson(taskResponse.asJsonObject, operator))
-                    }
+                    count += subResponse.get("entries").asJsonArray.size()
                 }
             }
-            return NotificationsOverview(notifications.size)
+            return NotificationsOverview(count)
         }
     }),
     FEATURE_FORUM(Feature.FORUM, ForumFragment::class.java, R.drawable.ic_forum, R.string.forum),
@@ -99,7 +94,7 @@ enum class AppFeature(
             subResponse.get("messages").asJsonArray.forEach { messageResponse ->
                 systemNotifications.add(SystemNotification.fromJson(messageResponse.asJsonObject, AuthStore.appUser))
             }
-            return NotificationsOverview(systemNotifications.count { !it.read })
+            return SystemNotificationsOverview(systemNotifications.count { !it.read })
         }
     });
 
