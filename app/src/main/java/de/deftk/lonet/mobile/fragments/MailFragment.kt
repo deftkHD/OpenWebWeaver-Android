@@ -10,6 +10,7 @@ import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.feature.mailbox.Email
 import de.deftk.lonet.api.model.feature.mailbox.EmailFolder
@@ -111,6 +112,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
             if (context != null) {
                 if (result != null) {
                     mail_list?.adapter = MailAdapter(context!!, result)
+                    mail_empty?.isVisible = result.isEmpty()
                 } else {
                     Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
                 }
@@ -134,6 +136,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
             if (context != null) {
                 if (result != null) {
                     mail_list?.adapter = MailFolderAdapter(context!!, result)
+                    mail_empty?.isVisible = result.isEmpty()
                 } else {
                     Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
                 }

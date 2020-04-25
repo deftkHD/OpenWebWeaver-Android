@@ -9,6 +9,7 @@ import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.Group
 import de.deftk.lonet.api.model.abstract.IManageable
@@ -85,10 +86,11 @@ class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler
 
         override fun onPostExecute(result: List<IManageable>?) {
             members_swipe_refresh?.isRefreshing = false
-            progress_members.visibility = ProgressBar.INVISIBLE
+            progress_members?.visibility = ProgressBar.INVISIBLE
             if (context != null) {
                 if (result != null) {
-                    members_list.adapter = MemberAdapter(context!!, result)
+                    members_list?.adapter = MemberAdapter(context!!, result)
+                    members_empty?.isVisible = result.isEmpty()
                 } else {
                     Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
                 }
@@ -109,10 +111,11 @@ class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler
 
         override fun onPostExecute(result: List<IManageable>?) {
             members_swipe_refresh?.isRefreshing = false
-            progress_members.visibility = ProgressBar.INVISIBLE
+            progress_members?.visibility = ProgressBar.INVISIBLE
             if (context != null) {
                 if (result != null) {
-                    members_list.adapter = MemberAdapter(context!!, result)
+                    members_list?.adapter = MemberAdapter(context!!, result)
+                    members_empty?.isVisible = result.isEmpty()
                 } else {
                     Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
                 }

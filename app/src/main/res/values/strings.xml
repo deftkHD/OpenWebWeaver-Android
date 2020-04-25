@@ -67,5 +67,11 @@
     <string name="members">Members</string>
     <string name="online">Online</string>
     <string name="offline">Offline</string>
+    <string name="forum_empty">No posts</string>
+    <string name="mail_empty">No mails</string>
+    <string name="members_empty">No members</string>
+    <string name="notifications_empty">No notifications</string>
+    <string name="system_notifications_empty">No system notifications</string>
+    <string name="tasks_empty">No tasks</string>
 
 </resources>

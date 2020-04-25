@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.feature.Notification
 import de.deftk.lonet.mobile.AuthStore
@@ -58,6 +59,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
             if (context != null) {
                 if (result != null) {
                     notification_list?.adapter = NotificationAdapter(context!!, result)
+                    notifications_empty?.isVisible = result.isEmpty()
                 } else {
                     Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
                 }

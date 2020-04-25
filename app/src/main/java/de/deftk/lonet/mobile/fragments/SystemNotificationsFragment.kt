@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.lonet.mobile.AuthStore
@@ -61,6 +62,7 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
             if (context != null) {
                 if (result != null) {
                     system_notification_list?.adapter = SystemNotificationAdapter(context!!, result)
+                    system_notifications_empty?.isVisible = result.isEmpty()
                 } else {
                     Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
                 }
