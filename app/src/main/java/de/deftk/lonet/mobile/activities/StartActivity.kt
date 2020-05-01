@@ -34,6 +34,11 @@ import kotlinx.android.synthetic.main.activity_start.*
 
 class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, IFragmentHandler {
 
+    companion object {
+        const val EXTRA_FOCUS_FEATURE = "de.deftk.lonet.mobile.start.extra_focus_feature"
+        const val EXTRA_FOCUS_FEATURE_ARGUMENTS = "de.deftk.lonet.mobile.start.extra_focus_feature_arguments"
+    }
+
     private val drawer by lazy { findViewById<DrawerLayout>(R.id.drawer_layout) }
     private val menuMap = mutableMapOf<Int, IMenuItem>()
 
@@ -90,7 +95,13 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         toggle.syncState()
 
         if (savedInstanceState == null) {
-            (menuMap.values.first { it.getName() == R.string.overview } as IMenuNavigable).onClick(this)
+            val extraFocusedFeature = intent.getSerializableExtra(EXTRA_FOCUS_FEATURE) as? Feature?
+            if (extraFocusedFeature != null) {
+                val args = intent.getBundleExtra(EXTRA_FOCUS_FEATURE_ARGUMENTS) ?: Bundle()
+                (menuMap.values.filterIsInstance<FeatureMenuItem>().first { it.feature.feature == extraFocusedFeature }).displayFragment(this, args)
+            } else {
+                (menuMap.values.first { it.getName() == R.string.overview } as IMenuNavigable).onClick(this)
+            }
         }
         navigationView.menu.getItem(0).isChecked = true
     }

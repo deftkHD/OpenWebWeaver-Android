@@ -1,12 +1,17 @@
 package de.deftk.lonet.mobile.utils
 
+import android.content.Intent
 import android.os.Build
+import android.os.Bundle
 import android.text.Html
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ClickableSpan
 import android.view.View
 import android.widget.Toast
+import de.deftk.lonet.api.model.Feature
+import de.deftk.lonet.mobile.activities.StartActivity
+import de.deftk.lonet.mobile.fragments.FileStorageFragment
 
 object TextUtils {
 
@@ -58,8 +63,14 @@ object TextUtils {
         override fun onClick(widget: View) {
             when (type) {
                 InternalReferenceType.FILE_STORAGE -> {
-                    //TODO implement
-                    Toast.makeText(widget.context, "Not implemented yet", Toast.LENGTH_LONG).show()
+                    //TODO file revisions
+                    val intent = Intent(widget.context, StartActivity::class.java)
+                    intent.putExtra(StartActivity.EXTRA_FOCUS_FEATURE, Feature.FILES)
+                    val args = Bundle()
+                    args.putString(FileStorageFragment.ARGUMENT_GROUP, group)
+                    args.putString(FileStorageFragment.ARGUMENT_FILE_ID, extra)
+                    intent.putExtra(StartActivity.EXTRA_FOCUS_FEATURE_ARGUMENTS, args)
+                    widget.context.startActivity(intent)
                 }
                 else -> {
                     Toast.makeText(widget.context, "Don't know how to handle reference type \"$type\"", Toast.LENGTH_LONG).show()

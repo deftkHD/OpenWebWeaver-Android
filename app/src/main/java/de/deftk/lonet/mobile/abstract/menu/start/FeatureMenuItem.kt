@@ -1,5 +1,6 @@
 package de.deftk.lonet.mobile.abstract.menu.start
 
+import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.abstract.menu.IMenuNavigable
@@ -20,7 +21,11 @@ class FeatureMenuItem(val feature: AppFeature): IMenuNavigable {
     }
 
     override fun onClick(activity: AppCompatActivity) {
-        activity.supportFragmentManager.beginTransaction().replace(R.id.fragment_container, feature.fragmentClass.newInstance()).commit()
+        displayFragment(activity)
+    }
+
+    fun displayFragment(activity: AppCompatActivity, args: Bundle = Bundle()) {
+        activity.supportFragmentManager.beginTransaction().replace(R.id.fragment_container, feature.fragmentClass, args).commit()
         activity.supportActionBar?.title = activity.getString(feature.translationResource)
     }
 }

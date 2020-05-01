@@ -36,9 +36,17 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
 
     companion object {
         private const val SAVE_HISTORY = "de.deftk.lonet.mobile.files.history"
+        const val ARGUMENT_GROUP = "de.deftk.lonet.mobile.files.argument_group"
+        const val ARGUMENT_FILE_ID = "de.deftk.lonet.mobile.files.argument_file_id"
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        if (arguments != null) {
+            val group = arguments?.getString(ARGUMENT_GROUP)
+            val file = arguments?.getString(ARGUMENT_FILE_ID)
+            //TODO jump to given location
+        }
+
         if (savedInstanceState != null) {
             val history = savedInstanceState.getSerializable(SAVE_HISTORY) as Stack<*>
             history.forEach {
