@@ -29,10 +29,14 @@ import de.deftk.lonet.mobile.abstract.menu.IMenuNavigable
 import de.deftk.lonet.mobile.abstract.menu.start.FeatureMenuItem
 import de.deftk.lonet.mobile.feature.AppFeature
 import de.deftk.lonet.mobile.fragments.OverviewFragment
+import de.deftk.lonet.mobile.tasks.LoginTask
 import de.deftk.lonet.mobile.utils.LoggingRequestHandler
 import kotlinx.android.synthetic.main.activity_start.*
+import java.io.IOException
+import java.net.UnknownHostException
+import java.util.concurrent.TimeoutException
 
-class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, IFragmentHandler {
+class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, IFragmentHandler, LoginTask.ILoginCallback {
 
     companion object {
         const val EXTRA_FOCUS_FEATURE = "de.deftk.lonet.mobile.start.extra_focus_feature"
@@ -169,6 +173,72 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         supportFragmentManager.beginTransaction().replace(R.id.fragment_container, OverviewFragment()).commit()
         supportActionBar?.title = getString(R.string.overview)
         nav_view.menu.getItem(0).isChecked = true
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        VerifySessionTask().execute()
+        //TODO VerifySessionTask should also be executed in onCreate() and removed from MainActivity
+        
+    }
+
+    override fun onLoginResult(result: LoginTask.LoginResult) {
+        if (result.failed()) {
+            result.exception?.printStackTrace()
+            if (result.exception is IOException) {
+                when (result.exception) {
+                    is UnknownHostException ->
+                        Toast.makeText(this, getString(R.string.request_failed_connection), Toast.LENGTH_LONG).show()
+                    is TimeoutException ->
+                        Toast.makeText(this, getString(R.string.request_failed_timeout), Toast.LENGTH_LONG).show()
+                    else ->
+                        Toast.makeText(this, String.format(getString(R.string.request_failed_other), result.exception.message), Toast.LENGTH_LONG).show()
+                }
+            } else {
+                getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("token").apply()
+                Toast.makeText(this, getString(R.string.token_expired), Toast.LENGTH_LONG).show()
+
+                val intent = Intent(this, LoginActivity::class.java)
+                if (AuthStore.getSavedUsername(this) != null) {
+                    intent.putExtra(LoginActivity.EXTRA_LOGIN, AuthStore.getSavedUsername(this))
+                }
+                startActivity(intent)
+                finish()
+            }
+        } else {
+            AuthStore.appUser = result.user!!
+        }
+
+        //TODO hide progressbar, show fragment
+    }
+
+    private inner class VerifySessionTask: AsyncTask<Void, Void, Boolean>() {
+        override fun doInBackground(vararg params: Void): Boolean {
+            //AuthStore.appUser.logout(false) //FIXME JUST FOR TESTING, REMOVE FOR RELEASE!!!
+            return AuthStore.appUser.checkSession()
+        }
+
+        override fun onPostExecute(result: Boolean) {
+            if (!result) { // session expired
+                if (AuthStore.getSavedToken(this@StartActivity) == null) {
+                    // create new account or simply login without adding an account
+                    val intent = Intent(this@StartActivity, LoginActivity::class.java)
+                    if (AuthStore.getSavedUsername(this@StartActivity) != null) {
+                        intent.putExtra(LoginActivity.EXTRA_LOGIN, AuthStore.getSavedUsername(this@StartActivity))
+                    }
+                    startActivity(intent)
+                    finish()
+
+                } else {
+                    // use saved account
+                    LoginTask(this@StartActivity).execute(
+                        AuthStore.getSavedUsername(this@StartActivity),
+                        AuthStore.getSavedToken(this@StartActivity),
+                        LoginTask.LoginMethod.TRUST
+                    )
+                }
+            }
+        }
     }
 
     private inner class LogoutTask: AsyncTask<Boolean, Void, Boolean>() {
