@@ -13,8 +13,6 @@ import javax.crypto.spec.SecretKeySpec
 
 object AuthStore {
 
-    //TODO use getInstance(context) method and class instead of object to handle context easier
-
     const val PREFERENCE_NAME = "LoNetMobile_Data"
 
     // crypto stuff from https://stackoverflow.com/questions/13433529/android-4-2-broke-my-encrypt-decrypt-code-and-the-provided-solutions-dont-work/39002997#39002997

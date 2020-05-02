@@ -26,7 +26,7 @@ object TextUtils {
         else Html.fromHtml(html)
     }
 
-    // structure {{<function>|<group>|<file>|<display text>}}
+    // structure {{<function>|<group>|<detail>|<display text>}}
     fun parseInternalReferences(spanned: Spanned): Spanned {
         var builder = SpannableStringBuilder(spanned)
         var startIndex: Int

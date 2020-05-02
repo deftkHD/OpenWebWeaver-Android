@@ -8,6 +8,7 @@ import java.net.URL
 import java.nio.channels.Channels
 import java.security.MessageDigest
 
+@Deprecated("can be replaced with PlayStore updater, if app is allowed to be published")
 class Updater(private val targetFile: File, private val callback: IUpdateCallback): AsyncTask<String, Void, Pair<String, String>>() {
 
     companion object {

@@ -22,7 +22,7 @@ class FileStorageAdapter(context: Context, elements: List<OnlineFile>): ArrayAda
         if (item.id != "/") {
             listItemView.findViewById<TextView>(R.id.file_size).text = if(item.type == OnlineFile.FileType.FILE) Formatter.formatFileSize(context, item.size) else context.getString(R.string.directory)
         } else {
-            //TODO implement
+            //TODO reimplement, root filestorages should have own adapter
             //val member = AuthStore.getMember(item.parentId)
             //val quota = member.getFileStorageState(AuthStore.appUser).second
             //listItemView.findViewById<TextView>(R.id.file_size).text = String.format(context.getString(R.string.quota), UnitUtil.getFormattedSize(quota.free), UnitUtil.getFormattedSize(quota.limit))

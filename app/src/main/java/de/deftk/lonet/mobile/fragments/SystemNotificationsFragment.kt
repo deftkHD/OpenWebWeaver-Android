@@ -25,6 +25,8 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
     //TODO swipe left to delete notification
     // maybe this helps https://www.journaldev.com/23164/android-recyclerview-swipe-to-delete-undo
 
+    //TODO check if "infinite" scrolling is possible
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         SystemNotificationLoader().execute(false)
 
