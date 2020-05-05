@@ -71,6 +71,16 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         }
         addMenuItem(object : AbstractNavigableMenuItem(R.string.open_website, R.id.utility_group, R.drawable.ic_open_website) {
             override fun onClick(activity: AppCompatActivity) {
+                GenerateAutologinUrlTask().execute()
+            }
+        })
+        addMenuItem(object : AbstractNavigableMenuItem(R.string.settings, R.id.utility_group, R.drawable.ic_settings) {
+            override fun onClick(activity: AppCompatActivity) {
+                Toast.makeText(this@StartActivity, "Not implemented yet", Toast.LENGTH_SHORT).show()
+            }
+        })
+        addMenuItem(object : AbstractNavigableMenuItem(R.string.logout, R.id.utility_group, R.drawable.ic_logout) {
+            override fun onClick(activity: AppCompatActivity) {
                 val listener = DialogInterface.OnClickListener { _, which ->
                     when (which) {
                         DialogInterface.BUTTON_POSITIVE -> {
@@ -81,16 +91,6 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                     }
                 }
                 AlertDialog.Builder(this@StartActivity).setMessage(R.string.logout_description).setPositiveButton(R.string.yes, listener).setNegativeButton(R.string.no, listener).show()
-            }
-        })
-        addMenuItem(object : AbstractNavigableMenuItem(R.string.settings, R.id.utility_group, R.drawable.ic_settings) {
-            override fun onClick(activity: AppCompatActivity) {
-                Toast.makeText(this@StartActivity, "Not implemented yet", Toast.LENGTH_SHORT).show()
-            }
-        })
-        addMenuItem(object : AbstractNavigableMenuItem(R.string.logout, R.id.utility_group, R.drawable.ic_logout) {
-            override fun onClick(activity: AppCompatActivity) {
-                GenerateAutologinUrlTask().execute()
             }
         })
 
