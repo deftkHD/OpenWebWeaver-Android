@@ -2,6 +2,7 @@ package de.deftk.lonet.mobile.fragments
 
 import android.os.AsyncTask
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,8 +23,12 @@ import kotlinx.android.synthetic.main.fragment_overview.*
 
 class OverviewFragment: StartFragment() {
 
+    companion object {
+        private const val LOG_TAG = "OverviewFragment"
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, bundle: Bundle?): View {
-        OverviewLoader().execute(false)
+        Log.i(LOG_TAG, "Creating overview fragment")
         val view = inflater.inflate(R.layout.fragment_overview, container, false)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.overview_swipe_refresh)
         val list = view.findViewById<ListView>(R.id.overview_list)
@@ -37,6 +42,8 @@ class OverviewFragment: StartFragment() {
             if (feature != null)
                 (activity as StartActivity).displayFeatureFragment(feature)
         }
+        OverviewLoader().execute(false)
+        Log.i(LOG_TAG, "Created overview fragment")
         return view
     }
 
@@ -69,6 +76,7 @@ class OverviewFragment: StartFragment() {
         }
 
         override fun onPostExecute(result: List<AbstractOverviewElement>?) {
+            Log.i(LOG_TAG, "Initialized ${result?.size} overview elements")
             progress_overview?.visibility = ProgressBar.GONE
             overview_swipe_refresh?.isRefreshing = false
             if (context != null) {
@@ -77,6 +85,8 @@ class OverviewFragment: StartFragment() {
                 } else {
                     Toast.makeText(context, "Failed to get overview information", Toast.LENGTH_LONG).show()
                 }
+            } else {
+                Log.e(LOG_TAG, "Context is null")
             }
         }
     }

@@ -2,10 +2,15 @@ package de.deftk.lonet.mobile.tasks
 
 import android.os.AsyncTask
 import android.os.Build
+import android.util.Log
 import de.deftk.lonet.api.LoNet
 import de.deftk.lonet.api.model.User
 
 class LoginTask(private val callback: ILoginCallback): AsyncTask<Any, Void, LoginTask.LoginResult>() {
+
+    companion object {
+        private const val LOG_TAG = "LoginTask"
+    }
 
     override fun doInBackground(vararg params: Any): LoginResult {
         return try {
@@ -13,12 +18,15 @@ class LoginTask(private val callback: ILoginCallback): AsyncTask<Any, Void, Logi
             val key = params[1].toString()
             when (params[2]) {
                 LoginMethod.PASSWORD -> {
+                    Log.i(LOG_TAG, "Logging in with password")
                     LoginResult(LoNet.login(email, key), false, null)
                 }
                 LoginMethod.PASSWORD_CREATE_TRUST -> {
+                    Log.i(LOG_TAG, "Logging in with password and create trust")
                     LoginResult(LoNet.loginCreateTrust(email, key, "LoNet² Mobile", "${Build.BRAND} ${Build.MODEL}"), true, null)
                 }
                 LoginMethod.TRUST -> {
+                    Log.i(LOG_TAG, "Logging in with token")
                     LoginResult(LoNet.loginToken(email, key), false, null)
                 }
                 else -> throw IllegalStateException("Unknown login method: ${params[2]}")

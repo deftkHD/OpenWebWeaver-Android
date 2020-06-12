@@ -2,12 +2,16 @@ package de.deftk.lonet.mobile.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.util.Patterns
-import android.widget.*
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.tasks.LoginTask
+import kotlinx.android.synthetic.main.activity_login.*
 import java.io.IOException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeoutException
@@ -16,13 +20,8 @@ class LoginActivity : AppCompatActivity(), LoginTask.ILoginCallback {
 
     companion object {
         const val EXTRA_LOGIN = "extra_login"
+        private const val LOG_TAG = "LoginActivity"
     }
-
-    private val progressBar by lazy { findViewById<ProgressBar>(R.id.pgbLogin) }
-    private val txtEmail by lazy { findViewById<EditText>(R.id.txtEmail) }
-    private val txtPassword by lazy { findViewById<EditText> (R.id.txtPassword) }
-    private val chbStayLoggedIn by lazy { findViewById<CheckBox>(R.id.chbStayLoggedIn) }
-    private val btnLogin by lazy { findViewById<Button>(R.id.btnLogin) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,12 +37,13 @@ class LoginActivity : AppCompatActivity(), LoginTask.ILoginCallback {
 
         btnLogin.setOnClickListener {
             if (isEmailValid(txtEmail.text.toString()) && isPasswordValid(txtPassword.text.toString())) {
+                Log.i(LOG_TAG, "Calling login task")
                 LoginTask(this).execute(
                     txtEmail.text.toString(),
                     txtPassword.text.toString(),
                     if (chbStayLoggedIn.isChecked) LoginTask.LoginMethod.PASSWORD_CREATE_TRUST else LoginTask.LoginMethod.PASSWORD
                 )
-                progressBar.visibility = ProgressBar.VISIBLE
+                pgbLogin.visibility = ProgressBar.VISIBLE
                 btnLogin.isEnabled = false
             } else {
                 Toast.makeText(this, getString(R.string.invalid_credentials), Toast.LENGTH_LONG)
@@ -61,9 +61,11 @@ class LoginActivity : AppCompatActivity(), LoginTask.ILoginCallback {
     }
 
     override fun onLoginResult(result: LoginTask.LoginResult) {
-        progressBar.visibility = ProgressBar.INVISIBLE
-        btnLogin.isEnabled = true
+        Log.i(LOG_TAG, "Got login result")
+        pgbLogin?.visibility = ProgressBar.INVISIBLE
+        btnLogin?.isEnabled = true
         if (result.failed()) {
+            Log.e(LOG_TAG, "Login failed")
             if (result.exception is IOException) {
                 when (result.exception) {
                     is UnknownHostException ->
@@ -77,6 +79,7 @@ class LoginActivity : AppCompatActivity(), LoginTask.ILoginCallback {
                 Toast.makeText(this, "${getString(R.string.login_failed)}: ${result.exception?.message ?: result.exception ?: "No details"}", Toast.LENGTH_LONG).show()
             }
         } else {
+            Log.i(LOG_TAG, "Login succeeded")
             Toast.makeText(this, "${getString(R.string.login_success)}!", Toast.LENGTH_SHORT).show()
             AuthStore.appUser = result.user ?: error("How should I understand this?")
             if (result.saveKey) {
@@ -84,6 +87,7 @@ class LoginActivity : AppCompatActivity(), LoginTask.ILoginCallback {
                 AuthStore.saveToken(result.user.authKey, this)
             }
 
+            Log.i(LOG_TAG, "Starting MainActivity")
             val intent = Intent(this, StartActivity::class.java)
             startActivity(intent)
             finish()

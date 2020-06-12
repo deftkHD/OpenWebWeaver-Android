@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -27,11 +28,16 @@ import java.util.concurrent.TimeoutException
 
 class MainActivity : AppCompatActivity(), LoginTask.ILoginCallback, Updater.IUpdateCallback {
 
+    companion object {
+        private const val LOG_TAG = "MainActivity"
+    }
+
     private val pgbUpdate by lazy { findViewById<ProgressBar>(R.id.pgbUpdate) }
 
     private val targetFile by lazy { File(cacheDir, "lnm_update_stable.apk") }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.i(LOG_TAG, "Creating MainActivity")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -45,8 +51,10 @@ class MainActivity : AppCompatActivity(), LoginTask.ILoginCallback, Updater.IUpd
         lblVersion.append(" ${BuildConfig.VERSION_NAME}")
 
         // check if app has write & read permission
+        Log.i(LOG_TAG, "Checking permissions")
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                Log.i(LOG_TAG, "Requesting permissions")
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     AlertDialog.Builder(this)
                         .setMessage(R.string.files_permission_description)
@@ -63,10 +71,12 @@ class MainActivity : AppCompatActivity(), LoginTask.ILoginCallback, Updater.IUpd
         } else {
             Updater(targetFile, this).execute(Updater.MODE_CHECK_VERSION)
         }
+        Log.i(LOG_TAG, "Created MainActivity")
     }
 
     override fun onLoginResult(result: LoginTask.LoginResult) {
         if (result.failed()) {
+            Log.e(LOG_TAG, "Login failed")
             result.exception?.printStackTrace()
             if (result.exception is IOException) {
                 when (result.exception) {
@@ -89,7 +99,7 @@ class MainActivity : AppCompatActivity(), LoginTask.ILoginCallback, Updater.IUpd
                 finish()
             }
         } else {
-            AuthStore.appUser = result.user!!
+            AuthStore.appUser = result.user ?: error("Why is the user null?")
 
             val intent = Intent(this, StartActivity::class.java)
             startActivity(intent)
@@ -160,12 +170,15 @@ class MainActivity : AppCompatActivity(), LoginTask.ILoginCallback, Updater.IUpd
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        Log.i(LOG_TAG, "Permission result")
         when (requestCode) {
             0 -> {
                 if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    Log.i(LOG_TAG, "Permission not granted")
                     finish()
                 } else {
                     Updater(targetFile, this).execute(Updater.MODE_CHECK_VERSION)
+                    Log.i(LOG_TAG, "Permission granted")
                 }
             }
         }

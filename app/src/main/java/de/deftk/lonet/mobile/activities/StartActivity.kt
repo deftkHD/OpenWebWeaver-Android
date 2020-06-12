@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
@@ -41,12 +42,15 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
     companion object {
         const val EXTRA_FOCUS_FEATURE = "de.deftk.lonet.mobile.start.extra_focus_feature"
         const val EXTRA_FOCUS_FEATURE_ARGUMENTS = "de.deftk.lonet.mobile.start.extra_focus_feature_arguments"
+
+        private const val LOG_TAG = "StartActivity"
     }
 
     private val drawer by lazy { findViewById<DrawerLayout>(R.id.drawer_layout) }
     private val menuMap = mutableMapOf<Int, IMenuItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Log.i(LOG_TAG, "Creating start activity")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
 
@@ -55,6 +59,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
+        Log.i(LOG_TAG, "Setting up navigation view")
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = AuthStore.appUser.fullName ?: getString(R.string.unknown_name)
         navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = AuthStore.appUser.getLogin()
@@ -101,13 +106,16 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         if (savedInstanceState == null) {
             val extraFocusedFeature = intent.getSerializableExtra(EXTRA_FOCUS_FEATURE) as? Feature?
             if (extraFocusedFeature != null) {
+                Log.i(LOG_TAG, "Focusing feature $extraFocusedFeature")
                 val args = intent.getBundleExtra(EXTRA_FOCUS_FEATURE_ARGUMENTS) ?: Bundle()
                 (menuMap.values.filterIsInstance<FeatureMenuItem>().first { it.feature.feature == extraFocusedFeature }).displayFragment(this, args)
             } else {
+                Log.i(LOG_TAG, "Displaying overview")
                 (menuMap.values.first { it.getName() == R.string.overview } as IMenuNavigable).onClick(this)
             }
         }
         navigationView.menu.getItem(0).isChecked = true
+        Log.i(LOG_TAG, "Activity created")
     }
 
     private fun addMenuItem(baseItem: IMenuItem) {
@@ -247,6 +255,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                 AuthStore.appUser.logout(params[0] == true)
                 true
             } catch (e: Exception) {
+                e.printStackTrace()
                 false
             }
         }
@@ -269,6 +278,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
             return try {
                 AuthStore.appUser.getAutoLoginUrl()
             } catch (e: Exception) {
+                e.printStackTrace()
                 null
             }
         }
