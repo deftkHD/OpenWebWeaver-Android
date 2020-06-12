@@ -156,7 +156,8 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
     fun displayFeatureFragment(appFeature: AppFeature) {
         supportFragmentManager.beginTransaction().replace(R.id.fragment_container, appFeature.fragmentClass.newInstance()).commit()
         supportActionBar?.title = getString(appFeature.translationResource)
-        nav_view.menu.getItem(appFeature.ordinal + 1).isChecked = true
+        val itemId = menuMap.filterValues { it is FeatureMenuItem }.filter { (it.value as FeatureMenuItem).feature == appFeature }.keys.first()
+        nav_view.menu.getItem(itemId).isChecked = true
     }
 
     override fun displayFragment(fragment: Fragment) {
