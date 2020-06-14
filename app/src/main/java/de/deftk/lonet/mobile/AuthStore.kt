@@ -16,7 +16,7 @@ object AuthStore {
     const val PREFERENCE_NAME = "LoNetMobile_Data"
 
     // crypto stuff from https://stackoverflow.com/questions/13433529/android-4-2-broke-my-encrypt-decrypt-code-and-the-provided-solutions-dont-work/39002997#39002997
-    // might be a bit overkill, but so what?
+    // might be a bit overkill
 
     private const val cipherAlgorithm = "AES/CBC/PKCS5Padding"
     private val key = byteArrayOf(65, 44, 22, 64, 86, 26, 23, 111, 76, 98, 71, 84, 15, 76, 63, 24)

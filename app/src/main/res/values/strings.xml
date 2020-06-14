@@ -16,7 +16,7 @@
     <string name="later">Later</string>
     <string name="update_failed">Update failed</string>
     <string name="try_later">Try again later</string>
-    <string name="files_permission_description">The following permission is needed for updates and file storage. Please grant this permission</string>
+    <string name="files_permission_description">The following permission is needed for file storage. Please grant this permission</string>
     <string name="confirm">I\'ll do</string>
     <string name="task_completed_desc">Task completed</string>
     <string name="task_not_completed_desc">Task not completed</string>
