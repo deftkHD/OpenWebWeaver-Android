@@ -166,11 +166,11 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
 
     private fun getAllFeatures(): List<Feature> {
         val features = mutableListOf<Feature>()
-        AuthStore.appUser.permissions.forEach { permission ->
+        AuthStore.appUser.effectiveRights.forEach { permission ->
             Feature.getAvailableFeatures(permission).filter { !features.contains(it) }.forEach { features.add(it) }
         }
         AuthStore.appUser.getContext().getGroups().forEach { membership ->
-            membership.memberPermissions.forEach { permission ->
+            membership.effectiveRights.forEach { permission ->
                 Feature.getAvailableFeatures(permission).filter { !features.contains(it) }.forEach { features.add(it) }
             }
         }

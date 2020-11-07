@@ -25,13 +25,13 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
     //TODO filters
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, bundle: Bundle?): View {
-        TaskLoader().execute(false)
+        TaskLoader().execute()
         val view = inflater.inflate(R.layout.fragment_tasks, container, false)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.tasks_swipe_refresh)
         val list = view.findViewById<ListView>(R.id.tasks_list)
         swipeRefresh.setOnRefreshListener {
             list.adapter = null
-            TaskLoader().execute(true)
+            TaskLoader().execute()
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(context, TaskActivity::class.java)
@@ -45,7 +45,7 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
 
         override fun doInBackground(vararg params: Any): List<Task>? {
             return try {
-                AuthStore.appUser.getAllTasks(params[0] == true).sortedByDescending { it.creationDate.time }
+                AuthStore.appUser.getAllTasks().sortedByDescending { it.creationDate.time }
             } catch (e: Exception) {
                 e.printStackTrace()
                 null

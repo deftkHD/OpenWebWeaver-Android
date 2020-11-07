@@ -146,7 +146,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
             return try {
                 when (val param = params[0]) {
                     is IFilePrimitive -> {
-                        Result(param.getFileStorageFiles(true).sortedByDescending { it.type }, null)
+                        Result(param.getFiles().sortedByDescending { it.type }, null)
                     }
                     else -> Result(AuthStore.appUser.getContext().getGroups().map { try {
                         Pair(it, it.getFileStorageState().second)
@@ -189,7 +189,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
 
         override fun doInBackground(vararg params: OnlineFile): File? {
             return try {
-                 val url = URL(params[0].getTmpDownloadUrl(true).downloadUrl)
+                 val url = URL(params[0].getTempDownloadUrl().downloadUrl)
                 val targetFile = File(context?.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: error("no download directory?"), params[0].name.replace("/", "_"))
                 if (targetFile.exists()) targetFile.delete()
                 url.openStream().use { input ->

@@ -11,8 +11,8 @@ class LoggingRequestHandler: IRequestHandler {
 
     private val handler = LoNet.requestHandler
 
-    override fun performRequest(request: ApiRequest, context: IContext, allowCachedResponse: Boolean): ApiResponse {
+    override fun performRequest(request: ApiRequest, context: IContext): ApiResponse {
         Log.i("[RequestHandler]", "perform request with ${request.requests.size} request blocks")
-        return handler.performRequest(request, context, allowCachedResponse)
+        return handler.performRequest(request, context)
     }
 }

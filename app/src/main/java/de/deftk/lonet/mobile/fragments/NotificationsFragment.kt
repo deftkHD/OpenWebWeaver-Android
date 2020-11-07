@@ -11,7 +11,7 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import de.deftk.lonet.api.model.feature.Notification
+import de.deftk.lonet.api.model.feature.board.BoardNotification
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.abstract.FeatureFragment
@@ -25,35 +25,35 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
     //TODO filters
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        NotificationLoader().execute(false)
+        NotificationLoader().execute()
 
         val view = inflater.inflate(R.layout.fragment_notifications, container, false)
         val list = view.findViewById<ListView>(R.id.notification_list)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.notifications_swipe_refresh)
         swipeRefresh.setOnRefreshListener {
             list.adapter = null
-            NotificationLoader().execute(true)
+            NotificationLoader().execute()
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(context, NotificationActivity::class.java)
-            intent.putExtra(NotificationActivity.EXTRA_NOTIFICATION, list.getItemAtPosition(position) as Notification)
+            intent.putExtra(NotificationActivity.EXTRA_NOTIFICATION, list.getItemAtPosition(position) as BoardNotification)
             startActivity(intent)
         }
         return view
     }
 
-    private inner class NotificationLoader: AsyncTask<Boolean, Void, List<Notification>?>() {
+    private inner class NotificationLoader: AsyncTask<Boolean, Void, List<BoardNotification>?>() {
 
-        override fun doInBackground(vararg params: Boolean?): List<Notification>? {
+        override fun doInBackground(vararg params: Boolean?): List<BoardNotification>? {
             return try {
-                AuthStore.appUser.getAllNotifications(params[0] == true).sortedByDescending { it.creationDate.time }
+                AuthStore.appUser.getAllBoardNotifications().sortedByDescending { it.creationDate.time }
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
             }
         }
 
-        override fun onPostExecute(result: List<Notification>?) {
+        override fun onPostExecute(result: List<BoardNotification>?) {
             progress_notifications?.visibility = ProgressBar.INVISIBLE
             notifications_swipe_refresh?.isRefreshing = false
             if (context != null) {

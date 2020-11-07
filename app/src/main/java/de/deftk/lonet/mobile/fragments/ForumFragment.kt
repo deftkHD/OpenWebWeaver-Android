@@ -48,12 +48,12 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
         progress = view.findViewById(R.id.progress_forum)
         swipeRefresh = view.findViewById(R.id.forum_swipe_refresh)
         swipeRefresh.setOnRefreshListener {
-            navigate(currentGroup, true)
+            navigate(currentGroup)
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val item = list.getItemAtPosition(position)
             if (item is Group) {
-                navigate(item, false)
+                navigate(item)
             } else {
                 item as ForumPost
                 val intent = Intent(context, ForumPostActivity::class.java)
@@ -61,28 +61,28 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
                 startActivity(intent)
             }
         }
-        navigate(currentGroup, false)
+        navigate(currentGroup)
         return view
     }
 
-    private fun navigate(forum: Group?, overwriteCache: Boolean) {
+    private fun navigate(forum: Group?) {
         currentGroup = forum
         (activity as AppCompatActivity).supportActionBar?.title = getTitle()
         if (forum == null) {
             list.adapter = ForumAdapter(context ?: error("Oops, no context?"),
-                AuthStore.appUser.getContext().getGroups().filter { Feature.FORUM.isAvailable(it.permissions) })
+                AuthStore.appUser.getContext().getGroups().filter { Feature.FORUM.isAvailable(it.effectiveRights) })
             forum_empty?.isVisible = list.adapter.isEmpty
             swipeRefresh.isRefreshing = false
             progress.visibility = ProgressBar.INVISIBLE
         } else {
             list.adapter = null
-            EntryLoader().execute(forum, overwriteCache)
+            EntryLoader().execute(forum)
         }
     }
 
     override fun onBackPressed(): Boolean {
         if (currentGroup != null) {
-            navigate(null, false)
+            navigate(null)
             return true
         }
         return false
@@ -101,7 +101,7 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
 
         override fun doInBackground(vararg params: Any): List<ForumPost>? {
             return try {
-                (params[0] as Group).getForumPosts(overwriteCache = params[1] as Boolean)
+                (params[0] as Group).getForumPosts()
             } catch (e: Exception) {
                 e.printStackTrace()
                 null

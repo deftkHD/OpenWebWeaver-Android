@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import de.deftk.lonet.api.model.feature.forum.ForumPost
+import de.deftk.lonet.api.model.feature.forum.ForumPostIcon
 import de.deftk.lonet.mobile.R
 import java.text.DateFormat
 
@@ -15,12 +16,12 @@ class ForumPostAdapter(context: Context, elements: List<ForumPost>): ArrayAdapte
 
     companion object {
         val postIconMap = mapOf(
-            Pair(ForumPost.ForumMessageIcon.INFORMATION, R.drawable.ic_forum_post_information),
-            Pair(ForumPost.ForumMessageIcon.HUMOR, R.drawable.ic_forum_post_happy),
-            Pair(ForumPost.ForumMessageIcon.QUESTION, R.drawable.ic_forum_post_question),
-            Pair(ForumPost.ForumMessageIcon.ANSWER, R.drawable.ic_forum_post_answer),
-            Pair(ForumPost.ForumMessageIcon.UP_VOTE, R.drawable.ic_forum_post_upvote),
-            Pair(ForumPost.ForumMessageIcon.DOWN_VOTE, R.drawable.ic_forum_post_downvote)
+            Pair(ForumPostIcon.INFORMATION, R.drawable.ic_forum_post_information),
+            Pair(ForumPostIcon.HUMOR, R.drawable.ic_forum_post_happy),
+            Pair(ForumPostIcon.QUESTION, R.drawable.ic_forum_post_question),
+            Pair(ForumPostIcon.ANSWER, R.drawable.ic_forum_post_answer),
+            Pair(ForumPostIcon.UP_VOTE, R.drawable.ic_forum_post_upvote),
+            Pair(ForumPostIcon.DOWN_VOTE, R.drawable.ic_forum_post_downvote)
         )
     }
 

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import de.deftk.lonet.api.model.abstract.ManageableType
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.lonet.mobile.R
 import java.text.DateFormat
@@ -28,7 +29,7 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
         val item = getItem(position) ?: return listItemView
 
         listItemView.findViewById<TextView>(R.id.system_notification_title).text = context.getString(typeTranslationMap.getValue(item.messageType))
-        listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.group.getType() != -1) item.group.getName() else item.member.getName()
+        listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.group.getType() != ManageableType.UNKNOWN) item.group.getName() else item.member.getName()
         listItemView.findViewById<TextView>(R.id.system_notification_date).text = DateFormat.getDateInstance().format(item.date)
         return listItemView
     }

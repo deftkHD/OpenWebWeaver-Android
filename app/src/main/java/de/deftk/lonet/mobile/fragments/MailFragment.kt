@@ -99,7 +99,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
     private inner class LoadEmailsTask: AsyncTask<EmailFolder, Void, List<Email>?>() {
         override fun doInBackground(vararg params: EmailFolder): List<Email>? {
             return try {
-                params[0].getEmails(true) // always want to get the newest mails
+                params[0].getEmails()
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
@@ -123,7 +123,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
     private inner class LoadEmailFoldersTask: AsyncTask<Void, Void, List<EmailFolder>?>() {
         override fun doInBackground(vararg params: Void?): List<EmailFolder>? {
             return try {
-                AuthStore.appUser.getEmailFolders(true)
+                AuthStore.appUser.getEmailFolders()
             }  catch (e: Exception) {
                 e.printStackTrace()
                 null

@@ -28,14 +28,14 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
     //TODO check if "infinite" scrolling is possible
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        SystemNotificationLoader().execute(false)
+        SystemNotificationLoader().execute()
 
         val view = inflater.inflate(R.layout.fragment_system_notifications, container, false)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.system_notifications_swipe_refresh)
         val list = view.findViewById<ListView>(R.id.system_notification_list)
         swipeRefresh.setOnRefreshListener {
             list.adapter = null
-            SystemNotificationLoader().execute(true)
+            SystemNotificationLoader().execute()
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val item = list.getItemAtPosition(position) as SystemNotification
@@ -50,7 +50,7 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
 
         override fun doInBackground(vararg params: Boolean?): List<SystemNotification>? {
             return try {
-                AuthStore.appUser.getSystemNotifications(params[0] == true)
+                AuthStore.appUser.getSystemNotifications()
                     .sortedByDescending { it.date.time }
             } catch (e: Exception) {
                 e.printStackTrace()

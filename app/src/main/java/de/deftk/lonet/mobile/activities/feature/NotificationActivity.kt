@@ -3,7 +3,7 @@ package de.deftk.lonet.mobile.activities.feature
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import androidx.appcompat.app.AppCompatActivity
-import de.deftk.lonet.api.model.feature.Notification
+import de.deftk.lonet.api.model.feature.board.BoardNotification
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.utils.TextUtils
 import kotlinx.android.synthetic.main.activity_notification.*
@@ -24,7 +24,7 @@ class NotificationActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setTitle(R.string.see_notification)
 
-        val notification = intent.getSerializableExtra(EXTRA_NOTIFICATION) as? Notification
+        val notification = intent.getSerializableExtra(EXTRA_NOTIFICATION) as? BoardNotification
 
         if (notification != null) {
             notification_title.text = notification.title ?: ""

@@ -34,7 +34,7 @@ class OverviewFragment: StartFragment() {
         val list = view.findViewById<ListView>(R.id.overview_list)
         swipeRefresh.setOnRefreshListener {
             list.adapter = null
-            OverviewLoader().execute(true)
+            OverviewLoader().execute()
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val item = list.getItemAtPosition(position) as AbstractOverviewElement
@@ -42,7 +42,7 @@ class OverviewFragment: StartFragment() {
             if (feature != null)
                 (activity as StartActivity).displayFeatureFragment(feature)
         }
-        OverviewLoader().execute(false)
+        OverviewLoader().execute()
         Log.i(LOG_TAG, "Created overview fragment")
         return view
     }
@@ -64,7 +64,7 @@ class OverviewFragment: StartFragment() {
                 }
             }
             val response = try {
-                request.fireRequest(params[0] == true).toJson()
+                request.fireRequest().toJson()
             } catch (e:Exception) {
                 e.printStackTrace()
                 return null

@@ -6,19 +6,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import de.deftk.lonet.api.model.feature.Notification
+import de.deftk.lonet.api.model.feature.board.BoardNotification
+import de.deftk.lonet.api.model.feature.board.BoardNotificationColor
 import de.deftk.lonet.mobile.R
 import java.text.DateFormat
 
-class NotificationAdapter(context: Context, elements: List<Notification>): ArrayAdapter<Notification>(context, 0, elements) {
+class NotificationAdapter(context: Context, elements: List<BoardNotification>): ArrayAdapter<BoardNotification>(context, 0, elements) {
 
     companion object {
         val notificationColorMap = mapOf(
-            Pair(Notification.NotificationColor.BLUE, android.R.color.holo_blue_light),
-            Pair(Notification.NotificationColor.GREEN, android.R.color.holo_green_light),
-            Pair(Notification.NotificationColor.RED, android.R.color.holo_red_light),
-            Pair(Notification.NotificationColor.YELLOW, android.R.color.holo_orange_light),
-            Pair(Notification.NotificationColor.WHITE, android.R.color.white)
+            Pair(BoardNotificationColor.BLUE, android.R.color.holo_blue_light),
+            Pair(BoardNotificationColor.GREEN, android.R.color.holo_green_light),
+            Pair(BoardNotificationColor.RED, android.R.color.holo_red_light),
+            Pair(BoardNotificationColor.YELLOW, android.R.color.holo_orange_light),
+            Pair(BoardNotificationColor.WHITE, android.R.color.white)
         )
     }
 
@@ -29,7 +30,7 @@ class NotificationAdapter(context: Context, elements: List<Notification>): Array
         listItemView.findViewById<TextView>(R.id.notification_title).text = item.title
         listItemView.findViewById<TextView>(R.id.notification_author).text = item.creationMember.getName()
         listItemView.findViewById<TextView>(R.id.notification_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.creationDate)
-        listItemView.findViewById<View>(R.id.notification_accent).setBackgroundResource(notificationColorMap.getValue(item.color))
+        listItemView.findViewById<View>(R.id.notification_accent).setBackgroundResource(notificationColorMap.getValue(item.color ?: BoardNotificationColor.BLUE))
         return listItemView
     }
 
