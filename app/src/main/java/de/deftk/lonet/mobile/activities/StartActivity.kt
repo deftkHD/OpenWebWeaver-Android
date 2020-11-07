@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.navigation.NavigationView
 import de.deftk.lonet.api.LoNet
 import de.deftk.lonet.api.model.Feature
+import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.abstract.IBackHandler
@@ -65,7 +66,9 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         navigationView.setNavigationItemSelectedListener(this)
         addMenuItem(object : AbstractNavigableMenuItem(R.string.overview, R.id.main_group, R.drawable.ic_overview) {
             override fun onClick(activity: AppCompatActivity) {
-                displayOverviewFragment()
+                supportFragmentManager.beginTransaction().replace(R.id.fragment_container, OverviewFragment()).commit()
+                supportActionBar?.title = getString(R.string.overview)
+                nav_view.menu.getItem(0).isChecked = true
             }
         })
         getAllFeatures().forEach { apiFeature ->
@@ -187,14 +190,8 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                 Feature.getAvailableFeatures(permission).filter { !features.contains(it) }.forEach { features.add(it) }
             }
         }
+        features.addAll(Feature.getAvailableFeatures(Permission.SELF))
         return features
-    }
-
-    @Deprecated("too simple")
-    private fun displayOverviewFragment() {
-        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, OverviewFragment()).commit()
-        supportActionBar?.title = getString(R.string.overview)
-        nav_view.menu.getItem(0).isChecked = true
     }
 
     override fun onRestart() {
