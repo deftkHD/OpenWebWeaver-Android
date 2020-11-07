@@ -3,8 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
-    android:padding="16dp"
-    android:background="@android:drawable/dialog_holo_light_frame">
+    android:padding="16dp">
 
     <ImageView
         android:id="@+id/task_completed"
