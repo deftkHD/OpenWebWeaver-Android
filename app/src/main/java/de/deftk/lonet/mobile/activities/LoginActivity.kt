@@ -1,6 +1,7 @@
 package de.deftk.lonet.mobile.activities
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
@@ -8,15 +9,19 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import de.deftk.lonet.api.LoNet
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
-import de.deftk.lonet.mobile.tasks.LoginTask
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeoutException
 
-class LoginActivity : AppCompatActivity(), LoginTask.ILoginCallback {
+class LoginActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_LOGIN = "extra_login"
@@ -38,11 +43,50 @@ class LoginActivity : AppCompatActivity(), LoginTask.ILoginCallback {
         btnLogin.setOnClickListener {
             if (isEmailValid(txtEmail.text.toString()) && isPasswordValid(txtPassword.text.toString())) {
                 Log.i(LOG_TAG, "Calling login task")
-                LoginTask(this).execute(
-                    txtEmail.text.toString(),
-                    txtPassword.text.toString(),
-                    if (chbStayLoggedIn.isChecked) LoginTask.LoginMethod.PASSWORD_CREATE_TRUST else LoginTask.LoginMethod.PASSWORD
-                )
+                val username = txtEmail.text.toString()
+                val password = txtPassword.text.toString()
+                val stayLoggedIn = chbStayLoggedIn.isChecked
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        if (stayLoggedIn) {
+                            AuthStore.appUser = LoNet.loginCreateTrust(username, password, "LoNet² Mobile", "${Build.BRAND} ${Build.MODEL}")
+                            AuthStore.saveUsername(AuthStore.appUser.getLogin(), this@LoginActivity)
+                            AuthStore.saveToken(AuthStore.appUser.authKey, this@LoginActivity)
+                        } else {
+                            AuthStore.appUser = LoNet.login(username, password)
+                        }
+                        withContext(Dispatchers.Main) {
+                            Log.i(LOG_TAG, "Got login result")
+                            pgbLogin?.visibility = ProgressBar.INVISIBLE
+                            btnLogin?.isEnabled = true
+                            Log.i(LOG_TAG, "Login succeeded")
+                            Toast.makeText(this@LoginActivity, "${getString(R.string.login_success)}!", Toast.LENGTH_SHORT).show()
+                            Log.i(LOG_TAG, "Starting MainActivity")
+                            val intent = Intent(this@LoginActivity, StartActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Log.i(LOG_TAG, "Got login result")
+                            pgbLogin?.visibility = ProgressBar.INVISIBLE
+                            btnLogin?.isEnabled = true
+                            Log.e(LOG_TAG, "Login failed")
+                            if (e is IOException) {
+                                when (e) {
+                                    is UnknownHostException ->
+                                        Toast.makeText(this@LoginActivity, getString(R.string.request_failed_connection), Toast.LENGTH_LONG).show()
+                                    is TimeoutException ->
+                                        Toast.makeText(this@LoginActivity, getString(R.string.request_failed_timeout), Toast.LENGTH_LONG).show()
+                                    else ->
+                                        Toast.makeText(this@LoginActivity, String.format(getString(R.string.request_failed_other), e.message), Toast.LENGTH_LONG).show()
+                                }
+                            } else {
+                                Toast.makeText(this@LoginActivity, "${getString(R.string.login_failed)}: ${e.message ?: e}", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                }
                 pgbLogin.visibility = ProgressBar.VISIBLE
                 btnLogin.isEnabled = false
             } else {
@@ -58,40 +102,6 @@ class LoginActivity : AppCompatActivity(), LoginTask.ILoginCallback {
 
     private fun isPasswordValid(password: String): Boolean {
         return password.isNotBlank()
-    }
-
-    override fun onLoginResult(result: LoginTask.LoginResult) {
-        Log.i(LOG_TAG, "Got login result")
-        pgbLogin?.visibility = ProgressBar.INVISIBLE
-        btnLogin?.isEnabled = true
-        if (result.failed()) {
-            Log.e(LOG_TAG, "Login failed")
-            if (result.exception is IOException) {
-                when (result.exception) {
-                    is UnknownHostException ->
-                        Toast.makeText(this, getString(R.string.request_failed_connection), Toast.LENGTH_LONG).show()
-                    is TimeoutException ->
-                        Toast.makeText(this, getString(R.string.request_failed_timeout), Toast.LENGTH_LONG).show()
-                    else ->
-                        Toast.makeText(this, String.format(getString(R.string.request_failed_other), result.exception.message), Toast.LENGTH_LONG).show()
-                }
-            } else {
-                Toast.makeText(this, "${getString(R.string.login_failed)}: ${result.exception?.message ?: result.exception ?: "No details"}", Toast.LENGTH_LONG).show()
-            }
-        } else {
-            Log.i(LOG_TAG, "Login succeeded")
-            Toast.makeText(this, "${getString(R.string.login_success)}!", Toast.LENGTH_SHORT).show()
-            AuthStore.appUser = result.user ?: error("How should I understand this?")
-            if (result.saveKey) {
-                AuthStore.saveUsername(result.user.getLogin(), this)
-                AuthStore.saveToken(result.user.authKey, this)
-            }
-
-            Log.i(LOG_TAG, "Starting MainActivity")
-            val intent = Intent(this, StartActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
     }
 
 }

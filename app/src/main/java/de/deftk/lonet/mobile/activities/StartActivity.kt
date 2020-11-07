@@ -3,7 +3,6 @@ package de.deftk.lonet.mobile.activities
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
@@ -30,14 +29,14 @@ import de.deftk.lonet.mobile.abstract.menu.IMenuNavigable
 import de.deftk.lonet.mobile.abstract.menu.start.FeatureMenuItem
 import de.deftk.lonet.mobile.feature.AppFeature
 import de.deftk.lonet.mobile.fragments.OverviewFragment
-import de.deftk.lonet.mobile.tasks.LoginTask
 import de.deftk.lonet.mobile.utils.LoggingRequestHandler
 import kotlinx.android.synthetic.main.activity_start.*
-import java.io.IOException
-import java.net.UnknownHostException
-import java.util.concurrent.TimeoutException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, IFragmentHandler, LoginTask.ILoginCallback {
+class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, IFragmentHandler {
 
     companion object {
         const val EXTRA_FOCUS_FEATURE = "de.deftk.lonet.mobile.start.extra_focus_feature"
@@ -76,7 +75,19 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         }
         addMenuItem(object : AbstractNavigableMenuItem(R.string.open_website, R.id.utility_group, R.drawable.ic_open_website) {
             override fun onClick(activity: AppCompatActivity) {
-                GenerateAutologinUrlTask().execute()
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        val url = AuthStore.appUser.getAutoLoginUrl()
+                        //TODO setting to choose if open inside new browser tap or in single browser window
+                        val intent = Intent(Intent.ACTION_VIEW)
+                        intent.data = Uri.parse(url)
+                        withContext(Dispatchers.Main) {
+                            startActivity(intent)
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(baseContext, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
+                    }
+                }
             }
         })
         addMenuItem(object : AbstractNavigableMenuItem(R.string.settings, R.id.utility_group, R.drawable.ic_settings) {
@@ -90,7 +101,9 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                     when (which) {
                         DialogInterface.BUTTON_POSITIVE -> {
                             val preferences = getSharedPreferences(AuthStore.PREFERENCE_NAME, 0)
-                            LogoutTask().execute(preferences.contains("token"))
+                            CoroutineScope(Dispatchers.Main).launch {
+                                logout(preferences.contains("token"))
+                            }
                         }
                         DialogInterface.BUTTON_NEGATIVE -> { /* do nothing */ }
                     }
@@ -186,114 +199,38 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
 
     override fun onRestart() {
         super.onRestart()
-        VerifySessionTask().execute()
+        CoroutineScope(Dispatchers.IO).launch {
+            verifySession()
+        }
+
         //TODO VerifySessionTask should also be executed in onCreate() and removed from MainActivity
-        
     }
 
-    override fun onLoginResult(result: LoginTask.LoginResult) {
-        if (result.failed()) {
-            result.exception?.printStackTrace()
-            if (result.exception is IOException) {
-                when (result.exception) {
-                    is UnknownHostException ->
-                        Toast.makeText(this, getString(R.string.request_failed_connection), Toast.LENGTH_LONG).show()
-                    is TimeoutException ->
-                        Toast.makeText(this, getString(R.string.request_failed_timeout), Toast.LENGTH_LONG).show()
-                    else ->
-                        Toast.makeText(this, String.format(getString(R.string.request_failed_other), result.exception.message), Toast.LENGTH_LONG).show()
-                }
-            } else {
-                getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("token").apply()
-                Toast.makeText(this, getString(R.string.token_expired), Toast.LENGTH_LONG).show()
-
-                val intent = Intent(this, LoginActivity::class.java)
-                if (AuthStore.getSavedUsername(this) != null) {
-                    intent.putExtra(LoginActivity.EXTRA_LOGIN, AuthStore.getSavedUsername(this))
-                }
-                startActivity(intent)
-                finish()
-            }
-        } else {
-            AuthStore.appUser = result.user!!
-        }
-
-        //TODO hide progressbar, show fragment
-    }
-
-    private inner class VerifySessionTask: AsyncTask<Void, Void, Boolean>() {
-        override fun doInBackground(vararg params: Void): Boolean {
-            //AuthStore.appUser.logout(false) //FIXME JUST FOR TESTING, REMOVE FOR RELEASE!!!
-            return AuthStore.appUser.checkSession()
-        }
-
-        override fun onPostExecute(result: Boolean) {
-            if (!result) { // session expired
-                if (AuthStore.getSavedToken(this@StartActivity) == null) {
-                    // create new account or simply login without adding an account
-                    val intent = Intent(this@StartActivity, LoginActivity::class.java)
-                    if (AuthStore.getSavedUsername(this@StartActivity) != null) {
-                        intent.putExtra(LoginActivity.EXTRA_LOGIN, AuthStore.getSavedUsername(this@StartActivity))
-                    }
-                    startActivity(intent)
-                    finish()
-
-                } else {
-                    // use saved account
-                    LoginTask(this@StartActivity).execute(
-                        AuthStore.getSavedUsername(this@StartActivity),
-                        AuthStore.getSavedToken(this@StartActivity),
-                        LoginTask.LoginMethod.TRUST
-                    )
-                }
-            }
-        }
-    }
-
-    private inner class LogoutTask: AsyncTask<Boolean, Void, Boolean>() {
-        override fun doInBackground(vararg params: Boolean?): Boolean {
-            return try {
-                AuthStore.appUser.logout(params[0] == true)
-                true
-            } catch (e: Exception) {
-                e.printStackTrace()
-                false
-            }
-        }
-
-        override fun onPostExecute(result: Boolean) {
-            if (result) {
+    private suspend fun logout(removeTrust: Boolean) {
+        try {
+            AuthStore.appUser.logout(removeTrust)
+            withContext(Dispatchers.Main) {
                 this@StartActivity.getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("token").apply()
                 this@StartActivity.getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("login").apply()
                 val intent = Intent(this@StartActivity, LoginActivity::class.java)
                 this@StartActivity.startActivity(intent)
                 this@StartActivity.finish()
-            } else {
-                Toast.makeText(baseContext, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
             }
+        } catch (e: Exception) {
+            Toast.makeText(baseContext, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
         }
     }
 
-    private inner class GenerateAutologinUrlTask: AsyncTask<Void, Void, String?>() {
-        override fun doInBackground(vararg params: Void?): String? {
-            return try {
-                AuthStore.appUser.getAutoLoginUrl()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
+    private suspend fun verifySession() {
+        try {
+            if (!AuthStore.appUser.checkSession()) {
+                val intent = Intent(this, MainActivity::class.java)
+                withContext(Dispatchers.Main) {
+                    startActivity(intent)
+                    finish()
+                }
             }
-        }
-
-        //TODO setting to choose if open inside new browser tap or in single browser window
-        override fun onPostExecute(result: String?) {
-            if (result != null) {
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.data = Uri.parse(result)
-                startActivity(intent)
-            } else {
-                Toast.makeText(baseContext, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
-            }
-        }
+        } catch (ignored: Exception) {}
     }
 
 }

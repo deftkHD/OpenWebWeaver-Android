@@ -1,6 +1,5 @@
 package de.deftk.lonet.mobile.fragments
 
-import android.os.AsyncTask
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.Group
-import de.deftk.lonet.api.model.abstract.IManageable
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.abstract.FeatureFragment
@@ -20,6 +18,10 @@ import de.deftk.lonet.mobile.abstract.IBackHandler
 import de.deftk.lonet.mobile.adapter.MemberAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import kotlinx.android.synthetic.main.fragment_members.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler {
 
@@ -60,67 +62,54 @@ class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler
         currentGroup = group
         members_list?.adapter = null
         (activity as AppCompatActivity?)?.supportActionBar?.title = getTitle()
-        if (group == null) {
-            MemberGroupLoadingTask().execute()
-        } else {
-            MemberLoadingTask().execute(group)
+        CoroutineScope(Dispatchers.IO).launch {
+            if (group == null) {
+                loadMemberGroups()
+            } else {
+                loadMembers(group)
+            }
+        }
+    }
+
+    private suspend fun loadMemberGroups() {
+        try {
+            val groups = AuthStore.appUser.getContext().getGroups().sortedBy { it.getName() }
+            withContext(Dispatchers.Main) {
+                members_list?.adapter = MemberAdapter(requireContext(), groups)
+                members_empty?.isVisible = groups.isEmpty()
+                members_swipe_refresh?.isRefreshing = false
+                progress_members?.visibility = ProgressBar.INVISIBLE
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                members_swipe_refresh?.isRefreshing = false
+                progress_members?.visibility = ProgressBar.INVISIBLE
+                Toast.makeText(context, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private suspend fun loadMembers(group: Group) {
+        try {
+            val members = group.getMembers().sortedBy { it.getName() }
+            withContext(Dispatchers.Main) {
+                members_list?.adapter = MemberAdapter(requireContext(), members)
+                members_empty?.isVisible = members.isEmpty()
+                members_swipe_refresh?.isRefreshing = false
+                progress_members?.visibility = ProgressBar.INVISIBLE
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                members_swipe_refresh?.isRefreshing = false
+                progress_members?.visibility = ProgressBar.INVISIBLE
+                Toast.makeText(context, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
+            }
         }
     }
 
     override fun getTitle(): String {
         return if (currentGroup == null) getString(R.string.members)
         else currentGroup!!.getName()
-    }
-
-    // does not need it's own task in theory
-    private inner class MemberGroupLoadingTask: AsyncTask<Group, Void, List<IManageable>?>() {
-
-        override fun doInBackground(vararg params: Group?): List<IManageable>? {
-            return try {
-                AuthStore.appUser.getContext().getGroups().sortedBy { it.getName() }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
-        }
-
-        override fun onPostExecute(result: List<IManageable>?) {
-            members_swipe_refresh?.isRefreshing = false
-            progress_members?.visibility = ProgressBar.INVISIBLE
-            if (context != null) {
-                if (result != null) {
-                    members_list?.adapter = MemberAdapter(context!!, result)
-                    members_empty?.isVisible = result.isEmpty()
-                } else {
-                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-
-    private inner class MemberLoadingTask: AsyncTask<Group, Void, List<IManageable>?>() {
-
-        override fun doInBackground(vararg params: Group?): List<IManageable>? {
-            return try {
-                params[0]?.getMembers()?.sortedBy { it.getName() }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
-        }
-
-        override fun onPostExecute(result: List<IManageable>?) {
-            members_swipe_refresh?.isRefreshing = false
-            progress_members?.visibility = ProgressBar.INVISIBLE
-            if (context != null) {
-                if (result != null) {
-                    members_list?.adapter = MemberAdapter(context!!, result)
-                    members_empty?.isVisible = result.isEmpty()
-                } else {
-                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
-                }
-            }
-        }
     }
 
 }

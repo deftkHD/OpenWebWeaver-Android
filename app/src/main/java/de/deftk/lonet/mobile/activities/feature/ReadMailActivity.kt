@@ -1,6 +1,5 @@
 package de.deftk.lonet.mobile.activities.feature
 
-import android.os.AsyncTask
 import android.os.Bundle
 import android.widget.ProgressBar
 import android.widget.Toast
@@ -9,6 +8,10 @@ import de.deftk.lonet.api.model.feature.mailbox.Email
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import kotlinx.android.synthetic.main.activity_read_mail.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.DateFormat
 
 class ReadMailActivity : AppCompatActivity() {
@@ -33,7 +36,20 @@ class ReadMailActivity : AppCompatActivity() {
             mail_author?.text = mail.from?.joinToString { it.name } ?: AuthStore.appUser.getName()
             mail_author_address?.text = mail.from?.joinToString { it.address } ?: AuthStore.appUser.getLogin()
             mail_date?.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(mail.date)
-            MailContentLoader().execute(mail)
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val content = mail.read()
+                    withContext(Dispatchers.Main) {
+                        progress_read_mail?.visibility = ProgressBar.INVISIBLE
+                        mail_message?.text = content.text ?: content.plainBody
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        progress_read_mail?.visibility = ProgressBar.INVISIBLE
+                        Toast.makeText(this@ReadMailActivity, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
         }
     }
 
@@ -41,29 +57,6 @@ class ReadMailActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
-    }
-
-    private inner class MailContentLoader: AsyncTask<Email, Void, Email.EmailContent?>() {
-
-        override fun doInBackground(vararg params: Email): Email.EmailContent? {
-            return try {
-                params[0].read()
-            } catch (e: Exception) {
-                null
-            }
-        }
-
-        override fun onPostExecute(result: Email.EmailContent?) {
-            progress_read_mail?.visibility = ProgressBar.INVISIBLE
-            if (result != null) {
-                mail_message?.text = result.text ?: result.plainBody
-                //TODO refresh fragment (so subject is not bold anymore)
-            } else {
-                Toast.makeText(this@ReadMailActivity, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
-            }
-
-        }
-
     }
 
 }

@@ -19,20 +19,28 @@ import de.deftk.lonet.mobile.activities.feature.NotificationActivity
 import de.deftk.lonet.mobile.adapter.NotificationAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import kotlinx.android.synthetic.main.fragment_notifications.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
 
     //TODO filters
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        NotificationLoader().execute()
+        CoroutineScope(Dispatchers.IO).launch {
+            refreshNotifications()
+        }
 
         val view = inflater.inflate(R.layout.fragment_notifications, container, false)
         val list = view.findViewById<ListView>(R.id.notification_list)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.notifications_swipe_refresh)
         swipeRefresh.setOnRefreshListener {
             list.adapter = null
-            NotificationLoader().execute()
+            CoroutineScope(Dispatchers.IO).launch {
+                refreshNotifications()
+            }
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(context, NotificationActivity::class.java)
@@ -42,27 +50,20 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
         return view
     }
 
-    private inner class NotificationLoader: AsyncTask<Boolean, Void, List<BoardNotification>?>() {
-
-        override fun doInBackground(vararg params: Boolean?): List<BoardNotification>? {
-            return try {
-                AuthStore.appUser.getAllBoardNotifications().sortedByDescending { it.creationDate.time }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
+    private suspend fun refreshNotifications() {
+        try {
+            val boardNotifications = AuthStore.appUser.getAllBoardNotifications().sortedByDescending { it.creationDate.time }
+            withContext(Dispatchers.Main) {
+                notification_list?.adapter = NotificationAdapter(requireContext(), boardNotifications)
+                notifications_empty?.isVisible = boardNotifications.isEmpty()
+                progress_notifications?.visibility = ProgressBar.INVISIBLE
+                notifications_swipe_refresh?.isRefreshing = false
             }
-        }
-
-        override fun onPostExecute(result: List<BoardNotification>?) {
-            progress_notifications?.visibility = ProgressBar.INVISIBLE
-            notifications_swipe_refresh?.isRefreshing = false
-            if (context != null) {
-                if (result != null) {
-                    notification_list?.adapter = NotificationAdapter(context!!, result)
-                    notifications_empty?.isVisible = result.isEmpty()
-                } else {
-                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
-                }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                progress_notifications?.visibility = ProgressBar.INVISIBLE
+                notifications_swipe_refresh?.isRefreshing = false
+                Toast.makeText(context, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
             }
         }
     }

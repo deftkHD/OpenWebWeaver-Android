@@ -1,7 +1,6 @@
 package de.deftk.lonet.mobile.fragments
 
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,23 +18,29 @@ import de.deftk.lonet.mobile.activities.feature.SystemNotificationActivity
 import de.deftk.lonet.mobile.adapter.SystemNotificationAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import kotlinx.android.synthetic.main.fragment_system_notifications.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOTIFICATIONS) {
 
     //TODO swipe left to delete notification
     // maybe this helps https://www.journaldev.com/23164/android-recyclerview-swipe-to-delete-undo
 
-    //TODO check if "infinite" scrolling is possible
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        SystemNotificationLoader().execute()
+        CoroutineScope(Dispatchers.IO).launch {
+            loadSystemNotifications()
+        }
 
         val view = inflater.inflate(R.layout.fragment_system_notifications, container, false)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.system_notifications_swipe_refresh)
         val list = view.findViewById<ListView>(R.id.system_notification_list)
         swipeRefresh.setOnRefreshListener {
             list.adapter = null
-            SystemNotificationLoader().execute()
+            CoroutineScope(Dispatchers.IO).launch {
+                loadSystemNotifications()
+            }
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val item = list.getItemAtPosition(position) as SystemNotification
@@ -46,28 +51,20 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
         return view
     }
 
-    private inner class SystemNotificationLoader: AsyncTask<Boolean, Void, List<SystemNotification>?>() {
-
-        override fun doInBackground(vararg params: Boolean?): List<SystemNotification>? {
-            return try {
-                AuthStore.appUser.getSystemNotifications()
-                    .sortedByDescending { it.date.time }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
+    private suspend fun loadSystemNotifications() {
+        try {
+            val systemNotifications = AuthStore.appUser.getSystemNotifications().sortedByDescending { it.date.time }
+            withContext(Dispatchers.Main) {
+                system_notification_list?.adapter = SystemNotificationAdapter(requireContext(), systemNotifications)
+                system_notifications_empty?.isVisible = systemNotifications.isEmpty()
+                progress_system_notifications?.visibility = ProgressBar.INVISIBLE
+                system_notifications_swipe_refresh.isRefreshing = false
             }
-        }
-
-        override fun onPostExecute(result: List<SystemNotification>?) {
-            progress_system_notifications?.visibility = ProgressBar.INVISIBLE
-            system_notifications_swipe_refresh.isRefreshing = false
-            if (context != null) {
-                if (result != null) {
-                    system_notification_list?.adapter = SystemNotificationAdapter(context!!, result)
-                    system_notifications_empty?.isVisible = result.isEmpty()
-                } else {
-                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
-                }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                progress_system_notifications?.visibility = ProgressBar.INVISIBLE
+                system_notifications_swipe_refresh.isRefreshing = false
+                Toast.makeText(context, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
             }
         }
     }

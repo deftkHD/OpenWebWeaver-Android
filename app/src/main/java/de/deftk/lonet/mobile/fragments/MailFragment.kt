@@ -1,7 +1,6 @@
 package de.deftk.lonet.mobile.fragments
 
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -23,6 +22,10 @@ import de.deftk.lonet.mobile.adapter.MailAdapter
 import de.deftk.lonet.mobile.adapter.MailFolderAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import kotlinx.android.synthetic.main.fragment_mail.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
 
@@ -79,10 +82,48 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
         currentDirectory = folder
         mail_list?.adapter = null
         (activity as AppCompatActivity?)?.supportActionBar?.title = getTitle()
-        if (folder == null) {
-            LoadEmailFoldersTask().execute()
-        } else {
-            LoadEmailsTask().execute(folder)
+        CoroutineScope(Dispatchers.IO).launch {
+            if (folder == null) {
+                loadEmailFolders()
+            } else {
+                loadEmails(folder)
+            }
+        }
+    }
+
+    private suspend fun loadEmailFolders() {
+        try {
+            val folders = AuthStore.appUser.getEmailFolders()
+            withContext(Dispatchers.Main) {
+                mail_list?.adapter = MailFolderAdapter(requireContext(), folders)
+                mail_empty?.isVisible = folders.isEmpty()
+                progress_mail?.visibility = ProgressBar.INVISIBLE
+                mail_swipe_refresh?.isRefreshing = false
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                progress_mail?.visibility = ProgressBar.INVISIBLE
+                mail_swipe_refresh?.isRefreshing = false
+                Toast.makeText(context, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private suspend fun loadEmails(folder: EmailFolder) {
+        try {
+            val emails = folder.getEmails()
+            withContext(Dispatchers.Main) {
+                mail_list?.adapter = MailAdapter(requireContext(), emails)
+                mail_empty?.isVisible = emails.isEmpty()
+                progress_mail?.visibility = ProgressBar.INVISIBLE
+                mail_swipe_refresh?.isRefreshing = false
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                progress_mail?.visibility = ProgressBar.INVISIBLE
+                mail_swipe_refresh?.isRefreshing = false
+                Toast.makeText(context, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -93,55 +134,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
 
     override fun getTitle(): String {
         return if (currentDirectory == null) getString(R.string.mail)
-        else MailFolderAdapter.getDefaultFolderTranslation(context ?: error("Oops, no context?"), currentDirectory!!)
-    }
-
-    private inner class LoadEmailsTask: AsyncTask<EmailFolder, Void, List<Email>?>() {
-        override fun doInBackground(vararg params: EmailFolder): List<Email>? {
-            return try {
-                params[0].getEmails()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
-        }
-
-        override fun onPostExecute(result: List<Email>?) {
-            progress_mail?.visibility = ProgressBar.INVISIBLE
-            mail_swipe_refresh?.isRefreshing = false
-            if (context != null) {
-                if (result != null) {
-                    mail_list?.adapter = MailAdapter(context!!, result)
-                    mail_empty?.isVisible = result.isEmpty()
-                } else {
-                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
-                }
-            }
-        }
-    }
-
-    private inner class LoadEmailFoldersTask: AsyncTask<Void, Void, List<EmailFolder>?>() {
-        override fun doInBackground(vararg params: Void?): List<EmailFolder>? {
-            return try {
-                AuthStore.appUser.getEmailFolders()
-            }  catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
-        }
-
-        override fun onPostExecute(result: List<EmailFolder>?) {
-            progress_mail?.visibility = ProgressBar.INVISIBLE
-            mail_swipe_refresh?.isRefreshing = false
-            if (context != null) {
-                if (result != null) {
-                    mail_list?.adapter = MailFolderAdapter(context!!, result)
-                    mail_empty?.isVisible = result.isEmpty()
-                } else {
-                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
-                }
-            }
-        }
+        else MailFolderAdapter.getDefaultFolderTranslation(requireContext(), currentDirectory!!)
     }
 
 }

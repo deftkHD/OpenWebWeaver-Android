@@ -1,6 +1,5 @@
 package de.deftk.lonet.mobile.fragments
 
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -20,6 +19,10 @@ import de.deftk.lonet.mobile.adapter.OverviewAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import de.deftk.lonet.mobile.feature.overview.AbstractOverviewElement
 import kotlinx.android.synthetic.main.fragment_overview.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class OverviewFragment: StartFragment() {
 
@@ -34,7 +37,9 @@ class OverviewFragment: StartFragment() {
         val list = view.findViewById<ListView>(R.id.overview_list)
         swipeRefresh.setOnRefreshListener {
             list.adapter = null
-            OverviewLoader().execute()
+            CoroutineScope(Dispatchers.IO).launch {
+                refreshOverview()
+            }
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val item = list.getItemAtPosition(position) as AbstractOverviewElement
@@ -42,7 +47,9 @@ class OverviewFragment: StartFragment() {
             if (feature != null)
                 (activity as StartActivity).displayFeatureFragment(feature)
         }
-        OverviewLoader().execute()
+        CoroutineScope(Dispatchers.IO).launch {
+            refreshOverview()
+        }
         Log.i(LOG_TAG, "Created overview fragment")
         return view
     }
@@ -51,10 +58,8 @@ class OverviewFragment: StartFragment() {
         return getString(R.string.overview)
     }
 
-    private inner class OverviewLoader: AsyncTask<Boolean, Void, List<AbstractOverviewElement>?>() {
-
-        // a bit inefficient (although it gets cached later)
-        override fun doInBackground(vararg params: Boolean?): List<AbstractOverviewElement>? {
+    private suspend fun refreshOverview() {
+        try {
             val elements = mutableListOf<AbstractOverviewElement>()
             val request = UserApiRequest(AuthStore.appUser)
             val idMap = mutableMapOf<AppFeature, List<Int>>()
@@ -63,30 +68,21 @@ class OverviewFragment: StartFragment() {
                     idMap[feature] = feature.overviewBuilder.appendRequests(request)
                 }
             }
-            val response = try {
-                request.fireRequest().toJson()
-            } catch (e:Exception) {
-                e.printStackTrace()
-                return null
-            }
+            val response = request.fireRequest().toJson()
             idMap.forEach { (feature, ids) ->
                 elements.add(feature.overviewBuilder!!.createElementFromResponse(ids.map { Pair(it, ResponseUtil.getSubResponseResult(response, it)) }.toMap()))
             }
-            return elements
-        }
 
-        override fun onPostExecute(result: List<AbstractOverviewElement>?) {
-            Log.i(LOG_TAG, "Initialized ${result?.size} overview elements")
-            progress_overview?.visibility = ProgressBar.GONE
-            overview_swipe_refresh?.isRefreshing = false
-            if (context != null) {
-                if (result != null) {
-                    overview_list?.adapter = OverviewAdapter(context!!, result)
-                } else {
-                    Toast.makeText(context, "Failed to get overview information", Toast.LENGTH_LONG).show()
-                }
-            } else {
-                Log.e(LOG_TAG, "Context is null")
+            withContext(Dispatchers.Main) {
+                overview_list?.adapter = OverviewAdapter(requireContext(), elements)
+                Log.i(LOG_TAG, "Initialized ${elements.size} overview elements")
+                progress_overview?.visibility = ProgressBar.GONE
+                overview_swipe_refresh?.isRefreshing = false
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                //TODO localize
+                Toast.makeText(context, "Failed to get overview information: ${e.message ?: e}", Toast.LENGTH_LONG).show()
             }
         }
     }

@@ -1,7 +1,6 @@
 package de.deftk.lonet.mobile.fragments
 
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,19 +18,27 @@ import de.deftk.lonet.mobile.activities.feature.TaskActivity
 import de.deftk.lonet.mobile.adapter.TaskAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import kotlinx.android.synthetic.main.fragment_tasks.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
 
     //TODO filters
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, bundle: Bundle?): View {
-        TaskLoader().execute()
+        CoroutineScope(Dispatchers.IO).launch {
+            refreshTasks()
+        }
         val view = inflater.inflate(R.layout.fragment_tasks, container, false)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.tasks_swipe_refresh)
         val list = view.findViewById<ListView>(R.id.tasks_list)
         swipeRefresh.setOnRefreshListener {
             list.adapter = null
-            TaskLoader().execute()
+            CoroutineScope(Dispatchers.IO).launch {
+                refreshTasks()
+            }
         }
         list.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(context, TaskActivity::class.java)
@@ -41,28 +48,22 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
         return view
     }
 
-    private inner class TaskLoader: AsyncTask<Any, Void, List<Task>?>() {
-
-        override fun doInBackground(vararg params: Any): List<Task>? {
-            return try {
-                AuthStore.appUser.getAllTasks().sortedByDescending { it.creationDate.time }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
+    private suspend fun refreshTasks() {
+        try {
+            val tasks = AuthStore.appUser.getAllTasks().sortedByDescending { it.creationDate.time }
+            withContext(Dispatchers.Main) {
+                tasks_list?.adapter = TaskAdapter(requireContext(), tasks)
+                tasks_empty?.isVisible = tasks.isEmpty()
+                progress_tasks?.visibility = ProgressBar.INVISIBLE
+                tasks_swipe_refresh?.isRefreshing = false
             }
-        }
-
-        override fun onPostExecute(result: List<Task>?) {
-            progress_tasks?.visibility = ProgressBar.INVISIBLE
-            tasks_swipe_refresh?.isRefreshing = false
-            if (context != null) {
-                if (result != null) {
-                    tasks_list?.adapter = TaskAdapter(context!!, result)
-                    tasks_empty?.isVisible = result.isEmpty()
-                } else {
-                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
-                }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                progress_tasks?.visibility = ProgressBar.INVISIBLE
+                tasks_swipe_refresh?.isRefreshing = false
+                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
             }
         }
     }
+
 }

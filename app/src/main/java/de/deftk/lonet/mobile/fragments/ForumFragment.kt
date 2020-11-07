@@ -1,7 +1,6 @@
 package de.deftk.lonet.mobile.fragments
 
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -24,6 +23,10 @@ import de.deftk.lonet.mobile.adapter.ForumAdapter
 import de.deftk.lonet.mobile.adapter.ForumPostAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import kotlinx.android.synthetic.main.fragment_forum.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
 
@@ -76,7 +79,28 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
             progress.visibility = ProgressBar.INVISIBLE
         } else {
             list.adapter = null
-            EntryLoader().execute(forum)
+
+            CoroutineScope(Dispatchers.IO).launch {
+                loadForumPosts(forum)
+            }
+        }
+    }
+
+    private suspend fun loadForumPosts(forum: Group) {
+        try {
+            val posts = forum.getForumPosts()
+            withContext(Dispatchers.Main) {
+                forum_list?.adapter = ForumPostAdapter(requireContext(), posts)
+                forum_empty?.isVisible = posts.isEmpty()
+                progress_forum?.visibility = ProgressBar.INVISIBLE
+                forum_swipe_refresh?.isRefreshing = false
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                progress_forum?.visibility = ProgressBar.INVISIBLE
+                forum_swipe_refresh?.isRefreshing = false
+                Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -95,31 +119,6 @@ class ForumFragment : FeatureFragment(AppFeature.FEATURE_FORUM), IBackHandler {
     override fun getTitle(): String {
         return if (currentGroup == null) getString(R.string.forum)
         else currentGroup!!.getName()
-    }
-
-    private inner class EntryLoader : AsyncTask<Any, Void, List<ForumPost>?>() {
-
-        override fun doInBackground(vararg params: Any): List<ForumPost>? {
-            return try {
-                (params[0] as Group).getForumPosts()
-            } catch (e: Exception) {
-                e.printStackTrace()
-                null
-            }
-        }
-
-        override fun onPostExecute(result: List<ForumPost>?) {
-            progress_forum?.visibility = ProgressBar.INVISIBLE
-            forum_swipe_refresh?.isRefreshing = false
-            if (context != null) {
-                if (result != null) {
-                    forum_list?.adapter = ForumPostAdapter(context!!, result)
-                    forum_empty?.isVisible = result.isEmpty()
-                } else {
-                    Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
-                }
-            }
-        }
     }
 
 }
