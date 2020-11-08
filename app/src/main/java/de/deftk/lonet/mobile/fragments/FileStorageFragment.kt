@@ -1,8 +1,11 @@
 package de.deftk.lonet.mobile.fragments
 
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.view.LayoutInflater
@@ -12,6 +15,8 @@ import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
+import androidx.core.net.toFile
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.Group
@@ -19,6 +24,7 @@ import de.deftk.lonet.api.model.feature.Quota
 import de.deftk.lonet.api.model.feature.abstract.IFilePrimitive
 import de.deftk.lonet.api.model.feature.files.OnlineFile
 import de.deftk.lonet.mobile.AuthStore
+import de.deftk.lonet.mobile.BuildConfig
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.abstract.FeatureFragment
 import de.deftk.lonet.mobile.abstract.IBackHandler
@@ -32,8 +38,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileOutputStream
-import java.net.URL
 import java.util.*
 
 class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBackHandler {
@@ -46,6 +50,15 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         private const val SAVE_GROUP = "de.deftk.lonet.mobile.files.group"
         const val ARGUMENT_GROUP = "de.deftk.lonet.mobile.files.argument_group"
         const val ARGUMENT_FILE_ID = "de.deftk.lonet.mobile.files.argument_file_id"
+    }
+
+    private val onCompleteReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == DownloadManager.ACTION_DOWNLOAD_COMPLETE) {
+                val downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0)
+                openDownload(context, downloadId)
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -68,7 +81,11 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         swipeRefresh.setOnRefreshListener {
             list.adapter = null
             CoroutineScope(Dispatchers.IO).launch {
-                loadFiles(history.peek())
+                if (history.size == 0) {
+                    loadFiles(null)
+                } else {
+                    loadFiles(history.peek())
+                }
             }
         }
         list.setOnItemClickListener { _, _, position, _ ->
@@ -78,7 +95,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
                         navigate(item)
                     } else {
                         CoroutineScope(Dispatchers.IO).launch {
-                            downloadOpenFile(item)
+                            downloadFile(item)
                         }
                         Toast.makeText(context, getString(R.string.download_started), Toast.LENGTH_SHORT).show()
                     }
@@ -94,8 +111,15 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
             //TODO show context menu
             true
         }
+        requireActivity().registerReceiver(onCompleteReceiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+
         navigate(if (history.isNotEmpty()) history.pop() else currentGroup)
         return view
+    }
+
+    override fun onDestroy() {
+        requireActivity().unregisterReceiver(onCompleteReceiver)
+        super.onDestroy()
     }
 
     private fun navigate(directory: Any?) {
@@ -185,34 +209,59 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         }
     }
 
-    //TODO progress dialog
-    private suspend fun downloadOpenFile(file: OnlineFile) {
+    //TODO scoped storage
+    private suspend fun downloadFile(file: OnlineFile) {
         try {
-            val url = URL(file.getTempDownloadUrl().downloadUrl)
-            val targetFile = File(context?.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS) ?: error("no download directory?"), file.name.replace("/", "_"))
-            if (targetFile.exists()) targetFile.delete()
-            url.openStream().use { input ->
-                FileOutputStream(targetFile).use { output ->
-                    input.copyTo(output)
-                }
-            }
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, getString(R.string.download_finished), Toast.LENGTH_SHORT).show()
-                val intent = Intent(Intent.ACTION_VIEW)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-                    val uri = androidx.core.content.FileProvider.getUriForFile(requireContext(), requireContext().packageName + ".provider", targetFile)
-                    intent.setDataAndType(uri, FileUtil.getMimeType(uri.toString()))
-                } else {
-                    val uri = Uri.fromFile(targetFile)
-                    intent.setDataAndType(uri, FileUtil.getMimeType(uri.toString()))
-                }
-                startActivity(intent)
-            }
+            val downloadUrl = file.getTempDownloadUrl().downloadUrl
+            val request = DownloadManager.Request(Uri.parse(downloadUrl))
+            val fileName = file.name.replace("[^0-9a-zA-Z_.]".toRegex(), "")
+            request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
+            request.setTitle("Download")
+            request.setDescription(file.name)
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+            request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, "temp/$fileName")
+            request.setMimeType(FileUtil.getMimeType(file.name))
+
+            val downloadManager = requireContext().getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+            downloadManager.enqueue(request)
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context, getString(R.string.request_failed_other).format(
+                        e.message ?: e
+                    ), Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    private fun openDownload(context: Context, downloadId: Long) {
+        val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val query = DownloadManager.Query()
+        query.setFilterById(downloadId)
+        val cursor = downloadManager.query(query)
+        if (cursor.moveToFirst()) {
+            val downloadStatus = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS))
+            val downloadLocalUri = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI))
+            val downloadMimeType = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_MEDIA_TYPE))
+            if ((downloadStatus == DownloadManager.STATUS_SUCCESSFUL) && downloadLocalUri != null) {
+                openDownload(context, Uri.parse(downloadLocalUri), downloadMimeType)
+            }
+        }
+        cursor.close()
+    }
+
+    private fun openDownload(context: Context, fileUri: Uri?, mimeType: String?) {
+        if (fileUri != null) {
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.setDataAndType(FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".fileprovider", fileUri.toFile()), mimeType)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            try {
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, String.format(context.getText(R.string.download_open_failed).toString(), e.message ?: e), Toast.LENGTH_SHORT).show()
             }
         }
     }

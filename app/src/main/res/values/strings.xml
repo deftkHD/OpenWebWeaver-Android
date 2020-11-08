@@ -49,7 +49,7 @@
     <string name="directory">Directory</string>
     <string name="directory_empty">Directory is empty</string>
     <string name="download_started">Download started</string>
-    <string name="download_finished">Download finished</string>
+    <string name="download_open_failed">Failed to open download (%s)</string>
     <string name="mail_folder_inbox">Inbox</string>
     <string name="mail_folder_drafts">Drafts</string>
     <string name="mail_folder_sent">Sent</string>
