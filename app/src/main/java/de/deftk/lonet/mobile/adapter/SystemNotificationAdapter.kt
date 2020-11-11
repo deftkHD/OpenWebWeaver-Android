@@ -1,7 +1,6 @@
 package de.deftk.lonet.mobile.adapter
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +10,7 @@ import com.daimajia.swipe.SwipeLayout
 import de.deftk.lonet.api.model.abstract.ManageableType
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.lonet.mobile.R
+import de.deftk.lonet.mobile.utils.SwipeAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,9 +35,7 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
         val item = getItem(position) ?: return listItemView
 
         listItemView.showMode = SwipeLayout.ShowMode.PullOut
-        listItemView.addSwipeListener(object : SwipeLayout.SwipeListener {
-            override fun onStartOpen(layout: SwipeLayout?) {}
-
+        listItemView.addSwipeListener(object : SwipeAdapter() {
             override fun onOpen(layout: SwipeLayout) {
                 CoroutineScope(Dispatchers.IO).launch {
                     item.delete()
@@ -47,13 +45,7 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
                     }
                 }
             }
-
-            override fun onStartClose(layout: SwipeLayout?) {}
-            override fun onClose(layout: SwipeLayout?) {}
-            override fun onUpdate(layout: SwipeLayout?, leftOffset: Int, topOffset: Int) {}
-            override fun onHandRelease(layout: SwipeLayout?, xvel: Float, yvel: Float) {}
         })
-
         listItemView.findViewById<TextView>(R.id.system_notification_title).text = context.getString(typeTranslationMap.getValue(item.messageType))
         listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.group.getType() != ManageableType.UNKNOWN) item.group.getName() else item.member.getName()
         listItemView.findViewById<TextView>(R.id.system_notification_date).text = DateFormat.getDateInstance().format(item.date)
