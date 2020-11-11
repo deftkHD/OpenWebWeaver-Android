@@ -72,5 +72,6 @@
     <string name="notifications_empty">No notifications</string>
     <string name="system_notifications_empty">No system notifications</string>
     <string name="tasks_empty">No tasks</string>
+    <string name="delete">Delete</string>
 
 </resources>
