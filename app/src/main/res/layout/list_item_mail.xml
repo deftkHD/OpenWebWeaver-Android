@@ -1,50 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.daimajia.swipe.SwipeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="16dp">
+    android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/mail_image"
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:padding="16dp"
+        android:background="#ff0000"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_delete"
+            android:contentDescription="@string/delete"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="2dp"
-        android:src="@drawable/ic_email"
-        tools:ignore="ContentDescription" />
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/mail_subject"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="5dp"
-        android:layout_toEndOf="@+id/mail_image"
-        android:ellipsize="end"
-        android:lines="1"
-        android:textColor="@android:color/black"
-        android:textSize="20sp"
-        tools:text="Mail Subject" />
+        <ImageView
+            android:id="@+id/mail_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="2dp"
+            android:src="@drawable/ic_email"
+            tools:ignore="ContentDescription" />
 
-    <TextView
-        android:id="@+id/mail_author"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/mail_subject"
-        android:layout_marginStart="5dp"
-        android:layout_toEndOf="@+id/mail_image"
-        android:ellipsize="end"
-        android:maxLength="30"
-        tools:text="abc.exampleuser" />
+        <TextView
+            android:id="@+id/mail_subject"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/mail_image"
+            android:ellipsize="end"
+            android:lines="1"
+            android:textColor="@android:color/black"
+            android:textSize="20sp"
+            tools:text="Mail Subject" />
 
-    <TextView
-        android:id="@+id/mail_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/mail_subject"
-        android:layout_alignParentEnd="true"
-        tools:text="1.1.2020 12:00" />
+        <TextView
+            android:id="@+id/mail_author"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/mail_subject"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/mail_image"
+            android:ellipsize="end"
+            android:maxLength="30"
+            tools:text="abc.exampleuser" />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/mail_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/mail_subject"
+            android:layout_alignParentEnd="true"
+            tools:text="1.1.2020 12:00" />
+
+    </RelativeLayout>
+</com.daimajia.swipe.SwipeLayout>
