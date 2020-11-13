@@ -73,5 +73,6 @@
     <string name="system_notifications_empty">No system notifications</string>
     <string name="tasks_empty">No tasks</string>
     <string name="delete">Delete</string>
+    <string name="error">Error: %s</string>
 
 </resources>

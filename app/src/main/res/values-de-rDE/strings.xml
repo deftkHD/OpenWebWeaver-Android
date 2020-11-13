@@ -74,4 +74,5 @@
     <string name="system_notifications_empty">Keine Systembenachrichtigungen</string>
     <string name="tasks_empty">Keine Aufgaben</string>
     <string name="delete">Löschen</string>
+    <string name="error">Fehler: %s</string>
 </resources>

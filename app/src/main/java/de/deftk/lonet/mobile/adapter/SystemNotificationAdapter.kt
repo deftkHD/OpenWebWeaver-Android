@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
+import android.widget.Toast
 import com.daimajia.swipe.SwipeLayout
 import de.deftk.lonet.api.model.abstract.ManageableType
 import de.deftk.lonet.api.model.feature.SystemNotification
@@ -35,17 +36,29 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
         val item = getItem(position) ?: return listItemView
 
         listItemView.showMode = SwipeLayout.ShowMode.PullOut
-        listItemView.addSwipeListener(object : SwipeAdapter() {
+
+        val swp = object : SwipeAdapter() {
             override fun onOpen(layout: SwipeLayout) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    item.delete()
-                    withContext(Dispatchers.Main) {
-                        remove(item)
-                        notifyDataSetChanged()
+                    try {
+                        item.delete()
+                        withContext(Dispatchers.Main) {
+                            remove(item)
+                            notifyDataSetChanged()
+                        }
+                    } catch (e: Exception) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, context.getString(R.string.error).format(e.message ?: e), Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }
-        })
+        }
+        // clear all swipe listeners; there should only be one. sadly there is no official way to do this
+        (listItemView::class.java.getDeclaredField("mSwipeListeners").apply { this.isAccessible = true }.get(listItemView) as ArrayList<*>).clear()
+
+        listItemView.addSwipeListener(swp)
+
         listItemView.findViewById<TextView>(R.id.system_notification_title).text = context.getString(typeTranslationMap.getValue(item.messageType))
         listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.group.getType() != ManageableType.UNKNOWN) item.group.getName() else item.member.getName()
         listItemView.findViewById<TextView>(R.id.system_notification_date).text = DateFormat.getDateInstance().format(item.date)
