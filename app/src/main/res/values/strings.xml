@@ -85,5 +85,11 @@
     <string name="yellow">Yellow</string>
     <string name="white">White</string>
     <string name="save">Save</string>
+    <string name="add_new_task">New task</string>
+    <string name="edit_task">Edit task</string>
+    <string name="task_start">Start</string>
+    <string name="task_due">Due</string>
+    <string name="task_start_before_due">Start date must be before due date</string>
+    <string name="task_completed">Completed</string>
 
 </resources>

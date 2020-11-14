@@ -37,7 +37,7 @@ class EditNotificationActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
-        val notification = intent.getSerializableExtra(EXTRA_NOTIFICATION) as? BoardNotification
+        val notification = intent.getSerializableExtra(EXTRA_NOTIFICATION) as? BoardNotification?
 
         val effectiveGroups = AuthStore.appUser.groups.filter { it.effectiveRights.contains(Permission.BOARD_ADMIN) }
         notification_group?.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.getLogin() })

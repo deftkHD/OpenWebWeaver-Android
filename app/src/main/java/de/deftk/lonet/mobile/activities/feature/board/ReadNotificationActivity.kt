@@ -57,7 +57,7 @@ class ReadNotificationActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         return if ((intent.getSerializableExtra(EXTRA_NOTIFICATION) as BoardNotification).operator.effectiveRights.contains(Permission.BOARD_ADMIN)) {
-            menuInflater.inflate(R.menu.board_item_menu, menu)
+            menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
             true
         } else {
             super.onCreateOptionsMenu(menu)
@@ -66,13 +66,13 @@ class ReadNotificationActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.board_item_menu_edit -> {
+            R.id.menu_item_edit -> {
                 val intent = Intent(this, EditNotificationActivity::class.java)
                 intent.putExtra(EditNotificationActivity.EXTRA_NOTIFICATION, this.intent.getSerializableExtra(EXTRA_NOTIFICATION) as BoardNotification)
                 startActivityForResult(intent, EditNotificationActivity.ACTIVITY_RESULT_EDIT)
                 true
             }
-            R.id.board_item_menu_delete -> {
+            R.id.menu_item_delete -> {
                 val notification = intent.getSerializableExtra(EXTRA_NOTIFICATION) as BoardNotification
                 CoroutineScope(Dispatchers.IO).launch {
                     notification.delete()

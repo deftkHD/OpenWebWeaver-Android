@@ -64,14 +64,14 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
         if (menuInfo is AdapterView.AdapterContextMenuInfo) {
             val notification = notification_list?.adapter?.getItem(menuInfo.position) as BoardNotification
             if (notification.operator.effectiveRights.contains(Permission.BOARD_ADMIN)) {
-                requireActivity().menuInflater.inflate(R.menu.board_item_menu, menu)
+                requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
             }
         }
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.board_item_menu_edit -> {
+            R.id.menu_item_edit -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
                 val notification = notification_list?.adapter?.getItem(info.position) as BoardNotification
                 val intent = Intent(requireContext(), EditNotificationActivity::class.java)
@@ -79,7 +79,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
                 startActivityForResult(intent, EditNotificationActivity.ACTIVITY_RESULT_EDIT)
                 true
             }
-            R.id.board_item_menu_delete -> {
+            R.id.menu_item_delete -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
                 val notification = notification_list?.adapter?.getItem(info.position) as BoardNotification
                 CoroutineScope(Dispatchers.IO).launch {

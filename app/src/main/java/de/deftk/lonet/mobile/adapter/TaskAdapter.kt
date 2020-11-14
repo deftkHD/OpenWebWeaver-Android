@@ -13,7 +13,7 @@ import de.deftk.lonet.api.model.feature.Task
 import de.deftk.lonet.mobile.R
 import java.util.*
 
-class TaskAdapter(context: Context, tasks: List<Task>): ArrayAdapter<Task>(context, 0, tasks) {
+class TaskAdapter(context: Context, tasks: List<Task>): ArrayAdapter<Task>(context, 0, tasks.toMutableList()) {
 
     private val dateFormat = DateFormat.getDateFormat(context)
 

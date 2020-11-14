@@ -86,4 +86,10 @@
     <string name="yellow">Gelb</string>
     <string name="white">Weiß</string>
     <string name="save">Speichern</string>
+    <string name="add_new_task">Neue Aufgabe</string>
+    <string name="edit_task">Aufgabe bearbeiten</string>
+    <string name="task_start">Von</string>
+    <string name="task_due">Bis</string>
+    <string name="task_start_before_due">Startzeitpunkt muss vor Endzeitpunkt liegen</string>
+    <string name="task_completed">Erledigt</string>
 </resources>
