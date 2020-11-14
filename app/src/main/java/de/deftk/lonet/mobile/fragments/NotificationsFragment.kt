@@ -102,16 +102,16 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == ACTIVITY_REQUEST_EDIT) {
+        if (requestCode == ACTIVITY_REQUEST_EDIT && data != null) {
             val adapter = notification_list.adapter as NotificationAdapter
-            val notification = data?.getSerializableExtra(EditNotificationActivity.EXTRA_NOTIFICATION) as BoardNotification
+            val notification = data.getSerializableExtra(EditNotificationActivity.EXTRA_NOTIFICATION) as BoardNotification
             val i = adapter.getPosition(notification)
             adapter.remove(notification)
             adapter.insert(notification, i)
             adapter.notifyDataSetChanged()
-        } else if (requestCode == ACTIVITY_REQUEST_ADD) {
+        } else if (requestCode == ACTIVITY_REQUEST_ADD && data != null) {
             val adapter = notification_list.adapter as NotificationAdapter
-            val notification = data?.getSerializableExtra(EditNotificationActivity.EXTRA_NOTIFICATION) as BoardNotification
+            val notification = data.getSerializableExtra(EditNotificationActivity.EXTRA_NOTIFICATION) as BoardNotification
             adapter.insert(notification, 0)
             adapter.notifyDataSetChanged()
         }
