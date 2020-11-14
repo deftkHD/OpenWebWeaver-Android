@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.Group
+import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.abstract.FeatureFragment
@@ -41,11 +42,9 @@ class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler
             val item = list.getItemAtPosition(position)
             if (item is Group) {
                 navigate(item)
+            } else {
+                //TODO context menu (send mail, admin features, ...)
             }
-        }
-        list.setOnItemLongClickListener { _, _, position, _ ->
-            //TODO context menu (send mail, admin features, ...)
-            false
         }
         return view
     }
@@ -73,7 +72,7 @@ class MembersFragment: FeatureFragment(AppFeature.FEATURE_MEMBERS), IBackHandler
 
     private suspend fun loadMemberGroups() {
         try {
-            val groups = AuthStore.appUser.getContext().getGroups().sortedBy { it.getName() }
+            val groups = AuthStore.appUser.getContext().getGroups().filter { it.effectiveRights.contains(Permission.MEMBERS) }.sortedBy { it.getName() }
             withContext(Dispatchers.Main) {
                 members_list?.adapter = MemberAdapter(requireContext(), groups)
                 members_empty?.isVisible = groups.isEmpty()
