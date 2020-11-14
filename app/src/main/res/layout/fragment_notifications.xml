@@ -48,7 +48,7 @@
         android:layout_margin="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:src="@drawable/ic_add"
+        android:src="@drawable/ic_add_light_32"
         android:contentDescription="@string/add_new_notification"
         android:visibility="invisible" />
 

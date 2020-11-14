@@ -21,7 +21,7 @@ class MemberAdapter(context: Context, elements: List<IManageable>): ArrayAdapter
             listItemView.findViewById<TextView>(R.id.member_name).text = item.getName()
             if (item is RemoteManageable) {
                 listItemView.findViewById<TextView>(R.id.member_online_status).setText(if (item.isOnline) R.string.online else R.string.offline)
-                listItemView.findViewById<ImageView>(R.id.member_image).setImageResource(if (item.isOnline) R.drawable.ic_member_online else R.drawable.ic_member)
+                listItemView.findViewById<ImageView>(R.id.member_image).setImageResource(if (item.isOnline) R.drawable.ic_person_orange_24 else R.drawable.ic_person_dark_24)
             }
             listItemView
         } else {
