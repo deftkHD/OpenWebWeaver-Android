@@ -58,7 +58,6 @@
             android:layout_height="wrap_content"
             android:autoLink="web|email"
             android:textColor="@android:color/black"
-            android:textSize="15sp"
             android:padding="8dp"
             tools:text="Notification text"
             android:importantForAutofill="no"
