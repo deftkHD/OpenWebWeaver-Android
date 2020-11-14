@@ -78,7 +78,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:src="@drawable/ic_edit"
-        android:contentDescription="@string/add_new_notification"
+        android:contentDescription="@string/edit_notification"
         android:visibility="invisible" />
 
 </RelativeLayout>
