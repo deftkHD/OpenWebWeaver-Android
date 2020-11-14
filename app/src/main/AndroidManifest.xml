@@ -9,14 +9,15 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:requestLegacyExternalStorage="true"
         android:label="@string/app_name"
+        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".activities.feature.board.EditNotificationActivity" />
         <activity android:name=".activities.feature.ForumPostActivity" />
         <activity android:name=".activities.feature.ReadMailActivity" />
-        <activity android:name=".activities.feature.NotificationActivity" />
+        <activity android:name=".activities.feature.board.ReadNotificationActivity" />
         <activity android:name=".activities.feature.SystemNotificationActivity" />
         <activity android:name=".activities.feature.TaskActivity" />
         <activity

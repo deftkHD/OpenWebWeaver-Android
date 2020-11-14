@@ -1,4 +1,4 @@
-package de.deftk.lonet.mobile.activities.feature
+package de.deftk.lonet.mobile.activities.feature.board
 
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
@@ -6,10 +6,10 @@ import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.feature.board.BoardNotification
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.utils.TextUtils
-import kotlinx.android.synthetic.main.activity_notification.*
+import kotlinx.android.synthetic.main.activity_read_notification.*
 import java.text.DateFormat
 
-class NotificationActivity : AppCompatActivity() {
+class ReadNotificationActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_NOTIFICATION = "de.deftk.lonet.mobile.notification.notification_extra"
@@ -17,7 +17,7 @@ class NotificationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_notification)
+        setContentView(R.layout.activity_read_notification)
 
         // back button in toolbar
         supportActionBar?.setDisplayHomeAsUpEnabled(true)

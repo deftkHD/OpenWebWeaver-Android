@@ -74,5 +74,16 @@
     <string name="tasks_empty">No tasks</string>
     <string name="delete">Delete</string>
     <string name="error">Error: %s</string>
+    <string name="add_new_notification">New notification</string>
+    <string name="title">Title</string>
+    <string name="text">Text</string>
+    <string name="edit">Edit</string>
+    <string name="edit_notification">Edit notification</string>
+    <string name="blue">Blue</string>
+    <string name="green">Green</string>
+    <string name="red">Red</string>
+    <string name="yellow">Yellow</string>
+    <string name="white">White</string>
+    <string name="save">Save</string>
 
 </resources>

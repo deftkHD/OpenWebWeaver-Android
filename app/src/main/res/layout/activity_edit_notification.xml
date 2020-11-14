@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.feature.NotificationActivity">
+    tools:context=".activities.feature.board.EditNotificationActivity">
 
     <RelativeLayout
         android:id="@+id/notification_header"
@@ -13,7 +13,7 @@
         android:layout_alignParentTop="true"
         android:padding="16dp">
 
-        <TextView
+        <EditText
             android:id="@+id/notification_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -21,31 +21,25 @@
             android:layout_alignParentTop="true"
             android:textColor="@android:color/black"
             android:textSize="20sp"
-            tools:text="Notification title" />
+            android:hint="@string/title"
+            android:importantForAutofill="no"
+            android:inputType="textNoSuggestions" />
 
-        <TextView
-            android:id="@+id/notification_author"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/notification_title"
-            android:layout_alignParentStart="true"
-            tools:text="abc.exampleuser" />
-
-        <TextView
+        <Spinner
             android:id="@+id/notification_group"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/notification_author"
-            android:layout_alignParentStart="true"
-            tools:text="abc.examplegroup" />
-
-        <TextView
-            android:id="@+id/notification_date"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/notification_title"
-            android:layout_alignParentEnd="true"
-            tools:text="1.1.2020 12:00" />
+            android:layout_alignParentStart="true"
+            android:importantForAutofill="no" />
+
+        <Spinner
+            android:id="@+id/notification_accent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/notification_group"
+            android:layout_alignParentStart="true"
+            android:importantForAutofill="no" />
 
     </RelativeLayout>
 
@@ -58,7 +52,7 @@
         android:layout_alignParentBottom="true"
         android:scrollbars="vertical">
 
-        <TextView
+        <EditText
             android:id="@+id/notification_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -66,7 +60,10 @@
             android:textColor="@android:color/black"
             android:textSize="15sp"
             android:padding="8dp"
-            tools:text="Notification text" />
+            tools:text="Notification text"
+            android:importantForAutofill="no"
+            android:inputType="textMultiLine"
+            android:hint="@string/text"/>
 
     </ScrollView>
 

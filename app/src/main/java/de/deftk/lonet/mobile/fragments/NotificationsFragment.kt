@@ -1,21 +1,18 @@
 package de.deftk.lonet.mobile.fragments
 
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ListView
-import android.widget.ProgressBar
-import android.widget.Toast
+import android.view.*
+import android.widget.*
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.board.BoardNotification
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.abstract.FeatureFragment
-import de.deftk.lonet.mobile.activities.feature.NotificationActivity
+import de.deftk.lonet.mobile.activities.feature.board.EditNotificationActivity
+import de.deftk.lonet.mobile.activities.feature.board.ReadNotificationActivity
 import de.deftk.lonet.mobile.adapter.NotificationAdapter
 import de.deftk.lonet.mobile.feature.AppFeature
 import kotlinx.android.synthetic.main.fragment_notifications.*
@@ -26,11 +23,26 @@ import kotlinx.coroutines.withContext
 
 class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
 
+    companion object {
+        const val ACTIVITY_REQUEST_ADD = 2
+        const val ACTIVITY_REQUEST_EDIT = 3
+    }
+
     //TODO filters
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         CoroutineScope(Dispatchers.IO).launch {
             refreshNotifications()
+
+            if (AuthStore.appUser.groups.any { it.effectiveRights.contains(Permission.BOARD_ADMIN) }) {
+                withContext(Dispatchers.Main) {
+                    fab_add_notification?.visibility = View.VISIBLE
+                    fab_add_notification?.setOnClickListener {
+                        val intent = Intent(context, EditNotificationActivity::class.java)
+                        startActivityForResult(intent, ACTIVITY_REQUEST_ADD)
+                    }
+                }
+            }
         }
 
         val view = inflater.inflate(R.layout.fragment_notifications, container, false)
@@ -43,11 +55,66 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
             }
         }
         list.setOnItemClickListener { _, _, position, _ ->
-            val intent = Intent(context, NotificationActivity::class.java)
-            intent.putExtra(NotificationActivity.EXTRA_NOTIFICATION, list.getItemAtPosition(position) as BoardNotification)
+            val intent = Intent(context, ReadNotificationActivity::class.java)
+            intent.putExtra(ReadNotificationActivity.EXTRA_NOTIFICATION, list.getItemAtPosition(position) as BoardNotification)
             startActivity(intent)
         }
+
+        registerForContextMenu(list)
         return view
+    }
+
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        if (menuInfo is AdapterView.AdapterContextMenuInfo) {
+            val notification = notification_list?.adapter?.getItem(menuInfo.position) as BoardNotification
+            if (notification.operator.effectiveRights.contains(Permission.BOARD_ADMIN)) {
+                requireActivity().menuInflater.inflate(R.menu.board_item_menu, menu)
+            }
+        }
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.board_item_menu_edit -> {
+                val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
+                val notification = notification_list?.adapter?.getItem(info.position) as BoardNotification
+                val intent = Intent(requireContext(), EditNotificationActivity::class.java)
+                intent.putExtra(EditNotificationActivity.EXTRA_NOTIFICATION, notification)
+                startActivityForResult(intent, ACTIVITY_REQUEST_EDIT)
+                true
+            }
+            R.id.board_item_menu_delete -> {
+                val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
+                val notification = notification_list?.adapter?.getItem(info.position) as BoardNotification
+                CoroutineScope(Dispatchers.IO).launch {
+                    notification.delete()
+                    withContext(Dispatchers.Main) {
+                        val adapter = notification_list.adapter as NotificationAdapter
+                        adapter.remove(notification)
+                        adapter.notifyDataSetChanged()
+                    }
+                }
+                true
+            }
+            else -> false
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == ACTIVITY_REQUEST_EDIT) {
+            val adapter = notification_list.adapter as NotificationAdapter
+            val notification = data?.getSerializableExtra(EditNotificationActivity.EXTRA_NOTIFICATION) as BoardNotification
+            val i = adapter.getPosition(notification)
+            adapter.remove(notification)
+            adapter.insert(notification, i)
+            adapter.notifyDataSetChanged()
+        } else if (requestCode == ACTIVITY_REQUEST_ADD) {
+            val adapter = notification_list.adapter as NotificationAdapter
+            val notification = data?.getSerializableExtra(EditNotificationActivity.EXTRA_NOTIFICATION) as BoardNotification
+            adapter.insert(notification, 0)
+            adapter.notifyDataSetChanged()
+        }
     }
 
     private suspend fun refreshNotifications() {

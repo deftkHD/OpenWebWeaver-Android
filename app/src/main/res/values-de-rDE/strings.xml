@@ -75,4 +75,15 @@
     <string name="tasks_empty">Keine Aufgaben</string>
     <string name="delete">Löschen</string>
     <string name="error">Fehler: %s</string>
+    <string name="add_new_notification">Mitteilung hinzufügen</string>
+    <string name="title">Titel</string>
+    <string name="text">Text</string>
+    <string name="edit">Bearbeiten</string>
+    <string name="edit_notification">Mitteilung bearbeiten</string>
+    <string name="blue">Blau</string>
+    <string name="green">Grün</string>
+    <string name="red">Rot</string>
+    <string name="yellow">Gelb</string>
+    <string name="white">Weiß</string>
+    <string name="save">Speichern</string>
 </resources>

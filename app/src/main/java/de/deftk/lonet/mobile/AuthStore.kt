@@ -61,7 +61,7 @@ object AuthStore {
         val salt = fromBase64(fields[0])
         val iv = fromBase64(fields[1])
         val encrypted = fromBase64(fields[2])
-        val key = deriveKey( salt)
+        val key = deriveKey(salt)
         val cipher = Cipher.getInstance(cipherAlgorithm)
         val ivParams = IvParameterSpec(iv)
         cipher.init(Cipher.DECRYPT_MODE, key, ivParams)
