@@ -13,7 +13,6 @@ import de.deftk.lonet.api.model.feature.board.BoardNotification
 import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
 import de.deftk.lonet.mobile.adapter.NotificationAdapter
-import de.deftk.lonet.mobile.fragments.NotificationsFragment
 import de.deftk.lonet.mobile.utils.TextUtils
 import kotlinx.android.synthetic.main.activity_edit_notification.*
 import kotlinx.coroutines.CoroutineScope
@@ -25,6 +24,9 @@ class EditNotificationActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_NOTIFICATION = "de.deftk.lonet.mobile.notification.notification_extra"
+
+        const val ACTIVITY_RESULT_ADD = 2
+        const val ACTIVITY_RESULT_EDIT = 3
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,7 +84,7 @@ class EditNotificationActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         val intent = Intent()
                         intent.putExtra(EXTRA_NOTIFICATION, notification)
-                        setResult(NotificationsFragment.ACTIVITY_REQUEST_EDIT, intent)
+                        setResult(ACTIVITY_RESULT_EDIT, intent)
                         finish()
                     }
                 } else {
@@ -91,7 +93,7 @@ class EditNotificationActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         val intent = Intent()
                         intent.putExtra(EXTRA_NOTIFICATION, newNotification)
-                        setResult(NotificationsFragment.ACTIVITY_REQUEST_ADD, intent)
+                        setResult(ACTIVITY_RESULT_ADD, intent)
                         finish()
                     }
                 }

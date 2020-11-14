@@ -23,11 +23,6 @@ import kotlinx.coroutines.withContext
 
 class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
 
-    companion object {
-        const val ACTIVITY_REQUEST_ADD = 2
-        const val ACTIVITY_REQUEST_EDIT = 3
-    }
-
     //TODO filters
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -39,7 +34,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
                     fab_add_notification?.visibility = View.VISIBLE
                     fab_add_notification?.setOnClickListener {
                         val intent = Intent(context, EditNotificationActivity::class.java)
-                        startActivityForResult(intent, ACTIVITY_REQUEST_ADD)
+                        startActivityForResult(intent, EditNotificationActivity.ACTIVITY_RESULT_ADD)
                     }
                 }
             }
@@ -57,7 +52,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
         list.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(context, ReadNotificationActivity::class.java)
             intent.putExtra(ReadNotificationActivity.EXTRA_NOTIFICATION, list.getItemAtPosition(position) as BoardNotification)
-            startActivity(intent)
+            startActivityForResult(intent, 0)
         }
 
         registerForContextMenu(list)
@@ -81,7 +76,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
                 val notification = notification_list?.adapter?.getItem(info.position) as BoardNotification
                 val intent = Intent(requireContext(), EditNotificationActivity::class.java)
                 intent.putExtra(EditNotificationActivity.EXTRA_NOTIFICATION, notification)
-                startActivityForResult(intent, ACTIVITY_REQUEST_EDIT)
+                startActivityForResult(intent, EditNotificationActivity.ACTIVITY_RESULT_EDIT)
                 true
             }
             R.id.board_item_menu_delete -> {
@@ -102,19 +97,24 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == ACTIVITY_REQUEST_EDIT && data != null) {
+        if (resultCode == EditNotificationActivity.ACTIVITY_RESULT_EDIT && data != null) {
             val adapter = notification_list.adapter as NotificationAdapter
             val notification = data.getSerializableExtra(EditNotificationActivity.EXTRA_NOTIFICATION) as BoardNotification
             val i = adapter.getPosition(notification)
             adapter.remove(notification)
             adapter.insert(notification, i)
             adapter.notifyDataSetChanged()
-        } else if (requestCode == ACTIVITY_REQUEST_ADD && data != null) {
+        } else if (resultCode == EditNotificationActivity.ACTIVITY_RESULT_ADD && data != null) {
             val adapter = notification_list.adapter as NotificationAdapter
             val notification = data.getSerializableExtra(EditNotificationActivity.EXTRA_NOTIFICATION) as BoardNotification
             adapter.insert(notification, 0)
             adapter.notifyDataSetChanged()
-        }
+        } else if (resultCode == ReadNotificationActivity.ACTIVITY_RESULT_DELETE && data != null) {
+            val adapter = notification_list.adapter as NotificationAdapter
+            val notification = data.getSerializableExtra(ReadNotificationActivity.EXTRA_NOTIFICATION) as BoardNotification
+            adapter.remove(notification)
+            adapter.notifyDataSetChanged()
+        } else super.onActivityResult(requestCode, resultCode, data)
     }
 
     private suspend fun refreshNotifications() {
