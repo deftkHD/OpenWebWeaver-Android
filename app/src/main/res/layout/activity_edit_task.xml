@@ -5,12 +5,19 @@
     android:layout_height="match_parent"
     tools:context=".activities.feature.tasks.EditTaskActivity">
 
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        android:elevation="4dp" />
+
     <RelativeLayout
         android:id="@+id/task_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/toolbar"
         android:padding="16dp">
 
         <EditText
@@ -19,9 +26,10 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:textColor="@android:color/black"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             android:hint="@string/title"
+            tools:text="Title"
             android:importantForAutofill="no"
             android:inputType="textNoSuggestions" />
 
@@ -78,7 +86,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autoLink="web|email"
-            android:textColor="@android:color/black"
+            android:textColor="?android:attr/textColorPrimary"
             android:padding="8dp"
             tools:text="Task text"
             android:importantForAutofill="no"

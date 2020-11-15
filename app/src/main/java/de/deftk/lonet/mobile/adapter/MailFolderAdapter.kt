@@ -21,10 +21,10 @@ class MailFolderAdapter(context: Context, elements: List<EmailFolder>) :
             Pair(EmailFolder.EmailFolderType.TRASH, R.string.mail_folder_trash)
         )
         private val folderImages = mapOf(
-            Pair(EmailFolder.EmailFolderType.INBOX, R.drawable.ic_inbox_dark_24),
-            Pair(EmailFolder.EmailFolderType.DRAFTS, R.drawable.ic_drafts_dark_24),
-            Pair(EmailFolder.EmailFolderType.SENT, R.drawable.ic_send_dark_24),
-            Pair(EmailFolder.EmailFolderType.TRASH, R.drawable.ic_delete_dark_24)
+            Pair(EmailFolder.EmailFolderType.INBOX, R.drawable.ic_inbox_24),
+            Pair(EmailFolder.EmailFolderType.DRAFTS, R.drawable.ic_drafts_24),
+            Pair(EmailFolder.EmailFolderType.SENT, R.drawable.ic_send_24),
+            Pair(EmailFolder.EmailFolderType.TRASH, R.drawable.ic_delete_24)
         )
 
         fun getDefaultFolderTranslation(context: Context, folder: EmailFolder): String {
@@ -39,7 +39,7 @@ class MailFolderAdapter(context: Context, elements: List<EmailFolder>) :
         val item = getItem(position) ?: return listItemView
         listItemView.findViewById<TextView>(R.id.mail_folder_name).text = getDefaultFolderTranslation(context, item)
         listItemView.findViewById<ImageView>(R.id.mail_folder_image)
-            .setImageResource(folderImages[item.type] ?: R.drawable.ic_folder_special_dark_24)
+            .setImageResource(folderImages[item.type] ?: R.drawable.ic_folder_special_24)
         return listItemView
     }
 

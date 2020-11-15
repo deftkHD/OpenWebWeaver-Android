@@ -64,7 +64,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = AuthStore.appUser.fullName ?: getString(R.string.unknown_name)
         navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = AuthStore.appUser.getLogin()
         navigationView.setNavigationItemSelectedListener(this)
-        addMenuItem(object : AbstractNavigableMenuItem(R.string.overview, R.id.main_group, R.drawable.ic_list_dark_24) {
+        addMenuItem(object : AbstractNavigableMenuItem(R.string.overview, R.id.main_group, R.drawable.ic_list_24) {
             override fun onClick(activity: AppCompatActivity) {
                 supportFragmentManager.beginTransaction().replace(R.id.fragment_container, OverviewFragment()).commit()
                 supportActionBar?.title = getString(R.string.overview)
@@ -76,7 +76,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
             if (appFeature != null)
                 addMenuItem(FeatureMenuItem(appFeature))
         }
-        addMenuItem(object : AbstractNavigableMenuItem(R.string.open_website, R.id.utility_group, R.drawable.ic_language_dark_24) {
+        addMenuItem(object : AbstractNavigableMenuItem(R.string.open_website, R.id.utility_group, R.drawable.ic_language_24) {
             override fun onClick(activity: AppCompatActivity) {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
@@ -93,12 +93,12 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                 }
             }
         })
-        addMenuItem(object : AbstractNavigableMenuItem(R.string.settings, R.id.utility_group, R.drawable.ic_settings_dark_24) {
+        addMenuItem(object : AbstractNavigableMenuItem(R.string.settings, R.id.utility_group, R.drawable.ic_settings_24) {
             override fun onClick(activity: AppCompatActivity) {
                 Toast.makeText(this@StartActivity, "Not implemented yet", Toast.LENGTH_SHORT).show()
             }
         })
-        addMenuItem(object : AbstractNavigableMenuItem(R.string.logout, R.id.utility_group, R.drawable.ic_lock_open_dark_24) {
+        addMenuItem(object : AbstractNavigableMenuItem(R.string.logout, R.id.utility_group, R.drawable.ic_lock_open_24) {
             override fun onClick(activity: AppCompatActivity) {
                 val listener = DialogInterface.OnClickListener { _, which ->
                     when (which) {

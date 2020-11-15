@@ -12,7 +12,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginTop="2dp"
-        android:src="@drawable/ic_forum_dark_24"
+        android:src="@drawable/ic_forum_24"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -24,7 +24,7 @@
         android:layout_toEndOf="@+id/forum_post_image"
         android:ellipsize="end"
         android:maxLines="1"
-        android:textColor="@android:color/black"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="20sp"
         tools:text="Post title" />
 

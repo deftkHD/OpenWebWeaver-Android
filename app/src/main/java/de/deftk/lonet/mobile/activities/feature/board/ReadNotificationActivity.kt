@@ -31,6 +31,7 @@ class ReadNotificationActivity : AppCompatActivity() {
         setContentView(R.layout.activity_read_notification)
 
         // back button in toolbar
+        setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setTitle(R.string.see_notification)

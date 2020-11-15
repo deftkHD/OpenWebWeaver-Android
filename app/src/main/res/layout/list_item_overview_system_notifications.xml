@@ -10,7 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
-        android:src="@drawable/ic_warning_dark_24"
+        android:src="@drawable/ic_warning_24"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -21,7 +21,7 @@
         android:layout_marginStart="5dp"
         android:layout_toEndOf="@+id/overview_system_notifications_image"
         android:text="@string/system_notifications"
-        android:textColor="@android:color/black"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="20sp" />
 
     <TextView

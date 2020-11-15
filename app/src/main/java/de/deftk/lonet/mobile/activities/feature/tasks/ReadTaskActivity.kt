@@ -30,6 +30,7 @@ class ReadTaskActivity : AppCompatActivity() {
         setContentView(R.layout.activity_read_task)
 
         // back button in toolbar
+        setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setTitle(R.string.task_details)

@@ -43,6 +43,7 @@ class EditTaskActivity : AppCompatActivity() {
         setContentView(R.layout.activity_edit_task)
 
         // back button in toolbar
+        setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 

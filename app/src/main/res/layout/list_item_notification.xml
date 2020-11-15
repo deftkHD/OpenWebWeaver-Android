@@ -14,7 +14,7 @@
         android:layout_alignParentEnd="true"
         android:ellipsize="end"
         android:maxLines="1"
-        android:textColor="@android:color/black"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="20sp"
         tools:text="Notification Title" />
 

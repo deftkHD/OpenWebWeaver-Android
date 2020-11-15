@@ -34,6 +34,7 @@ class EditNotificationActivity : AppCompatActivity() {
         setContentView(R.layout.activity_edit_notification)
 
         // back button in toolbar
+        setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 

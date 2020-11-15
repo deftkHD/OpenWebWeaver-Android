@@ -21,6 +21,7 @@ class SystemNotificationActivity : AppCompatActivity() {
         setContentView(R.layout.activity_system_notification)
 
         // back button in toolbar
+        setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setTitle(R.string.see_system_notification)

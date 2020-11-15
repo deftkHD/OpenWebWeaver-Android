@@ -24,8 +24,8 @@ class FileStorageFilesAdapter(context: Context, elements: List<OnlineFile>) :
         listItemView.findViewById<TextView>(R.id.file_modified_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.modificationDate)
         val imageView = listItemView.findViewById<ImageView>(R.id.file_image)
         when (item.type) {
-            OnlineFile.FileType.FILE -> imageView.setImageResource(R.drawable.ic_file_dark_24)
-            OnlineFile.FileType.FOLDER -> imageView.setImageResource(R.drawable.ic_folder_dark_24)
+            OnlineFile.FileType.FILE -> imageView.setImageResource(R.drawable.ic_file_24)
+            OnlineFile.FileType.FOLDER -> imageView.setImageResource(R.drawable.ic_folder_24)
             else -> imageView.setImageDrawable(null)
         }
         return listItemView

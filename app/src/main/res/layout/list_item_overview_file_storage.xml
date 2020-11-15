@@ -12,7 +12,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginTop="2dp"
-        android:src="@drawable/ic_folder_dark_24"
+        android:src="@drawable/ic_folder_24"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -23,7 +23,7 @@
         android:layout_marginStart="5dp"
         android:layout_toEndOf="@+id/overview_file_storage_image"
         android:text="@string/file_storage"
-        android:textColor="@android:color/black"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="20sp" />
 
     <TextView

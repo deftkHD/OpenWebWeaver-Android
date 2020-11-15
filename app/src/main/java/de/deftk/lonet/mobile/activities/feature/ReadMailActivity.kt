@@ -25,6 +25,7 @@ class ReadMailActivity : AppCompatActivity() {
         setContentView(R.layout.activity_read_mail)
 
         // back button in toolbar
+        setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.title = getString(R.string.read_mail)

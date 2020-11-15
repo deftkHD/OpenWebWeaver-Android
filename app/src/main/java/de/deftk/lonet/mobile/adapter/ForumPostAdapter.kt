@@ -16,19 +16,19 @@ class ForumPostAdapter(context: Context, elements: List<ForumPost>): ArrayAdapte
 
     companion object {
         val postIconMap = mapOf(
-            Pair(ForumPostIcon.INFORMATION, R.drawable.ic_info_dark_24),
-            Pair(ForumPostIcon.HUMOR, R.drawable.ic_face_dark_24),
-            Pair(ForumPostIcon.QUESTION, R.drawable.ic_help_outline_dark_24),
-            Pair(ForumPostIcon.ANSWER, R.drawable.ic_chat_dark_24),
-            Pair(ForumPostIcon.UP_VOTE, R.drawable.ic_thumbs_up_dark_24),
-            Pair(ForumPostIcon.DOWN_VOTE, R.drawable.ic_thumbs_down_dark_24)
+            Pair(ForumPostIcon.INFORMATION, R.drawable.ic_info_24),
+            Pair(ForumPostIcon.HUMOR, R.drawable.ic_face_24),
+            Pair(ForumPostIcon.QUESTION, R.drawable.ic_help_outline_24),
+            Pair(ForumPostIcon.ANSWER, R.drawable.ic_chat_24),
+            Pair(ForumPostIcon.UP_VOTE, R.drawable.ic_thumbs_up_24),
+            Pair(ForumPostIcon.DOWN_VOTE, R.drawable.ic_thumbs_down_24)
         )
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val listItemView = convertView ?: LayoutInflater.from(context).inflate(R.layout.list_item_forum_post, parent, false)
         val item = getItem(position) ?: return listItemView
-        listItemView.findViewById<ImageView>(R.id.forum_post_image).setImageResource(postIconMap[item.icon] ?: R.drawable.ic_help_dark_24)
+        listItemView.findViewById<ImageView>(R.id.forum_post_image).setImageResource(postIconMap[item.icon] ?: R.drawable.ic_help_24)
         listItemView.findViewById<TextView>(R.id.forum_post_title).text = item.title
         listItemView.findViewById<TextView>(R.id.forum_post_author).text = item.creationMember.getName()
         listItemView.findViewById<TextView>(R.id.forum_post_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.creationDate)

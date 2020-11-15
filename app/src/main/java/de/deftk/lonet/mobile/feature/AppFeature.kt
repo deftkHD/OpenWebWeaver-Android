@@ -21,7 +21,7 @@ enum class AppFeature(
     val overviewBuilder: OverviewBuilder? = null
 ) {
 
-    FEATURE_TASKS(Feature.TASKS, TasksFragment::class.java, R.drawable.ic_edit_dark_24, R.string.tasks, TasksOverview::class.java, object : OverviewBuilder {
+    FEATURE_TASKS(Feature.TASKS, TasksFragment::class.java, R.drawable.ic_edit_24, R.string.tasks, TasksOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest): List<Int> {
             return request.addGetAllTasksRequest()
         }
@@ -41,7 +41,7 @@ enum class AppFeature(
             return TasksOverview(tasks.count { it.completed }, tasks.size)
         }
     }),
-    FEATURE_MAIL(Feature.MAILBOX, MailFragment::class.java, R.drawable.ic_email_dark_24, R.string.mail, MailOverview::class.java, object: OverviewBuilder {
+    FEATURE_MAIL(Feature.MAILBOX, MailFragment::class.java, R.drawable.ic_email_24, R.string.mail, MailOverview::class.java, object: OverviewBuilder {
         override fun appendRequests(request: UserApiRequest): List<Int> {
             return request.addGetEmailStateRequest()
         }
@@ -53,7 +53,7 @@ enum class AppFeature(
             return MailOverview(quota, unread)
         }
     }),
-    FEATURE_FILE_STORAGE(Feature.FILES, FileStorageFragment::class.java, R.drawable.ic_file_dark_24, R.string.file_storage, FileStorageOverview::class.java, object: OverviewBuilder {
+    FEATURE_FILE_STORAGE(Feature.FILES, FileStorageFragment::class.java, R.drawable.ic_file_24, R.string.file_storage, FileStorageOverview::class.java, object: OverviewBuilder {
         override fun appendRequests(request: UserApiRequest): List<Int> {
             return request.addGetFileStorageStateRequest()
         }
@@ -64,7 +64,7 @@ enum class AppFeature(
             return FileStorageOverview(quota)
         }
     }),
-    FEATURE_NOTIFICATIONS(Feature.BOARD, NotificationsFragment::class.java, R.drawable.ic_notifications_dark_24, R.string.notifications, NotificationsOverview::class.java, object : OverviewBuilder {
+    FEATURE_NOTIFICATIONS(Feature.BOARD, NotificationsFragment::class.java, R.drawable.ic_notifications_24, R.string.notifications, NotificationsOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest): List<Int> {
             return request.addGetAllNotificationsRequest()
         }
@@ -81,9 +81,9 @@ enum class AppFeature(
             return NotificationsOverview(count)
         }
     }),
-    FEATURE_FORUM(Feature.FORUM, ForumFragment::class.java, R.drawable.ic_forum_dark_24, R.string.forum),
-    FEATURE_MEMBERS(Feature.MEMBERS, MembersFragment::class.java, R.drawable.ic_people_dark_24, R.string.members),
-    FEATURE_SYSTEM_NOTIFICATIONS(Feature.MESSAGES, SystemNotificationsFragment::class.java, R.drawable.ic_warning_dark_24, R.string.system_notifications, SystemNotificationsOverview::class.java, object : OverviewBuilder {
+    FEATURE_FORUM(Feature.FORUM, ForumFragment::class.java, R.drawable.ic_forum_24, R.string.forum),
+    FEATURE_MEMBERS(Feature.MEMBERS, MembersFragment::class.java, R.drawable.ic_people_24, R.string.members),
+    FEATURE_SYSTEM_NOTIFICATIONS(Feature.MESSAGES, SystemNotificationsFragment::class.java, R.drawable.ic_warning_24, R.string.system_notifications, SystemNotificationsOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest): List<Int> {
             return request.addGetSystemNotificationsRequest()
         }
