@@ -26,8 +26,7 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
             Pair(SystemNotification.SystemNotificationType.FILE_UPLOAD, R.string.system_notification_type_file_upload),
             Pair(SystemNotification.SystemNotificationType.NEW_NOTIFICATION, R.string.system_notification_type_new_notification),
             Pair(SystemNotification.SystemNotificationType.NEW_TRUST, R.string.system_notification_type_new_trust),
-            Pair(SystemNotification.SystemNotificationType.NEW_TASK, R.string.system_notification_type_new_task),
-            Pair(SystemNotification.SystemNotificationType.UNKNOWN, R.string.system_notification_type_unknown)
+            Pair(SystemNotification.SystemNotificationType.NEW_TASK, R.string.system_notification_type_new_task)
         )
     }
 
@@ -59,7 +58,12 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
 
         listItemView.addSwipeListener(swp)
 
-        listItemView.findViewById<TextView>(R.id.system_notification_title).text = context.getString(typeTranslationMap.getValue(item.messageType))
+        val type = item.messageType
+        listItemView.findViewById<TextView>(R.id.system_notification_title).text = if (type != null) {
+            context.getString(typeTranslationMap.getValue(type))
+        } else {
+            context.getString(R.string.system_notification_type_unknown)
+        }
         listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.group.getType() != ManageableType.UNKNOWN) item.group.getName() else item.member.getName()
         listItemView.findViewById<TextView>(R.id.system_notification_date).text = DateFormat.getDateInstance().format(item.date)
         return listItemView

@@ -33,7 +33,7 @@ class NotificationAdapter(context: Context, elements: List<BoardNotification>): 
 
         companion object {
             fun getByApiColor(color: BoardNotificationColor?): BoardNotificationColors? {
-                if (color == BoardNotificationColor.UNKNOWN || color == null) return null
+                if (color == null) return null
                 return values().firstOrNull { it.apiColor == color }
             }
         }

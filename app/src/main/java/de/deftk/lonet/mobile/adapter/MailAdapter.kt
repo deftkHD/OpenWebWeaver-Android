@@ -50,7 +50,7 @@ class MailAdapter(context: Context, elements: List<Email>): ArrayAdapter<Email>(
 
         val subjectView = listItemView.findViewById<TextView>(R.id.mail_subject)
         subjectView.text = item.subject
-        if (item.isRead != false)
+        if (item.unread != true)
             subjectView.setTypeface(null, Typeface.NORMAL)
         else
             subjectView.setTypeface(null, Typeface.BOLD)

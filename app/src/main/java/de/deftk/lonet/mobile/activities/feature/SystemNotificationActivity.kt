@@ -29,7 +29,12 @@ class SystemNotificationActivity : AppCompatActivity() {
         val notification = intent.getSerializableExtra(EXTRA_SYSTEM_NOTIFICATION) as? SystemNotification
 
         if (notification != null) {
-            system_notification_title.text = getString(SystemNotificationAdapter.typeTranslationMap.getValue(notification.messageType))
+            val type = notification.messageType
+            system_notification_title.text = if (type != null) {
+                getString(SystemNotificationAdapter.typeTranslationMap.getValue(type))
+            } else {
+                getString(R.string.system_notification_type_unknown)
+            }
             system_notification_author.text = notification.member.getName()
             system_notification_group.text = notification.group.getName()
             system_notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.date)
