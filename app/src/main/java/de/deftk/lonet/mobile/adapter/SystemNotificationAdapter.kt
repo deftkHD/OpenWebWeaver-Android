@@ -26,6 +26,7 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
             Pair(SystemNotification.SystemNotificationType.FILE_UPLOAD, R.string.system_notification_type_file_upload),
             Pair(SystemNotification.SystemNotificationType.NEW_NOTIFICATION, R.string.system_notification_type_new_notification),
             Pair(SystemNotification.SystemNotificationType.NEW_TRUST, R.string.system_notification_type_new_trust),
+            Pair(SystemNotification.SystemNotificationType.UNAUTHORIZED_LOGIN_LOCATION, R.string.system_notification_unauthorized_login_location),
             Pair(SystemNotification.SystemNotificationType.NEW_TASK, R.string.system_notification_type_new_task)
         )
     }
@@ -60,7 +61,7 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
 
         val type = item.messageType
         listItemView.findViewById<TextView>(R.id.system_notification_title).text = if (type != null) {
-            context.getString(typeTranslationMap.getValue(type))
+            context.getString(typeTranslationMap[type] ?: R.string.system_notification_type_unknown)
         } else {
             context.getString(R.string.system_notification_type_unknown)
         }

@@ -31,7 +31,7 @@ class SystemNotificationActivity : AppCompatActivity() {
         if (notification != null) {
             val type = notification.messageType
             system_notification_title.text = if (type != null) {
-                getString(SystemNotificationAdapter.typeTranslationMap.getValue(type))
+                getString(SystemNotificationAdapter.typeTranslationMap[type] ?: R.string.system_notification_type_unknown)
             } else {
                 getString(R.string.system_notification_type_unknown)
             }
