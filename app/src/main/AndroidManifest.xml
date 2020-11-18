@@ -14,13 +14,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".activities.feature.mail.MailsActivity" />
         <activity android:name=".activities.feature.FilesActivity" />
         <activity android:name=".activities.feature.forum.ForumPostsActivity" />
         <activity android:name=".activities.feature.MembersActivity" />
         <activity android:name=".activities.feature.tasks.EditTaskActivity" />
         <activity android:name=".activities.feature.board.EditNotificationActivity" />
         <activity android:name=".activities.feature.forum.ForumPostActivity" />
-        <activity android:name=".activities.feature.ReadMailActivity" />
+        <activity android:name=".activities.feature.mail.ReadMailActivity" />
         <activity android:name=".activities.feature.board.ReadNotificationActivity" />
         <activity android:name=".activities.feature.SystemNotificationActivity" />
         <activity android:name=".activities.feature.tasks.ReadTaskActivity" />

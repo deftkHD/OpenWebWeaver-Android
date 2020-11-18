@@ -92,5 +92,6 @@
     <string name="task_start_before_due">Start date must be before due date</string>
     <string name="task_completed">Completed</string>
     <string name="system_notification_unauthorized_login_location">Unauthorized login location</string>
+    <string name="no_mail_folders">No email folders</string>
 
 </resources>

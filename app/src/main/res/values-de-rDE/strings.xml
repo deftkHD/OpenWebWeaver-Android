@@ -93,4 +93,5 @@
     <string name="task_start_before_due">Startzeitpunkt muss vor Endzeitpunkt liegen</string>
     <string name="task_completed">Erledigt</string>
     <string name="system_notification_unauthorized_login_location">Unautorisierter Anmeldeort</string>
+    <string name="no_mail_folders">Keine Email Ordner</string>
 </resources>

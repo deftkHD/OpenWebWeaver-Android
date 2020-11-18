@@ -1,4 +1,4 @@
-package de.deftk.lonet.mobile.activities.feature
+package de.deftk.lonet.mobile.activities.feature.mail
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
