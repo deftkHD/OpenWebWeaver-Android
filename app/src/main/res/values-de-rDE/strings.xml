@@ -17,7 +17,7 @@
     <string name="later">Später</string>
     <string name="update_failed">Update fehlgeschlagen</string>
     <string name="try_later">Später wieder versuchen</string>
-    <string name="confirm">Mache ich</string>
+    <string name="confirm">Okay</string>
     <string name="files_permission_description">Die folgende Berechtigung wird für die Funktion der Dateiablage benötigt. Bitte bestätigen Sie diese</string>
     <string name="task_completed_desc">Aufgabe erledigt</string>
     <string name="task_not_completed_desc">Aufgabe nicht erledigt</string>
@@ -98,4 +98,5 @@
     <string name="new_mail">Neue Email</string>
     <string name="create_new_folder">Neuen Ordner erstellen</string>
     <string name="name">Name</string>
+    <string name="cancel">Abbrechen</string>
 </resources>

@@ -63,12 +63,12 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
                 input.inputType = InputType.TYPE_CLASS_TEXT
                 builder.setView(input)
 
-                builder.setPositiveButton("OK") { _, _ ->
+                builder.setPositiveButton(R.string.confirm) { _, _ ->
                     CoroutineScope(Dispatchers.IO).launch {
                         createNewFolder(input.text.toString())
                     }
                 }
-                builder.setNegativeButton("Cancel") { dialog, _ ->
+                builder.setNegativeButton(R.string.cancel) { dialog, _ ->
                     dialog.cancel()
                 }
 
