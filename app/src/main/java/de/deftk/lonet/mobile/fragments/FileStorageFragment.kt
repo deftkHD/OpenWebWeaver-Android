@@ -44,7 +44,7 @@ import java.util.*
 class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBackHandler {
 
     private val history = Stack<IFilePrimitive>()
-    private var curentFileStorage: IFileStorage? = null
+    private var currentFileStorage: IFileStorage? = null
 
     companion object {
         private const val SAVE_HISTORY = "de.deftk.lonet.mobile.files.history"
@@ -73,7 +73,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
             (savedInstanceState.getSerializable(SAVE_HISTORY) as? Stack<*>)?.forEach {
                 this.history.push(it as IFilePrimitive)
             }
-            curentFileStorage = savedInstanceState.getSerializable(SAVE_GROUP) as? IFileStorage?
+            currentFileStorage = savedInstanceState.getSerializable(SAVE_GROUP) as? IFileStorage?
         }
 
         val view = inflater.inflate(R.layout.fragment_file_storage, container, false)
@@ -114,7 +114,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         }
         requireActivity().registerReceiver(onCompleteReceiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
-        navigate(if (history.isNotEmpty()) history.pop() else curentFileStorage)
+        navigate(if (history.isNotEmpty()) history.pop() else currentFileStorage)
         return view
     }
 
@@ -129,7 +129,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         when (directory) {
             is IFilePrimitive -> {
                 if (directory is IFileStorage)
-                    curentFileStorage = directory
+                    currentFileStorage = directory
                 else
                     history.push(directory)
                 CoroutineScope(Dispatchers.IO).launch {
@@ -138,7 +138,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
             }
             null -> {
                 history.clear()
-                curentFileStorage = null
+                currentFileStorage = null
                 CoroutineScope(Dispatchers.IO).launch {
                     loadFiles(null)
                 }
@@ -151,10 +151,10 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
         return when {
             history.isNotEmpty() -> {
                 history.pop()
-                navigate(if (history.isEmpty()) curentFileStorage else history.pop()) // item will be pushed again by navigate() //FIXME maybe not that nice to reset every scroll index on going back
+                navigate(if (history.isEmpty()) currentFileStorage else history.pop()) // item will be pushed again by navigate() //FIXME maybe not that nice to reset every scroll index on going back
                 true
             }
-            curentFileStorage != null -> {
+            currentFileStorage != null -> {
                 navigate(null) // show groups
                 true
             }
@@ -227,11 +227,7 @@ class FileStorageFragment: FeatureFragment(AppFeature.FEATURE_FILE_STORAGE), IBa
             downloadManager.enqueue(request)
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(
-                    context, getString(R.string.request_failed_other).format(
-                        e.message ?: e
-                    ), Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(context, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
             }
         }
     }
