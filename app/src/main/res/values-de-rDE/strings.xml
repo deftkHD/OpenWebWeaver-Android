@@ -94,4 +94,8 @@
     <string name="task_completed">Erledigt</string>
     <string name="system_notification_unauthorized_login_location">Unautorisierter Anmeldeort</string>
     <string name="no_mail_folders">Keine Email Ordner</string>
+    <string name="add_folder">Ordner hinzufügen</string>
+    <string name="new_mail">Neue Email</string>
+    <string name="create_new_folder">Neuen Ordner erstellen</string>
+    <string name="name">Name</string>
 </resources>
