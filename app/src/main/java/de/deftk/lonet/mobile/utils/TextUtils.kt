@@ -11,7 +11,7 @@ import android.view.View
 import android.widget.Toast
 import de.deftk.lonet.api.model.Feature
 import de.deftk.lonet.mobile.activities.StartActivity
-import de.deftk.lonet.mobile.fragments.FileStorageFragment
+import de.deftk.lonet.mobile.fragments.FileStorageGroupFragment
 
 object TextUtils {
 
@@ -67,8 +67,8 @@ object TextUtils {
                     val intent = Intent(widget.context, StartActivity::class.java)
                     intent.putExtra(StartActivity.EXTRA_FOCUS_FEATURE, Feature.FILES)
                     val args = Bundle()
-                    args.putString(FileStorageFragment.ARGUMENT_GROUP, group)
-                    args.putString(FileStorageFragment.ARGUMENT_FILE_ID, extra)
+                    args.putString(FileStorageGroupFragment.ARGUMENT_GROUP, group)
+                    args.putString(FileStorageGroupFragment.ARGUMENT_FILE_ID, extra)
                     intent.putExtra(StartActivity.EXTRA_FOCUS_FEATURE_ARGUMENTS, args)
                     widget.context.startActivity(intent)
                 }

@@ -53,7 +53,7 @@ enum class AppFeature(
             return MailOverview(quota, unread)
         }
     }),
-    FEATURE_FILE_STORAGE(Feature.FILES, FileStorageFragment::class.java, R.drawable.ic_file_24, R.string.file_storage, FileStorageOverview::class.java, object: OverviewBuilder {
+    FEATURE_FILE_STORAGE(Feature.FILES, FileStorageGroupFragment::class.java, R.drawable.ic_file_24, R.string.file_storage, FileStorageOverview::class.java, object: OverviewBuilder {
         override fun appendRequests(request: UserApiRequest): List<Int> {
             return request.addGetFileStorageStateRequest()
         }
@@ -81,8 +81,8 @@ enum class AppFeature(
             return NotificationsOverview(count)
         }
     }),
-    FEATURE_FORUM(Feature.FORUM, ForumFragment::class.java, R.drawable.ic_forum_24, R.string.forum),
-    FEATURE_MEMBERS(Feature.MEMBERS, MembersFragment::class.java, R.drawable.ic_people_24, R.string.members),
+    FEATURE_FORUM(Feature.FORUM, ForumGroupFragment::class.java, R.drawable.ic_forum_24, R.string.forum),
+    FEATURE_MEMBERS(Feature.MEMBERS, MembersGroupFragment::class.java, R.drawable.ic_people_24, R.string.members),
     FEATURE_SYSTEM_NOTIFICATIONS(Feature.MESSAGES, SystemNotificationsFragment::class.java, R.drawable.ic_warning_24, R.string.system_notifications, SystemNotificationsOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest): List<Int> {
             return request.addGetSystemNotificationsRequest()

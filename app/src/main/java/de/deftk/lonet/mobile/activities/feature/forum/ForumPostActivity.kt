@@ -1,4 +1,4 @@
-package de.deftk.lonet.mobile.activities.feature
+package de.deftk.lonet.mobile.activities.feature.forum
 
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
