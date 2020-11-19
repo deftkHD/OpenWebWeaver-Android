@@ -98,5 +98,15 @@
     <string name="create_new_folder">Create new folder</string>
     <string name="name">Name</string>
     <string name="cancel">Cancel</string>
+    <string name="message">Message</string>
+    <string name="mail_subject">Subject</string>
+    <string name="mail_to">To</string>
+    <string name="send_mail">Send mail</string>
+    <string name="write_mail">Write mail</string>
+    <string name="mail_to_cc">CC</string>
+    <string name="mail_to_bcc">BCC</string>
+    <string name="mail_no_subject">No subject</string>
+    <string name="mail_no_message">No message</string>
+    <string name="mail_no_to">No address</string>
 
 </resources>

@@ -1,16 +1,16 @@
 package de.deftk.lonet.mobile.activities.feature.mail
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import de.deftk.lonet.api.model.Group
-import de.deftk.lonet.api.model.feature.mailbox.Email
+import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.mailbox.EmailFolder
+import de.deftk.lonet.mobile.AuthStore
 import de.deftk.lonet.mobile.R
-import de.deftk.lonet.mobile.activities.feature.MembersActivity
 import de.deftk.lonet.mobile.adapter.MailAdapter
 import de.deftk.lonet.mobile.adapter.MailFolderAdapter
 import kotlinx.android.synthetic.main.activity_mails.*
@@ -24,6 +24,8 @@ class MailsActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_FOLDER = "de.deftk.lonet.mobile.mail.extra_folder"
+
+        const val REQUEST_CODE_WRITE_MAIL = 1
     }
 
     private lateinit var folder: EmailFolder
@@ -54,7 +56,24 @@ class MailsActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        if (AuthStore.appUser.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
+            fab_mail_add.visibility = View.VISIBLE
+            fab_mail_add.setOnClickListener {
+                val intent = Intent(this, WriteMailActivity::class.java)
+                startActivityForResult(intent, REQUEST_CODE_WRITE_MAIL)
+            }
+        }
+
         reloadMails()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_CODE_WRITE_MAIL) {
+            if (resultCode == WriteMailActivity.RESULT_CODE_MAIL) {
+                progress_mail.visibility = View.VISIBLE
+                reloadMails()
+            }
+        } else super.onActivityResult(requestCode, resultCode, data)
     }
 
     // back button in toolbar functionality

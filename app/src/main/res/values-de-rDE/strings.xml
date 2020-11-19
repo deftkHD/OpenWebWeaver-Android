@@ -99,4 +99,14 @@
     <string name="create_new_folder">Neuen Ordner erstellen</string>
     <string name="name">Name</string>
     <string name="cancel">Abbrechen</string>
+    <string name="message">Nachricht</string>
+    <string name="mail_subject">Betreff</string>
+    <string name="mail_to">Empfänger</string>
+    <string name="send_mail">Email senden</string>
+    <string name="write_mail">Email schreiben</string>
+    <string name="mail_to_cc">CC</string>
+    <string name="mail_to_bcc">BCC</string>
+    <string name="mail_no_subject">Kein Betreff</string>
+    <string name="mail_no_message">Keine Nachricht</string>
+    <string name="mail_no_to">Kein Empfänger</string>
 </resources>
