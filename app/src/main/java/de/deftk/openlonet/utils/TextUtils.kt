@@ -21,45 +21,75 @@ object TextUtils {
             ?.replace("\t", "&nbsp; &nbsp; &nbsp;")
             ?: ""
 
+        @Suppress("DEPRECATION")
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
             Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
         else Html.fromHtml(html)
     }
 
     // structure {{<function>|<group>|<detail>|<display text>}}
+    // alternative structure {{<email>}}
     fun parseInternalReferences(spanned: Spanned): Spanned {
         var builder = SpannableStringBuilder(spanned)
         var startIndex: Int
         var endIndex = 0
         while (true) {
-            startIndex = builder.indexOf("{{", endIndex)
-            endIndex = builder.indexOf("}}", startIndex + 2)
-            if (startIndex == -1 || endIndex == -1) break
-            val params = mutableListOf<String>()
+            try {
+                startIndex = builder.indexOf("{{", endIndex)
+                endIndex = builder.indexOf("}}", startIndex + 2)
+                if (startIndex == -1 || endIndex == -1)
+                    break
+                val params = mutableListOf<String>()
 
-            var paramStartIndex = startIndex + 2
-            var paramEndIndex: Int
-            for (i in 0..3) {
-                paramEndIndex = builder.indexOf("|", paramStartIndex)
-                if (paramEndIndex == -1 || paramEndIndex > endIndex) paramEndIndex = endIndex
-                params.add(builder.substring(paramStartIndex, paramEndIndex).trim())
-                paramStartIndex = paramEndIndex + 1
-            }
-            endIndex += 2
-            if (params.size == 4) {
-                builder = (builder.replace(startIndex, endIndex, params[3]))
-                val type = InternalReferenceType.getById(params[0])
-                builder.setSpan(InternalReferenceSpan(type, params[1], params[2], params[3]), startIndex, startIndex + params[3].length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                endIndex = startIndex + params[3].length
-            }
-
+                var paramStartIndex = startIndex + 2
+                var paramEndIndex: Int
+                for (i in 0..3) {
+                    paramEndIndex = builder.indexOf("|", paramStartIndex)
+                    if (paramEndIndex == -1 || paramEndIndex > endIndex)
+                        paramEndIndex = endIndex
+                    params.add(builder.substring(paramStartIndex, paramEndIndex).trim())
+                    paramStartIndex = paramEndIndex + 1
+                    if (paramStartIndex >= endIndex)
+                        break
+                }
+                endIndex += 2
+                if (params.size == 4) {
+                    builder = (builder.replace(startIndex, endIndex, params[3]))
+                    val type = InternalReferenceType.getById(params[0])
+                    builder.setSpan(
+                        InternalReferenceSpan(type, params[1], params[2], params[3]),
+                        startIndex,
+                        startIndex + params[3].length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    endIndex = startIndex + params[3].length
+                } else if (params.size == 1) {
+                    val reference = params[0]
+                    val name = if (reference.contains("@")) {
+                        reference.substring(0, reference.indexOf("@"))
+                    } else null
+                    val display = name ?: reference
+                    builder = builder.replace(startIndex, endIndex, display)
+                    builder.setSpan(
+                        MailSpan(reference),
+                        startIndex,
+                        startIndex + display.length,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    endIndex = startIndex + display.length
+                }
+            } catch (ignored: Exception) {
+            } // don't do anything if failed to parse reference; if possible try to continue read the other references
         }
         return builder
     }
 
 
-    class InternalReferenceSpan(private val type: InternalReferenceType, private val group: String, private val extra: String, private val displayText: String): ClickableSpan() {
-
+    class InternalReferenceSpan(
+        private val type: InternalReferenceType,
+        private val group: String,
+        private val extra: String,
+        private val displayText: String
+    ) : ClickableSpan() {
         override fun onClick(widget: View) {
             when (type) {
                 InternalReferenceType.FILE_STORAGE -> {
@@ -73,11 +103,21 @@ object TextUtils {
                     widget.context.startActivity(intent)
                 }
                 else -> {
-                    Toast.makeText(widget.context, "Don't know how to handle reference type \"$type\"", Toast.LENGTH_LONG).show()
+                    //TODO localize
+                    Toast.makeText(
+                        widget.context,
+                        "Don't know how to handle reference type \"$type\"",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }
+    }
 
+    class MailSpan(private val mail: String) : ClickableSpan() {
+        override fun onClick(widget: View) {
+            Toast.makeText(widget.context, mail, Toast.LENGTH_LONG).show()
+        }
     }
 
     enum class InternalReferenceType(val id: String) {
