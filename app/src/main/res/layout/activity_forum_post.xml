@@ -16,8 +16,8 @@
         android:id="@+id/forum_post_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
         android:layout_below="@id/toolbar"
+        android:layout_alignParentStart="true"
         android:padding="16dp">
 
         <ImageView
@@ -69,14 +69,55 @@
         android:layout_alignParentBottom="true"
         android:scrollbars="vertical">
 
-        <TextView
-            android:id="@+id/forum_post_text"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autoLink="web|email"
-            android:textColor="?android:attr/textColorPrimary"
-            android:padding="8dp"
-            tools:text="Post text" />
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/forum_post_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoLink="web|email"
+                android:padding="8dp"
+                android:textColor="?android:attr/textColorPrimary"
+                tools:text="Post text" />
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/forum_post_text"
+                android:layout_marginTop="20dp"
+                android:padding="10dp">
+
+                <TextView
+                    android:id="@+id/forum_post_comment_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:text="@string/comments"
+                    android:textSize="17sp" />
+
+                <TextView
+                    android:id="@+id/forum_post_no_comments"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/forum_post_comment_text"
+                    android:padding="4dp"
+                    android:text="@string/no_comments"
+                    tools:text="No comments" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/forum_post_comment_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/forum_post_comment_text"
+                    android:padding="4dp"
+                    tools:listitem="@layout/recycler_item_forum_comment" />
+
+            </RelativeLayout>
+
+        </RelativeLayout>
+
     </ScrollView>
 
 </RelativeLayout>

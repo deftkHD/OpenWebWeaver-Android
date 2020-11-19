@@ -109,4 +109,7 @@
     <string name="mail_no_subject">Kein Betreff</string>
     <string name="mail_no_message">Keine Nachricht</string>
     <string name="mail_no_to">Kein Empfänger</string>
+    <string name="comments">Kommentare</string>
+    <string name="show_comments">Kommentare anzeigen</string>
+    <string name="no_comments">Keine Kommentare</string>
 </resources>

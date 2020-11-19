@@ -108,5 +108,8 @@
     <string name="mail_no_subject">No subject</string>
     <string name="mail_no_message">No message</string>
     <string name="mail_no_to">No address</string>
+    <string name="comments">Comments</string>
+    <string name="show_comments">Show comments</string>
+    <string name="no_comments">No comments</string>
 
 </resources>

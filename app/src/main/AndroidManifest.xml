@@ -14,29 +14,29 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="de.deftk.openlonet.activities.feature.mail.MailsActivity" />
-        <activity android:name="de.deftk.openlonet.activities.feature.mail.WriteMailActivity" />
-        <activity android:name="de.deftk.openlonet.activities.feature.FilesActivity" />
-        <activity android:name="de.deftk.openlonet.activities.feature.forum.ForumPostsActivity" />
-        <activity android:name="de.deftk.openlonet.activities.feature.MembersActivity" />
-        <activity android:name="de.deftk.openlonet.activities.feature.tasks.EditTaskActivity" />
-        <activity android:name="de.deftk.openlonet.activities.feature.board.EditNotificationActivity" />
-        <activity android:name="de.deftk.openlonet.activities.feature.forum.ForumPostActivity" />
-        <activity android:name="de.deftk.openlonet.activities.feature.mail.ReadMailActivity" />
-        <activity android:name="de.deftk.openlonet.activities.feature.board.ReadNotificationActivity" />
-        <activity android:name="de.deftk.openlonet.activities.feature.SystemNotificationActivity" />
-        <activity android:name="de.deftk.openlonet.activities.feature.tasks.ReadTaskActivity" />
+        <activity android:name=".activities.feature.mail.MailsActivity" />
+        <activity android:name=".activities.feature.mail.WriteMailActivity" />
+        <activity android:name=".activities.feature.FilesActivity" />
+        <activity android:name=".activities.feature.forum.ForumPostsActivity" />
+        <activity android:name=".activities.feature.MembersActivity" />
+        <activity android:name=".activities.feature.tasks.EditTaskActivity" />
+        <activity android:name=".activities.feature.board.EditNotificationActivity" />
+        <activity android:name=".activities.feature.forum.ForumPostActivity" />
+        <activity android:name=".activities.feature.mail.ReadMailActivity" />
+        <activity android:name=".activities.feature.board.ReadNotificationActivity" />
+        <activity android:name=".activities.feature.SystemNotificationActivity" />
+        <activity android:name=".activities.feature.tasks.ReadTaskActivity" />
         <activity
-            android:name="de.deftk.openlonet.activities.StartActivity"
+            android:name=".activities.StartActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name="de.deftk.openlonet.activities.MainActivity">
+        <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="de.deftk.openlonet.activities.LoginActivity" />
+        <activity android:name=".activities.LoginActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
