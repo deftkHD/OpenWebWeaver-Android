@@ -49,7 +49,7 @@ class LoginActivity : AppCompatActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         if (stayLoggedIn) {
-                            AuthStore.appUser = LoNet.loginCreateTrust(username, password, "LoNet² Mobile", "${Build.BRAND} ${Build.MODEL}")
+                            AuthStore.appUser = LoNet.loginCreateTrust(username, password, "OpenLoNet", "${Build.BRAND} ${Build.MODEL}")
                             AuthStore.saveUsername(AuthStore.appUser.getLogin(), this@LoginActivity)
                             AuthStore.saveToken(AuthStore.appUser.authKey, this@LoginActivity)
                         } else {
