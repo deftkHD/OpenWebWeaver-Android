@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LoNetMobile</string>
+    <string name="app_name">OpenLoNet</string>
     <string name="btn_login">Anmelden</string>
     <string name="email">E-Mail</string>
     <string name="password">Passwort</string>

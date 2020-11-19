@@ -7,7 +7,7 @@ android {
     buildToolsVersion "29.0.2"
 
     defaultConfig {
-        applicationId "de.deftk.lonet.mobile"
+        applicationId "de.deftk.openlonet"
         minSdkVersion 21
         targetSdkVersion 30
         versionCode 1
