@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
         Log.i(LOG_TAG, "Permission result")
         when (requestCode) {
             0 -> {
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.getOrNull(0) != PackageManager.PERMISSION_GRANTED) {
                     Log.i(LOG_TAG, "Permission not granted")
                     finish()
                 } else {
