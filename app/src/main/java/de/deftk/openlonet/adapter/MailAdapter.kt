@@ -10,6 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.daimajia.swipe.SwipeLayout
 import de.deftk.lonet.api.model.feature.mailbox.Email
+import de.deftk.lonet.api.model.feature.mailbox.EmailFolder
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.utils.SwipeAdapter
@@ -30,7 +31,16 @@ class MailAdapter(context: Context, elements: List<Email>): ArrayAdapter<Email>(
             override fun onOpen(layout: SwipeLayout) {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        item.delete()
+                        if (item.folder.type == EmailFolder.EmailFolderType.TRASH) {
+                            item.delete()
+                        } else {
+                            val trash = AuthStore.appUser.getEmailFolders().firstOrNull { it.type == EmailFolder.EmailFolderType.TRASH }
+                            if (trash != null) {
+                                item.move(trash)
+                            } else {
+                                item.delete()
+                            }
+                        }
                         withContext(Dispatchers.Main) {
                             remove(item)
                             notifyDataSetChanged()
@@ -43,7 +53,7 @@ class MailAdapter(context: Context, elements: List<Email>): ArrayAdapter<Email>(
                 }
             }
         }
-        // clear all swipe listeners; there should only be one. sadly there is no official way to do this
+        // clear all swipe listeners; there should only be one. sadly there seems to be no official way to do this
         (listItemView::class.java.getDeclaredField("mSwipeListeners").apply { this.isAccessible = true }.get(listItemView) as ArrayList<*>).clear()
 
         listItemView.addSwipeListener(swp)
