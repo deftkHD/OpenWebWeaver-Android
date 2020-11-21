@@ -112,4 +112,6 @@
     <string name="comments">Kommentare</string>
     <string name="show_comments">Kommentare anzeigen</string>
     <string name="no_comments">Keine Kommentare</string>
+    <string name="overview_request_failed">Erstellen der Übersicht fehlgeschlagen (%s)</string>
+    <string name="unknown_reference_type">Unbekannter Sprungtyp \"%s\"</string>
 </resources>

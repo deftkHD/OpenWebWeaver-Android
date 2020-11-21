@@ -10,6 +10,7 @@ import android.text.style.ClickableSpan
 import android.view.View
 import android.widget.Toast
 import de.deftk.lonet.api.model.Feature
+import de.deftk.openlonet.R
 import de.deftk.openlonet.activities.StartActivity
 import de.deftk.openlonet.fragments.FileStorageGroupFragment
 
@@ -57,7 +58,7 @@ object TextUtils {
                     builder = (builder.replace(startIndex, endIndex, params[3]))
                     val type = InternalReferenceType.getById(params[0])
                     builder.setSpan(
-                        InternalReferenceSpan(type, params[1], params[2], params[3]),
+                        InternalReferenceSpan(type, params[1], params[2]),
                         startIndex,
                         startIndex + params[3].length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
@@ -87,8 +88,7 @@ object TextUtils {
     class InternalReferenceSpan(
         private val type: InternalReferenceType,
         private val group: String,
-        private val extra: String,
-        private val displayText: String
+        private val extra: String
     ) : ClickableSpan() {
         override fun onClick(widget: View) {
             when (type) {
@@ -103,10 +103,9 @@ object TextUtils {
                     widget.context.startActivity(intent)
                 }
                 else -> {
-                    //TODO localize
                     Toast.makeText(
                         widget.context,
-                        "Don't know how to handle reference type \"$type\"",
+                        widget.context.getString(R.string.unknown_reference_type).format(type),
                         Toast.LENGTH_LONG
                     ).show()
                 }

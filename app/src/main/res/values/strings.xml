@@ -111,5 +111,7 @@
     <string name="comments">Comments</string>
     <string name="show_comments">Show comments</string>
     <string name="no_comments">No comments</string>
+    <string name="overview_request_failed">Failed to get overview information (%s)</string>
+    <string name="unknown_reference_type">Unknown reference type \"%s\"</string>
 
 </resources>

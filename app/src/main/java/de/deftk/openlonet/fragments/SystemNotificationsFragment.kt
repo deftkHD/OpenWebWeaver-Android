@@ -25,9 +25,6 @@ import kotlinx.coroutines.withContext
 
 class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOTIFICATIONS) {
 
-    //TODO swipe left to delete notification
-    // maybe this helps https://www.journaldev.com/23164/android-recyclerview-swipe-to-delete-undo
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         CoroutineScope(Dispatchers.IO).launch {
             loadSystemNotifications()

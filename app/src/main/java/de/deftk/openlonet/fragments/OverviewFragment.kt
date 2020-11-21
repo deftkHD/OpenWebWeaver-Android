@@ -81,9 +81,12 @@ class OverviewFragment: StartFragment() {
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                //TODO localize
                 e.printStackTrace()
-                Toast.makeText(context, "Failed to get overview information: ${e.message ?: e}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    getString(R.string.overview_request_failed).format(e.message ?: e),
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
