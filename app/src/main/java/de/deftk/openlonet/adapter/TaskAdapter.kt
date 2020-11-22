@@ -6,14 +6,15 @@ import android.text.format.DateFormat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import de.deftk.lonet.api.model.feature.Task
 import de.deftk.openlonet.R
+import de.deftk.openlonet.utils.filter.FilterableAdapter
+import de.deftk.openlonet.utils.filter.filterApplies
 import java.util.*
 
-class TaskAdapter(context: Context, tasks: List<Task>): ArrayAdapter<Task>(context, 0, tasks.toMutableList()) {
+class TaskAdapter(context: Context, tasks: List<Task>): FilterableAdapter<Task>(context, tasks.toMutableList()) {
 
     private val dateFormat = DateFormat.getDateFormat(context)
 
@@ -39,5 +40,19 @@ class TaskAdapter(context: Context, tasks: List<Task>): ArrayAdapter<Task>(conte
             listItemView.findViewById<TextView>(R.id.task_due).text = String.format(context.getString(R.string.until_date), if (task.endDate != null) dateFormat.format(task.endDate!!) else context.getString(R.string.not_set))
         }
         return listItemView
+    }
+
+    override fun search(constraint: String?): List<Task> {
+        if (constraint == null)
+            return originalElements
+        return originalElements.filter {
+            it.title?.contains(constraint, true) == true
+                    || it.description?.contains(constraint, true) == true
+                    || it.creationMember.filterApplies(constraint)
+        }
+    }
+
+    override fun sort(elements: List<Task>): List<Task> {
+        return elements.sortedByDescending { it.creationDate }
     }
 }

@@ -4,12 +4,13 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.TextView
 import de.deftk.lonet.api.model.Group
 import de.deftk.openlonet.R
+import de.deftk.openlonet.utils.filter.FilterableAdapter
+import de.deftk.openlonet.utils.filter.filterApplies
 
-class ForumAdapter(context: Context, elements: List<Group>): ArrayAdapter<Group>(context, 0, elements) {
+class ForumAdapter(context: Context, elements: List<Group>): FilterableAdapter<Group>(context, elements) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val listItemView = convertView ?: LayoutInflater.from(context).inflate(R.layout.list_item_forum, parent, false)
@@ -18,4 +19,13 @@ class ForumAdapter(context: Context, elements: List<Group>): ArrayAdapter<Group>
         return listItemView
     }
 
+    override fun search(constraint: String?): List<Group> {
+        if (constraint == null)
+            return originalElements
+        return originalElements.filter { it.filterApplies(constraint) }
+    }
+
+    override fun sort(elements: List<Group>): List<Group> {
+        return elements.sortedBy { it.getName() }
+    }
 }

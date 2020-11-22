@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
 import com.daimajia.swipe.SwipeLayout
@@ -12,13 +11,15 @@ import de.deftk.lonet.api.model.abstract.ManageableType
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.openlonet.R
 import de.deftk.openlonet.utils.SwipeAdapter
+import de.deftk.openlonet.utils.filter.FilterableAdapter
+import de.deftk.openlonet.utils.filter.filterApplies
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.DateFormat
 
-class SystemNotificationAdapter(context: Context, elements: List<SystemNotification>): ArrayAdapter<SystemNotification>(context, 0, elements.toMutableList()) {
+class SystemNotificationAdapter(context: Context, elements: List<SystemNotification>): FilterableAdapter<SystemNotification>(context, elements.toMutableList()) {
 
     companion object {
         val typeTranslationMap = mapOf(
@@ -70,4 +71,18 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
         return listItemView
     }
 
+    override fun search(constraint: String?): List<SystemNotification> {
+        if (constraint == null)
+            return originalElements
+        return originalElements.filter {
+            context.getString(typeTranslationMap[it.messageType] ?: R.string.system_notification_type_unknown).filterApplies(constraint)
+                    || it.message.filterApplies(constraint)
+                    || it.member.filterApplies(constraint)
+                    || it.group.filterApplies(constraint)
+        }
+    }
+
+    override fun sort(elements: List<SystemNotification>): List<SystemNotification> {
+        return elements.sortedByDescending { it.date }
+    }
 }

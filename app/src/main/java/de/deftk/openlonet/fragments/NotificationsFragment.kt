@@ -23,8 +23,6 @@ import kotlinx.coroutines.withContext
 
 class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
 
-    //TODO filters
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         CoroutineScope(Dispatchers.IO).launch {
             refreshNotifications()
@@ -39,6 +37,8 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
                 }
             }
         }
+
+        setHasOptionsMenu(true)
 
         val view = inflater.inflate(R.layout.fragment_notifications, container, false)
         val list = view.findViewById<ListView>(R.id.notification_list)
@@ -57,6 +57,25 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
 
         registerForContextMenu(list)
         return view
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.list_filter_menu, menu)
+        val searchItem = menu.findItem(R.id.filter_item_search)
+        val searchView = searchItem.actionView as SearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchView.clearFocus()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                (notification_list.adapter as Filterable).filter.filter(newText)
+                return false
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
@@ -119,7 +138,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
 
     private suspend fun refreshNotifications() {
         try {
-            val boardNotifications = AuthStore.appUser.getAllBoardNotifications().sortedByDescending { it.creationDate.time }
+            val boardNotifications = AuthStore.appUser.getAllBoardNotifications()
             withContext(Dispatchers.Main) {
                 notification_list?.adapter = NotificationAdapter(requireContext(), boardNotifications)
                 notifications_empty?.isVisible = boardNotifications.isEmpty()

@@ -4,14 +4,15 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import de.deftk.lonet.api.model.feature.mailbox.EmailFolder
 import de.deftk.openlonet.R
+import de.deftk.openlonet.utils.filter.FilterableAdapter
+import de.deftk.openlonet.utils.filter.filterApplies
 
 class MailFolderAdapter(context: Context, elements: List<EmailFolder>) :
-    ArrayAdapter<EmailFolder>(context, 0, elements) {
+    FilterableAdapter<EmailFolder>(context, elements) {
 
     companion object {
         private val defaultFolderTranslations = mapOf(
@@ -41,6 +42,12 @@ class MailFolderAdapter(context: Context, elements: List<EmailFolder>) :
         listItemView.findViewById<ImageView>(R.id.mail_folder_image)
             .setImageResource(folderImages[item.type] ?: R.drawable.ic_folder_special_24)
         return listItemView
+    }
+
+    override fun search(constraint: String?): List<EmailFolder> {
+        if (constraint == null)
+            return originalElements
+        return originalElements.filter { getDefaultFolderTranslation(context, it).filterApplies(constraint) }
     }
 
 }

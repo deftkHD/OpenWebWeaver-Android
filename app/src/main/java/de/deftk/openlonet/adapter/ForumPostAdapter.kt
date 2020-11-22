@@ -4,15 +4,16 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import de.deftk.lonet.api.model.feature.forum.ForumPost
 import de.deftk.lonet.api.model.feature.forum.ForumPostIcon
 import de.deftk.openlonet.R
+import de.deftk.openlonet.utils.filter.FilterableAdapter
+import de.deftk.openlonet.utils.filter.filterApplies
 import java.text.DateFormat
 
-class ForumPostAdapter(context: Context, elements: List<ForumPost>): ArrayAdapter<ForumPost>(context, 0, elements) {
+class ForumPostAdapter(context: Context, elements: List<ForumPost>): FilterableAdapter<ForumPost>(context, elements) {
 
     companion object {
         val postIconMap = mapOf(
@@ -35,4 +36,17 @@ class ForumPostAdapter(context: Context, elements: List<ForumPost>): ArrayAdapte
         return listItemView
     }
 
+    override fun search(constraint: String?): List<ForumPost> {
+        if (constraint == null)
+            return originalElements
+        return originalElements.filter {
+            it.title.filterApplies(constraint)
+                    || it.text.filterApplies(constraint)
+                    || it.creationMember.filterApplies(constraint)
+        }
+    }
+
+    override fun sort(elements: List<ForumPost>): List<ForumPost> {
+        return elements.sortedWith(compareBy({ it.pinned }, { it.creationDate })).reversed()
+    }
 }

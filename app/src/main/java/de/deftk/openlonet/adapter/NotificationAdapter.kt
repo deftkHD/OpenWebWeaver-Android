@@ -4,14 +4,15 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.TextView
 import de.deftk.lonet.api.model.feature.board.BoardNotification
 import de.deftk.lonet.api.model.feature.board.BoardNotificationColor
 import de.deftk.openlonet.R
+import de.deftk.openlonet.utils.filter.FilterableAdapter
+import de.deftk.openlonet.utils.filter.filterApplies
 import java.text.DateFormat
 
-class NotificationAdapter(context: Context, elements: List<BoardNotification>): ArrayAdapter<BoardNotification>(context, 0, elements.toMutableList()) {
+class NotificationAdapter(context: Context, elements: List<BoardNotification>): FilterableAdapter<BoardNotification>(context, elements) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val listItemView = convertView ?: LayoutInflater.from(context).inflate(R.layout.list_item_notification, parent, false)
@@ -22,6 +23,20 @@ class NotificationAdapter(context: Context, elements: List<BoardNotification>): 
         listItemView.findViewById<TextView>(R.id.notification_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.creationDate)
         listItemView.findViewById<View>(R.id.notification_accent).setBackgroundResource(BoardNotificationColors.getByApiColor(item.color)?.androidColor ?: BoardNotificationColors.BLUE.androidColor)
         return listItemView
+    }
+
+    override fun search(constraint: String?): List<BoardNotification> {
+        if (constraint == null)
+            return originalElements
+        return originalElements.filter {
+            it.title.filterApplies(constraint)
+                    || it.text.filterApplies(constraint)
+                    || it.creationMember.filterApplies(constraint)
+        }
+    }
+
+    override fun sort(elements: List<BoardNotification>): List<BoardNotification> {
+        return elements.sortedByDescending { it.creationDate }
     }
 
     enum class BoardNotificationColors(val apiColor: BoardNotificationColor, val androidColor: Int, val text: Int) {

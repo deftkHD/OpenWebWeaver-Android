@@ -113,5 +113,6 @@
     <string name="no_comments">No comments</string>
     <string name="overview_request_failed">Failed to get overview information (%s)</string>
     <string name="unknown_reference_type">Unknown reference type \"%s\"</string>
+    <string name="search">Search</string>
 
 </resources>

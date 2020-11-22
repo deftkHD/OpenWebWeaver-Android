@@ -114,4 +114,5 @@
     <string name="no_comments">Keine Kommentare</string>
     <string name="overview_request_failed">Erstellen der Übersicht fehlgeschlagen (%s)</string>
     <string name="unknown_reference_type">Unbekannter Sprungtyp \"%s\"</string>
+    <string name="search">Suchen</string>
 </resources>

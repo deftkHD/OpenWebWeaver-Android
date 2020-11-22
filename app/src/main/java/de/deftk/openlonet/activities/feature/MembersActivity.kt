@@ -1,9 +1,8 @@
 package de.deftk.openlonet.activities.feature
 
 import android.os.Bundle
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.view.Menu
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import de.deftk.lonet.api.model.Group
@@ -53,6 +52,25 @@ class MembersActivity : AppCompatActivity() {
         reloadMembers()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.list_filter_menu, menu)
+        val searchItem = menu.findItem(R.id.filter_item_search)
+        val searchView = searchItem.actionView as SearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchView.clearFocus()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                (members_list.adapter as Filterable).filter.filter(newText)
+                return false
+            }
+        })
+
+        return true
+    }
+
     private fun reloadMembers() {
         members_list.adapter = null
         members_empty.visibility = TextView.GONE
@@ -63,7 +81,7 @@ class MembersActivity : AppCompatActivity() {
 
     private suspend fun loadMembers() {
         try {
-            val members = group.getMembers().sortedBy { it.getName() }
+            val members = group.getMembers()
             withContext(Dispatchers.Main) {
                 members_list?.adapter = MemberAdapter(this@MembersActivity, members)
                 members_empty?.isVisible = members.isEmpty()

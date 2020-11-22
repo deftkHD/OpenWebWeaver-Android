@@ -5,15 +5,16 @@ import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import de.deftk.lonet.api.model.feature.files.OnlineFile
 import de.deftk.openlonet.R
+import de.deftk.openlonet.utils.filter.FilterableAdapter
+import de.deftk.openlonet.utils.filter.filterApplies
 import java.text.DateFormat
 
 class FileStorageFilesAdapter(context: Context, elements: List<OnlineFile>) :
-    ArrayAdapter<OnlineFile>(context, 0, elements) {
+    FilterableAdapter<OnlineFile>(context, elements) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val listItemView = convertView ?: LayoutInflater.from(context).inflate(R.layout.list_item_file, parent, false)
@@ -31,4 +32,17 @@ class FileStorageFilesAdapter(context: Context, elements: List<OnlineFile>) :
         return listItemView
     }
 
+    override fun search(constraint: String?): List<OnlineFile> {
+        if (constraint == null)
+            return originalElements
+        return originalElements.filter {
+            it.creationMember.filterApplies(constraint)
+                    || it.name.filterApplies(constraint)
+                    || it.description.filterApplies(constraint)
+        }
+    }
+
+    override fun sort(elements: List<OnlineFile>): List<OnlineFile> {
+        return elements.sortedWith(compareBy({ it.type == OnlineFile.FileType.FILE }, { it.name }))
+    }
 }

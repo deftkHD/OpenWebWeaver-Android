@@ -2,8 +2,11 @@ package de.deftk.openlonet.activities.feature.mail
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
 import android.view.View
+import android.widget.Filterable
 import android.widget.ProgressBar
+import android.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -23,7 +26,7 @@ import java.io.Serializable
 class MailsActivity : AppCompatActivity() {
 
     companion object {
-        const val EXTRA_FOLDER = "LYKCWQ.mail.extra_folder"
+        const val EXTRA_FOLDER = "de.deftk.openlonet.mail.extra_folder"
 
         const val REQUEST_CODE_WRITE_MAIL = 1
     }
@@ -65,6 +68,25 @@ class MailsActivity : AppCompatActivity() {
         }
 
         reloadMails()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.list_filter_menu, menu)
+        val searchItem = menu.findItem(R.id.filter_item_search)
+        val searchView = searchItem.actionView as SearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchView.clearFocus()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                (mail_list.adapter as Filterable).filter.filter(newText)
+                return false
+            }
+        })
+
+        return true
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

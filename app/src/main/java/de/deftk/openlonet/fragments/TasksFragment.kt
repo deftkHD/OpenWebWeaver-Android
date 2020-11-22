@@ -3,10 +3,7 @@ package de.deftk.openlonet.fragments
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
-import android.widget.AdapterView
-import android.widget.ListView
-import android.widget.ProgressBar
-import android.widget.Toast
+import android.widget.*
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -27,12 +24,13 @@ import kotlinx.coroutines.withContext
 
 class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
 
-    //TODO filters
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, bundle: Bundle?): View {
         CoroutineScope(Dispatchers.IO).launch {
             refreshTasks()
         }
+
+        setHasOptionsMenu(true)
+
         val view = inflater.inflate(R.layout.fragment_tasks, container, false)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.tasks_swipe_refresh)
         val list = view.findViewById<ListView>(R.id.tasks_list)
@@ -58,6 +56,25 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
 
         registerForContextMenu(list)
         return view
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.list_filter_menu, menu)
+        val searchItem = menu.findItem(R.id.filter_item_search)
+        val searchView = searchItem.actionView as SearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchView.clearFocus()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                (tasks_list.adapter as Filterable).filter.filter(newText)
+                return false
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
@@ -120,7 +137,7 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
 
     private suspend fun refreshTasks() {
         try {
-            val tasks = AuthStore.appUser.getAllTasks().sortedByDescending { it.creationDate.time }
+            val tasks = AuthStore.appUser.getAllTasks()
             withContext(Dispatchers.Main) {
                 tasks_list?.adapter = TaskAdapter(requireContext(), tasks)
                 tasks_empty?.isVisible = tasks.isEmpty()

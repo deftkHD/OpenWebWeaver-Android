@@ -7,10 +7,10 @@ import de.deftk.lonet.api.model.feature.Quota
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.lonet.api.model.feature.Task
 import de.deftk.lonet.api.request.UserApiRequest
+import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.feature.overview.*
 import de.deftk.openlonet.fragments.*
-import de.deftk.openlonet.AuthStore
 
 enum class AppFeature(
     val feature: Feature,

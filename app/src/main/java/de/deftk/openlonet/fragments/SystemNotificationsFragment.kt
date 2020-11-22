@@ -2,12 +2,8 @@ package de.deftk.openlonet.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ListView
-import android.widget.ProgressBar
-import android.widget.Toast
+import android.view.*
+import android.widget.*
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.feature.SystemNotification
@@ -30,6 +26,8 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
             loadSystemNotifications()
         }
 
+        setHasOptionsMenu(true)
+
         val view = inflater.inflate(R.layout.fragment_system_notifications, container, false)
         val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.system_notifications_swipe_refresh)
         val list = view.findViewById<ListView>(R.id.system_notification_list)
@@ -48,9 +46,28 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
         return view
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.list_filter_menu, menu)
+        val searchItem = menu.findItem(R.id.filter_item_search)
+        val searchView = searchItem.actionView as SearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchView.clearFocus()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                (system_notification_list.adapter as Filterable).filter.filter(newText)
+                return false
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
     private suspend fun loadSystemNotifications() {
         try {
-            val systemNotifications = AuthStore.appUser.getSystemNotifications().sortedByDescending { it.date.time }
+            val systemNotifications = AuthStore.appUser.getSystemNotifications()
             withContext(Dispatchers.Main) {
                 system_notification_list?.adapter = SystemNotificationAdapter(requireContext(), systemNotifications)
                 system_notifications_empty?.isVisible = systemNotifications.isEmpty()

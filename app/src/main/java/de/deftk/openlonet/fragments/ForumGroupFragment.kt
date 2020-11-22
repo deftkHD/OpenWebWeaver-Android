@@ -1,7 +1,6 @@
 package de.deftk.openlonet.fragments
 
 import android.content.Intent
-import android.widget.ArrayAdapter
 import de.deftk.lonet.api.model.Feature
 import de.deftk.lonet.api.model.Group
 import de.deftk.lonet.api.model.User
@@ -11,10 +10,11 @@ import de.deftk.openlonet.abstract.IBackHandler
 import de.deftk.openlonet.activities.feature.forum.ForumPostsActivity
 import de.deftk.openlonet.adapter.ForumAdapter
 import de.deftk.openlonet.feature.AppFeature
+import de.deftk.openlonet.utils.filter.FilterableAdapter
 
 class ForumGroupFragment : GroupFragment(AppFeature.FEATURE_FORUM, R.layout.fragment_forum, R.id.forum_list, R.id.forum_swipe_refresh, R.id.progress_forum, R.id.forum_empty), IBackHandler {
 
-    override fun createAdapter(groups: List<AbstractOperator>): ArrayAdapter<*> {
+    override fun createAdapter(groups: List<AbstractOperator>): FilterableAdapter<Group> {
         return ForumAdapter(requireContext(), groups.filterIsInstance<Group>())
     }
 

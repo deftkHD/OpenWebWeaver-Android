@@ -8,9 +8,8 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.view.Menu
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.core.net.toFile
@@ -89,6 +88,25 @@ class FilesActivity : AppCompatActivity() {
         }
 
         reloadFiles()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.list_filter_menu, menu)
+        val searchItem = menu.findItem(R.id.filter_item_search)
+        val searchView = searchItem.actionView as SearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchView.clearFocus()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                (file_list.adapter as Filterable).filter.filter(newText)
+                return false
+            }
+        })
+
+        return true
     }
 
     // back button in toolbar functionality

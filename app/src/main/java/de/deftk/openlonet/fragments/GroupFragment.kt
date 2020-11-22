@@ -1,9 +1,7 @@
 package de.deftk.openlonet.fragments
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -15,6 +13,7 @@ import de.deftk.openlonet.R
 import de.deftk.openlonet.abstract.FeatureFragment
 import de.deftk.openlonet.abstract.IBackHandler
 import de.deftk.openlonet.feature.AppFeature
+import de.deftk.openlonet.utils.filter.FilterableAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,6 +44,7 @@ abstract class GroupFragment(
     protected lateinit var emptyLabel: TextView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        setHasOptionsMenu(true)
         val view = inflater.inflate(layoutId, container, false)
         groupList = view.findViewById(groupListId)
         progressBar = view.findViewById(progressBarId)
@@ -65,6 +65,25 @@ abstract class GroupFragment(
         reloadGroups()
 
         return view
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.list_filter_menu, menu)
+        val searchItem = menu.findItem(R.id.filter_item_search)
+        val searchView = searchItem.actionView as SearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchView.clearFocus()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                (groupList.adapter as Filterable).filter.filter(newText)
+                return false
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
     }
 
     protected open fun reloadGroups() {
@@ -100,7 +119,7 @@ abstract class GroupFragment(
         }
     }
 
-    abstract fun createAdapter(groups: List<AbstractOperator>): ArrayAdapter<*>
+    abstract fun createAdapter(groups: List<AbstractOperator>): FilterableAdapter<*>
 
     abstract fun shouldGroupBeShown(group: Group): Boolean
 

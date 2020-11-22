@@ -1,7 +1,6 @@
 package de.deftk.openlonet.fragments
 
 import android.content.Intent
-import android.widget.ArrayAdapter
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.core.view.isVisible
@@ -10,13 +9,13 @@ import de.deftk.lonet.api.model.Group
 import de.deftk.lonet.api.model.User
 import de.deftk.lonet.api.model.abstract.AbstractOperator
 import de.deftk.lonet.api.model.feature.Quota
-import de.deftk.lonet.api.model.feature.abstract.IFileStorage
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.abstract.IBackHandler
 import de.deftk.openlonet.activities.feature.FilesActivity
 import de.deftk.openlonet.adapter.FileStorageAdapter
 import de.deftk.openlonet.feature.AppFeature
+import de.deftk.openlonet.utils.filter.FilterableAdapter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -34,7 +33,7 @@ class FileStorageGroupFragment : GroupFragment(
         const val ARGUMENT_FILE_ID = "de.deftk.openlonet.files.argument_file_id"
     }
 
-    override fun createAdapter(groups: List<AbstractOperator>): ArrayAdapter<*> {
+    override fun createAdapter(groups: List<AbstractOperator>): FilterableAdapter<*> {
         throw IllegalStateException("Not implemented")
     }
 
@@ -49,7 +48,7 @@ class FileStorageGroupFragment : GroupFragment(
             //TODO inefficient to query file storage quota for every file storage; should only be one big request
             val groupData = groups.map {
                 Pair(
-                    it as IFileStorage,
+                    it,
                     try {
                         it.getFileStorageState().second
                     } catch (e: Exception) {
