@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="@string/no_mail_folders"
+        android:text="@string/mail_empty"
         android:visibility="invisible"
         android:layout_centerHorizontal="true"
         tools:text="No mails" />
@@ -38,14 +38,14 @@
         android:layout_centerInParent="true" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_mail_folder_add"
+        android:id="@+id/fab_mail_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:src="@drawable/ic_add_32"
-        android:contentDescription="@string/add_folder"
+        android:src="@drawable/ic_edit_32"
+        android:contentDescription="@string/new_mail"
         android:visibility="invisible" />
 
 </RelativeLayout>

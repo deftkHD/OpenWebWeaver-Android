@@ -14,7 +14,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.feature.mail.MailsActivity" />
         <activity android:name=".activities.feature.mail.WriteMailActivity" />
         <activity android:name=".activities.feature.FilesActivity" />
         <activity android:name=".activities.feature.forum.ForumPostsActivity" />
