@@ -35,7 +35,7 @@ class MailAdapter(context: Context, elements: List<Email>): FilterableAdapter<Em
                         if (item.folder.type == EmailFolder.EmailFolderType.TRASH) {
                             item.delete()
                         } else {
-                            val trash = AuthStore.appUser.getEmailFolders()
+                            val trash = AuthStore.getAppUser().getEmailFolders()
                                 .firstOrNull { it.type == EmailFolder.EmailFolderType.TRASH }
                             if (trash != null) {
                                 item.move(trash)
@@ -73,7 +73,7 @@ class MailAdapter(context: Context, elements: List<Email>): FilterableAdapter<Em
         else
             subjectView.setTypeface(null, Typeface.BOLD)
         listItemView.findViewById<TextView>(R.id.mail_author).text = item.from
-            ?.joinToString { it.name } ?: AuthStore.appUser.getName() //TODO not verified if this is useful
+            ?.joinToString { it.name } ?: AuthStore.getAppUser().getName() //TODO not verified if this is useful
         listItemView.findViewById<TextView>(R.id.mail_date).text = DateFormat
             .getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.date)
 

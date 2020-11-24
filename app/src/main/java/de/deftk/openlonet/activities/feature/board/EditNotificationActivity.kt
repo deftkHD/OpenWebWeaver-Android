@@ -40,7 +40,7 @@ class EditNotificationActivity : AppCompatActivity() {
 
         val notification = intent.getSerializableExtra(EXTRA_NOTIFICATION) as? BoardNotification?
 
-        val effectiveGroups = AuthStore.appUser.groups.filter { it.effectiveRights.contains(Permission.BOARD_ADMIN) }
+        val effectiveGroups = AuthStore.getAppUser().groups.filter { it.effectiveRights.contains(Permission.BOARD_ADMIN) }
         notification_group?.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.getLogin() })
 
         val colors = NotificationAdapter.BoardNotificationColors.values()
@@ -89,7 +89,7 @@ class EditNotificationActivity : AppCompatActivity() {
                         finish()
                     }
                 } else {
-                    val newNotification = AuthStore.appUser.groups.firstOrNull { it.getLogin() == group }
+                    val newNotification = AuthStore.getAppUser().groups.firstOrNull { it.getLogin() == group }
                         ?.addBoardNotification(title, text, NotificationAdapter.BoardNotificationColors.values()[color].apiColor)
                     withContext(Dispatchers.Main) {
                         val intent = Intent()

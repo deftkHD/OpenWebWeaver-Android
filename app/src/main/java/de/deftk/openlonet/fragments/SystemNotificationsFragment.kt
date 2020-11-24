@@ -67,7 +67,7 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
 
     private suspend fun loadSystemNotifications() {
         try {
-            val systemNotifications = AuthStore.appUser.getSystemNotifications()
+            val systemNotifications = AuthStore.getAppUser().getSystemNotifications()
             withContext(Dispatchers.Main) {
                 system_notification_list?.adapter = SystemNotificationAdapter(requireContext(), systemNotifications)
                 system_notifications_empty?.isVisible = systemNotifications.isEmpty()

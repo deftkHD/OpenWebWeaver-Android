@@ -62,8 +62,8 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
 
         Log.i(LOG_TAG, "Setting up navigation view")
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
-        navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = AuthStore.appUser.fullName ?: getString(R.string.unknown_name)
-        navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = AuthStore.appUser.getLogin()
+        navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = AuthStore.getAppUser().fullName ?: getString(R.string.unknown_name)
+        navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = AuthStore.getAppUser().getLogin()
         navigationView.setNavigationItemSelectedListener(this)
         addMenuItem(object : AbstractNavigableMenuItem(R.string.overview, R.id.main_group, R.drawable.ic_list_24) {
             override fun onClick(activity: AppCompatActivity) {
@@ -81,7 +81,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
             override fun onClick(activity: AppCompatActivity) {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        val uri = Uri.parse(AuthStore.appUser.getAutoLoginUrl())
+                        val uri = Uri.parse(AuthStore.getAppUser().getAutoLoginUrl())
                         if (preferences.getBoolean("open_link_external", false)) {
                             val intent = Intent(Intent.ACTION_VIEW)
                             intent.data = uri
@@ -193,10 +193,10 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
 
     private fun getAllFeatures(): List<Feature> {
         val features = mutableListOf<Feature>()
-        AuthStore.appUser.effectiveRights.forEach { permission ->
+        AuthStore.getAppUser().effectiveRights.forEach { permission ->
             Feature.getAvailableFeatures(permission).filter { !features.contains(it) }.forEach { features.add(it) }
         }
-        AuthStore.appUser.getContext().getGroups().forEach { membership ->
+        AuthStore.getAppUser().getContext().getGroups().forEach { membership ->
             membership.effectiveRights.forEach { permission ->
                 Feature.getAvailableFeatures(permission).filter { !features.contains(it) }.forEach { features.add(it) }
             }
@@ -216,7 +216,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
 
     private suspend fun logout(removeTrust: Boolean) {
         try {
-            AuthStore.appUser.logout(removeTrust)
+            AuthStore.getAppUser().logout(removeTrust)
             withContext(Dispatchers.Main) {
                 this@StartActivity.getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("token").apply()
                 this@StartActivity.getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("login").apply()
@@ -231,7 +231,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
 
     private suspend fun verifySession() {
         try {
-            if (!AuthStore.appUser.checkSession()) {
+            if (!AuthStore.getAppUser().checkSession()) {
                 val intent = Intent(this, MainActivity::class.java)
                 withContext(Dispatchers.Main) {
                     startActivity(intent)

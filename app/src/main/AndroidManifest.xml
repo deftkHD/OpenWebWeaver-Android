@@ -14,7 +14,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.feature.mail.WriteMailActivity" />
+        <activity android:name=".activities.feature.mail.WriteMailActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.SENDTO" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="mailto" />
+            </intent-filter>
+        </activity>
         <activity android:name=".activities.feature.FilesActivity" />
         <activity android:name=".activities.feature.forum.ForumPostsActivity" />
         <activity android:name=".activities.feature.MembersActivity" />

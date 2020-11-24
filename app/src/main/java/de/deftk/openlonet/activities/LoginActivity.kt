@@ -1,6 +1,5 @@
 package de.deftk.openlonet.activities
 
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -49,11 +48,11 @@ class LoginActivity : AppCompatActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         if (stayLoggedIn) {
-                            AuthStore.appUser = LoNet.loginCreateTrust(username, password, "OpenLoNet", "${Build.BRAND} ${Build.MODEL}")
-                            AuthStore.saveUsername(AuthStore.appUser.getLogin(), this@LoginActivity)
-                            AuthStore.saveToken(AuthStore.appUser.authKey, this@LoginActivity)
+                            AuthStore.setAppUser(LoNet.loginCreateTrust(username, password, "OpenLoNet", "${Build.BRAND} ${Build.MODEL}"))
+                            AuthStore.saveUsername(AuthStore.getAppUser().getLogin(), this@LoginActivity)
+                            AuthStore.saveToken(AuthStore.getAppUser().authKey, this@LoginActivity)
                         } else {
-                            AuthStore.appUser = LoNet.login(username, password)
+                            AuthStore.setAppUser(LoNet.login(username, password))
                         }
                         withContext(Dispatchers.Main) {
                             Log.i(LOG_TAG, "Got login result")
@@ -61,9 +60,7 @@ class LoginActivity : AppCompatActivity() {
                             btnLogin?.isEnabled = true
                             Log.i(LOG_TAG, "Login succeeded")
                             Toast.makeText(this@LoginActivity, "${getString(R.string.login_success)}!", Toast.LENGTH_SHORT).show()
-                            Log.i(LOG_TAG, "Starting MainActivity")
-                            val intent = Intent(this@LoginActivity, StartActivity::class.java)
-                            startActivity(intent)
+                            setResult(RESULT_OK)
                             finish()
                         }
                     } catch (e: Exception) {
@@ -72,6 +69,7 @@ class LoginActivity : AppCompatActivity() {
                             pgbLogin?.visibility = ProgressBar.INVISIBLE
                             btnLogin?.isEnabled = true
                             Log.e(LOG_TAG, "Login failed")
+                            setResult(RESULT_CANCELED)
                             if (e is IOException) {
                                 when (e) {
                                     is UnknownHostException ->

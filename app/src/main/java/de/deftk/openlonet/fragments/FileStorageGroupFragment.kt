@@ -41,10 +41,10 @@ class FileStorageGroupFragment : GroupFragment(
         try {
             val groups = mutableListOf<AbstractOperator>()
             groups.addAll(
-                AuthStore.appUser.getContext().getGroups()
+                AuthStore.getAppUser().getContext().getGroups()
                 .filter { shouldGroupBeShown(it) })
-            if (shouldUserBeShown(AuthStore.appUser))
-                groups.add(0, AuthStore.appUser)
+            if (shouldUserBeShown(AuthStore.getAppUser()))
+                groups.add(0, AuthStore.getAppUser())
             //TODO inefficient to query file storage quota for every file storage; should only be one big request
             val groupData = groups.map {
                 Pair(

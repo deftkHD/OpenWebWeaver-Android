@@ -97,9 +97,9 @@ abstract class GroupFragment(
     protected open suspend fun loadGroups() {
         try {
             val groups = mutableListOf<AbstractOperator>()
-            groups.addAll(AuthStore.appUser.getContext().getGroups().filter { shouldGroupBeShown(it) })
-            if (shouldUserBeShown(AuthStore.appUser))
-                groups.add(0, AuthStore.appUser)
+            groups.addAll(AuthStore.getAppUser().getContext().getGroups().filter { shouldGroupBeShown(it) })
+            if (shouldUserBeShown(AuthStore.getAppUser()))
+                groups.add(0, AuthStore.getAppUser())
             withContext(Dispatchers.Main) {
                 groupList.adapter = createAdapter(groups)
                 emptyLabel.isVisible = groups.isEmpty()

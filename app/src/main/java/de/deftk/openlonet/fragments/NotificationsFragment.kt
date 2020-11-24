@@ -27,7 +27,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
         CoroutineScope(Dispatchers.IO).launch {
             refreshNotifications()
 
-            if (AuthStore.appUser.groups.any { it.effectiveRights.contains(Permission.BOARD_ADMIN) }) {
+            if (AuthStore.getAppUser().groups.any { it.effectiveRights.contains(Permission.BOARD_ADMIN) }) {
                 withContext(Dispatchers.Main) {
                     fab_add_notification?.visibility = View.VISIBLE
                     fab_add_notification?.setOnClickListener {
@@ -138,7 +138,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
 
     private suspend fun refreshNotifications() {
         try {
-            val boardNotifications = AuthStore.appUser.getAllBoardNotifications()
+            val boardNotifications = AuthStore.getAppUser().getAllBoardNotifications()
             withContext(Dispatchers.Main) {
                 notification_list?.adapter = NotificationAdapter(requireContext(), boardNotifications)
                 notifications_empty?.isVisible = boardNotifications.isEmpty()

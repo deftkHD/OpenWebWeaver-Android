@@ -49,7 +49,7 @@ class EditTaskActivity : AppCompatActivity() {
 
         val task = intent.getSerializableExtra(EXTRA_TASK) as? Task?
 
-        val effectiveGroups = AuthStore.appUser.groups.filter { it.effectiveRights.contains(Permission.TASKS_ADMIN) }
+        val effectiveGroups = AuthStore.getAppUser().groups.filter { it.effectiveRights.contains(Permission.TASKS_ADMIN) }
         task_group.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.getLogin() })
 
         if (task != null) {
@@ -145,7 +145,7 @@ class EditTaskActivity : AppCompatActivity() {
                         finish()
                     }
                 } else {
-                    val newTask = AuthStore.appUser.groups.firstOrNull { it.getLogin() == group }?.addTask(title, completed, description, dueDate, startDate)
+                    val newTask = AuthStore.getAppUser().groups.firstOrNull { it.getLogin() == group }?.addTask(title, completed, description, dueDate, startDate)
                     withContext(Dispatchers.Main) {
                         val intent = Intent()
                         intent.putExtra(EXTRA_TASK, newTask)

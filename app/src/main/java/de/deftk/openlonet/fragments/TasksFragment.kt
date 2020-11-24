@@ -46,7 +46,7 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
             startActivityForResult(intent, 0)
         }
         val fabAddTask = view.findViewById<FloatingActionButton>(R.id.fab_add_task)
-        if (AuthStore.appUser.groups.any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }) {
+        if (AuthStore.getAppUser().groups.any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }) {
             fabAddTask.visibility = View.VISIBLE
             fabAddTask.setOnClickListener {
                 val intent = Intent(context, EditTaskActivity::class.java)
@@ -137,7 +137,7 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
 
     private suspend fun refreshTasks() {
         try {
-            val tasks = AuthStore.appUser.getAllTasks()
+            val tasks = AuthStore.getAppUser().getAllTasks()
             withContext(Dispatchers.Main) {
                 tasks_list?.adapter = TaskAdapter(requireContext(), tasks)
                 tasks_empty?.isVisible = tasks.isEmpty()

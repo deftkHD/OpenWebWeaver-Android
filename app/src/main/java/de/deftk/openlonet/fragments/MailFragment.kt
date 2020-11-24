@@ -64,7 +64,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
             intent.putExtra(ReadMailActivity.EXTRA_MAIL, mail_list.getItemAtPosition(position) as Serializable)
             startActivity(intent)
         }
-        if (AuthStore.appUser.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
+        if (AuthStore.getAppUser().effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
             val fab = view.findViewById<FloatingActionButton>(R.id.fab_mail_add)
             fab.visibility = View.VISIBLE
             fab.setOnClickListener {
@@ -140,7 +140,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
             progress_mail.visibility = View.VISIBLE
         }
         try {
-            AuthStore.appUser.addEmailFolder(name)
+            AuthStore.getAppUser().addEmailFolder(name)
             withContext(Dispatchers.Main) {
                 reloadEmailFolders()
             }
@@ -163,7 +163,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
 
     private suspend fun loadEmailFolders() {
         try {
-            val folders = AuthStore.appUser.getEmailFolders()
+            val folders = AuthStore.getAppUser().getEmailFolders()
             withContext(Dispatchers.Main) {
                 toolbarSpinner.adapter = MailFolderAdapter(requireContext(), folders)
             }

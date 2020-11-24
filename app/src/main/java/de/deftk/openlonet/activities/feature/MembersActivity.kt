@@ -1,6 +1,7 @@
 package de.deftk.openlonet.activities.feature
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.ContextMenu
 import android.view.Menu
@@ -13,7 +14,6 @@ import de.deftk.lonet.api.model.Group
 import de.deftk.lonet.api.model.abstract.IManageable
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
-import de.deftk.openlonet.activities.feature.mail.WriteMailActivity
 import de.deftk.openlonet.adapter.MemberAdapter
 import kotlinx.android.synthetic.main.activity_members.*
 import kotlinx.android.synthetic.main.fragment_notifications.*
@@ -83,7 +83,7 @@ class MembersActivity : AppCompatActivity() {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is AdapterView.AdapterContextMenuInfo) {
             val member = members_list?.adapter?.getItem(menuInfo.position) as IManageable
-            if (member.getLogin() != AuthStore.appUser.getLogin()) {
+            if (member.getLogin() != AuthStore.getAppUser().getLogin()) {
                 menuInflater.inflate(R.menu.member_action_menu, menu)
             }
         }
@@ -94,8 +94,7 @@ class MembersActivity : AppCompatActivity() {
             R.id.member_action_write_mail -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
                 val member = members_list?.adapter?.getItem(info.position) as IManageable
-                val intent = Intent(this, WriteMailActivity::class.java)
-                intent.putExtra(WriteMailActivity.EXTRA_ADDRESS, member.getLogin())
+                val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${Uri.encode(member.getLogin())}"))
                 startActivity(intent)
                 true
             }

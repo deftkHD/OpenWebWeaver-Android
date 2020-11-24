@@ -32,7 +32,7 @@ enum class AppFeature(
                 if (index % 2 == 1) {
                     val focus = response.values.toList()[index - 1]
                     check(focus.get("method").asString == "set_focus")
-                    val operator = AuthStore.appUser.getContext().getOperator(focus.get("user").asJsonObject.get("login").asString)!!
+                    val operator = AuthStore.getAppUser().getContext().getOperator(focus.get("user").asJsonObject.get("login").asString)!!
                     subResponse.get("entries").asJsonArray.forEach { taskResponse ->
                         tasks.add(Task.fromJson(taskResponse.asJsonObject, operator))
                     }
@@ -92,7 +92,7 @@ enum class AppFeature(
             val subResponse = response.values.toList()[1]
             val systemNotifications = mutableListOf<SystemNotification>()
             subResponse.get("messages").asJsonArray.forEach { messageResponse ->
-                systemNotifications.add(SystemNotification.fromJson(messageResponse.asJsonObject, AuthStore.appUser))
+                systemNotifications.add(SystemNotification.fromJson(messageResponse.asJsonObject, AuthStore.getAppUser()))
             }
             return SystemNotificationsOverview(systemNotifications.count { !it.read })
         }

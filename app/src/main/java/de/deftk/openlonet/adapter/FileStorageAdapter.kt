@@ -37,6 +37,6 @@ class FileStorageAdapter(context: Context, val elements: Map<AbstractOperator, Q
     }
 
     override fun sort(elements: List<AbstractOperator>): List<AbstractOperator> {
-        return elements.sortedWith(compareBy({ it.getLogin() != AuthStore.appUser.getLogin() }, { it.getName() }))
+        return elements.sortedWith(compareBy({ it.getLogin() != AuthStore.getAppUser().getLogin() }, { it.getName() }))
     }
 }

@@ -1,5 +1,6 @@
 package de.deftk.openlonet.activities.feature.mail
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -11,12 +12,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
 
 class WriteMailActivity : AppCompatActivity() {
 
     companion object {
-        const val EXTRA_ADDRESS = "de.deftk.openlonet.mail.extra_address"
-
         const val RESULT_CODE_MAIL = 1
         const val RESULT_CODE_CANCEL = 2
     }
@@ -30,14 +30,21 @@ class WriteMailActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.title = getString(R.string.write_mail)
 
-        mail_to_address.setText(intent.getStringExtra(EXTRA_ADDRESS) ?: "")
+        mail_to_address.setText(intent.getStringExtra(Intent.EXTRA_EMAIL) ?: "")
+        mail_to_address_cc.setText(intent.getStringExtra(Intent.EXTRA_CC) ?: "")
+        mail_to_address_bcc.setText(intent.getStringExtra(Intent.EXTRA_BCC) ?: "")
+        mail_subject.setText(intent.getStringExtra(Intent.EXTRA_SUBJECT) ?: "")
+        mail_message.setText(intent.getStringExtra(Intent.EXTRA_TEXT) ?: "")
+
+        if (intent.data != null) {
+            val uri = intent.data!!
+            mail_to_address.setText(uri.schemeSpecificPart ?: "")
+        }
 
         fab_send_mail.setOnClickListener {
             val subject = mail_subject.text.toString()
             val message = mail_message.text.toString()
             val to = mail_to_address.text.toString()
-            val toCC = mail_to_address_cc.text.toString()
-            val toBCC = mail_to_address_bcc.text.toString()
             if (subject.isEmpty()) {
                 Toast.makeText(this, R.string.mail_no_subject, Toast.LENGTH_LONG).show()
                 return@setOnClickListener
@@ -53,12 +60,14 @@ class WriteMailActivity : AppCompatActivity() {
             progress_send_mail.visibility = View.VISIBLE
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    AuthStore.appUser.sendEmail(to, subject, message, null, toBCC.nullIfEmpty(), toCC.nullIfEmpty())
-                    withContext(Dispatchers.Main) {
-                        progress_send_mail.visibility = View.GONE
-                        setResult(RESULT_CODE_MAIL)
-                        finish()
+                    if (!AuthStore.isUserLoggedIn()) {
+                        if (AuthStore.performLogin(this@WriteMailActivity)) {
+                            sendEmail()
+                        }
+                    } else {
+                        sendEmail()
                     }
+
                 } catch (e: Exception) {
                     e.printStackTrace()
                     withContext(Dispatchers.Main) {
@@ -69,6 +78,33 @@ class WriteMailActivity : AppCompatActivity() {
                     }
                 }
             }
+        }
+    }
+
+    private suspend fun sendEmail() {
+        val subject = mail_subject.text.toString()
+        val message = mail_message.text.toString()
+        val to = mail_to_address.text.toString()
+        val toCC = mail_to_address_cc.text.toString()
+        val toBCC = mail_to_address_bcc.text.toString()
+        AuthStore.getAppUser().sendEmail(to, subject, message, null, toBCC.nullIfEmpty(), toCC.nullIfEmpty())
+        withContext(Dispatchers.Main) {
+            progress_send_mail.visibility = View.GONE
+            setResult(RESULT_CODE_MAIL)
+            finish()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            AuthStore.REQUEST_LOGIN -> {
+                if (resultCode == RESULT_OK) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        sendEmail()
+                    }
+                }
+            }
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 

@@ -7,12 +7,10 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import de.deftk.lonet.api.LoNet
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.BuildConfig
 import de.deftk.openlonet.R
@@ -20,9 +18,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.IOException
-import java.net.UnknownHostException
-import java.util.concurrent.TimeoutException
 
 class MainActivity : AppCompatActivity() {
 
@@ -56,7 +51,12 @@ class MainActivity : AppCompatActivity() {
             }
         } else {
             CoroutineScope(Dispatchers.IO).launch {
-                performLogin()
+                if (AuthStore.performLogin(this@MainActivity)) {
+                    val intent = Intent(this@MainActivity, StartActivity::class.java)
+                    withContext(Dispatchers.Main) {
+                        startActivity(intent)
+                    }
+                }
             }
         }
         Log.i(LOG_TAG, "Created MainActivity")
@@ -72,59 +72,22 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     Log.i(LOG_TAG, "Permission granted")
                     CoroutineScope(Dispatchers.IO).launch {
-                        performLogin()
+                        AuthStore.performLogin(this@MainActivity)
                     }
                 }
             }
         }
     }
 
-    private suspend fun performLogin() {
-        if (AuthStore.getSavedToken(this) == null) {
-            // create new account or simply login without adding an account
-            val intent = Intent(this, LoginActivity::class.java)
-            val savedUser = AuthStore.getSavedUsername(this)
-            if (savedUser != null) {
-                intent.putExtra(LoginActivity.EXTRA_LOGIN, savedUser)
-            }
-            withContext(Dispatchers.Main) {
-                startActivity(intent)
-                finish()
-            }
-        } else {
-            val username = AuthStore.getSavedUsername(this)!!
-            val token = AuthStore.getSavedToken(this)!!
-
-            try {
-                AuthStore.appUser = LoNet.loginToken(username, token)
-
-                val intent = Intent(this@MainActivity, StartActivity::class.java)
-                withContext(Dispatchers.Main) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (requestCode) {
+            AuthStore.REQUEST_LOGIN -> {
+                if (resultCode == RESULT_OK) {
+                    val intent = Intent(this@MainActivity, StartActivity::class.java)
                     startActivity(intent)
-                    finish()
-                }
-            } catch (e: Exception) {
-                Log.e(LOG_TAG, "Login failed")
-                e.printStackTrace()
-                withContext(Dispatchers.Main) {
-                    if (e is IOException) {
-                        when (e) {
-                            is UnknownHostException -> Toast.makeText(this@MainActivity, getString(R.string.request_failed_connection), Toast.LENGTH_LONG).show()
-                            is TimeoutException -> Toast.makeText(this@MainActivity, getString(R.string.request_failed_timeout), Toast.LENGTH_LONG).show()
-                            else -> Toast.makeText(this@MainActivity, String.format(getString(R.string.request_failed_other), e.message), Toast.LENGTH_LONG).show()
-                        }
-                    } else {
-                        getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("token").apply()
-                        Toast.makeText(this@MainActivity, getString(R.string.token_expired), Toast.LENGTH_LONG).show()
-
-                        val intent = Intent(this@MainActivity, LoginActivity::class.java)
-                        if (AuthStore.getSavedUsername(this@MainActivity) != null) { intent.putExtra(LoginActivity.EXTRA_LOGIN, AuthStore.getSavedUsername(this@MainActivity))
-                        }
-                        startActivity(intent)
-                        finish()
-                    }
                 }
             }
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
