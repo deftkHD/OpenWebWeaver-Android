@@ -7,7 +7,9 @@ import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.feature.mailbox.Email
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
+import de.deftk.openlonet.utils.CustomTabTransformationMethod
 import kotlinx.android.synthetic.main.activity_read_mail.*
+import kotlinx.android.synthetic.main.activity_read_notification.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,6 +39,7 @@ class ReadMailActivity : AppCompatActivity() {
             mail_author?.text = mail.from?.joinToString { it.name } ?: AuthStore.appUser.getName()
             mail_author_address?.text = mail.from?.joinToString { it.address } ?: AuthStore.appUser.getLogin()
             mail_date?.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(mail.date)
+            mail_message?.transformationMethod = CustomTabTransformationMethod(notification_text.autoLinkMask)
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val content = mail.read()

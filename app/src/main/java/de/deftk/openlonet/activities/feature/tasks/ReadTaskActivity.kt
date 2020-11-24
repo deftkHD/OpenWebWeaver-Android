@@ -9,7 +9,9 @@ import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.Task
 import de.deftk.openlonet.R
+import de.deftk.openlonet.utils.CustomTabTransformationMethod
 import de.deftk.openlonet.utils.TextUtils
+import kotlinx.android.synthetic.main.activity_read_notification.*
 import kotlinx.android.synthetic.main.activity_read_task.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -93,6 +95,7 @@ class ReadTaskActivity : AppCompatActivity() {
         task_due.text = String.format(getString(R.string.until_date), if (task.endDate != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.endDate!!) else getString(R.string.not_set))
         task_detail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description))
         task_detail.movementMethod = LinkMovementMethod.getInstance()
+        task_detail.transformationMethod = CustomTabTransformationMethod(notification_text.autoLinkMask)
     }
 
     // back button in toolbar functionality

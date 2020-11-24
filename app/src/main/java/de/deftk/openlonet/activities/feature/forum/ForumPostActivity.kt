@@ -9,8 +9,10 @@ import de.deftk.lonet.api.model.feature.forum.ForumPost
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.ForumPostAdapter
 import de.deftk.openlonet.adapter.ForumPostCommentRecyclerAdapter
+import de.deftk.openlonet.utils.CustomTabTransformationMethod
 import de.deftk.openlonet.utils.TextUtils
 import kotlinx.android.synthetic.main.activity_forum_post.*
+import kotlinx.android.synthetic.main.activity_read_notification.*
 import java.text.DateFormat
 
 class ForumPostActivity : AppCompatActivity() {
@@ -41,6 +43,7 @@ class ForumPostActivity : AppCompatActivity() {
             forum_post_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.creationDate)
             forum_post_text.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(post.text))
             forum_post_text.movementMethod = LinkMovementMethod.getInstance()
+            forum_post_text.transformationMethod = CustomTabTransformationMethod(notification_text.autoLinkMask)
 
             forum_post_no_comments.isVisible = post.commentCount <= 0
             forum_post_comment_recycler_view.layoutManager = LinearLayoutManager(this)

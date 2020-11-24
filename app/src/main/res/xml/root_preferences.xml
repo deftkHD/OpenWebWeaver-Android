@@ -2,6 +2,10 @@
 
     <PreferenceCategory app:title="@string/general">
 
+        <SwitchPreference
+            app:key="open_link_external"
+            app:title="@string/setting_open_link_external" />
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/file_storage">

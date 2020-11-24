@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.board.BoardNotification
 import de.deftk.openlonet.R
+import de.deftk.openlonet.utils.CustomTabTransformationMethod
 import de.deftk.openlonet.utils.TextUtils
 import kotlinx.android.synthetic.main.activity_read_notification.*
 import kotlinx.coroutines.CoroutineScope
@@ -106,6 +107,7 @@ class ReadNotificationActivity : AppCompatActivity() {
         notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.creationDate)
         notification_text.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text))
         notification_text.movementMethod = LinkMovementMethod.getInstance()
+        notification_text.transformationMethod = CustomTabTransformationMethod(notification_text.autoLinkMask)
     }
 
     // back button in toolbar functionality

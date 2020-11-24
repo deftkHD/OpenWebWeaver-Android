@@ -12,9 +12,11 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.preference.PreferenceManager
 import com.google.android.material.navigation.NavigationView
 import de.deftk.lonet.api.LoNet
 import de.deftk.lonet.api.model.Feature
@@ -23,10 +25,7 @@ import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.abstract.IBackHandler
 import de.deftk.openlonet.abstract.IFragmentHandler
-import de.deftk.openlonet.abstract.menu.AbstractNavigableMenuItem
-import de.deftk.openlonet.abstract.menu.IMenuClickable
-import de.deftk.openlonet.abstract.menu.IMenuItem
-import de.deftk.openlonet.abstract.menu.IMenuNavigable
+import de.deftk.openlonet.abstract.menu.*
 import de.deftk.openlonet.abstract.menu.start.FeatureMenuItem
 import de.deftk.openlonet.feature.AppFeature
 import de.deftk.openlonet.fragments.OverviewFragment
@@ -48,6 +47,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
     }
 
     private val drawer by lazy { findViewById<DrawerLayout>(R.id.drawer_layout) }
+    private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
     private val menuMap = mutableMapOf<Int, IMenuItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,16 +77,19 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
             if (appFeature != null)
                 addMenuItem(FeatureMenuItem(appFeature))
         }
-        addMenuItem(object : AbstractNavigableMenuItem(R.string.open_website, R.id.utility_group, R.drawable.ic_language_24) {
+        addMenuItem(object : AbstractClickableMenuItem(R.string.open_website, R.id.utility_group, R.drawable.ic_language_24) {
             override fun onClick(activity: AppCompatActivity) {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        val url = AuthStore.appUser.getAutoLoginUrl()
-                        //TODO setting to choose if open inside new browser tap or in single browser window
-                        val intent = Intent(Intent.ACTION_VIEW)
-                        intent.data = Uri.parse(url)
-                        withContext(Dispatchers.Main) {
-                            startActivity(intent)
+                        val uri = Uri.parse(AuthStore.appUser.getAutoLoginUrl())
+                        if (preferences.getBoolean("open_link_external", false)) {
+                            val intent = Intent(Intent.ACTION_VIEW)
+                            intent.data = uri
+                            withContext(Dispatchers.Main) {
+                                startActivity(intent)
+                            }
+                        } else {
+                            CustomTabsIntent.Builder().build().launchUrl(this@StartActivity, uri)
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()

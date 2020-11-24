@@ -6,7 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.SystemNotificationAdapter
+import de.deftk.openlonet.utils.CustomTabTransformationMethod
 import de.deftk.openlonet.utils.TextUtils
+import kotlinx.android.synthetic.main.activity_read_notification.*
 import kotlinx.android.synthetic.main.activity_system_notification.*
 import java.text.DateFormat
 
@@ -40,6 +42,7 @@ class SystemNotificationActivity : AppCompatActivity() {
             system_notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.date)
             system_notification_message.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.message))
             system_notification_message.movementMethod = LinkMovementMethod.getInstance()
+            system_notification_message.transformationMethod = CustomTabTransformationMethod(notification_text.autoLinkMask)
         }
     }
 
