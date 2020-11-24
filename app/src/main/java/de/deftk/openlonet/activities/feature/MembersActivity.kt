@@ -1,14 +1,22 @@
 package de.deftk.openlonet.activities.feature
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.ContextMenu
 import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import de.deftk.lonet.api.model.Group
+import de.deftk.lonet.api.model.abstract.IManageable
+import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
+import de.deftk.openlonet.activities.feature.mail.WriteMailActivity
 import de.deftk.openlonet.adapter.MemberAdapter
 import kotlinx.android.synthetic.main.activity_members.*
+import kotlinx.android.synthetic.main.fragment_notifications.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,10 +53,10 @@ class MembersActivity : AppCompatActivity() {
         members_swipe_refresh.setOnRefreshListener {
             reloadMembers()
         }
-        members_list.setOnItemClickListener { _, _, position, _ ->
-            val item = members_list.getItemAtPosition(position)
-            //TODO show context menu
+        members_list.setOnItemClickListener { _, view, _, _ ->
+            openContextMenu(view)
         }
+        registerForContextMenu(members_list)
         reloadMembers()
     }
 
@@ -69,6 +77,30 @@ class MembersActivity : AppCompatActivity() {
         })
 
         return true
+    }
+
+    override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        if (menuInfo is AdapterView.AdapterContextMenuInfo) {
+            val member = members_list?.adapter?.getItem(menuInfo.position) as IManageable
+            if (member.getLogin() != AuthStore.appUser.getLogin()) {
+                menuInflater.inflate(R.menu.member_action_menu, menu)
+            }
+        }
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.member_action_write_mail -> {
+                val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
+                val member = members_list?.adapter?.getItem(info.position) as IManageable
+                val intent = Intent(this, WriteMailActivity::class.java)
+                intent.putExtra(WriteMailActivity.EXTRA_ADDRESS, member.getLogin())
+                startActivity(intent)
+                true
+            }
+            else -> super.onContextItemSelected(item)
+        }
     }
 
     private fun reloadMembers() {

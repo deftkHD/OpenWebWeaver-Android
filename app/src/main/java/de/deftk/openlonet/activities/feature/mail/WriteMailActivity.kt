@@ -15,6 +15,8 @@ import kotlinx.coroutines.withContext
 class WriteMailActivity : AppCompatActivity() {
 
     companion object {
+        const val EXTRA_ADDRESS = "de.deftk.openlonet.mail.extra_address"
+
         const val RESULT_CODE_MAIL = 1
         const val RESULT_CODE_CANCEL = 2
     }
@@ -27,6 +29,8 @@ class WriteMailActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.title = getString(R.string.write_mail)
+
+        mail_to_address.setText(intent.getStringExtra(EXTRA_ADDRESS) ?: "")
 
         fab_send_mail.setOnClickListener {
             val subject = mail_subject.text.toString()
