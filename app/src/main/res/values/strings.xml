@@ -118,5 +118,7 @@
     <string name="setting_correct_file_storage_file_names">Normalize file names</string>
     <string name="setting_correct_file_storage_file_names_description">Removes file ending and replaces underscores of filenames downloaded form file storage when opening in another app</string>
     <string name="setting_open_link_external">Open links in external browser</string>
+    <string name="locked">Locked</string>
+    <string name="pinned">Pinned</string>
 
 </resources>

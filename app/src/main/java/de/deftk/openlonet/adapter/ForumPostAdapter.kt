@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import de.deftk.lonet.api.model.feature.forum.ForumPost
 import de.deftk.lonet.api.model.feature.forum.ForumPostIcon
 import de.deftk.openlonet.R
@@ -33,6 +34,8 @@ class ForumPostAdapter(context: Context, elements: List<ForumPost>): FilterableA
         listItemView.findViewById<TextView>(R.id.forum_post_title).text = item.title
         listItemView.findViewById<TextView>(R.id.forum_post_author).text = item.creationMember.getName()
         listItemView.findViewById<TextView>(R.id.forum_post_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.creationDate)
+        listItemView.findViewById<ImageView>(R.id.forum_post_locked).isVisible = item.locked == true
+        listItemView.findViewById<ImageView>(R.id.forum_post_pinned).isVisible = item.pinned == true
         return listItemView
     }
 

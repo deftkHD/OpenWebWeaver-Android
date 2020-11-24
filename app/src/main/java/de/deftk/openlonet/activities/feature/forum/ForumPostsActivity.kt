@@ -21,8 +21,6 @@ import java.io.Serializable
  */
 class ForumPostsActivity : AppCompatActivity() {
 
-    //TODO icons for pinned & locked
-
     companion object {
         const val EXTRA_GROUP = "de.deftk.openlonet.forum.group_extra"
     }
