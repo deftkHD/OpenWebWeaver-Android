@@ -199,14 +199,11 @@ class FilesActivity : AppCompatActivity() {
 
     private fun openDownload(context: Context, fileUri: Uri?, mimeType: String?) {
         if (fileUri != null) {
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.setDataAndType(
-                FileProvider.getUriForFile(
-                    context,
-                    BuildConfig.APPLICATION_ID + ".fileprovider",
-                    fileUri.toFile()
-                ), mimeType
-            )
+            val intent = Intent(Intent.ACTION_SEND)
+            val sharedUri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".fileprovider", fileUri.toFile())
+            intent.type = mimeType
+            intent.putExtra(Intent.EXTRA_STREAM, sharedUri)
+            intent.putExtra(Intent.EXTRA_SUBJECT, sharedUri.lastPathSegment ?: "imported")
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             try {
