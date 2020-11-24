@@ -114,5 +114,8 @@
     <string name="overview_request_failed">Failed to get overview information (%s)</string>
     <string name="unknown_reference_type">Unknown reference type \"%s\"</string>
     <string name="search">Search</string>
+    <string name="general">General</string>
+    <string name="setting_correct_file_storage_file_names">Normalize file names</string>
+    <string name="setting_correct_file_storage_file_names_description">Removes file ending and replaces underscores of filenames downloaded form file storage when opening in another app</string>
 
 </resources>

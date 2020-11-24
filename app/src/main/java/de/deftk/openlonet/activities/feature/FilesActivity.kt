@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.view.isVisible
+import androidx.preference.PreferenceManager
 import de.deftk.lonet.api.model.abstract.AbstractOperator
 import de.deftk.lonet.api.model.feature.abstract.IFilePrimitive
 import de.deftk.lonet.api.model.feature.files.OnlineFile
@@ -36,6 +37,8 @@ class FilesActivity : AppCompatActivity() {
     }
 
     private lateinit var fileStorage: IFilePrimitive
+
+    private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
 
     private val onCompleteReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -203,7 +206,7 @@ class FilesActivity : AppCompatActivity() {
             val sharedUri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".fileprovider", fileUri.toFile())
             intent.type = mimeType
             intent.putExtra(Intent.EXTRA_STREAM, sharedUri)
-            intent.putExtra(Intent.EXTRA_SUBJECT, sharedUri.lastPathSegment ?: "imported")
+            intent.putExtra(Intent.EXTRA_SUBJECT, normalizeFileName(sharedUri.lastPathSegment ?: "imported"))
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             try {
@@ -219,6 +222,18 @@ class FilesActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
+        }
+    }
+
+    private fun normalizeFileName(name: String): String {
+        return if (preferences.getBoolean("file_storage_correct_file_names", false)) {
+            if (name.contains('.')) {
+                name.substring(0, name.lastIndexOf('.')).replace("_", " ")
+            } else {
+                name.replace("_", " ")
+            }
+        } else {
+            name
         }
     }
 

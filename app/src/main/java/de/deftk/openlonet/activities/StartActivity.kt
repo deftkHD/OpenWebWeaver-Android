@@ -30,6 +30,7 @@ import de.deftk.openlonet.abstract.menu.IMenuNavigable
 import de.deftk.openlonet.abstract.menu.start.FeatureMenuItem
 import de.deftk.openlonet.feature.AppFeature
 import de.deftk.openlonet.fragments.OverviewFragment
+import de.deftk.openlonet.fragments.SettingsFragment
 import de.deftk.openlonet.utils.LoggingRequestHandler
 import kotlinx.android.synthetic.main.activity_start.*
 import kotlinx.coroutines.CoroutineScope
@@ -88,14 +89,21 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                             startActivity(intent)
                         }
                     } catch (e: Exception) {
-                        Toast.makeText(baseContext, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
+                        e.printStackTrace()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                baseContext,
+                                getString(R.string.request_failed_other).format(e.message ?: e),
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
                     }
                 }
             }
         })
         addMenuItem(object : AbstractNavigableMenuItem(R.string.settings, R.id.utility_group, R.drawable.ic_settings_24) {
             override fun onClick(activity: AppCompatActivity) {
-                Toast.makeText(this@StartActivity, "Not implemented yet", Toast.LENGTH_SHORT).show()
+                displayFragment(SettingsFragment())
             }
         })
         addMenuItem(object : AbstractNavigableMenuItem(R.string.logout, R.id.utility_group, R.drawable.ic_lock_open_24) {

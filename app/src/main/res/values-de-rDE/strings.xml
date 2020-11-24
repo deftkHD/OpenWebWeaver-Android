@@ -115,4 +115,7 @@
     <string name="overview_request_failed">Erstellen der Übersicht fehlgeschlagen (%s)</string>
     <string name="unknown_reference_type">Unbekannter Sprungtyp \"%s\"</string>
     <string name="search">Suchen</string>
+    <string name="general">Allgemein</string>
+    <string name="setting_correct_file_storage_file_names">Dateinamen normalisieren</string>
+    <string name="setting_correct_file_storage_file_names_description">Entfernt Dateiendung und ersetzt Unterstriche von heruntergeladenen Dateien beim öffnen in einer anderen App</string>
 </resources>
