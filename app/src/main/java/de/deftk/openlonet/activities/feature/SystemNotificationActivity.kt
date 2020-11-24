@@ -42,7 +42,7 @@ class SystemNotificationActivity : AppCompatActivity() {
             system_notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.date)
             system_notification_message.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.message))
             system_notification_message.movementMethod = LinkMovementMethod.getInstance()
-            system_notification_message.transformationMethod = CustomTabTransformationMethod(notification_text.autoLinkMask)
+            system_notification_message.transformationMethod = CustomTabTransformationMethod(system_notification_message.autoLinkMask)
         }
     }
 

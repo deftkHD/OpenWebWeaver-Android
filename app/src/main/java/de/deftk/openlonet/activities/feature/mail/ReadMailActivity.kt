@@ -39,7 +39,7 @@ class ReadMailActivity : AppCompatActivity() {
             mail_author?.text = mail.from?.joinToString { it.name } ?: AuthStore.getAppUser().getName()
             mail_author_address?.text = mail.from?.joinToString { it.address } ?: AuthStore.getAppUser().getLogin()
             mail_date?.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(mail.date)
-            mail_message?.transformationMethod = CustomTabTransformationMethod(notification_text.autoLinkMask)
+            mail_message?.transformationMethod = CustomTabTransformationMethod(mail_message.autoLinkMask)
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val content = mail.read()

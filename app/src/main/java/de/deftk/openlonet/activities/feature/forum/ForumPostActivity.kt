@@ -43,7 +43,7 @@ class ForumPostActivity : AppCompatActivity() {
             forum_post_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.creationDate)
             forum_post_text.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(post.text))
             forum_post_text.movementMethod = LinkMovementMethod.getInstance()
-            forum_post_text.transformationMethod = CustomTabTransformationMethod(notification_text.autoLinkMask)
+            forum_post_text.transformationMethod = CustomTabTransformationMethod(forum_post_text.autoLinkMask)
 
             forum_post_no_comments.isVisible = post.commentCount <= 0
             forum_post_comment_recycler_view.layoutManager = LinearLayoutManager(this)

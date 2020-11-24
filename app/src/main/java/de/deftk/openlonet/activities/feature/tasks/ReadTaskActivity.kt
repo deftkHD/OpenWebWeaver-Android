@@ -95,7 +95,7 @@ class ReadTaskActivity : AppCompatActivity() {
         task_due.text = String.format(getString(R.string.until_date), if (task.endDate != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.endDate!!) else getString(R.string.not_set))
         task_detail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description))
         task_detail.movementMethod = LinkMovementMethod.getInstance()
-        task_detail.transformationMethod = CustomTabTransformationMethod(notification_text.autoLinkMask)
+        task_detail.transformationMethod = CustomTabTransformationMethod(task_detail.autoLinkMask)
     }
 
     // back button in toolbar functionality
