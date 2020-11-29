@@ -37,13 +37,13 @@ object AuthStore {
 
     private var appUser: User? = null
 
-    private fun getSavedUsername(context: Context): String? {
+    fun getSavedUsername(context: Context): String? {
         val prefs = context.getSharedPreferences(PREFERENCE_NAME, 0)
         if (!prefs.contains("login")) return null
         return decrypt(prefs.getString("login", null)!!)
     }
 
-    private fun getSavedToken(context: Context): String? {
+    fun getSavedToken(context: Context): String? {
         val prefs = context.getSharedPreferences(PREFERENCE_NAME, 0)
         if (!prefs.contains("token")) return null
         return decrypt(prefs.getString("token", null)!!)

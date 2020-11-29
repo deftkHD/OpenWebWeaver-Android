@@ -121,4 +121,7 @@
     <string name="setting_open_link_external">Links in externem Browser öffnen</string>
     <string name="locked">Geschlossen</string>
     <string name="pinned">Angepinnt</string>
+    <string name="file_storage_integration">Dateiablagenintegration</string>
+    <string name="setting_enable_preview_images">Vorschaubilder aktivieren</string>
+    <string name="setting_enable_preview_images_description">Das Aktivieren von Vorschaubildern kann unter Umständen dazu führen, dass die Dateiauswahl nicht mehr richtig funktioniert</string>
 </resources>

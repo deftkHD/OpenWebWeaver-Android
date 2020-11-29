@@ -120,5 +120,8 @@
     <string name="setting_open_link_external">Open links in external browser</string>
     <string name="locked">Locked</string>
     <string name="pinned">Pinned</string>
+    <string name="file_storage_integration">File storage integration</string>
+    <string name="setting_enable_preview_images">Enable preview images</string>
+    <string name="setting_enable_preview_images_description">Activating preview images might result in file chooser working incorrect</string>
 
 </resources>

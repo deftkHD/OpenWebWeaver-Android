@@ -17,4 +17,13 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/file_storage_integration">
+
+        <SwitchPreference
+            app:key="file_storage_integration_enable_preview_images"
+            app:title="@string/setting_enable_preview_images"
+            app:summary="@string/setting_enable_preview_images_description" />
+
+    </PreferenceCategory>
+
 </PreferenceScreen>

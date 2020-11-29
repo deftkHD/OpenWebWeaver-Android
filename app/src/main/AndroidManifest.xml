@@ -52,6 +52,17 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
+2
+        <provider
+            android:name="de.deftk.openlonet.feature.filestorage.ApiDocumentsProvider"
+            android:authorities="de.deftk.openlonet.filestorage.fileprovider"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
     </application>
 
 </manifest>
