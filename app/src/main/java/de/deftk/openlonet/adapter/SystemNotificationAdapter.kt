@@ -1,6 +1,7 @@
 package de.deftk.openlonet.adapter
 
 import android.content.Context
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -61,11 +62,16 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
         listItemView.addSwipeListener(swp)
 
         val type = item.messageType
-        listItemView.findViewById<TextView>(R.id.system_notification_title).text = if (type != null) {
+        val titleView = listItemView.findViewById<TextView>(R.id.system_notification_title)
+        titleView.text = if (type != null) {
             context.getString(typeTranslationMap[type] ?: R.string.system_notification_type_unknown)
         } else {
             context.getString(R.string.system_notification_type_unknown)
         }
+        if (item.read)
+            titleView.setTypeface(null, Typeface.NORMAL)
+        else
+            titleView.setTypeface(null, Typeface.BOLD)
         listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.group.getType() != ManageableType.UNKNOWN) item.group.getName() else item.member.getName()
         listItemView.findViewById<TextView>(R.id.system_notification_date).text = DateFormat.getDateInstance().format(item.date)
         return listItemView
