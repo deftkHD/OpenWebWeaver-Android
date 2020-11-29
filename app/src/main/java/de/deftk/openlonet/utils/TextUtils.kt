@@ -1,11 +1,13 @@
 package de.deftk.openlonet.utils
 
 import android.content.Intent
+import android.content.res.Resources
 import android.os.Build
 import android.os.Bundle
 import android.text.Html
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.TextPaint
 import android.text.style.ClickableSpan
 import android.view.View
 import android.widget.Toast
@@ -71,7 +73,7 @@ object TextUtils {
                     val display = name ?: reference
                     builder = builder.replace(startIndex, endIndex, display)
                     builder.setSpan(
-                        MailSpan(reference),
+                        MailAddressSpan(reference),
                         startIndex,
                         startIndex + display.length,
                         Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -84,12 +86,43 @@ object TextUtils {
         return builder
     }
 
+    /**
+     * Parses multiple quotes per line
+     */
+    fun parseMultipleQuotes(spanned: Spanned): Spanned {
+        return if (spanned.contains("\n>")) {
+            var builder = SpannableStringBuilder(spanned)
+            try {
+                var globalIndex = 0
+                builder.split("\n").forEach { line ->
+                    var level = 0
+                    val startIndex = globalIndex
+                    var charIndex = 0
+                    // walk through line
+                    while (globalIndex - startIndex < line.length) {
+                        if (builder[globalIndex] == '>') {
+                            val previousChar = line.getOrNull(charIndex - 1)
+                            if (previousChar == null || previousChar == ' ') {
+                                builder.setSpan(MultiQuoteSpan(level), globalIndex, globalIndex + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                                builder = builder.replace(globalIndex, globalIndex + 1, " ")
+                                level++
+                            }
+                        }
+                        globalIndex++
+                        charIndex++
+                    }
+                    globalIndex++
+                }
+            } catch (e: Exception) {
+            } // don't do anything if failed to parse reference
 
-    class InternalReferenceSpan(
-        private val type: InternalReferenceType,
-        private val group: String,
-        private val extra: String
-    ) : ClickableSpan() {
+            builder
+        } else {
+            spanned
+        }
+    }
+
+    class InternalReferenceSpan(private val type: InternalReferenceType, private val group: String, private val extra: String) : ClickableSpan() {
         override fun onClick(widget: View) {
             when (type) {
                 InternalReferenceType.FILE_STORAGE -> {
@@ -113,9 +146,37 @@ object TextUtils {
         }
     }
 
-    class MailSpan(private val mail: String) : ClickableSpan() {
+    class MailAddressSpan(private val mail: String) : ClickableSpan() {
         override fun onClick(widget: View) {
             Toast.makeText(widget.context, mail, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    class MultiQuoteSpan(private val level: Int): ClickableSpan() {
+
+        companion object {
+            private val levelColorMap = mapOf(
+                Pair(0, android.R.color.holo_blue_light),
+                Pair(1, android.R.color.holo_orange_light),
+                Pair(2, android.R.color.holo_green_light),
+                Pair(3, android.R.color.holo_red_light),
+                Pair(4, android.R.color.holo_blue_dark),
+                Pair(5, android.R.color.holo_orange_dark),
+                Pair(6, android.R.color.holo_green_dark),
+                Pair(7, android.R.color.holo_red_dark),
+            )
+        }
+
+        override fun onClick(widget: View) {}
+
+        override fun updateDrawState(ds: TextPaint) {
+            val colorCode = levelColorMap.getOrElse(level) { android.R.color.holo_blue_light }
+            ds.bgColor = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Resources.getSystem().getColor(colorCode, null)
+            } else {
+                @Suppress("DEPRECATION")
+                Resources.getSystem().getColor(colorCode)
+            }
         }
     }
 

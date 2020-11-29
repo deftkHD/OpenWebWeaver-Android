@@ -29,7 +29,7 @@ class ForumPostCommentRecyclerAdapter(private val comments: List<ForumPost>): Re
         holder.commentTitle.text = comment.title
         holder.commentAuthor.text = comment.creationMember.getName()
         holder.commentDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(comment.creationDate)
-        holder.commentText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(comment.text))
+        holder.commentText.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(comment.text)))
         holder.commentText.movementMethod = LinkMovementMethod.getInstance()
         holder.showComments.isVisible = comment.commentCount > 0
         if (comment.commentCount > 0) {

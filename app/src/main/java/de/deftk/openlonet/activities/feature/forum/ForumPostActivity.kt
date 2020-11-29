@@ -12,7 +12,6 @@ import de.deftk.openlonet.adapter.ForumPostCommentRecyclerAdapter
 import de.deftk.openlonet.utils.CustomTabTransformationMethod
 import de.deftk.openlonet.utils.TextUtils
 import kotlinx.android.synthetic.main.activity_forum_post.*
-import kotlinx.android.synthetic.main.activity_read_notification.*
 import java.text.DateFormat
 
 class ForumPostActivity : AppCompatActivity() {
@@ -41,7 +40,7 @@ class ForumPostActivity : AppCompatActivity() {
             forum_post_title.text = post.title
             forum_post_author.text = post.creationMember.getName()
             forum_post_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.creationDate)
-            forum_post_text.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(post.text))
+            forum_post_text.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(post.text)))
             forum_post_text.movementMethod = LinkMovementMethod.getInstance()
             forum_post_text.transformationMethod = CustomTabTransformationMethod(forum_post_text.autoLinkMask)
 

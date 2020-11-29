@@ -8,6 +8,7 @@ import de.deftk.lonet.api.model.feature.mailbox.Email
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.utils.CustomTabTransformationMethod
+import de.deftk.openlonet.utils.TextUtils
 import kotlinx.android.synthetic.main.activity_read_mail.*
 import kotlinx.android.synthetic.main.activity_read_notification.*
 import kotlinx.coroutines.CoroutineScope
@@ -45,9 +46,10 @@ class ReadMailActivity : AppCompatActivity() {
                     val content = mail.read()
                     withContext(Dispatchers.Main) {
                         progress_read_mail?.visibility = ProgressBar.INVISIBLE
-                        mail_message?.text = content.text ?: content.plainBody
+                        mail_message?.text = TextUtils.parseMultipleQuotes(TextUtils.parseHtml(content.text ?: content.plainBody))
                     }
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     withContext(Dispatchers.Main) {
                         progress_read_mail?.visibility = ProgressBar.INVISIBLE
                         Toast.makeText(this@ReadMailActivity, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
