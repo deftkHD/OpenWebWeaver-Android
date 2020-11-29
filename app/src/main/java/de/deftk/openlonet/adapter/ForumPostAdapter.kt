@@ -34,8 +34,8 @@ class ForumPostAdapter(context: Context, elements: List<ForumPost>): FilterableA
         listItemView.findViewById<TextView>(R.id.forum_post_title).text = item.title
         listItemView.findViewById<TextView>(R.id.forum_post_author).text = item.creationMember.getName()
         listItemView.findViewById<TextView>(R.id.forum_post_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.creationDate)
-        listItemView.findViewById<ImageView>(R.id.forum_post_locked).isVisible = item.locked == true
-        listItemView.findViewById<ImageView>(R.id.forum_post_pinned).isVisible = item.pinned == true
+        listItemView.findViewById<ImageView>(R.id.forum_post_locked).visibility = if (item.locked == true) View.VISIBLE else View.INVISIBLE
+        listItemView.findViewById<ImageView>(R.id.forum_post_pinned).visibility = if (item.pinned == true) View.VISIBLE else View.INVISIBLE
         return listItemView
     }
 
