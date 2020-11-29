@@ -5,6 +5,7 @@ import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.daimajia.swipe.SwipeLayout
@@ -76,6 +77,11 @@ class MailAdapter(context: Context, elements: List<Email>): FilterableAdapter<Em
             ?.joinToString { it.name } ?: AuthStore.getAppUser().getName() //TODO not verified if this is useful
         listItemView.findViewById<TextView>(R.id.mail_date).text = DateFormat
             .getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.date)
+
+        listItemView.findViewById<ImageView>(R.id.mail_answered).visibility =
+            if (item.answered == true) View.VISIBLE else View.INVISIBLE
+        listItemView.findViewById<ImageView>(R.id.mail_flagged).visibility =
+            if (item.flagged == true) View.VISIBLE else View.INVISIBLE
 
         return listItemView
     }

@@ -124,4 +124,6 @@
     <string name="file_storage_integration">Dateiablagenintegration</string>
     <string name="setting_enable_preview_images">Vorschaubilder aktivieren</string>
     <string name="setting_enable_preview_images_description">Das Aktivieren von Vorschaubildern kann unter Umständen dazu führen, dass die Dateiauswahl nicht mehr richtig funktioniert</string>
+    <string name="flagged">Mit Flagge markiert</string>
+    <string name="answered">Beantwortet</string>
 </resources>

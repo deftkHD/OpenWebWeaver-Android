@@ -43,12 +43,31 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_marginStart="5dp"
+            android:layout_toStartOf="@id/mail_flagged"
             android:layout_toEndOf="@+id/mail_image"
             android:ellipsize="end"
             android:lines="1"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             tools:text="Mail Subject" />
+
+        <ImageView
+            android:id="@+id/mail_flagged"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_flag_24"
+            android:layout_alignParentTop="true"
+            android:layout_toStartOf="@id/mail_answered"
+            android:contentDescription="@string/flagged" />
+
+        <ImageView
+            android:id="@+id/mail_answered"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_reply_24"
+            android:contentDescription="@string/answered" />
 
         <TextView
             android:id="@+id/mail_author"
