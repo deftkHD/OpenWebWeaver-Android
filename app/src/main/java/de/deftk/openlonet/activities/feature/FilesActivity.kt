@@ -1,10 +1,7 @@
 package de.deftk.openlonet.activities.feature
 
 import android.app.DownloadManager
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -202,23 +199,22 @@ class FilesActivity : AppCompatActivity() {
 
     private fun openDownload(context: Context, fileUri: Uri?, mimeType: String?) {
         if (fileUri != null) {
-            val intent = Intent(Intent.ACTION_SEND)
             val sharedUri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".fileprovider", fileUri.toFile())
+
+            val intent = Intent(Intent.ACTION_SEND)
             intent.type = mimeType
-            intent.putExtra(Intent.EXTRA_STREAM, sharedUri)
-            intent.putExtra(Intent.EXTRA_SUBJECT, normalizeFileName(sharedUri.lastPathSegment ?: "imported"))
+            intent.clipData = ClipData.newRawUri(sharedUri.lastPathSegment, sharedUri)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            intent.putExtra(Intent.EXTRA_STREAM, sharedUri)
+            intent.putExtra(Intent.EXTRA_SUBJECT, normalizeFileName(sharedUri.lastPathSegment ?: "imported"))
             try {
-                context.startActivity(intent)
+                context.startActivity(Intent.createChooser(intent, sharedUri.lastPathSegment))
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(
                     context,
-                    String.format(
-                        context.getText(R.string.download_open_failed).toString(),
-                        e.message ?: e
-                    ),
+                    String.format(context.getText(R.string.download_open_failed).toString(), e.message ?: e),
                     Toast.LENGTH_SHORT
                 ).show()
             }
