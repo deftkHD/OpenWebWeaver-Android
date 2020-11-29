@@ -102,7 +102,7 @@ object TextUtils {
                     while (globalIndex - startIndex < line.length) {
                         if (builder[globalIndex] == '>') {
                             val previousChar = line.getOrNull(charIndex - 1)
-                            if (previousChar == null || previousChar == ' ') {
+                            if (previousChar == null || previousChar == ' ' || previousChar == '>') {
                                 builder.setSpan(MultiQuoteSpan(level), globalIndex, globalIndex + 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                                 builder = builder.replace(globalIndex, globalIndex + 1, " ")
                                 level++
@@ -158,12 +158,12 @@ object TextUtils {
             private val levelColorMap = mapOf(
                 Pair(0, android.R.color.holo_blue_light),
                 Pair(1, android.R.color.holo_orange_light),
-                Pair(2, android.R.color.holo_green_light),
-                Pair(3, android.R.color.holo_red_light),
+                Pair(2, android.R.color.holo_red_light),
+                Pair(3, android.R.color.holo_green_light),
                 Pair(4, android.R.color.holo_blue_dark),
                 Pair(5, android.R.color.holo_orange_dark),
-                Pair(6, android.R.color.holo_green_dark),
-                Pair(7, android.R.color.holo_red_dark),
+                Pair(6, android.R.color.holo_red_dark),
+                Pair(7, android.R.color.holo_green_dark)
             )
         }
 
