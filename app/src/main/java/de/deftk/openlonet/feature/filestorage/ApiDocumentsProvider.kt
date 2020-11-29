@@ -194,7 +194,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
                 val storageManager = acquireContext().getSystemService(StorageManager::class.java)
                 return storageManager.openProxyFileDescriptor(
                     ParcelFileDescriptor.parseMode(mode),
-                    FileDescriptorCallback { file.getTempDownloadUrl() },
+                    FileDescriptorCallback(signal) { file.getTempDownloadUrl() },
                     handler
                 )
             } else {
@@ -209,6 +209,8 @@ class ApiDocumentsProvider: DocumentsProvider() {
 
                             var actualRead = 0
                             while (actualRead < download.size) {
+                                if (signal?.isCanceled == true)
+                                    break
                                 val read = stream.read(buffer, 0, buffer.size)
                                 if (read <= 0) break
                                 out.write(buffer, 0, buffer.size)
@@ -238,7 +240,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
                 val storageManager = acquireContext().getSystemService(StorageManager::class.java)
                 val pfd = storageManager.openProxyFileDescriptor(
                     ParcelFileDescriptor.MODE_READ_ONLY,
-                    FileDescriptorCallback { file.getPreviewDownloadUrl() },
+                    FileDescriptorCallback(signal) { file.getPreviewDownloadUrl() },
                     handler
                 )
                 return AssetFileDescriptor(pfd, 0, AssetFileDescriptor.UNKNOWN_LENGTH)
@@ -254,6 +256,8 @@ class ApiDocumentsProvider: DocumentsProvider() {
 
                             var actualRead = 0
                             while (actualRead < preview.size) {
+                                if (signal?.isCanceled == true)
+                                    break
                                 val read = stream.read(buffer, 0, buffer.size)
                                 if (read <= 0) break
                                 out.write(buffer, 0, buffer.size)

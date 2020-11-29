@@ -1,6 +1,7 @@
 package de.deftk.openlonet.feature.filestorage
 
 import android.os.Build
+import android.os.CancellationSignal
 import android.os.ProxyFileDescriptorCallback
 import androidx.annotation.RequiresApi
 import de.deftk.lonet.api.model.feature.files.FileDownloadUrl
@@ -9,9 +10,7 @@ import java.net.URL
 import kotlin.math.min
 
 @RequiresApi(Build.VERSION_CODES.O)
-class FileDescriptorCallback(private val createDownloadUrl: () -> FileDownloadUrl): ProxyFileDescriptorCallback() {
-
-    //TODO implement cancellation signal
+class FileDescriptorCallback(private val cancellationSignal: CancellationSignal?, private val createDownloadUrl: () -> FileDownloadUrl): ProxyFileDescriptorCallback() {
 
     private val downloadUrl by lazy { createDownloadUrl() }
 
@@ -32,6 +31,8 @@ class FileDescriptorCallback(private val createDownloadUrl: () -> FileDownloadUr
         var actualRead = 0
         val destinationRead = min(size, data.size)
         while (actualRead != destinationRead) {
+            if (cancellationSignal?.isCanceled == true)
+                return -1
             val currentRead = inputStream!!.read(data, actualRead, destinationRead - actualRead)
             if (currentRead <= 0)
                 return actualRead
