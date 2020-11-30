@@ -126,4 +126,7 @@
     <string name="setting_enable_preview_images_description">Das Aktivieren von Vorschaubildern kann unter Umständen dazu führen, dass die Dateiauswahl nicht mehr richtig funktioniert</string>
     <string name="flagged">Mit Flagge markiert</string>
     <string name="answered">Beantwortet</string>
+    <string name="open">Öffnen</string>
+    <string name="download">Herunterladen</string>
+    <string name="download_finished">Download fertig</string>
 </resources>

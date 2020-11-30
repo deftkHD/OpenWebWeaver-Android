@@ -125,5 +125,8 @@
     <string name="setting_enable_preview_images_description">Activating preview images might result in file chooser working incorrect</string>
     <string name="flagged">Flagged</string>
     <string name="answered">Answered</string>
+    <string name="open">Open</string>
+    <string name="download">Download</string>
+    <string name="download_finished">Download finished</string>
 
 </resources>

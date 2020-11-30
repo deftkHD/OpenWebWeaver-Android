@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-path name="external_files" path="Download/"/>
+    <cache-path
+        name="shared_filestorage"
+        path="filestorage/" />
 </paths>
