@@ -14,13 +14,13 @@ import de.deftk.lonet.api.model.feature.mailbox.EmailFolder
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.utils.SwipeAdapter
+import de.deftk.openlonet.utils.TextUtils
 import de.deftk.openlonet.utils.filter.FilterableAdapter
 import de.deftk.openlonet.utils.filter.filterApplies
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.DateFormat
 
 
 class MailAdapter(context: Context, elements: List<Email>): FilterableAdapter<Email>(context, elements) {
@@ -75,8 +75,7 @@ class MailAdapter(context: Context, elements: List<Email>): FilterableAdapter<Em
             subjectView.setTypeface(null, Typeface.BOLD)
         listItemView.findViewById<TextView>(R.id.mail_author).text = item.from
             ?.joinToString { it.name } ?: AuthStore.getAppUser().getName() //TODO not verified if this is useful
-        listItemView.findViewById<TextView>(R.id.mail_date).text = DateFormat
-            .getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.date)
+        listItemView.findViewById<TextView>(R.id.mail_date).text = TextUtils.parseShortDate(item.date)
 
         listItemView.findViewById<ImageView>(R.id.mail_answered).visibility =
             if (item.answered == true) View.VISIBLE else View.INVISIBLE

@@ -13,7 +13,6 @@ import de.deftk.lonet.api.model.feature.forum.ForumPost
 import de.deftk.openlonet.R
 import de.deftk.openlonet.activities.feature.forum.ForumPostActivity
 import de.deftk.openlonet.utils.TextUtils
-import java.text.DateFormat
 
 class ForumPostCommentRecyclerAdapter(private val comments: List<ForumPost>): RecyclerView.Adapter<ForumPostCommentRecyclerAdapter.ViewHolder>() {
 
@@ -28,7 +27,7 @@ class ForumPostCommentRecyclerAdapter(private val comments: List<ForumPost>): Re
         holder.commentImage.setImageResource(ForumPostAdapter.postIconMap[comment.icon] ?: R.drawable.ic_help_24)
         holder.commentTitle.text = comment.title
         holder.commentAuthor.text = comment.creationMember.getName()
-        holder.commentDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(comment.creationDate)
+        holder.commentDate.text = TextUtils.parseShortDate(comment.creationDate)
         holder.commentText.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(comment.text)))
         holder.commentText.movementMethod = LinkMovementMethod.getInstance()
         holder.showComments.isVisible = comment.commentCount > 0

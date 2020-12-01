@@ -8,9 +8,9 @@ import android.widget.TextView
 import de.deftk.lonet.api.model.feature.board.BoardNotification
 import de.deftk.lonet.api.model.feature.board.BoardNotificationColor
 import de.deftk.openlonet.R
+import de.deftk.openlonet.utils.TextUtils
 import de.deftk.openlonet.utils.filter.FilterableAdapter
 import de.deftk.openlonet.utils.filter.filterApplies
-import java.text.DateFormat
 
 class NotificationAdapter(context: Context, elements: List<BoardNotification>): FilterableAdapter<BoardNotification>(context, elements) {
 
@@ -20,7 +20,7 @@ class NotificationAdapter(context: Context, elements: List<BoardNotification>): 
 
         listItemView.findViewById<TextView>(R.id.notification_title).text = item.title
         listItemView.findViewById<TextView>(R.id.notification_author).text = item.creationMember.getName()
-        listItemView.findViewById<TextView>(R.id.notification_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.creationDate)
+        listItemView.findViewById<TextView>(R.id.notification_date).text = TextUtils.parseShortDate(item.modificationDate)
         listItemView.findViewById<View>(R.id.notification_accent).setBackgroundResource(BoardNotificationColors.getByApiColor(item.color)?.androidColor ?: BoardNotificationColors.BLUE.androidColor)
         return listItemView
     }

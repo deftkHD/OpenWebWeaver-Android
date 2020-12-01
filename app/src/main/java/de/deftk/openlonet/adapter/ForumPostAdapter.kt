@@ -6,13 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.view.isVisible
 import de.deftk.lonet.api.model.feature.forum.ForumPost
 import de.deftk.lonet.api.model.feature.forum.ForumPostIcon
 import de.deftk.openlonet.R
+import de.deftk.openlonet.utils.TextUtils
 import de.deftk.openlonet.utils.filter.FilterableAdapter
 import de.deftk.openlonet.utils.filter.filterApplies
-import java.text.DateFormat
 
 class ForumPostAdapter(context: Context, elements: List<ForumPost>): FilterableAdapter<ForumPost>(context, elements) {
 
@@ -33,7 +32,7 @@ class ForumPostAdapter(context: Context, elements: List<ForumPost>): FilterableA
         listItemView.findViewById<ImageView>(R.id.forum_post_image).setImageResource(postIconMap[item.icon] ?: R.drawable.ic_help_24)
         listItemView.findViewById<TextView>(R.id.forum_post_title).text = item.title
         listItemView.findViewById<TextView>(R.id.forum_post_author).text = item.creationMember.getName()
-        listItemView.findViewById<TextView>(R.id.forum_post_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.creationDate)
+        listItemView.findViewById<TextView>(R.id.forum_post_date).text = TextUtils.parseShortDate(item.creationDate)
         listItemView.findViewById<ImageView>(R.id.forum_post_locked).visibility = if (item.locked == true) View.VISIBLE else View.INVISIBLE
         listItemView.findViewById<ImageView>(R.id.forum_post_pinned).visibility = if (item.pinned == true) View.VISIBLE else View.INVISIBLE
         return listItemView

@@ -12,13 +12,13 @@ import de.deftk.lonet.api.model.abstract.ManageableType
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.openlonet.R
 import de.deftk.openlonet.utils.SwipeAdapter
+import de.deftk.openlonet.utils.TextUtils
 import de.deftk.openlonet.utils.filter.FilterableAdapter
 import de.deftk.openlonet.utils.filter.filterApplies
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.DateFormat
 
 class SystemNotificationAdapter(context: Context, elements: List<SystemNotification>): FilterableAdapter<SystemNotification>(context, elements.toMutableList()) {
 
@@ -73,7 +73,7 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
         else
             titleView.setTypeface(null, Typeface.BOLD)
         listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.group.getType() != ManageableType.UNKNOWN) item.group.getName() else item.member.getName()
-        listItemView.findViewById<TextView>(R.id.system_notification_date).text = DateFormat.getDateInstance().format(item.date)
+        listItemView.findViewById<TextView>(R.id.system_notification_date).text = TextUtils.parseShortDate(item.date)
         return listItemView
     }
 

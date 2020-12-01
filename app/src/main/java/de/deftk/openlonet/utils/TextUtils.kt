@@ -8,6 +8,7 @@ import android.text.Html
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextPaint
+import android.text.format.DateUtils
 import android.text.style.ClickableSpan
 import android.view.View
 import android.widget.Toast
@@ -15,8 +16,18 @@ import de.deftk.lonet.api.model.Feature
 import de.deftk.openlonet.R
 import de.deftk.openlonet.activities.StartActivity
 import de.deftk.openlonet.fragments.FileStorageGroupFragment
+import java.text.DateFormat
+import java.util.*
 
 object TextUtils {
+
+    fun parseShortDate(date: Date): String {
+        return if (DateUtils.isToday(date.time)) {
+            DateFormat.getTimeInstance(DateFormat.SHORT).format(date)
+        } else {
+            DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(date)
+        }
+    }
 
     fun parseHtml(text: String?): Spanned {
         val html = text

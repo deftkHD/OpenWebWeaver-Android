@@ -9,9 +9,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import de.deftk.lonet.api.model.feature.files.OnlineFile
 import de.deftk.openlonet.R
+import de.deftk.openlonet.utils.TextUtils
 import de.deftk.openlonet.utils.filter.FilterableAdapter
 import de.deftk.openlonet.utils.filter.filterApplies
-import java.text.DateFormat
 
 class FileStorageFilesAdapter(context: Context, elements: List<OnlineFile>) :
     FilterableAdapter<OnlineFile>(context, elements) {
@@ -22,7 +22,7 @@ class FileStorageFilesAdapter(context: Context, elements: List<OnlineFile>) :
 
         listItemView.findViewById<TextView>(R.id.file_name).text = item.name
         listItemView.findViewById<TextView>(R.id.file_size).text = if (item.type == OnlineFile.FileType.FILE) Formatter.formatFileSize(context, item.size) else context.getString(R.string.directory)
-        listItemView.findViewById<TextView>(R.id.file_modified_date).text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(item.modificationDate)
+        listItemView.findViewById<TextView>(R.id.file_modified_date).text = TextUtils.parseShortDate(item.modificationDate)
         val imageView = listItemView.findViewById<ImageView>(R.id.file_image)
         when (item.type) {
             OnlineFile.FileType.FILE -> imageView.setImageResource(R.drawable.ic_file_24)
