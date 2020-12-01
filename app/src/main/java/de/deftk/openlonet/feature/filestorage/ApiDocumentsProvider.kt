@@ -204,7 +204,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
                         try {
                             val download = file.getTempDownloadUrl()
                             val out = ParcelFileDescriptor.AutoCloseOutputStream(pipes[1])
-                            val stream = URL(download.downloadUrl).openStream()
+                            val stream = URL(download.url).openStream()
                             val buffer = ByteArray(1024)
 
                             var actualRead = 0
@@ -251,7 +251,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
                         try {
                             val preview = file.getPreviewDownloadUrl()
                             val out = ParcelFileDescriptor.AutoCloseOutputStream(pipes[1])
-                            val stream = URL(preview.downloadUrl).openStream()
+                            val stream = URL(preview.url).openStream()
                             val buffer = ByteArray(1024)
 
                             var actualRead = 0
@@ -281,7 +281,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
     override fun getDocumentType(documentId: String): String {
         val cached = getCachedFileById(documentId)
         return if (cached != null) {
-            FileUtil.getMimeType(cached.name)
+            FileUtil.getMimeType(cached.getName())
         } else {
             FileUtil.getMimeType(documentId.substring(documentId.lastIndexOf('/')))
         }
@@ -510,10 +510,10 @@ class ApiDocumentsProvider: DocumentsProvider() {
 
         val row = cursor.newRow()
         row.add(Document.COLUMN_DOCUMENT_ID, "${file.operator.getLogin()}:${file.id}")
-        row.add(Document.COLUMN_DISPLAY_NAME, file.name)
+        row.add(Document.COLUMN_DISPLAY_NAME, file.getName())
         row.add(Document.COLUMN_SIZE, file.size)
         if (file.type == OnlineFile.FileType.FILE) {
-            row.add(Document.COLUMN_MIME_TYPE, FileUtil.getMimeType(file.name))
+            row.add(Document.COLUMN_MIME_TYPE, FileUtil.getMimeType(file.getName()))
         } else {
             row.add(Document.COLUMN_MIME_TYPE, Document.MIME_TYPE_DIR)
         }

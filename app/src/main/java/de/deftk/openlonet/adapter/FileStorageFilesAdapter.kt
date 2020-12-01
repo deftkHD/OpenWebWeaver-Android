@@ -25,7 +25,7 @@ class FileStorageFilesAdapter(context: Context, elements: List<OnlineFile>) :
         val listItemView = convertView ?: LayoutInflater.from(context).inflate(R.layout.list_item_file, parent, false)
         val item = getItem(position) ?: return listItemView
 
-        listItemView.findViewById<TextView>(R.id.file_name).text = item.name
+        listItemView.findViewById<TextView>(R.id.file_name).text = item.getName()
         listItemView.findViewById<TextView>(R.id.file_size).text = if (item.type == OnlineFile.FileType.FILE) Formatter.formatFileSize(context, item.size) else context.getString(R.string.directory)
         listItemView.findViewById<TextView>(R.id.file_modified_date).text = TextUtils.parseShortDate(item.modificationDate)
         val imageView = listItemView.findViewById<ImageView>(R.id.file_image)
@@ -34,7 +34,7 @@ class FileStorageFilesAdapter(context: Context, elements: List<OnlineFile>) :
                 if (item.preview == true) {
                     CoroutineScope(Dispatchers.IO).launch {
                         withContext(Dispatchers.IO) {
-                            val url = item.getPreviewDownloadUrl().downloadUrl
+                            val url = item.getPreviewDownloadUrl().url
                             withContext(Dispatchers.Main) {
                                 Glide.with(listItemView)
                                     .load(url)
@@ -63,12 +63,12 @@ class FileStorageFilesAdapter(context: Context, elements: List<OnlineFile>) :
             return originalElements
         return originalElements.filter {
             it.creationMember.filterApplies(constraint)
-                    || it.name.filterApplies(constraint)
+                    || it.getName().filterApplies(constraint)
                     || it.description.filterApplies(constraint)
         }
     }
 
     override fun sort(elements: List<OnlineFile>): List<OnlineFile> {
-        return elements.sortedWith(compareBy({ it.type == OnlineFile.FileType.FILE }, { it.name }))
+        return elements.sortedWith(compareBy({ it.type == OnlineFile.FileType.FILE }, { it.getName() }))
     }
 }

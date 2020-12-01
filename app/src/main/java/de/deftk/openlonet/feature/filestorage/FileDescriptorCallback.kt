@@ -4,13 +4,13 @@ import android.os.Build
 import android.os.CancellationSignal
 import android.os.ProxyFileDescriptorCallback
 import androidx.annotation.RequiresApi
-import de.deftk.lonet.api.model.feature.files.FileDownloadUrl
+import de.deftk.lonet.api.model.feature.files.FileUrl
 import java.io.InputStream
 import java.net.URL
 import kotlin.math.min
 
 @RequiresApi(Build.VERSION_CODES.O)
-class FileDescriptorCallback(private val cancellationSignal: CancellationSignal?, private val createDownloadUrl: () -> FileDownloadUrl): ProxyFileDescriptorCallback() {
+class FileDescriptorCallback(private val cancellationSignal: CancellationSignal?, private val createDownloadUrl: () -> FileUrl): ProxyFileDescriptorCallback() {
 
     private val downloadUrl by lazy { createDownloadUrl() }
 
@@ -53,7 +53,7 @@ class FileDescriptorCallback(private val cancellationSignal: CancellationSignal?
 
     private fun initStream() {
         inputStream?.close()
-        inputStream = URL(downloadUrl.downloadUrl).openStream()
+        inputStream = URL(downloadUrl.url).openStream()
         offset = 0L
     }
 

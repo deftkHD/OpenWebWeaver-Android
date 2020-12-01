@@ -57,7 +57,7 @@ class FilesActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.title = when (extraFolder) {
             is AbstractOperator -> extraFolder.getName()
-            is OnlineFile -> extraFolder.name
+            is OnlineFile -> extraFolder.getName()
             else -> ""
         }
 
@@ -118,8 +118,8 @@ class FilesActivity : AppCompatActivity() {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
                 val file = file_list?.adapter?.getItem(info.position) as OnlineFile
                 val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-                intent.type = FileUtil.getMimeType(file.name)
-                intent.putExtra(Intent.EXTRA_TITLE, file.name)
+                intent.type = FileUtil.getMimeType(file.getName())
+                intent.putExtra(Intent.EXTRA_TITLE, file.getName())
                 startActivityForResult(intent, getRequestCode(file, FileAction.DOWNLOAD_SAVE))
                 true
             }
@@ -142,7 +142,7 @@ class FilesActivity : AppCompatActivity() {
                         withContext(Dispatchers.IO) {
                             check(action.target is OnlineFile) { "Invalid target; must be of type OnlineFile" }
                             val outputStream = contentResolver.openOutputStream(data.data!!, "w") ?: return@withContext
-                            val inputStream = URL(action.target.getTempDownloadUrl().downloadUrl).openStream()
+                            val inputStream = URL(action.target.getTempDownloadUrl().url).openStream()
                             val buffer = ByteArray(2048)
                             while (true) {
                                 val read = inputStream.read(buffer)
@@ -173,13 +173,13 @@ class FilesActivity : AppCompatActivity() {
     private fun openFile(file: OnlineFile) {
         CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.IO) {
-                val mime = FileUtil.getMimeType(file.name)
-                val download = file.getTempDownloadUrl().downloadUrl
+                val mime = FileUtil.getMimeType(file.getName())
+                val download = file.getTempDownloadUrl().url
                 val inputStream = URL(download).openStream() ?: return@withContext
                 val tempDir = File(cacheDir, "filestorage")
                 if (!tempDir.isDirectory)
                     tempDir.mkdir()
-                val tempFile = File(tempDir, file.name)
+                val tempFile = File(tempDir, file.getName())
                 inputStream.copyTo(tempFile.outputStream())
                 inputStream.close()
                 val fileUri = FileProvider.getUriForFile(this@FilesActivity, FILE_PROVIDER_AUTHORITY, tempFile)
@@ -189,11 +189,11 @@ class FilesActivity : AppCompatActivity() {
                 sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 sendIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
-                sendIntent.putExtra(Intent.EXTRA_SUBJECT, normalizeFileName(file.name))
+                sendIntent.putExtra(Intent.EXTRA_SUBJECT, normalizeFileName(file.getName()))
                 val viewIntent = Intent(Intent.ACTION_VIEW)
                 viewIntent.setDataAndType(fileUri, mime)
                 viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                startActivity(Intent.createChooser(sendIntent, file.name).apply { putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(viewIntent)) })
+                startActivity(Intent.createChooser(sendIntent, file.getName()).apply { putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(viewIntent)) })
             }
         }
     }

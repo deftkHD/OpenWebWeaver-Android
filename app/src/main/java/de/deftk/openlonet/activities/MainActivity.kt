@@ -29,9 +29,6 @@ class MainActivity : AppCompatActivity() {
         val lblVersion = findViewById<TextView>(R.id.lblVersion)
         lblVersion.append(" ${BuildConfig.VERSION_NAME}")
 
-        // check if app has write & read permission
-        Log.i(LOG_TAG, "Checking permissions")
-
         CoroutineScope(Dispatchers.IO).launch {
             if (AuthStore.performLogin(this@MainActivity)) {
                 val intent = Intent(this@MainActivity, StartActivity::class.java)
