@@ -38,7 +38,7 @@ class FileStorageFilesAdapter(context: Context, elements: List<OnlineFile>) :
                             withContext(Dispatchers.Main) {
                                 Glide.with(listItemView)
                                     .load(url)
-                                    .placeholder(R.drawable.ic_file_48)
+                                    .placeholder(R.drawable.ic_file_32)
                                     .optionalFitCenter()
                                     .into(imageView)
                             }
@@ -46,10 +46,10 @@ class FileStorageFilesAdapter(context: Context, elements: List<OnlineFile>) :
                         }
                     }
                 } else {
-                    imageView.setImageResource(R.drawable.ic_file_48)
+                    imageView.setImageResource(R.drawable.ic_file_32)
                 }
             }
-            OnlineFile.FileType.FOLDER -> imageView.setImageResource(R.drawable.ic_folder_48)
+            OnlineFile.FileType.FOLDER -> imageView.setImageResource(R.drawable.ic_folder_32)
             else -> imageView.setImageDrawable(null)
         }
 
