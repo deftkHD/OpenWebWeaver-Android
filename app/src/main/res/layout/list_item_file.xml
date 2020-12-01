@@ -12,7 +12,12 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_marginTop="2dp"
-        android:src="@drawable/ic_file_24"
+        android:layout_marginEnd="8dp"
+        android:maxWidth="48dp"
+        android:maxHeight="48dp"
+        android:minWidth="48dp"
+        android:minHeight="48dp"
+        android:src="@drawable/ic_file_48"
         tools:ignore="ContentDescription" />
 
     <TextView

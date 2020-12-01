@@ -7,11 +7,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import com.bumptech.glide.Glide
 import de.deftk.lonet.api.model.feature.files.OnlineFile
 import de.deftk.openlonet.R
 import de.deftk.openlonet.utils.TextUtils
 import de.deftk.openlonet.utils.filter.FilterableAdapter
 import de.deftk.openlonet.utils.filter.filterApplies
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class FileStorageFilesAdapter(context: Context, elements: List<OnlineFile>) :
     FilterableAdapter<OnlineFile>(context, elements) {
@@ -25,10 +30,31 @@ class FileStorageFilesAdapter(context: Context, elements: List<OnlineFile>) :
         listItemView.findViewById<TextView>(R.id.file_modified_date).text = TextUtils.parseShortDate(item.modificationDate)
         val imageView = listItemView.findViewById<ImageView>(R.id.file_image)
         when (item.type) {
-            OnlineFile.FileType.FILE -> imageView.setImageResource(R.drawable.ic_file_24)
-            OnlineFile.FileType.FOLDER -> imageView.setImageResource(R.drawable.ic_folder_24)
+            OnlineFile.FileType.FILE -> {
+                if (item.preview == true) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        withContext(Dispatchers.IO) {
+                            val url = item.getPreviewDownloadUrl().downloadUrl
+                            withContext(Dispatchers.Main) {
+                                Glide.with(listItemView)
+                                    .load(url)
+                                    .placeholder(R.drawable.ic_file_48)
+                                    .optionalFitCenter()
+                                    .into(imageView)
+                            }
+
+                        }
+                    }
+                } else {
+                    imageView.setImageResource(R.drawable.ic_file_48)
+                }
+            }
+            OnlineFile.FileType.FOLDER -> imageView.setImageResource(R.drawable.ic_folder_48)
             else -> imageView.setImageDrawable(null)
         }
+
+
+
         return listItemView
     }
 
