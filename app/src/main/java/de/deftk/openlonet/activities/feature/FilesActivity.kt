@@ -1,7 +1,11 @@
 package de.deftk.openlonet.activities.feature
 
+import android.annotation.SuppressLint
 import android.content.*
+import android.database.Cursor
+import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
@@ -11,13 +15,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
+import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.abstract.AbstractOperator
 import de.deftk.lonet.api.model.feature.abstract.IFilePrimitive
 import de.deftk.lonet.api.model.feature.files.OnlineFile
+import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.FileStorageFilesAdapter
 import de.deftk.openlonet.utils.FileUtil
 import kotlinx.android.synthetic.main.activity_files.*
+import kotlinx.android.synthetic.main.list_item_file.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,8 +33,6 @@ import java.io.File
 import java.net.URL
 
 class FilesActivity : AppCompatActivity() {
-
-    //TODO show preview image if possible
 
     companion object {
         private const val FILE_PROVIDER_AUTHORITY = "de.deftk.openlonet.fileprovider"
@@ -55,11 +60,7 @@ class FilesActivity : AppCompatActivity() {
         setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.title = when (extraFolder) {
-            is AbstractOperator -> extraFolder.getName()
-            is OnlineFile -> extraFolder.getName()
-            else -> ""
-        }
+        supportActionBar?.title = extraFolder.getName()
 
         file_storage_swipe_refresh.setOnRefreshListener {
             reloadFiles()
@@ -77,6 +78,15 @@ class FilesActivity : AppCompatActivity() {
                     startActivity(i)
                 }
             }
+        }
+
+        val operator = (if (extraFolder is AbstractOperator) extraFolder else if (extraFolder is OnlineFile) extraFolder.operator else null)!!
+        val writeAccess = operator.effectiveRights.contains(Permission.FILES_WRITE) || operator.effectiveRights.contains(Permission.FILES_ADMIN)
+        fab_upload_file.isVisible = writeAccess
+        fab_upload_file.setOnClickListener {
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+            intent.type = "*/*"
+            startActivityForResult(intent, getRequestCode(null, FileAction.UPLOAD_DOCUMENT))
         }
 
         registerForContextMenu(file_list)
@@ -158,6 +168,43 @@ class FilesActivity : AppCompatActivity() {
                         }
                     }
                 }
+                FileAction.UPLOAD_DOCUMENT -> {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        withContext(Dispatchers.IO) {
+                            try {
+                                val inputStream = contentResolver.openInputStream(data.data!!) ?: return@withContext
+                                val sessionFile = AuthStore.getAppUser().addSessionFile(queryFileName(data.data!!), byteArrayOf())
+                                val buffer = ByteArray(1024 * 1024)
+                                while (true) {
+                                    val read = inputStream.read(buffer)
+                                    if (read < 0) break
+                                    if (read != buffer.size) {
+                                        val newBuffer = ByteArray(read)
+                                        System.arraycopy(buffer, 0, newBuffer, 0, read)
+                                        sessionFile.appendData(newBuffer)
+                                    } else {
+                                        sessionFile.appendData(buffer)
+                                    }
+                                }
+                                val newFile = fileStorage.importSessionFile(sessionFile)
+                                val adapter = (file_list.adapter as FileStorageFilesAdapter)
+                                sessionFile.delete()
+                                withContext(Dispatchers.Main) {
+                                    adapter.insert(newFile, 0)
+                                    adapter.notifyDataSetChanged()
+                                    Toast.makeText(
+                                        this@FilesActivity,
+                                        R.string.upload_finished,
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            } catch (e: Exception) {
+                                Toast.makeText(this@FilesActivity, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+                }
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data)
@@ -168,6 +215,22 @@ class FilesActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
+    }
+
+    @SuppressLint("Recycle")
+    private fun queryFileName(uri: Uri): String {
+        var cursor: Cursor? = null
+        var filename = "unknown.bin"
+        try {
+            cursor = contentResolver.query(uri, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null) ?: return "unknown.bin"
+
+            if (cursor.moveToFirst()) {
+                filename = cursor.getString(cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME))
+            }
+        } finally {
+            cursor?.close()
+        }
+        return filename
     }
 
     private fun openFile(file: OnlineFile) {
@@ -198,9 +261,9 @@ class FilesActivity : AppCompatActivity() {
         }
     }
 
-    private fun getRequestCode(onlineFile: OnlineFile, action: FileAction): Int {
+    private fun getRequestCode(target: Any?, action: FileAction): Int {
         val id = requestedActivities.size
-        requestedActivities[id] = RequestableAction(onlineFile, action)
+        requestedActivities[id] = RequestableAction(target, action)
         return id
     }
 
@@ -246,10 +309,11 @@ class FilesActivity : AppCompatActivity() {
         }
     }
 
-    private data class RequestableAction(val target: Any, val action: FileAction)
+    private data class RequestableAction(val target: Any?, val action: FileAction)
 
     private enum class FileAction {
-        DOWNLOAD_SAVE
+        DOWNLOAD_SAVE,
+        UPLOAD_DOCUMENT
     }
 
 }

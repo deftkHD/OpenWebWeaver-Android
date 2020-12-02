@@ -39,13 +39,15 @@ abstract class FilterableAdapter<T>(protected val context: Context, elements: Li
     }
 
     fun remove(obj: T) {
-        elements.remove(obj);originalElements.remove(obj)
+        elements.remove(obj)
+        originalElements.remove(obj)
     }
 
     fun getPosition(obj: T) = elements.indexOf(obj)
 
     fun insert(obj: T, index: Int) {
-        elements.add(index, obj);originalElements.add(index, obj)
+        elements.add(index, obj)
+        originalElements.add(index, obj)
     }
 
 

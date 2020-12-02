@@ -129,4 +129,6 @@
     <string name="open">Öffnen</string>
     <string name="download">Herunterladen</string>
     <string name="download_finished">Download fertig</string>
+    <string name="upload">Hochladen</string>
+    <string name="upload_finished">Datei hochgeladen</string>
 </resources>

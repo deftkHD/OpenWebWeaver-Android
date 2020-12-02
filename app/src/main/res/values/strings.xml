@@ -128,5 +128,7 @@
     <string name="open">Open</string>
     <string name="download">Download</string>
     <string name="download_finished">Download finished</string>
+    <string name="upload">Upload</string>
+    <string name="upload_finished">Upload finished</string>
 
 </resources>
