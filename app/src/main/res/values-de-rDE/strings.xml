@@ -131,4 +131,7 @@
     <string name="download_finished">Download fertig</string>
     <string name="upload">Hochladen</string>
     <string name="upload_finished">Datei hochgeladen</string>
+    <string name="token_login_link"><a href="www.www.com">Anmelden mit Zugangsschlüssel</a></string>
+    <string name="token">Zugangsschlüssel</string>
+    <string name="remember_token">Zugangsschlüssel merken</string>
 </resources>

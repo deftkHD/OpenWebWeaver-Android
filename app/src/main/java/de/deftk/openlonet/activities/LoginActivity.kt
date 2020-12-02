@@ -1,5 +1,6 @@
 package de.deftk.openlonet.activities
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -25,6 +26,8 @@ class LoginActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_LOGIN = "extra_login"
         private const val LOG_TAG = "LoginActivity"
+
+        private const val REQUEST_LOGIN_TOKEN = 1
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,18 +36,23 @@ class LoginActivity : AppCompatActivity() {
 
         supportActionBar?.hide()
 
-        if (intent != null) {
-            if (intent.hasExtra(EXTRA_LOGIN)) {
-                txtEmail.setText(intent.getStringExtra(EXTRA_LOGIN), TextView.BufferType.EDITABLE)
-            }
+        if (intent.hasExtra(EXTRA_LOGIN)) {
+            txtEmail.setText(intent.getStringExtra(EXTRA_LOGIN), TextView.BufferType.EDITABLE)
+        }
+
+        token_login.setOnClickListener {
+            val intent = Intent(this, TokenLoginActivity::class.java)
+            if (this.intent.hasExtra(EXTRA_LOGIN))
+                intent.putExtra(EXTRA_LOGIN, this.intent.getStringExtra(EXTRA_LOGIN))
+            startActivityForResult(intent, REQUEST_LOGIN_TOKEN)
         }
 
         btnLogin.setOnClickListener {
-            if (isEmailValid(txtEmail.text.toString()) && isPasswordValid(txtPassword.text.toString())) {
+            val username = txtEmail.text.toString()
+            val password = txtPassword.text.toString()
+            val stayLoggedIn = chbStayLoggedIn.isChecked
+            if (isEmailValid(username) && isPasswordValid(password)) {
                 Log.i(LOG_TAG, "Calling login task")
-                val username = txtEmail.text.toString()
-                val password = txtPassword.text.toString()
-                val stayLoggedIn = chbStayLoggedIn.isChecked
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         if (stayLoggedIn) {
@@ -65,6 +73,7 @@ class LoginActivity : AppCompatActivity() {
                         }
                     } catch (e: Exception) {
                         withContext(Dispatchers.Main) {
+                            e.printStackTrace()
                             Log.i(LOG_TAG, "Got login result")
                             pgbLogin?.visibility = ProgressBar.INVISIBLE
                             btnLogin?.isEnabled = true
@@ -92,6 +101,15 @@ class LoginActivity : AppCompatActivity() {
                     .show()
             }
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_LOGIN_TOKEN) {
+            if (resultCode == RESULT_OK) {
+                setResult(RESULT_OK)
+                finish()
+            }
+        } else super.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun isEmailValid(email: String): Boolean {

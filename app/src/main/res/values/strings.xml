@@ -130,5 +130,8 @@
     <string name="download_finished">Download finished</string>
     <string name="upload">Upload</string>
     <string name="upload_finished">Upload finished</string>
+    <string name="token_login_link"><a href="www.www.com">Token login</a></string>
+    <string name="token">Token</string>
+    <string name="remember_token">Remember token</string>
 
 </resources>

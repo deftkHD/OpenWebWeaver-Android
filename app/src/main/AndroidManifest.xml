@@ -11,10 +11,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".activities.TokenLoginActivity" />
         <activity android:name=".activities.feature.mail.WriteMailActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SENDTO" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:scheme="mailto" />
             </intent-filter>
         </activity>
@@ -49,9 +52,8 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
-
         <provider
-            android:name="de.deftk.openlonet.feature.filestorage.ApiDocumentsProvider"
+            android:name=".feature.filestorage.ApiDocumentsProvider"
             android:authorities="de.deftk.openlonet.filestorage.fileprovider"
             android:exported="true"
             android:grantUriPermissions="true"
