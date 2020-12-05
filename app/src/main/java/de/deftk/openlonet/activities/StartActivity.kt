@@ -18,7 +18,6 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.google.android.material.navigation.NavigationView
-import de.deftk.lonet.api.LoNet
 import de.deftk.lonet.api.model.Feature
 import de.deftk.lonet.api.model.Permission
 import de.deftk.openlonet.AuthStore
@@ -30,7 +29,6 @@ import de.deftk.openlonet.abstract.menu.start.FeatureMenuItem
 import de.deftk.openlonet.feature.AppFeature
 import de.deftk.openlonet.fragments.OverviewFragment
 import de.deftk.openlonet.fragments.SettingsFragment
-import de.deftk.openlonet.utils.LoggingRequestHandler
 import kotlinx.android.synthetic.main.activity_start.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -54,8 +52,6 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         Log.i(LOG_TAG, "Creating start activity")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_start)
-
-        LoNet.requestHandler = LoggingRequestHandler()
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
