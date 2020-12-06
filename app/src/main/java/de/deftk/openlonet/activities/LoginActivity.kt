@@ -26,8 +26,6 @@ class LoginActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_LOGIN = "extra_login"
         private const val LOG_TAG = "LoginActivity"
-
-        private const val REQUEST_LOGIN_TOKEN = 1
     }
 
     private lateinit var binding: ActivityLoginBinding
@@ -47,7 +45,7 @@ class LoginActivity : AppCompatActivity() {
             val intent = Intent(this, TokenLoginActivity::class.java)
             if (this.intent.hasExtra(EXTRA_LOGIN))
                 intent.putExtra(EXTRA_LOGIN, this.intent.getStringExtra(EXTRA_LOGIN))
-            startActivityForResult(intent, REQUEST_LOGIN_TOKEN)
+            startActivity(intent)
         }
 
         binding.btnLogin.setOnClickListener {
@@ -71,7 +69,7 @@ class LoginActivity : AppCompatActivity() {
                             binding.btnLogin.isEnabled = true
                             Log.i(LOG_TAG, "Login succeeded")
                             Toast.makeText(this@LoginActivity, "${getString(R.string.login_success)}!", Toast.LENGTH_SHORT).show()
-                            setResult(RESULT_OK)
+                            startActivity(Intent(this@LoginActivity, StartActivity::class.java))
                             finish()
                         }
                     } catch (e: Exception) {
@@ -81,7 +79,6 @@ class LoginActivity : AppCompatActivity() {
                             binding.pgbLogin.visibility = ProgressBar.INVISIBLE
                             binding.btnLogin.isEnabled = true
                             Log.e(LOG_TAG, "Login failed")
-                            setResult(RESULT_CANCELED)
                             if (e is IOException) {
                                 when (e) {
                                     is UnknownHostException ->
@@ -100,19 +97,9 @@ class LoginActivity : AppCompatActivity() {
                 binding.pgbLogin.visibility = ProgressBar.VISIBLE
                 binding.btnLogin.isEnabled = false
             } else {
-                Toast.makeText(this, getString(R.string.invalid_credentials), Toast.LENGTH_LONG)
-                    .show()
+                Toast.makeText(this, getString(R.string.invalid_credentials), Toast.LENGTH_LONG).show()
             }
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_LOGIN_TOKEN) {
-            if (resultCode == RESULT_OK) {
-                setResult(RESULT_OK)
-                finish()
-            }
-        } else super.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun isEmailValid(email: String): Boolean {

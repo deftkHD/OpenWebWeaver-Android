@@ -99,7 +99,8 @@ class WriteMailActivity : AppCompatActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
+        //FIXME use API features to handle login
+        /*when (requestCode) {
             AuthStore.REQUEST_LOGIN -> {
                 if (resultCode == RESULT_OK) {
                     CoroutineScope(Dispatchers.IO).launch {
@@ -107,8 +108,8 @@ class WriteMailActivity : AppCompatActivity() {
                     }
                 }
             }
-            else -> super.onActivityResult(requestCode, resultCode, data)
-        }
+            else ->*/ super.onActivityResult(requestCode, resultCode, data)
+        //}
     }
 
     // back button in toolbar functionality

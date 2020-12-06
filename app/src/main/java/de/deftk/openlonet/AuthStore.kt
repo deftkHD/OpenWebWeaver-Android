@@ -1,6 +1,5 @@
 package de.deftk.openlonet
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Base64
@@ -26,7 +25,6 @@ object AuthStore {
 
     private const val LOG_TAG = "AuthStore"
     const val PREFERENCE_NAME = "LoNetMobile_Data"
-    const val REQUEST_LOGIN = 1
 
     // crypto stuff from https://stackoverflow.com/questions/13433529/android-4-2-broke-my-encrypt-decrypt-code-and-the-provided-solutions-dont-work/39002997#39002997
     // might be a bit overkill
@@ -117,20 +115,20 @@ object AuthStore {
     /**
      * @return if login was successful or if a new activity was launched
      */
-    suspend fun performLogin(activity: Activity): Boolean {
-        if (getSavedToken(activity) == null) {
+    suspend fun performLogin(context: Context): Boolean {
+        if (getSavedToken(context) == null) {
             // add new account or simply login without adding an account
-            val intent = Intent(activity, LoginActivity::class.java)
-            val savedUser = getSavedUsername(activity)
+            val intent = Intent(context, LoginActivity::class.java)
+            val savedUser = getSavedUsername(context)
             if (savedUser != null) {
                 intent.putExtra(LoginActivity.EXTRA_LOGIN, savedUser)
             }
             withContext(Dispatchers.Main) {
-                activity.startActivityForResult(intent, REQUEST_LOGIN)
+                context.startActivity(intent)
             }
         } else {
-            val username = getSavedUsername(activity)!!
-            val token = getSavedToken(activity)!!
+            val username = getSavedUsername(context)!!
+            val token = getSavedToken(context)!!
 
             try {
                 appUser = LoNet.loginToken(username, token)
@@ -141,20 +139,20 @@ object AuthStore {
                 withContext(Dispatchers.Main) {
                     if (e is IOException) {
                         when (e) {
-                            is UnknownHostException -> Toast.makeText(activity, activity.getString(R.string.request_failed_connection), Toast.LENGTH_LONG).show()
-                            is TimeoutException -> Toast.makeText(activity, activity.getString(R.string.request_failed_timeout), Toast.LENGTH_LONG).show()
-                            else -> Toast.makeText(activity, String.format(activity.getString(R.string.request_failed_other), e.message), Toast.LENGTH_LONG).show()
+                            is UnknownHostException -> Toast.makeText(context, context.getString(R.string.request_failed_connection), Toast.LENGTH_LONG).show()
+                            is TimeoutException -> Toast.makeText(context, context.getString(R.string.request_failed_timeout), Toast.LENGTH_LONG).show()
+                            else -> Toast.makeText(context, String.format(context.getString(R.string.request_failed_other), e.message), Toast.LENGTH_LONG).show()
                         }
                     } else {
-                        activity.getSharedPreferences(PREFERENCE_NAME, 0).edit().remove("token").apply()
-                        Toast.makeText(activity, activity.getString(R.string.token_expired), Toast.LENGTH_LONG).show()
+                        context.getSharedPreferences(PREFERENCE_NAME, 0).edit().remove("token").apply()
+                        Toast.makeText(context, context.getString(R.string.token_expired), Toast.LENGTH_LONG).show()
 
-                        val intent = Intent(activity, LoginActivity::class.java)
-                        val savedUser = getSavedUsername(activity)
+                        val intent = Intent(context, LoginActivity::class.java)
+                        val savedUser = getSavedUsername(context)
                         if (savedUser != null) {
                             intent.putExtra(LoginActivity.EXTRA_LOGIN, savedUser)
                         }
-                        activity.startActivityForResult(intent, REQUEST_LOGIN)
+                        context.startActivity(intent)
                     }
                 }
             }

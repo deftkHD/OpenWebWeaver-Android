@@ -35,17 +35,4 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            AuthStore.REQUEST_LOGIN -> {
-                if (resultCode == RESULT_OK) {
-                    val intent = Intent(this@MainActivity, StartActivity::class.java)
-                    startActivity(intent)
-                }
-                finish()
-            }
-            else -> super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
-
 }
