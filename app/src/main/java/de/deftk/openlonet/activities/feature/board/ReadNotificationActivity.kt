@@ -10,9 +10,9 @@ import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.board.BoardNotification
 import de.deftk.openlonet.R
+import de.deftk.openlonet.databinding.ActivityReadNotificationBinding
 import de.deftk.openlonet.utils.CustomTabTransformationMethod
 import de.deftk.openlonet.utils.TextUtils
-import kotlinx.android.synthetic.main.activity_read_notification.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,12 +27,15 @@ class ReadNotificationActivity : AppCompatActivity() {
         const val ACTIVITY_RESULT_DELETE = 4
     }
 
+    private lateinit var binding: ActivityReadNotificationBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_read_notification)
+        binding = ActivityReadNotificationBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // back button in toolbar
-        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setTitle(R.string.see_notification)
@@ -43,14 +46,14 @@ class ReadNotificationActivity : AppCompatActivity() {
             displayNotification(notification)
 
             if (notification.operator.effectiveRights.contains(Permission.BOARD_ADMIN)) {
-                fab_edit_notification.visibility = View.VISIBLE
-                fab_edit_notification.setOnClickListener {
+                binding.fabEditNotification.visibility = View.VISIBLE
+                binding.fabEditNotification.setOnClickListener {
                     val intent = Intent(this, EditNotificationActivity::class.java)
                     intent.putExtra(EditNotificationActivity.EXTRA_NOTIFICATION, notification)
                     startActivityForResult(intent, EditNotificationActivity.ACTIVITY_RESULT_EDIT)
                 }
             } else {
-                fab_edit_notification.visibility = View.INVISIBLE
+                binding.fabEditNotification.visibility = View.INVISIBLE
             }
         } else {
             finish()
@@ -101,13 +104,13 @@ class ReadNotificationActivity : AppCompatActivity() {
     }
 
     private fun displayNotification(notification: BoardNotification) {
-        notification_title.text = notification.title ?: ""
-        notification_author.text = notification.creationMember.getName()
-        notification_group.text = notification.operator.getName()
-        notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.creationDate)
-        notification_text.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text))
-        notification_text.movementMethod = LinkMovementMethod.getInstance()
-        notification_text.transformationMethod = CustomTabTransformationMethod(notification_text.autoLinkMask)
+        binding.notificationTitle.text = notification.title ?: ""
+        binding.notificationAuthor.text = notification.creationMember.getName()
+        binding.notificationGroup.text = notification.operator.getName()
+        binding.notificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.creationDate)
+        binding.notificationText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text))
+        binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
+        binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
     }
 
     // back button in toolbar functionality

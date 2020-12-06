@@ -9,7 +9,7 @@ import androidx.core.view.isVisible
 import de.deftk.lonet.api.model.Group
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.ForumPostAdapter
-import kotlinx.android.synthetic.main.activity_forum_posts.*
+import de.deftk.openlonet.databinding.ActivityForumPostsBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,11 +25,13 @@ class ForumPostsActivity : AppCompatActivity() {
         const val EXTRA_GROUP = "de.deftk.openlonet.forum.group_extra"
     }
 
+    private lateinit var binding: ActivityForumPostsBinding
     private lateinit var group: Group
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_forum_posts)
+        binding = ActivityForumPostsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val extraGroup = intent.getSerializableExtra(EXTRA_GROUP) as? Group?
         if (extraGroup != null) {
@@ -39,17 +41,17 @@ class ForumPostsActivity : AppCompatActivity() {
             return
         }
 
-        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.title = extraGroup.fullName ?: extraGroup.getName()
 
-        forum_swipe_refresh.setOnRefreshListener {
+        binding.forumSwipeRefresh.setOnRefreshListener {
             reloadForumPosts()
         }
-        forum_list.setOnItemClickListener { _, _, position, _ ->
+        binding.forumList.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(this, ForumPostActivity::class.java)
-            intent.putExtra(ForumPostActivity.EXTRA_FORUM_POST, forum_list.getItemAtPosition(position) as Serializable)
+            intent.putExtra(ForumPostActivity.EXTRA_FORUM_POST, binding.forumList.getItemAtPosition(position) as Serializable)
             startActivity(intent)
         }
 
@@ -67,7 +69,7 @@ class ForumPostsActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                (forum_list.adapter as Filterable).filter.filter(newText)
+                (binding.forumList.adapter as Filterable).filter.filter(newText)
                 return false
             }
         })
@@ -76,8 +78,8 @@ class ForumPostsActivity : AppCompatActivity() {
     }
 
     private fun reloadForumPosts() {
-        forum_list.adapter = null
-        forum_empty.visibility = TextView.GONE
+        binding.forumList.adapter = null
+        binding.forumEmpty.visibility = TextView.GONE
         CoroutineScope(Dispatchers.IO).launch {
             loadForumPosts()
         }
@@ -87,16 +89,16 @@ class ForumPostsActivity : AppCompatActivity() {
         try {
             val posts = group.getForumPosts()
             withContext(Dispatchers.Main) {
-                forum_list.adapter = ForumPostAdapter(this@ForumPostsActivity, posts)
-                forum_empty.isVisible = posts.isEmpty()
-                progress_forum.visibility = ProgressBar.GONE
-                forum_swipe_refresh.isRefreshing = false
+                binding.forumList.adapter = ForumPostAdapter(this@ForumPostsActivity, posts)
+                binding.forumEmpty.isVisible = posts.isEmpty()
+                binding.progressForum.visibility = ProgressBar.GONE
+                binding.forumSwipeRefresh.isRefreshing = false
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                forum_empty.visibility = TextView.GONE
-                progress_forum.visibility = ProgressBar.GONE
-                forum_swipe_refresh.isRefreshing = false
+                binding.forumEmpty.visibility = TextView.GONE
+                binding.progressForum.visibility = ProgressBar.GONE
+                binding.forumSwipeRefresh.isRefreshing = false
                 Toast.makeText(this@ForumPostsActivity, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
             }
         }

@@ -22,9 +22,8 @@ import de.deftk.lonet.api.model.feature.files.OnlineFile
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.FileStorageFilesAdapter
+import de.deftk.openlonet.databinding.ActivityFilesBinding
 import de.deftk.openlonet.utils.FileUtil
-import kotlinx.android.synthetic.main.activity_files.*
-import kotlinx.android.synthetic.main.list_item_file.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,6 +39,7 @@ class FilesActivity : AppCompatActivity() {
         const val EXTRA_FOLDER = "de.deftk.openlonet.files.extra_folder"
     }
 
+    private lateinit var binding: ActivityFilesBinding
     private lateinit var fileStorage: IFilePrimitive
 
     private val requestedActivities = mutableMapOf<Int, RequestableAction>()
@@ -47,7 +47,8 @@ class FilesActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_files)
+        binding = ActivityFilesBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val extraFolder = intent.getSerializableExtra(EXTRA_FOLDER) as? IFilePrimitive?
         if (extraFolder != null) {
@@ -57,16 +58,16 @@ class FilesActivity : AppCompatActivity() {
             return
         }
 
-        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.title = extraFolder.getName()
 
-        file_storage_swipe_refresh.setOnRefreshListener {
+        binding.fileStorageSwipeRefresh.setOnRefreshListener {
             reloadFiles()
         }
-        file_list.setOnItemClickListener { _, _, position, _ ->
-            val item = file_list.getItemAtPosition(position) as IFilePrimitive
+        binding.fileList.setOnItemClickListener { _, _, position, _ ->
+            val item = binding.fileList.getItemAtPosition(position) as IFilePrimitive
             if (item is OnlineFile) {
                 if (item.type == OnlineFile.FileType.FILE) {
                     if (item.effectiveRead == true)
@@ -82,14 +83,14 @@ class FilesActivity : AppCompatActivity() {
 
         val operator = (if (extraFolder is AbstractOperator) extraFolder else if (extraFolder is OnlineFile) extraFolder.operator else null)!!
         val writeAccess = operator.effectiveRights.contains(Permission.FILES_WRITE) || operator.effectiveRights.contains(Permission.FILES_ADMIN)
-        fab_upload_file.isVisible = writeAccess
-        fab_upload_file.setOnClickListener {
+        binding.fabUploadFile.isVisible = writeAccess
+        binding.fabUploadFile.setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
             intent.type = "*/*"
             startActivityForResult(intent, getRequestCode(null, FileAction.UPLOAD_DOCUMENT))
         }
 
-        registerForContextMenu(file_list)
+        registerForContextMenu(binding.fileList)
         reloadFiles()
     }
 
@@ -104,7 +105,7 @@ class FilesActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                (file_list.adapter as Filterable).filter.filter(newText)
+                (binding.fileList.adapter as Filterable).filter.filter(newText)
                 return false
             }
         })
@@ -115,7 +116,7 @@ class FilesActivity : AppCompatActivity() {
     override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is AdapterView.AdapterContextMenuInfo) {
-            val file = file_list?.adapter?.getItem(menuInfo.position) as OnlineFile
+            val file = binding.fileList.adapter?.getItem(menuInfo.position) as OnlineFile
             if (file.effectiveRead == true) {
                 menuInflater.inflate(R.menu.filestorage_read_list_menu, menu)
             }
@@ -126,7 +127,7 @@ class FilesActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.filestorage_action_download -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-                val file = file_list?.adapter?.getItem(info.position) as OnlineFile
+                val file = binding.fileList.adapter?.getItem(info.position) as OnlineFile
                 val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
                 intent.type = FileUtil.getMimeType(file.getName())
                 intent.putExtra(Intent.EXTRA_TITLE, file.getName())
@@ -135,7 +136,7 @@ class FilesActivity : AppCompatActivity() {
             }
             R.id.filestorage_action_open -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-                val file = file_list?.adapter?.getItem(info.position) as OnlineFile
+                val file = binding.fileList.adapter?.getItem(info.position) as OnlineFile
                 openFile(file)
                 true
             }
@@ -187,7 +188,7 @@ class FilesActivity : AppCompatActivity() {
                                     }
                                 }
                                 val newFile = fileStorage.importSessionFile(sessionFile)
-                                val adapter = (file_list.adapter as FileStorageFilesAdapter)
+                                val adapter = (binding.fileList.adapter as FileStorageFilesAdapter)
                                 sessionFile.delete()
                                 withContext(Dispatchers.Main) {
                                     adapter.insert(newFile, 0)
@@ -268,8 +269,8 @@ class FilesActivity : AppCompatActivity() {
     }
 
     private fun reloadFiles() {
-        file_list.adapter = null
-        file_empty.visibility = TextView.GONE
+        binding.fileList.adapter = null
+        binding.fileEmpty.visibility = TextView.GONE
         CoroutineScope(Dispatchers.IO).launch {
             loadFiles()
         }
@@ -279,15 +280,15 @@ class FilesActivity : AppCompatActivity() {
         try {
             val files = fileStorage.getFiles()
             withContext(Dispatchers.Main) {
-                file_list?.adapter = FileStorageFilesAdapter(this@FilesActivity, files)
-                file_empty.isVisible = files.isEmpty()
-                progress_file_storage?.visibility = ProgressBar.INVISIBLE
-                file_storage_swipe_refresh?.isRefreshing = false
+                binding.fileList.adapter = FileStorageFilesAdapter(this@FilesActivity, files)
+                binding.fileEmpty.isVisible = files.isEmpty()
+                binding.progressFileStorage.visibility = ProgressBar.INVISIBLE
+                binding.fileStorageSwipeRefresh.isRefreshing = false
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                progress_file_storage?.visibility = ProgressBar.INVISIBLE
-                file_storage_swipe_refresh?.isRefreshing = false
+                binding.progressFileStorage.visibility = ProgressBar.INVISIBLE
+                binding.fileStorageSwipeRefresh.isRefreshing = false
                 Toast.makeText(
                     this@FilesActivity,
                     getString(R.string.request_failed_other).format(e.message ?: e),

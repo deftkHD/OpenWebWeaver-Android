@@ -15,8 +15,7 @@ import de.deftk.lonet.api.model.abstract.IManageable
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.MemberAdapter
-import kotlinx.android.synthetic.main.activity_members.*
-import kotlinx.android.synthetic.main.fragment_notifications.*
+import de.deftk.openlonet.databinding.ActivityMembersBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -31,11 +30,13 @@ class MembersActivity : AppCompatActivity() {
         const val EXTRA_GROUP = "de.deftk.openlonet.members.group_extra"
     }
 
+    private lateinit var binding: ActivityMembersBinding
     private lateinit var group: Group
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_members)
+        binding = ActivityMembersBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val extraGroup = intent.getSerializableExtra(EXTRA_GROUP) as? Group?
         if (extraGroup != null) {
@@ -45,18 +46,18 @@ class MembersActivity : AppCompatActivity() {
             return
         }
 
-        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.title = extraGroup.fullName ?: extraGroup.getName()
 
-        members_swipe_refresh.setOnRefreshListener {
+        binding.membersSwipeRefresh.setOnRefreshListener {
             reloadMembers()
         }
-        members_list.setOnItemClickListener { _, view, _, _ ->
+        binding.membersList.setOnItemClickListener { _, view, _, _ ->
             openContextMenu(view)
         }
-        registerForContextMenu(members_list)
+        registerForContextMenu(binding.membersList)
         reloadMembers()
     }
 
@@ -71,7 +72,7 @@ class MembersActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                (members_list.adapter as Filterable).filter.filter(newText)
+                (binding.membersList.adapter as Filterable).filter.filter(newText)
                 return false
             }
         })
@@ -82,7 +83,7 @@ class MembersActivity : AppCompatActivity() {
     override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is AdapterView.AdapterContextMenuInfo) {
-            val member = members_list?.adapter?.getItem(menuInfo.position) as IManageable
+            val member = binding.membersList.adapter?.getItem(menuInfo.position) as IManageable
             if (member.getLogin() != AuthStore.getAppUser().getLogin()) {
                 menuInflater.inflate(R.menu.member_action_menu, menu)
             }
@@ -93,7 +94,7 @@ class MembersActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.member_action_write_mail -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-                val member = members_list?.adapter?.getItem(info.position) as IManageable
+                val member = binding.membersList.adapter?.getItem(info.position) as IManageable
                 val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${Uri.encode(member.getLogin())}"))
                 startActivity(intent)
                 true
@@ -103,8 +104,8 @@ class MembersActivity : AppCompatActivity() {
     }
 
     private fun reloadMembers() {
-        members_list.adapter = null
-        members_empty.visibility = TextView.GONE
+        binding.membersList.adapter = null
+        binding.membersEmpty.visibility = TextView.GONE
         CoroutineScope(Dispatchers.IO).launch {
             loadMembers()
         }
@@ -114,16 +115,16 @@ class MembersActivity : AppCompatActivity() {
         try {
             val members = group.getMembers()
             withContext(Dispatchers.Main) {
-                members_list?.adapter = MemberAdapter(this@MembersActivity, members)
-                members_empty?.isVisible = members.isEmpty()
-                members_swipe_refresh?.isRefreshing = false
-                progress_members?.visibility = ProgressBar.INVISIBLE
+                binding.membersList.adapter = MemberAdapter(this@MembersActivity, members)
+                binding.membersEmpty.isVisible = members.isEmpty()
+                binding.membersSwipeRefresh.isRefreshing = false
+                binding.progressMembers.visibility = ProgressBar.INVISIBLE
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                members_empty.visibility = TextView.GONE
-                members_swipe_refresh?.isRefreshing = false
-                progress_members?.visibility = ProgressBar.INVISIBLE
+                binding.membersEmpty.visibility = TextView.GONE
+                binding.membersSwipeRefresh.isRefreshing = false
+                binding.progressMembers.visibility = ProgressBar.INVISIBLE
                 Toast.makeText(this@MembersActivity, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
             }
         }

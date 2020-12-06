@@ -7,7 +7,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
-import kotlinx.android.synthetic.main.activity_write_mail.*
+import de.deftk.openlonet.databinding.ActivityWriteMailBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,30 +21,33 @@ class WriteMailActivity : AppCompatActivity() {
         const val RESULT_CODE_CANCEL = 2
     }
 
+    private lateinit var binding: ActivityWriteMailBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_write_mail)
+        binding = ActivityWriteMailBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.title = getString(R.string.write_mail)
 
-        mail_to_address.setText(intent.getStringExtra(Intent.EXTRA_EMAIL) ?: "")
-        mail_to_address_cc.setText(intent.getStringExtra(Intent.EXTRA_CC) ?: "")
-        mail_to_address_bcc.setText(intent.getStringExtra(Intent.EXTRA_BCC) ?: "")
-        mail_subject.setText(intent.getStringExtra(Intent.EXTRA_SUBJECT) ?: "")
-        mail_message.setText(intent.getStringExtra(Intent.EXTRA_TEXT) ?: "")
+        binding.mailToAddress.setText(intent.getStringExtra(Intent.EXTRA_EMAIL) ?: "")
+        binding.mailToAddressCc.setText(intent.getStringExtra(Intent.EXTRA_CC) ?: "")
+        binding.mailToAddressBcc.setText(intent.getStringExtra(Intent.EXTRA_BCC) ?: "")
+        binding.mailSubject.setText(intent.getStringExtra(Intent.EXTRA_SUBJECT) ?: "")
+        binding.mailMessage.setText(intent.getStringExtra(Intent.EXTRA_TEXT) ?: "")
 
         if (intent.data != null) {
             val uri = intent.data!!
-            mail_to_address.setText(uri.schemeSpecificPart ?: "")
+            binding.mailToAddress.setText(uri.schemeSpecificPart ?: "")
         }
 
-        fab_send_mail.setOnClickListener {
-            val subject = mail_subject.text.toString()
-            val message = mail_message.text.toString()
-            val to = mail_to_address.text.toString()
+        binding.fabSendMail.setOnClickListener {
+            val subject = binding.mailSubject.text.toString()
+            val message = binding.mailMessage.text.toString()
+            val to = binding.mailToAddress.text.toString()
             if (subject.isEmpty()) {
                 Toast.makeText(this, R.string.mail_no_subject, Toast.LENGTH_LONG).show()
                 return@setOnClickListener
@@ -57,7 +60,7 @@ class WriteMailActivity : AppCompatActivity() {
                 Toast.makeText(this, R.string.mail_no_to, Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
-            progress_send_mail.visibility = View.VISIBLE
+            binding.progressSendMail.visibility = View.VISIBLE
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     if (!AuthStore.isUserLoggedIn()) {
@@ -72,7 +75,7 @@ class WriteMailActivity : AppCompatActivity() {
                     e.printStackTrace()
                     withContext(Dispatchers.Main) {
                         Toast.makeText(this@WriteMailActivity, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
-                        progress_send_mail.visibility = View.GONE
+                        binding.progressSendMail.visibility = View.GONE
                         setResult(RESULT_CODE_CANCEL)
                         finish()
                     }
@@ -82,14 +85,14 @@ class WriteMailActivity : AppCompatActivity() {
     }
 
     private suspend fun sendEmail() {
-        val subject = mail_subject.text.toString()
-        val message = mail_message.text.toString()
-        val to = mail_to_address.text.toString()
-        val toCC = mail_to_address_cc.text.toString()
-        val toBCC = mail_to_address_bcc.text.toString()
+        val subject = binding.mailSubject.text.toString()
+        val message = binding.mailMessage.text.toString()
+        val to = binding.mailToAddress.text.toString()
+        val toCC = binding.mailToAddressCc.text.toString()
+        val toBCC = binding.mailToAddressBcc.text.toString()
         AuthStore.getAppUser().sendEmail(to, subject, message, null, toBCC.nullIfEmpty(), toCC.nullIfEmpty())
         withContext(Dispatchers.Main) {
-            progress_send_mail.visibility = View.GONE
+            binding.progressSendMail.visibility = View.GONE
             setResult(RESULT_CODE_MAIL)
             finish()
         }

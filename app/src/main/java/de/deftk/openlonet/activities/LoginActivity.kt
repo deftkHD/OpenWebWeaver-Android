@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.LoNet
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
-import kotlinx.android.synthetic.main.activity_login.*
+import de.deftk.openlonet.databinding.ActivityLoginBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,27 +30,30 @@ class LoginActivity : AppCompatActivity() {
         private const val REQUEST_LOGIN_TOKEN = 1
     }
 
+    private lateinit var binding: ActivityLoginBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         supportActionBar?.hide()
 
         if (intent.hasExtra(EXTRA_LOGIN)) {
-            txtEmail.setText(intent.getStringExtra(EXTRA_LOGIN), TextView.BufferType.EDITABLE)
+            binding.txtEmail.setText(intent.getStringExtra(EXTRA_LOGIN), TextView.BufferType.EDITABLE)
         }
 
-        token_login.setOnClickListener {
+        binding.tokenLogin.setOnClickListener {
             val intent = Intent(this, TokenLoginActivity::class.java)
             if (this.intent.hasExtra(EXTRA_LOGIN))
                 intent.putExtra(EXTRA_LOGIN, this.intent.getStringExtra(EXTRA_LOGIN))
             startActivityForResult(intent, REQUEST_LOGIN_TOKEN)
         }
 
-        btnLogin.setOnClickListener {
-            val username = txtEmail.text.toString()
-            val password = txtPassword.text.toString()
-            val stayLoggedIn = chbStayLoggedIn.isChecked
+        binding.btnLogin.setOnClickListener {
+            val username = binding.txtEmail.text.toString()
+            val password = binding.txtPassword.text.toString()
+            val stayLoggedIn = binding.chbStayLoggedIn.isChecked
             if (isEmailValid(username) && isPasswordValid(password)) {
                 Log.i(LOG_TAG, "Calling login task")
                 CoroutineScope(Dispatchers.IO).launch {
@@ -64,8 +67,8 @@ class LoginActivity : AppCompatActivity() {
                         }
                         withContext(Dispatchers.Main) {
                             Log.i(LOG_TAG, "Got login result")
-                            pgbLogin?.visibility = ProgressBar.INVISIBLE
-                            btnLogin?.isEnabled = true
+                            binding.pgbLogin.visibility = ProgressBar.INVISIBLE
+                            binding.btnLogin.isEnabled = true
                             Log.i(LOG_TAG, "Login succeeded")
                             Toast.makeText(this@LoginActivity, "${getString(R.string.login_success)}!", Toast.LENGTH_SHORT).show()
                             setResult(RESULT_OK)
@@ -75,8 +78,8 @@ class LoginActivity : AppCompatActivity() {
                         withContext(Dispatchers.Main) {
                             e.printStackTrace()
                             Log.i(LOG_TAG, "Got login result")
-                            pgbLogin?.visibility = ProgressBar.INVISIBLE
-                            btnLogin?.isEnabled = true
+                            binding.pgbLogin.visibility = ProgressBar.INVISIBLE
+                            binding.btnLogin.isEnabled = true
                             Log.e(LOG_TAG, "Login failed")
                             setResult(RESULT_CANCELED)
                             if (e is IOException) {
@@ -94,8 +97,8 @@ class LoginActivity : AppCompatActivity() {
                         }
                     }
                 }
-                pgbLogin.visibility = ProgressBar.VISIBLE
-                btnLogin.isEnabled = false
+                binding.pgbLogin.visibility = ProgressBar.VISIBLE
+                binding.btnLogin.isEnabled = false
             } else {
                 Toast.makeText(this, getString(R.string.invalid_credentials), Toast.LENGTH_LONG)
                     .show()

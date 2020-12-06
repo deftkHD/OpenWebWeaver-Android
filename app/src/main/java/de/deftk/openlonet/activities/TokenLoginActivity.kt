@@ -1,19 +1,15 @@
 package de.deftk.openlonet.activities
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.LoNet
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
-import kotlinx.android.synthetic.main.activity_login.*
-import kotlinx.android.synthetic.main.activity_token_login.*
-import kotlinx.android.synthetic.main.activity_token_login.btnLogin
-import kotlinx.android.synthetic.main.activity_token_login.pgbLogin
-import kotlinx.android.synthetic.main.activity_token_login.txtEmail
+import de.deftk.openlonet.databinding.ActivityTokenLoginBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,18 +20,21 @@ import java.util.concurrent.TimeoutException
 
 class TokenLoginActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityTokenLoginBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_token_login)
+        binding = ActivityTokenLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         if (intent.hasExtra(LoginActivity.EXTRA_LOGIN)) {
-            txtEmail.setText(intent.getStringExtra(LoginActivity.EXTRA_LOGIN), TextView.BufferType.EDITABLE)
+            binding.txtEmail.setText(intent.getStringExtra(LoginActivity.EXTRA_LOGIN), TextView.BufferType.EDITABLE)
         }
 
-        btnLogin.setOnClickListener {
-            val email = txtEmail.text.toString()
-            val token = txtToken.text.toString()
-            val rememberToken = chbRememberToken.isChecked
+        binding.btnLogin.setOnClickListener {
+            val email = binding.txtEmail.text.toString()
+            val token = binding.txtToken.text.toString()
+            val rememberToken = binding.chbRememberToken.isChecked
             if (isEmailValid(email) && isTokenValid(token)) {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
@@ -45,8 +44,8 @@ class TokenLoginActivity : AppCompatActivity() {
                             AuthStore.saveToken(token, this@TokenLoginActivity)
                         }
                         withContext(Dispatchers.Main) {
-                            pgbLogin?.visibility = ProgressBar.INVISIBLE
-                            btnLogin?.isEnabled = true
+                            binding.pgbLogin.visibility = ProgressBar.INVISIBLE
+                            binding.btnLogin.isEnabled = true
                             Toast.makeText(this@TokenLoginActivity, "${getString(R.string.login_success)}!", Toast.LENGTH_SHORT).show()
                             setResult(RESULT_OK)
                             finish()
@@ -54,8 +53,8 @@ class TokenLoginActivity : AppCompatActivity() {
                     } catch (e: Exception) {
                         withContext(Dispatchers.Main) {
                             e.printStackTrace()
-                            pgbLogin?.visibility = ProgressBar.INVISIBLE
-                            btnLogin?.isEnabled = true
+                            binding.pgbLogin.visibility = ProgressBar.INVISIBLE
+                            binding.btnLogin.isEnabled = true
                             setResult(RESULT_CANCELED)
                             if (e is IOException) {
                                 when (e) {
@@ -72,8 +71,8 @@ class TokenLoginActivity : AppCompatActivity() {
                         }
                     }
                 }
-                pgbLogin.visibility = ProgressBar.VISIBLE
-                btnLogin.isEnabled = false
+                binding.pgbLogin.visibility = ProgressBar.VISIBLE
+                binding.btnLogin.isEnabled = false
             } else {
                 Toast.makeText(this, R.string.invalid_credentials, Toast.LENGTH_LONG).show()
             }

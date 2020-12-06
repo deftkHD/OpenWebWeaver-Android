@@ -11,10 +11,8 @@ import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.view.GravityCompat
-import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.google.android.material.navigation.NavigationView
@@ -26,10 +24,10 @@ import de.deftk.openlonet.abstract.IBackHandler
 import de.deftk.openlonet.abstract.IFragmentHandler
 import de.deftk.openlonet.abstract.menu.*
 import de.deftk.openlonet.abstract.menu.start.FeatureMenuItem
+import de.deftk.openlonet.databinding.ActivityStartBinding
 import de.deftk.openlonet.feature.AppFeature
 import de.deftk.openlonet.fragments.OverviewFragment
 import de.deftk.openlonet.fragments.SettingsFragment
-import kotlinx.android.synthetic.main.activity_start.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,28 +42,27 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         private const val LOG_TAG = "StartActivity"
     }
 
-    private val drawer by lazy { findViewById<DrawerLayout>(R.id.drawer_layout) }
+    private lateinit var binding: ActivityStartBinding
+
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
     private val menuMap = mutableMapOf<Int, IMenuItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.i(LOG_TAG, "Creating start activity")
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_start)
+        binding = ActivityStartBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
 
         Log.i(LOG_TAG, "Setting up navigation view")
-        val navigationView = findViewById<NavigationView>(R.id.nav_view)
-        navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = AuthStore.getAppUser().fullName ?: getString(R.string.unknown_name)
-        navigationView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = AuthStore.getAppUser().getLogin()
-        navigationView.setNavigationItemSelectedListener(this)
+        binding.navView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = AuthStore.getAppUser().fullName ?: getString(R.string.unknown_name)
+        binding.navView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = AuthStore.getAppUser().getLogin()
+        binding.navView.setNavigationItemSelectedListener(this)
         addMenuItem(object : AbstractNavigableMenuItem(R.string.overview, R.id.main_group, R.drawable.ic_list_24) {
             override fun onClick(activity: AppCompatActivity) {
                 supportFragmentManager.beginTransaction().replace(R.id.fragment_container, OverviewFragment()).commit()
                 supportActionBar?.title = getString(R.string.overview)
-                nav_view.menu.getItem(0).isChecked = true
+                binding.navView.menu.getItem(0).isChecked = true
             }
         })
         getAllFeatures().forEach { apiFeature ->
@@ -122,8 +119,8 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
             }
         })
 
-        val toggle = ActionBarDrawerToggle(this, drawer, toolbar, R.string.open_navigation_drawer, R.string.close_navigation_drawer)
-        drawer.addDrawerListener(toggle)
+        val toggle = ActionBarDrawerToggle(this, binding.drawerLayout, binding.toolbar, R.string.open_navigation_drawer, R.string.close_navigation_drawer)
+        binding.drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
         if (savedInstanceState == null) {
@@ -137,12 +134,12 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                 (menuMap.values.first { it.getName() == R.string.overview } as IMenuNavigable).onClick(this)
             }
         }
-        navigationView.menu.getItem(0).isChecked = true
+        binding.navView.menu.getItem(0).isChecked = true
         Log.i(LOG_TAG, "Activity created")
     }
 
     private fun addMenuItem(baseItem: IMenuItem) {
-        val menu = nav_view?.menu ?: return
+        val menu = binding.navView.menu
         val id = menu.size()
         val item = menu.add(baseItem.getGroup(), id, id, baseItem.getName())
         val isCheckable = baseItem is IMenuNavigable
@@ -152,8 +149,8 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
     }
 
     override fun onBackPressed() {
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START)
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
             return
         }
         val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
@@ -172,7 +169,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
             baseItem.onClick(this)
             item.isChecked = baseItem is IMenuNavigable
         }
-        drawer.closeDrawer(GravityCompat.START)
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 
@@ -180,7 +177,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         supportFragmentManager.beginTransaction().replace(R.id.fragment_container, appFeature.fragmentClass.newInstance()).commit()
         supportActionBar?.title = getString(appFeature.translationResource)
         val itemId = menuMap.filterValues { it is FeatureMenuItem }.filter { (it.value as FeatureMenuItem).feature == appFeature }.keys.first()
-        nav_view.menu.getItem(itemId).isChecked = true
+        binding.navView.menu.getItem(itemId).isChecked = true
     }
 
     override fun displayFragment(fragment: Fragment) {

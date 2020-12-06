@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.view.*
 import android.widget.*
 import androidx.core.view.isVisible
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.Task
 import de.deftk.openlonet.AuthStore
@@ -15,8 +13,8 @@ import de.deftk.openlonet.abstract.FeatureFragment
 import de.deftk.openlonet.activities.feature.tasks.EditTaskActivity
 import de.deftk.openlonet.activities.feature.tasks.ReadTaskActivity
 import de.deftk.openlonet.adapter.TaskAdapter
+import de.deftk.openlonet.databinding.FragmentTasksBinding
 import de.deftk.openlonet.feature.AppFeature
-import kotlinx.android.synthetic.main.fragment_tasks.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,38 +22,36 @@ import kotlinx.coroutines.withContext
 
 class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
 
+    private lateinit var binding: FragmentTasksBinding
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, bundle: Bundle?): View {
-        CoroutineScope(Dispatchers.IO).launch {
-            refreshTasks()
-        }
+        binding = FragmentTasksBinding.inflate(inflater, container, false)
 
         setHasOptionsMenu(true)
 
-        val view = inflater.inflate(R.layout.fragment_tasks, container, false)
-        val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.tasks_swipe_refresh)
-        val list = view.findViewById<ListView>(R.id.tasks_list)
-        swipeRefresh.setOnRefreshListener {
-            list.adapter = null
+        binding.tasksSwipeRefresh.setOnRefreshListener {
+            binding.tasksList.adapter = null
             CoroutineScope(Dispatchers.IO).launch {
                 refreshTasks()
             }
         }
-        list.setOnItemClickListener { _, _, position, _ ->
+        binding.tasksList.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(context, ReadTaskActivity::class.java)
-            intent.putExtra(ReadTaskActivity.EXTRA_TASK, list.getItemAtPosition(position) as Task)
+            intent.putExtra(ReadTaskActivity.EXTRA_TASK, binding.tasksList.getItemAtPosition(position) as Task)
             startActivityForResult(intent, 0)
         }
-        val fabAddTask = view.findViewById<FloatingActionButton>(R.id.fab_add_task)
         if (AuthStore.getAppUser().groups.any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }) {
-            fabAddTask.visibility = View.VISIBLE
-            fabAddTask.setOnClickListener {
+            binding.fabAddTask.visibility = View.VISIBLE
+            binding.fabAddTask.setOnClickListener {
                 val intent = Intent(context, EditTaskActivity::class.java)
                 startActivityForResult(intent, EditTaskActivity.ACTIVITY_RESULT_ADD)
             }
         }
-
-        registerForContextMenu(list)
-        return view
+        CoroutineScope(Dispatchers.IO).launch {
+            refreshTasks()
+        }
+        registerForContextMenu(binding.tasksList)
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -70,7 +66,7 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                (tasks_list.adapter as Filterable).filter.filter(newText)
+                (binding.tasksList.adapter as Filterable).filter.filter(newText)
                 return false
             }
         })
@@ -80,7 +76,7 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is AdapterView.AdapterContextMenuInfo) {
-            val task = tasks_list.adapter.getItem(menuInfo.position) as Task
+            val task = binding.tasksList.adapter.getItem(menuInfo.position) as Task
             if (task.operator.effectiveRights.contains(Permission.TASKS_ADMIN)) {
                 requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
             }
@@ -91,7 +87,7 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
         return when (item.itemId) {
             R.id.menu_item_edit -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-                val task = tasks_list.adapter.getItem(info.position) as Task
+                val task = binding.tasksList.adapter.getItem(info.position) as Task
                 val intent = Intent(requireContext(), EditTaskActivity::class.java)
                 intent.putExtra(EditTaskActivity.EXTRA_TASK, task)
                 startActivityForResult(intent, EditTaskActivity.ACTIVITY_RESULT_EDIT)
@@ -99,11 +95,11 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
             }
             R.id.menu_item_delete -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-                val task = tasks_list.adapter.getItem(info.position) as Task
+                val task = binding.tasksList.adapter.getItem(info.position) as Task
                 CoroutineScope(Dispatchers.IO).launch {
                     task.delete()
                     withContext(Dispatchers.Main) {
-                        val adapter = tasks_list.adapter as TaskAdapter
+                        val adapter = binding.tasksList.adapter as TaskAdapter
                         adapter.remove(task)
                         adapter.notifyDataSetChanged()
                     }
@@ -116,19 +112,19 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == EditTaskActivity.ACTIVITY_RESULT_EDIT && data != null) {
-            val adapter = tasks_list.adapter as TaskAdapter
+            val adapter = binding.tasksList.adapter as TaskAdapter
             val task = data.getSerializableExtra(EditTaskActivity.EXTRA_TASK) as Task
             val i = adapter.getPosition(task)
             adapter.remove(task)
             adapter.insert(task, i)
             adapter.notifyDataSetChanged()
         } else if (resultCode == EditTaskActivity.ACTIVITY_RESULT_ADD && data != null) {
-            val adapter = tasks_list.adapter as TaskAdapter
+            val adapter = binding.tasksList.adapter as TaskAdapter
             val task = data.getSerializableExtra(EditTaskActivity.EXTRA_TASK) as Task
             adapter.insert(task, 0)
             adapter.notifyDataSetChanged()
         } else if (resultCode == ReadTaskActivity.ACTIVITY_RESULT_DELETE && data != null) {
-            val adapter = tasks_list.adapter as TaskAdapter
+            val adapter = binding.tasksList.adapter as TaskAdapter
             val task = data.getSerializableExtra(EditTaskActivity.EXTRA_TASK) as Task
             adapter.remove(task)
             adapter.notifyDataSetChanged()
@@ -139,15 +135,15 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
         try {
             val tasks = AuthStore.getAppUser().getAllTasks()
             withContext(Dispatchers.Main) {
-                tasks_list?.adapter = TaskAdapter(requireContext(), tasks)
-                tasks_empty?.isVisible = tasks.isEmpty()
-                progress_tasks?.visibility = ProgressBar.INVISIBLE
-                tasks_swipe_refresh?.isRefreshing = false
+                binding.tasksList.adapter = TaskAdapter(requireContext(), tasks)
+                binding.tasksEmpty.isVisible = tasks.isEmpty()
+                binding.progressTasks.visibility = ProgressBar.INVISIBLE
+                binding.tasksSwipeRefresh.isRefreshing = false
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                progress_tasks?.visibility = ProgressBar.INVISIBLE
-                tasks_swipe_refresh?.isRefreshing = false
+                binding.progressTasks.visibility = ProgressBar.INVISIBLE
+                binding.tasksSwipeRefresh.isRefreshing = false
                 Toast.makeText(context, getString(R.string.request_failed_other).format("No details"), Toast.LENGTH_LONG).show()
             }
         }

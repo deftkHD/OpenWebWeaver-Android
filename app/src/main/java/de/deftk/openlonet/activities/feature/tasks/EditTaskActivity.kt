@@ -16,8 +16,8 @@ import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.Task
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
+import de.deftk.openlonet.databinding.ActivityEditTaskBinding
 import de.deftk.openlonet.utils.TextUtils
-import kotlinx.android.synthetic.main.activity_edit_task.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,51 +35,54 @@ class EditTaskActivity : AppCompatActivity() {
         const val ACTIVITY_RESULT_EDIT = 3
     }
 
+    private lateinit var binding: ActivityEditTaskBinding
+
     private var startDate: Date? = null
     private var dueDate: Date? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_edit_task)
+        binding = ActivityEditTaskBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // back button in toolbar
-        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
         val task = intent.getSerializableExtra(EXTRA_TASK) as? Task?
 
         val effectiveGroups = AuthStore.getAppUser().groups.filter { it.effectiveRights.contains(Permission.TASKS_ADMIN) }
-        task_group.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.getLogin() })
+        binding.taskGroup.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.getLogin() })
 
         if (task != null) {
             // edit existing task
             supportActionBar?.setTitle(R.string.edit_task)
-            task_title.setText(task.title ?: "")
-            task_completed.isChecked = task.completed
+            binding.taskTitle.setText(task.title ?: "")
+            binding.taskCompleted.isChecked = task.completed
             startDate = task.startDate
             if (startDate != null) {
-                task_start.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(startDate!!))
+                binding.taskStart.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(startDate!!))
             }
             dueDate = task.endDate
             if (dueDate != null) {
-                task_due.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(dueDate!!))
+                binding.taskDue.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(dueDate!!))
             }
-            task_group.setSelection(effectiveGroups.indexOf(task.operator as Group))
-            task_group.isEnabled = true
-            task_text.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description)))
-            task_text.movementMethod = LinkMovementMethod.getInstance()
+            binding.taskGroup.setSelection(effectiveGroups.indexOf(task.operator as Group))
+            binding.taskGroup.isEnabled = true
+            binding.taskText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description)))
+            binding.taskText.movementMethod = LinkMovementMethod.getInstance()
         } else {
             // create new task
             supportActionBar?.setTitle(R.string.add_new_task)
-            task_group.isEnabled = true
+            binding.taskGroup.isEnabled = true
         }
 
-        task_start.inputType = InputType.TYPE_NULL
-        task_start.setOnClickListener {
+        binding.taskStart.inputType = InputType.TYPE_NULL
+        binding.taskStart.setOnClickListener {
             val calendar = Calendar.getInstance()
-            if (task_start.text.toString().isNotBlank())
-                calendar.time = SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).parse(task_start.text.toString()) ?: Date()
+            if (binding.taskStart.text.toString().isNotBlank())
+                calendar.time = SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).parse(binding.taskStart.text.toString()) ?: Date()
             DatePickerDialog(this, { _, year, month, dayOfMonth ->
                 TimePickerDialog(this, { _, hour, minute ->
                     calendar.set(Calendar.YEAR, year)
@@ -92,17 +95,17 @@ class EditTaskActivity : AppCompatActivity() {
                         Toast.makeText(this, R.string.task_start_before_due, Toast.LENGTH_SHORT).show()
                     } else {
                         startDate = calendar.time
-                        task_start.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(startDate!!))
+                        binding.taskStart.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(startDate!!))
                     }
                 }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
             }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
         }
 
-        task_due.inputType = InputType.TYPE_NULL
-        task_due.setOnClickListener {
+        binding.taskDue.inputType = InputType.TYPE_NULL
+        binding.taskDue.setOnClickListener {
             val calendar = Calendar.getInstance()
-            if (task_due.text.toString().isNotBlank())
-                calendar.time = SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).parse(task_due.text.toString()) ?: Date()
+            if (binding.taskDue.text.toString().isNotBlank())
+                calendar.time = SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).parse(binding.taskDue.text.toString()) ?: Date()
             DatePickerDialog(this, { _, year, month, dayOfMonth ->
                 TimePickerDialog(this, { _, hour, minute ->
                     calendar.set(Calendar.YEAR, year)
@@ -115,7 +118,7 @@ class EditTaskActivity : AppCompatActivity() {
                         Toast.makeText(this, R.string.task_start_before_due, Toast.LENGTH_SHORT).show()
                     } else {
                         dueDate = calendar.time
-                        task_due.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(dueDate!!))
+                        binding.taskDue.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(dueDate!!))
                     }
                 }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
             }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
@@ -130,10 +133,10 @@ class EditTaskActivity : AppCompatActivity() {
     //TODO ability to remove start/due date
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.save) {
-            val title = task_title.text.toString()
-            val group = task_group.selectedItem
-            val completed = task_completed.isChecked
-            val description = task_text.text.toString()
+            val title = binding.taskTitle.text.toString()
+            val group = binding.taskGroup.selectedItem
+            val completed = binding.taskCompleted.isChecked
+            val description = binding.taskText.text.toString()
             CoroutineScope(Dispatchers.IO).launch {
                 val task = intent.getSerializableExtra(EXTRA_TASK) as? Task?
                 if (task != null) {

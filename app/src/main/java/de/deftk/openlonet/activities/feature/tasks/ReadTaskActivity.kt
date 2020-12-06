@@ -9,10 +9,9 @@ import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.Task
 import de.deftk.openlonet.R
+import de.deftk.openlonet.databinding.ActivityReadTaskBinding
 import de.deftk.openlonet.utils.CustomTabTransformationMethod
 import de.deftk.openlonet.utils.TextUtils
-import kotlinx.android.synthetic.main.activity_read_notification.*
-import kotlinx.android.synthetic.main.activity_read_task.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,12 +26,15 @@ class ReadTaskActivity : AppCompatActivity() {
         const val ACTIVITY_RESULT_DELETE = 4
     }
 
+    private lateinit var binding: ActivityReadTaskBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_read_task)
+        binding = ActivityReadTaskBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // back button in toolbar
-        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setTitle(R.string.task_details)
@@ -88,14 +90,14 @@ class ReadTaskActivity : AppCompatActivity() {
     }
 
     private fun displayTask(task: Task) {
-        task_title.text = task.title
-        task_author.text = task.creationMember.getName()
-        task_group.text = task.operator.getName()
-        task_created.text = String.format(getString(R.string.created_date), DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.creationDate))
-        task_due.text = String.format(getString(R.string.until_date), if (task.endDate != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.endDate!!) else getString(R.string.not_set))
-        task_detail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description))
-        task_detail.movementMethod = LinkMovementMethod.getInstance()
-        task_detail.transformationMethod = CustomTabTransformationMethod(task_detail.autoLinkMask)
+        binding.taskTitle.text = task.title
+        binding.taskAuthor.text = task.creationMember.getName()
+        binding.taskGroup.text = task.operator.getName()
+        binding.taskCreated.text = String.format(getString(R.string.created_date), DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.creationDate))
+        binding.taskDue.text = String.format(getString(R.string.until_date), if (task.endDate != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.endDate!!) else getString(R.string.not_set))
+        binding.taskDetail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description))
+        binding.taskDetail.movementMethod = LinkMovementMethod.getInstance()
+        binding.taskDetail.transformationMethod = CustomTabTransformationMethod(binding.taskDetail.autoLinkMask)
     }
 
     // back button in toolbar functionality

@@ -6,10 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.SystemNotificationAdapter
+import de.deftk.openlonet.databinding.ActivitySystemNotificationBinding
 import de.deftk.openlonet.utils.CustomTabTransformationMethod
 import de.deftk.openlonet.utils.TextUtils
-import kotlinx.android.synthetic.main.activity_read_notification.*
-import kotlinx.android.synthetic.main.activity_system_notification.*
 import java.text.DateFormat
 
 class SystemNotificationActivity : AppCompatActivity() {
@@ -18,12 +17,15 @@ class SystemNotificationActivity : AppCompatActivity() {
         const val EXTRA_SYSTEM_NOTIFICATION = "de.deftk.openlonet.system_notifications.system_notification_extra"
     }
 
+    private lateinit var binding: ActivitySystemNotificationBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_system_notification)
+        binding = ActivitySystemNotificationBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // back button in toolbar
-        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.setTitle(R.string.see_system_notification)
@@ -32,17 +34,17 @@ class SystemNotificationActivity : AppCompatActivity() {
 
         if (notification != null) {
             val type = notification.messageType
-            system_notification_title.text = if (type != null) {
+            binding.systemNotificationTitle.text = if (type != null) {
                 getString(SystemNotificationAdapter.typeTranslationMap[type] ?: R.string.system_notification_type_unknown)
             } else {
                 getString(R.string.system_notification_type_unknown)
             }
-            system_notification_author.text = notification.member.getName()
-            system_notification_group.text = notification.group.getName()
-            system_notification_date.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.date)
-            system_notification_message.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.message))
-            system_notification_message.movementMethod = LinkMovementMethod.getInstance()
-            system_notification_message.transformationMethod = CustomTabTransformationMethod(system_notification_message.autoLinkMask)
+            binding.systemNotificationAuthor.text = notification.member.getName()
+            binding.systemNotificationGroup.text = notification.group.getName()
+            binding.systemNotificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.date)
+            binding.systemNotificationMessage.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.message))
+            binding.systemNotificationMessage.movementMethod = LinkMovementMethod.getInstance()
+            binding.systemNotificationMessage.transformationMethod = CustomTabTransformationMethod(binding.systemNotificationMessage.autoLinkMask)
         }
     }
 

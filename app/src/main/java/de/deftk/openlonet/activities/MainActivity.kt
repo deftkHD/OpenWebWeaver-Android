@@ -3,11 +3,10 @@ package de.deftk.openlonet.activities
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.BuildConfig
-import de.deftk.openlonet.R
+import de.deftk.openlonet.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,15 +18,16 @@ class MainActivity : AppCompatActivity() {
         private const val LOG_TAG = "MainActivity"
     }
 
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.i(LOG_TAG, "Creating MainActivity")
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         supportActionBar?.hide()
 
-        val lblVersion = findViewById<TextView>(R.id.lblVersion)
-        lblVersion.append(" ${BuildConfig.VERSION_NAME}")
+        binding.lblVersion.append(" ${BuildConfig.VERSION_NAME}")
 
         CoroutineScope(Dispatchers.IO).launch {
             if (AuthStore.performLogin(this@MainActivity)) {

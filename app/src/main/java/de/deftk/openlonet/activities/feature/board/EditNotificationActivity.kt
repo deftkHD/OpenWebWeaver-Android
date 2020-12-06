@@ -13,8 +13,8 @@ import de.deftk.lonet.api.model.feature.board.BoardNotification
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.NotificationAdapter
+import de.deftk.openlonet.databinding.ActivityEditNotificationBinding
 import de.deftk.openlonet.utils.TextUtils
-import kotlinx.android.synthetic.main.activity_edit_notification.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,37 +29,40 @@ class EditNotificationActivity : AppCompatActivity() {
         const val ACTIVITY_RESULT_EDIT = 3
     }
 
+    private lateinit var binding: ActivityEditNotificationBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_edit_notification)
+        binding = ActivityEditNotificationBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // back button in toolbar
-        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
         val notification = intent.getSerializableExtra(EXTRA_NOTIFICATION) as? BoardNotification?
 
         val effectiveGroups = AuthStore.getAppUser().groups.filter { it.effectiveRights.contains(Permission.BOARD_ADMIN) }
-        notification_group?.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.getLogin() })
+        binding.notificationGroup.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.getLogin() })
 
         val colors = NotificationAdapter.BoardNotificationColors.values()
-        notification_accent?.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, colors.map { getString(it.text) })
+        binding.notificationAccent.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, colors.map { getString(it.text) })
 
         if (notification != null) {
             // edit existing notification
             supportActionBar?.setTitle(R.string.edit_notification)
-            notification_title?.setText(notification.title ?: "")
-            notification_text?.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text)))
-            notification_text?.movementMethod = LinkMovementMethod.getInstance()
-            notification_group?.setSelection(effectiveGroups.indexOf(notification.operator as Group))
-            notification_group.isEnabled = false
+            binding.notificationTitle.setText(notification.title ?: "")
+            binding.notificationText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text)))
+            binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
+            binding.notificationGroup.setSelection(effectiveGroups.indexOf(notification.operator as Group))
+            binding.notificationGroup.isEnabled = false
             val index = colors.indexOf(NotificationAdapter.BoardNotificationColors.getByApiColor(notification.color))
-            notification_accent?.setSelection(index)
+            binding.notificationAccent.setSelection(index)
         } else {
             // create new notification
             supportActionBar?.setTitle(R.string.add_new_notification)
-            notification_group.isEnabled = true
+            binding.notificationGroup.isEnabled = true
         }
     }
 
@@ -70,10 +73,10 @@ class EditNotificationActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.save) {
-            val title = notification_title.text.toString()
-            val group = notification_group.selectedItem
-            val color = notification_accent.selectedItemPosition
-            val text = notification_text.text.toString()
+            val title = binding.notificationTitle.text.toString()
+            val group = binding.notificationGroup.selectedItem
+            val color = binding.notificationAccent.selectedItemPosition
+            val text = binding.notificationText.text.toString()
             CoroutineScope(Dispatchers.IO).launch {
                 val notification = intent.getSerializableExtra(EXTRA_NOTIFICATION) as? BoardNotification?
                 if (notification != null) {

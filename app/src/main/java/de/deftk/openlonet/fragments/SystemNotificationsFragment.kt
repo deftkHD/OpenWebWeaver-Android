@@ -3,17 +3,19 @@ package de.deftk.openlonet.fragments
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
-import android.widget.*
+import android.widget.Filterable
+import android.widget.ProgressBar
+import android.widget.SearchView
+import android.widget.Toast
 import androidx.core.view.isVisible
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.feature.SystemNotification
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.abstract.FeatureFragment
 import de.deftk.openlonet.activities.feature.SystemNotificationActivity
 import de.deftk.openlonet.adapter.SystemNotificationAdapter
+import de.deftk.openlonet.databinding.FragmentSystemNotificationsBinding
 import de.deftk.openlonet.feature.AppFeature
-import kotlinx.android.synthetic.main.fragment_system_notifications.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,29 +23,29 @@ import kotlinx.coroutines.withContext
 
 class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOTIFICATIONS) {
 
+    private lateinit var binding: FragmentSystemNotificationsBinding
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        CoroutineScope(Dispatchers.IO).launch {
-            loadSystemNotifications()
-        }
+        binding = FragmentSystemNotificationsBinding.inflate(inflater, container, false)
 
         setHasOptionsMenu(true)
 
-        val view = inflater.inflate(R.layout.fragment_system_notifications, container, false)
-        val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.system_notifications_swipe_refresh)
-        val list = view.findViewById<ListView>(R.id.system_notification_list)
-        swipeRefresh.setOnRefreshListener {
-            list.adapter = null
+        binding.systemNotificationsSwipeRefresh.setOnRefreshListener {
+            binding.systemNotificationList.adapter = null
             CoroutineScope(Dispatchers.IO).launch {
                 loadSystemNotifications()
             }
         }
-        list.setOnItemClickListener { _, _, position, _ ->
-            val item = list.getItemAtPosition(position) as SystemNotification
+        binding.systemNotificationList.setOnItemClickListener { _, _, position, _ ->
+            val item = binding.systemNotificationList.getItemAtPosition(position) as SystemNotification
             val intent = Intent(context, SystemNotificationActivity::class.java)
             intent.putExtra(SystemNotificationActivity.EXTRA_SYSTEM_NOTIFICATION, item)
             startActivity(intent)
         }
-        return view
+        CoroutineScope(Dispatchers.IO).launch {
+            loadSystemNotifications()
+        }
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -58,7 +60,7 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                (system_notification_list.adapter as Filterable).filter.filter(newText)
+                (binding.systemNotificationList.adapter as Filterable).filter.filter(newText)
                 return false
             }
         })
@@ -69,15 +71,15 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
         try {
             val systemNotifications = AuthStore.getAppUser().getSystemNotifications()
             withContext(Dispatchers.Main) {
-                system_notification_list?.adapter = SystemNotificationAdapter(requireContext(), systemNotifications)
-                system_notifications_empty?.isVisible = systemNotifications.isEmpty()
-                progress_system_notifications?.visibility = ProgressBar.INVISIBLE
-                system_notifications_swipe_refresh.isRefreshing = false
+                binding.systemNotificationList.adapter = SystemNotificationAdapter(requireContext(), systemNotifications)
+                binding.systemNotificationsEmpty.isVisible = systemNotifications.isEmpty()
+                binding.progressSystemNotifications.visibility = ProgressBar.INVISIBLE
+                binding.systemNotificationsSwipeRefresh.isRefreshing = false
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                progress_system_notifications?.visibility = ProgressBar.INVISIBLE
-                system_notifications_swipe_refresh.isRefreshing = false
+                binding.progressSystemNotifications.visibility = ProgressBar.INVISIBLE
+                binding.systemNotificationsSwipeRefresh.isRefreshing = false
                 Toast.makeText(context, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
             }
         }

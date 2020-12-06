@@ -7,10 +7,9 @@ import androidx.appcompat.app.AppCompatActivity
 import de.deftk.lonet.api.model.feature.mailbox.Email
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
+import de.deftk.openlonet.databinding.ActivityReadMailBinding
 import de.deftk.openlonet.utils.CustomTabTransformationMethod
 import de.deftk.openlonet.utils.TextUtils
-import kotlinx.android.synthetic.main.activity_read_mail.*
-import kotlinx.android.synthetic.main.activity_read_notification.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,12 +22,15 @@ class ReadMailActivity : AppCompatActivity() {
         const val EXTRA_MAIL = "de.deftk.openlonet.mail.mail_extra"
     }
 
+    private lateinit var binding: ActivityReadMailBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_read_mail)
+        binding = ActivityReadMailBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // back button in toolbar
-        setSupportActionBar(findViewById(R.id.toolbar))
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
         supportActionBar?.title = getString(R.string.read_mail)
@@ -36,22 +38,22 @@ class ReadMailActivity : AppCompatActivity() {
         val mail = intent.getSerializableExtra(EXTRA_MAIL) as? Email
 
         if (mail != null) {
-            mail_subject?.text = mail.subject
-            mail_author?.text = mail.from?.joinToString { it.name } ?: AuthStore.getAppUser().getName()
-            mail_author_address?.text = mail.from?.joinToString { it.address } ?: AuthStore.getAppUser().getLogin()
-            mail_date?.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(mail.date)
-            mail_message?.transformationMethod = CustomTabTransformationMethod(mail_message.autoLinkMask)
+            binding.mailSubject.text = mail.subject
+            binding.mailAuthor.text = mail.from?.joinToString { it.name } ?: AuthStore.getAppUser().getName()
+            binding.mailAuthorAddress.text = mail.from?.joinToString { it.address } ?: AuthStore.getAppUser().getLogin()
+            binding.mailDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(mail.date)
+            binding.mailMessage.transformationMethod = CustomTabTransformationMethod(binding.mailMessage.autoLinkMask)
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val content = mail.read()
                     withContext(Dispatchers.Main) {
-                        progress_read_mail?.visibility = ProgressBar.INVISIBLE
-                        mail_message?.text = TextUtils.parseMultipleQuotes(TextUtils.parseHtml(content.text ?: content.plainBody))
+                        binding.progressReadMail.visibility = ProgressBar.INVISIBLE
+                        binding.mailMessage.text = TextUtils.parseMultipleQuotes(TextUtils.parseHtml(content.text ?: content.plainBody))
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
                     withContext(Dispatchers.Main) {
-                        progress_read_mail?.visibility = ProgressBar.INVISIBLE
+                        binding.progressReadMail.visibility = ProgressBar.INVISIBLE
                         Toast.makeText(this@ReadMailActivity, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
                     }
                 }

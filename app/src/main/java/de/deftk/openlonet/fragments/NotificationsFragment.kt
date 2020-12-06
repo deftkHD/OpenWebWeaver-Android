@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.*
 import android.widget.*
 import androidx.core.view.isVisible
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.board.BoardNotification
 import de.deftk.openlonet.AuthStore
@@ -14,8 +13,8 @@ import de.deftk.openlonet.abstract.FeatureFragment
 import de.deftk.openlonet.activities.feature.board.EditNotificationActivity
 import de.deftk.openlonet.activities.feature.board.ReadNotificationActivity
 import de.deftk.openlonet.adapter.NotificationAdapter
+import de.deftk.openlonet.databinding.FragmentNotificationsBinding
 import de.deftk.openlonet.feature.AppFeature
-import kotlinx.android.synthetic.main.fragment_notifications.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,14 +22,18 @@ import kotlinx.coroutines.withContext
 
 class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
 
+    private lateinit var binding: FragmentNotificationsBinding
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentNotificationsBinding.inflate(inflater, container, false)
+
         CoroutineScope(Dispatchers.IO).launch {
             refreshNotifications()
 
             if (AuthStore.getAppUser().groups.any { it.effectiveRights.contains(Permission.BOARD_ADMIN) }) {
                 withContext(Dispatchers.Main) {
-                    fab_add_notification?.visibility = View.VISIBLE
-                    fab_add_notification?.setOnClickListener {
+                    binding.fabAddNotification.visibility = View.VISIBLE
+                    binding.fabAddNotification.setOnClickListener {
                         val intent = Intent(context, EditNotificationActivity::class.java)
                         startActivityForResult(intent, EditNotificationActivity.ACTIVITY_RESULT_ADD)
                     }
@@ -40,23 +43,20 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
 
         setHasOptionsMenu(true)
 
-        val view = inflater.inflate(R.layout.fragment_notifications, container, false)
-        val list = view.findViewById<ListView>(R.id.notification_list)
-        val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.notifications_swipe_refresh)
-        swipeRefresh.setOnRefreshListener {
-            list.adapter = null
+        binding.notificationsSwipeRefresh.setOnRefreshListener {
+            binding.notificationList.adapter = null
             CoroutineScope(Dispatchers.IO).launch {
                 refreshNotifications()
             }
         }
-        list.setOnItemClickListener { _, _, position, _ ->
+        binding.notificationList.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(context, ReadNotificationActivity::class.java)
-            intent.putExtra(ReadNotificationActivity.EXTRA_NOTIFICATION, list.getItemAtPosition(position) as BoardNotification)
+            intent.putExtra(ReadNotificationActivity.EXTRA_NOTIFICATION, binding.notificationList.getItemAtPosition(position) as BoardNotification)
             startActivityForResult(intent, 0)
         }
 
-        registerForContextMenu(list)
-        return view
+        registerForContextMenu(binding.notificationList)
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -71,7 +71,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                (notification_list.adapter as Filterable).filter.filter(newText)
+                (binding.notificationList.adapter as Filterable).filter.filter(newText)
                 return false
             }
         })
@@ -81,7 +81,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is AdapterView.AdapterContextMenuInfo) {
-            val notification = notification_list?.adapter?.getItem(menuInfo.position) as BoardNotification
+            val notification = binding.notificationList.adapter?.getItem(menuInfo.position) as BoardNotification
             if (notification.operator.effectiveRights.contains(Permission.BOARD_ADMIN)) {
                 requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
             }
@@ -92,7 +92,7 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
         return when (item.itemId) {
             R.id.menu_item_edit -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-                val notification = notification_list?.adapter?.getItem(info.position) as BoardNotification
+                val notification = binding.notificationList.adapter?.getItem(info.position) as BoardNotification
                 val intent = Intent(requireContext(), EditNotificationActivity::class.java)
                 intent.putExtra(EditNotificationActivity.EXTRA_NOTIFICATION, notification)
                 startActivityForResult(intent, EditNotificationActivity.ACTIVITY_RESULT_EDIT)
@@ -100,11 +100,11 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
             }
             R.id.menu_item_delete -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-                val notification = notification_list?.adapter?.getItem(info.position) as BoardNotification
+                val notification = binding.notificationList.adapter?.getItem(info.position) as BoardNotification
                 CoroutineScope(Dispatchers.IO).launch {
                     notification.delete()
                     withContext(Dispatchers.Main) {
-                        val adapter = notification_list.adapter as NotificationAdapter
+                        val adapter = binding.notificationList.adapter as NotificationAdapter
                         adapter.remove(notification)
                         adapter.notifyDataSetChanged()
                     }
@@ -117,19 +117,19 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == EditNotificationActivity.ACTIVITY_RESULT_EDIT && data != null) {
-            val adapter = notification_list.adapter as NotificationAdapter
+            val adapter = binding.notificationList.adapter as NotificationAdapter
             val notification = data.getSerializableExtra(EditNotificationActivity.EXTRA_NOTIFICATION) as BoardNotification
             val i = adapter.getPosition(notification)
             adapter.remove(notification)
             adapter.insert(notification, i)
             adapter.notifyDataSetChanged()
         } else if (resultCode == EditNotificationActivity.ACTIVITY_RESULT_ADD && data != null) {
-            val adapter = notification_list.adapter as NotificationAdapter
+            val adapter = binding.notificationList.adapter as NotificationAdapter
             val notification = data.getSerializableExtra(EditNotificationActivity.EXTRA_NOTIFICATION) as BoardNotification
             adapter.insert(notification, 0)
             adapter.notifyDataSetChanged()
         } else if (resultCode == ReadNotificationActivity.ACTIVITY_RESULT_DELETE && data != null) {
-            val adapter = notification_list.adapter as NotificationAdapter
+            val adapter = binding.notificationList.adapter as NotificationAdapter
             val notification = data.getSerializableExtra(ReadNotificationActivity.EXTRA_NOTIFICATION) as BoardNotification
             adapter.remove(notification)
             adapter.notifyDataSetChanged()
@@ -140,15 +140,15 @@ class NotificationsFragment: FeatureFragment(AppFeature.FEATURE_NOTIFICATIONS) {
         try {
             val boardNotifications = AuthStore.getAppUser().getAllBoardNotifications()
             withContext(Dispatchers.Main) {
-                notification_list?.adapter = NotificationAdapter(requireContext(), boardNotifications)
-                notifications_empty?.isVisible = boardNotifications.isEmpty()
-                progress_notifications?.visibility = ProgressBar.INVISIBLE
-                notifications_swipe_refresh?.isRefreshing = false
+                binding.notificationList.adapter = NotificationAdapter(requireContext(), boardNotifications)
+                binding.notificationsEmpty.isVisible = boardNotifications.isEmpty()
+                binding.progressNotifications.visibility = ProgressBar.INVISIBLE
+                binding.notificationsSwipeRefresh.isRefreshing = false
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                progress_notifications?.visibility = ProgressBar.INVISIBLE
-                notifications_swipe_refresh?.isRefreshing = false
+                binding.progressNotifications.visibility = ProgressBar.INVISIBLE
+                binding.notificationsSwipeRefresh.isRefreshing = false
                 Toast.makeText(context, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
             }
         }

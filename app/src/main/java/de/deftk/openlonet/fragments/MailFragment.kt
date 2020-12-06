@@ -7,8 +7,6 @@ import android.text.InputType
 import android.view.*
 import android.widget.*
 import androidx.core.view.isVisible
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.mailbox.EmailFolder
 import de.deftk.openlonet.AuthStore
@@ -19,8 +17,8 @@ import de.deftk.openlonet.activities.feature.mail.ReadMailActivity
 import de.deftk.openlonet.activities.feature.mail.WriteMailActivity
 import de.deftk.openlonet.adapter.MailAdapter
 import de.deftk.openlonet.adapter.MailFolderAdapter
+import de.deftk.openlonet.databinding.FragmentMailBinding
 import de.deftk.openlonet.feature.AppFeature
-import kotlinx.android.synthetic.main.fragment_mail.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,10 +33,13 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
         const val REQUEST_CODE_WRITE_MAIL = 1
     }
 
+    private lateinit var binding: FragmentMailBinding
     private lateinit var toolbarSpinner: Spinner
     private var currentFolder: EmailFolder? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentMailBinding.inflate(inflater, container, false)
+
         setHasOptionsMenu(true)
 
         toolbarSpinner = requireActivity().findViewById(R.id.toolbar_spinner)
@@ -53,28 +54,24 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        val view = inflater.inflate(R.layout.fragment_mail, container, false)
-        val list = view.findViewById<ListView>(R.id.mail_list)
-        val swipeRefresh = view.findViewById<SwipeRefreshLayout>(R.id.mail_swipe_refresh)
-        swipeRefresh.setOnRefreshListener {
+        binding.mailSwipeRefresh.setOnRefreshListener {
             reloadEmails()
         }
-        list.setOnItemClickListener { _, _, position, _ ->
+        binding.mailList.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(requireContext(), ReadMailActivity::class.java)
-            intent.putExtra(ReadMailActivity.EXTRA_MAIL, mail_list.getItemAtPosition(position) as Serializable)
+            intent.putExtra(ReadMailActivity.EXTRA_MAIL, binding.mailList.getItemAtPosition(position) as Serializable)
             startActivity(intent)
         }
         if (AuthStore.getAppUser().effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
-            val fab = view.findViewById<FloatingActionButton>(R.id.fab_mail_add)
-            fab.visibility = View.VISIBLE
-            fab.setOnClickListener {
+            binding.fabMailAdd.visibility = View.VISIBLE
+            binding.fabMailAdd.setOnClickListener {
                 val intent = Intent(requireContext(), WriteMailActivity::class.java)
                 startActivityForResult(intent, REQUEST_CODE_WRITE_MAIL)
             }
         }
 
         reloadEmailFolders()
-        return view
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -91,7 +88,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                (mail_list.adapter as Filterable).filter.filter(newText)
+                (binding.mailList.adapter as Filterable).filter.filter(newText)
                 return false
             }
         })
@@ -137,7 +134,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
 
     private suspend fun createNewFolder(name: String) {
         withContext(Dispatchers.Main) {
-            progress_mail.visibility = View.VISIBLE
+            binding.progressMail.visibility = View.VISIBLE
         }
         try {
             AuthStore.getAppUser().addEmailFolder(name)
@@ -179,7 +176,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
     }
 
     private fun reloadEmails() {
-        mail_list?.adapter = null
+        binding.mailList.adapter = null
         CoroutineScope(Dispatchers.IO).launch {
             loadEmails()
         }
@@ -189,15 +186,15 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
         try {
             val emails = currentFolder?.getEmails() ?: emptyList()
             withContext(Dispatchers.Main) {
-                mail_list.adapter = MailAdapter(requireContext(), emails)
-                mail_empty?.isVisible = emails.isEmpty()
-                progress_mail?.visibility = ProgressBar.GONE
-                mail_swipe_refresh?.isRefreshing = false
+                binding.mailList.adapter = MailAdapter(requireContext(), emails)
+                binding.mailEmpty.isVisible = emails.isEmpty()
+                binding.progressMail.visibility = ProgressBar.GONE
+                binding.mailSwipeRefresh.isRefreshing = false
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                progress_mail?.visibility = ProgressBar.GONE
-                mail_swipe_refresh?.isRefreshing = false
+                binding.progressMail.visibility = ProgressBar.GONE
+                binding.mailSwipeRefresh.isRefreshing = false
                 Toast.makeText(
                     context,
                     getString(R.string.request_failed_other).format(e.message ?: e),
