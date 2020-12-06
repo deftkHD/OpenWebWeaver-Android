@@ -104,18 +104,23 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         })
         addMenuItem(object : AbstractNavigableMenuItem(R.string.logout, R.id.utility_group, R.drawable.ic_lock_open_24) {
             override fun onClick(activity: AppCompatActivity) {
-                val listener = DialogInterface.OnClickListener { _, which ->
-                    when (which) {
-                        DialogInterface.BUTTON_POSITIVE -> {
-                            val preferences = getSharedPreferences(AuthStore.PREFERENCE_NAME, 0)
-                            CoroutineScope(Dispatchers.Main).launch {
-                                logout(preferences.contains("token"))
+                if (AuthStore.getSavedToken(this@StartActivity) != null) {
+                    val listener = DialogInterface.OnClickListener { _, which ->
+                        when (which) {
+                            DialogInterface.BUTTON_POSITIVE -> {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    logout(true)
+                                }
                             }
+                            DialogInterface.BUTTON_NEGATIVE -> { /* do nothing */ }
                         }
-                        DialogInterface.BUTTON_NEGATIVE -> { /* do nothing */ }
+                    }
+                    AlertDialog.Builder(this@StartActivity).setMessage(R.string.logout_description).setPositiveButton(R.string.yes, listener).setNegativeButton(R.string.no, listener).show()
+                } else {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        logout(false)
                     }
                 }
-                AlertDialog.Builder(this@StartActivity).setMessage(R.string.logout_description).setPositiveButton(R.string.yes, listener).setNegativeButton(R.string.no, listener).show()
             }
         })
 
