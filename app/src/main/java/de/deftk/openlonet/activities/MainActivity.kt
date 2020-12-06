@@ -2,7 +2,6 @@ package de.deftk.openlonet.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.BuildConfig
@@ -13,10 +12,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
-
-    companion object {
-        private const val LOG_TAG = "MainActivity"
-    }
 
     private lateinit var binding: ActivityMainBinding
 
@@ -34,10 +29,10 @@ class MainActivity : AppCompatActivity() {
                 val intent = Intent(this@MainActivity, StartActivity::class.java)
                 withContext(Dispatchers.Main) {
                     startActivity(intent)
+                    finish()
                 }
             }
         }
-        Log.i(LOG_TAG, "Created MainActivity")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -47,6 +42,7 @@ class MainActivity : AppCompatActivity() {
                     val intent = Intent(this@MainActivity, StartActivity::class.java)
                     startActivity(intent)
                 }
+                finish()
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
         }

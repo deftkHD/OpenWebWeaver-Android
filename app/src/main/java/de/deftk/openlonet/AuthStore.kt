@@ -119,7 +119,7 @@ object AuthStore {
      */
     suspend fun performLogin(activity: Activity): Boolean {
         if (getSavedToken(activity) == null) {
-            // create new account or simply login without adding an account
+            // add new account or simply login without adding an account
             val intent = Intent(activity, LoginActivity::class.java)
             val savedUser = getSavedUsername(activity)
             if (savedUser != null) {
@@ -150,10 +150,11 @@ object AuthStore {
                         Toast.makeText(activity, activity.getString(R.string.token_expired), Toast.LENGTH_LONG).show()
 
                         val intent = Intent(activity, LoginActivity::class.java)
-                        if (getSavedUsername(activity) != null) {
-                            intent.putExtra(LoginActivity.EXTRA_LOGIN, getSavedUsername(activity))
+                        val savedUser = getSavedUsername(activity)
+                        if (savedUser != null) {
+                            intent.putExtra(LoginActivity.EXTRA_LOGIN, savedUser)
                         }
-                        activity.startActivity(intent)
+                        activity.startActivityForResult(intent, REQUEST_LOGIN)
                     }
                 }
             }
