@@ -9,12 +9,15 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import de.deftk.lonet.api.model.feature.forum.ForumPost
+import de.deftk.lonet.api.implementation.Group
+import de.deftk.lonet.api.implementation.feature.forum.ForumPost
+import de.deftk.lonet.api.model.feature.forum.IForumPost
 import de.deftk.openlonet.R
 import de.deftk.openlonet.activities.feature.forum.ForumPostActivity
 import de.deftk.openlonet.utils.TextUtils
+import de.deftk.openlonet.utils.putJsonExtra
 
-class ForumPostCommentRecyclerAdapter(private val comments: List<ForumPost>): RecyclerView.Adapter<ForumPostCommentRecyclerAdapter.ViewHolder>() {
+class ForumPostCommentRecyclerAdapter(private val comments: List<IForumPost>, private val group: Group): RecyclerView.Adapter<ForumPostCommentRecyclerAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -24,18 +27,19 @@ class ForumPostCommentRecyclerAdapter(private val comments: List<ForumPost>): Re
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val comment = comments[position]
-        holder.commentImage.setImageResource(ForumPostAdapter.postIconMap[comment.icon] ?: R.drawable.ic_help_24)
-        holder.commentTitle.text = comment.title
-        holder.commentAuthor.text = comment.creationMember.getName()
-        holder.commentDate.text = TextUtils.parseShortDate(comment.creationDate)
-        holder.commentText.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(comment.text)))
+        holder.commentImage.setImageResource(ForumPostAdapter.postIconMap[comment.getIcon()] ?: R.drawable.ic_help_24)
+        holder.commentTitle.text = comment.getTitle()
+        holder.commentAuthor.text = comment.getCreated().member.name
+        holder.commentDate.text = TextUtils.parseShortDate(comment.getCreated().date)
+        holder.commentText.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(comment.getText())))
         holder.commentText.movementMethod = LinkMovementMethod.getInstance()
-        holder.showComments.isVisible = comment.commentCount > 0
-        if (comment.commentCount > 0) {
+        holder.showComments.isVisible = comment.getComments().isNotEmpty()
+        if (comment.getComments().isNotEmpty()) {
             holder.showComments.setOnClickListener {
                 val context = holder.itemView.context
                 val intent = Intent(context, ForumPostActivity::class.java)
-                intent.putExtra(ForumPostActivity.EXTRA_FORUM_POST, comment)
+                intent.putJsonExtra(ForumPostActivity.EXTRA_FORUM_POST, comment as ForumPost)
+                intent.putJsonExtra(ForumPostActivity.EXTRA_GROUP, group)
                 context.startActivity(intent)
             }
         }

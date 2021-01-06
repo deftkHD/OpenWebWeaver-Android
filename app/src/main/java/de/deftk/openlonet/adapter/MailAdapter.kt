@@ -9,8 +9,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import com.daimajia.swipe.SwipeLayout
-import de.deftk.lonet.api.model.feature.mailbox.Email
-import de.deftk.lonet.api.model.feature.mailbox.EmailFolder
+import de.deftk.lonet.api.implementation.feature.mailbox.Email
+import de.deftk.lonet.api.implementation.feature.mailbox.EmailFolder
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.utils.SwipeAdapter
@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-class MailAdapter(context: Context, elements: List<Email>): FilterableAdapter<Email>(context, elements) {
+class MailAdapter(context: Context, elements: List<Email>, private val folder: EmailFolder): FilterableAdapter<Email>(context, elements) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val listItemView = (convertView ?: LayoutInflater.from(context).inflate(R.layout.list_item_mail, parent, false)) as SwipeLayout
@@ -33,15 +33,15 @@ class MailAdapter(context: Context, elements: List<Email>): FilterableAdapter<Em
             override fun onOpen(layout: SwipeLayout) {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        if (item.folder.type == EmailFolder.EmailFolderType.TRASH) {
-                            item.delete()
+                        if (folder.isTrash()) {
+                            item.delete(folder, AuthStore.getUserContext())
                         } else {
-                            val trash = AuthStore.getAppUser().getEmailFolders()
-                                .firstOrNull { it.type == EmailFolder.EmailFolderType.TRASH }
+                            val trash = AuthStore.getApiUser().getEmailFolders(AuthStore.getUserContext())
+                                .firstOrNull { it.isTrash() }
                             if (trash != null) {
-                                item.move(trash)
+                                item.move(folder, trash, AuthStore.getUserContext())
                             } else {
-                                item.delete()
+                                item.delete(folder, AuthStore.getUserContext())
                             }
                         }
                         withContext(Dispatchers.Main) {
@@ -68,19 +68,19 @@ class MailAdapter(context: Context, elements: List<Email>): FilterableAdapter<Em
         listItemView.addSwipeListener(swp)
 
         val subjectView = listItemView.findViewById<TextView>(R.id.mail_subject)
-        subjectView.text = item.subject
-        if (item.unread != true)
+        subjectView.text = item.getSubject()
+        if (!item.isUnread())
             subjectView.setTypeface(null, Typeface.NORMAL)
         else
             subjectView.setTypeface(null, Typeface.BOLD)
-        listItemView.findViewById<TextView>(R.id.mail_author).text = item.from
-            ?.joinToString { it.name } ?: AuthStore.getAppUser().getName() //TODO not verified if this is useful
-        listItemView.findViewById<TextView>(R.id.mail_date).text = TextUtils.parseShortDate(item.date)
+        listItemView.findViewById<TextView>(R.id.mail_author).text = item.getFrom()
+            ?.joinToString { it.name } ?: AuthStore.getApiUser().name //TODO not verified if this is useful
+        listItemView.findViewById<TextView>(R.id.mail_date).text = TextUtils.parseShortDate(item.getDate())
 
         listItemView.findViewById<ImageView>(R.id.mail_answered).visibility =
-            if (item.answered == true) View.VISIBLE else View.INVISIBLE
+            if (item.isAnswered()) View.VISIBLE else View.INVISIBLE
         listItemView.findViewById<ImageView>(R.id.mail_flagged).visibility =
-            if (item.flagged == true) View.VISIBLE else View.INVISIBLE
+            if (item.isFlagged()) View.VISIBLE else View.INVISIBLE
 
         return listItemView
     }
@@ -89,12 +89,12 @@ class MailAdapter(context: Context, elements: List<Email>): FilterableAdapter<Em
         if (constraint == null)
             return originalElements
         return originalElements.filter {
-                mail -> mail.subject.filterApplies(constraint) ||
-                mail.from?.any { it.filterApplies(constraint) } == true
+                mail -> mail.getSubject().filterApplies(constraint) ||
+                mail.getFrom()?.any { it.filterApplies(constraint) } == true
         }
     }
 
     override fun sort(elements: List<Email>): List<Email> {
-        return elements.sortedByDescending { it.date }
+        return elements.sortedByDescending { it.getDate() }
     }
 }

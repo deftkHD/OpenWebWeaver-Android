@@ -5,9 +5,9 @@ import android.view.*
 import android.widget.*
 import androidx.core.view.isVisible
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import de.deftk.lonet.api.model.Group
-import de.deftk.lonet.api.model.User
-import de.deftk.lonet.api.model.abstract.AbstractOperator
+import de.deftk.lonet.api.implementation.Group
+import de.deftk.lonet.api.implementation.OperatingScope
+import de.deftk.lonet.api.implementation.User
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.abstract.FeatureFragment
@@ -57,7 +57,7 @@ abstract class GroupFragment(
         }
         groupList.setOnItemClickListener { _, _, position, _ ->
             val item = groupList.getItemAtPosition(position)
-            if (item is AbstractOperator)
+            if (item is OperatingScope)
                 onItemClick(item)
         }
 
@@ -96,10 +96,10 @@ abstract class GroupFragment(
 
     protected open suspend fun loadGroups() {
         try {
-            val groups = mutableListOf<AbstractOperator>()
-            groups.addAll(AuthStore.getAppUser().getContext().getGroups().filter { shouldGroupBeShown(it) })
-            if (shouldUserBeShown(AuthStore.getAppUser()))
-                groups.add(0, AuthStore.getAppUser())
+            val groups = mutableListOf<OperatingScope>()
+            groups.addAll(AuthStore.getApiUser().getGroups().filter { shouldGroupBeShown(it) })
+            if (shouldUserBeShown(AuthStore.getApiUser()))
+                groups.add(0, AuthStore.getApiUser())
             withContext(Dispatchers.Main) {
                 groupList.adapter = createAdapter(groups)
                 emptyLabel.isVisible = groups.isEmpty()
@@ -119,13 +119,13 @@ abstract class GroupFragment(
         }
     }
 
-    abstract fun createAdapter(groups: List<AbstractOperator>): FilterableAdapter<*>
+    abstract fun createAdapter(groups: List<OperatingScope>): FilterableAdapter<*>
 
     abstract fun shouldGroupBeShown(group: Group): Boolean
 
     abstract fun shouldUserBeShown(user: User): Boolean
 
-    abstract fun onItemClick(operator: AbstractOperator)
+    abstract fun onItemClick(operator: OperatingScope)
 
     override fun onBackPressed() = false
 }

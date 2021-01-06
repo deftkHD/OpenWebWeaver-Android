@@ -4,7 +4,7 @@ import android.os.Build
 import android.os.CancellationSignal
 import android.os.ProxyFileDescriptorCallback
 import androidx.annotation.RequiresApi
-import de.deftk.lonet.api.model.feature.files.FileUrl
+import de.deftk.lonet.api.model.feature.FileUrl
 import java.io.InputStream
 import java.net.URL
 import kotlin.math.min
@@ -18,7 +18,7 @@ class FileDescriptorCallback(private val cancellationSignal: CancellationSignal?
     private var offset = 0L
 
     override fun onGetSize(): Long {
-        return downloadUrl.size
+        return downloadUrl.size!!
     }
 
     override fun onRead(offset: Long, size: Int, data: ByteArray): Int {

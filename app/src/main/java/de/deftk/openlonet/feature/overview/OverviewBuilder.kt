@@ -1,7 +1,7 @@
 package de.deftk.openlonet.feature.overview
 
-import com.google.gson.JsonObject
 import de.deftk.lonet.api.request.UserApiRequest
+import kotlinx.serialization.json.JsonObject
 
 interface OverviewBuilder {
 

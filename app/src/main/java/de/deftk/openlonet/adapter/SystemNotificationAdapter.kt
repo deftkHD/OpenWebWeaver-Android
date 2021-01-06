@@ -8,8 +8,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import com.daimajia.swipe.SwipeLayout
-import de.deftk.lonet.api.model.abstract.ManageableType
-import de.deftk.lonet.api.model.feature.SystemNotification
+import de.deftk.lonet.api.implementation.feature.systemnotification.SystemNotification
+import de.deftk.lonet.api.model.feature.systemnotification.SystemNotificationType
+import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.utils.SwipeAdapter
 import de.deftk.openlonet.utils.TextUtils
@@ -24,12 +25,12 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
 
     companion object {
         val typeTranslationMap = mapOf(
-            Pair(SystemNotification.SystemNotificationType.FILE_DOWNLOAD, R.string.system_notification_type_file_download),
-            Pair(SystemNotification.SystemNotificationType.FILE_UPLOAD, R.string.system_notification_type_file_upload),
-            Pair(SystemNotification.SystemNotificationType.NEW_NOTIFICATION, R.string.system_notification_type_new_notification),
-            Pair(SystemNotification.SystemNotificationType.NEW_TRUST, R.string.system_notification_type_new_trust),
-            Pair(SystemNotification.SystemNotificationType.UNAUTHORIZED_LOGIN_LOCATION, R.string.system_notification_unauthorized_login_location),
-            Pair(SystemNotification.SystemNotificationType.NEW_TASK, R.string.system_notification_type_new_task)
+            Pair(SystemNotificationType.FILE_DOWNLOAD, R.string.system_notification_type_file_download),
+            Pair(SystemNotificationType.FILE_UPLOAD, R.string.system_notification_type_file_upload),
+            Pair(SystemNotificationType.NEW_NOTIFICATION, R.string.system_notification_type_new_notification),
+            Pair(SystemNotificationType.NEW_TRUST, R.string.system_notification_type_new_trust),
+            Pair(SystemNotificationType.UNAUTHORIZED_LOGIN_LOCATION, R.string.system_notification_unauthorized_login_location),
+            Pair(SystemNotificationType.NEW_TASK, R.string.system_notification_type_new_task)
         )
     }
 
@@ -43,7 +44,7 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
             override fun onOpen(layout: SwipeLayout) {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        item.delete()
+                        item.delete(AuthStore.getUserContext())
                         withContext(Dispatchers.Main) {
                             remove(item)
                             notifyDataSetChanged()
@@ -61,19 +62,15 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
 
         listItemView.addSwipeListener(swp)
 
-        val type = item.messageType
+        val type = item.getMessageType()
         val titleView = listItemView.findViewById<TextView>(R.id.system_notification_title)
-        titleView.text = if (type != null) {
-            context.getString(typeTranslationMap[type] ?: R.string.system_notification_type_unknown)
-        } else {
-            context.getString(R.string.system_notification_type_unknown)
-        }
-        if (item.read)
+        titleView.text = context.getString(typeTranslationMap[type] ?: R.string.system_notification_type_unknown)
+        if (item.isRead())
             titleView.setTypeface(null, Typeface.NORMAL)
         else
             titleView.setTypeface(null, Typeface.BOLD)
-        listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.group.getType() != ManageableType.UNKNOWN) item.group.getName() else item.member.getName()
-        listItemView.findViewById<TextView>(R.id.system_notification_date).text = TextUtils.parseShortDate(item.date)
+        listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.getGroup().type != -1) item.getGroup().name else item.getMember().name
+        listItemView.findViewById<TextView>(R.id.system_notification_date).text = TextUtils.parseShortDate(item.getDate())
         return listItemView
     }
 
@@ -81,14 +78,14 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
         if (constraint == null)
             return originalElements
         return originalElements.filter {
-            context.getString(typeTranslationMap[it.messageType] ?: R.string.system_notification_type_unknown).filterApplies(constraint)
-                    || it.message.filterApplies(constraint)
-                    || it.member.filterApplies(constraint)
-                    || it.group.filterApplies(constraint)
+            context.getString(typeTranslationMap[it.getMessageType()] ?: R.string.system_notification_type_unknown).filterApplies(constraint)
+                    || it.getMessage().filterApplies(constraint)
+                    || it.getMember().filterApplies(constraint)
+                    || it.getGroup().filterApplies(constraint)
         }
     }
 
     override fun sort(elements: List<SystemNotification>): List<SystemNotification> {
-        return elements.sortedByDescending { it.date }
+        return elements.sortedByDescending { it.getDate() }
     }
 }

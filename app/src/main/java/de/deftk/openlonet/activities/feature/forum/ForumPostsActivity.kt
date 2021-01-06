@@ -6,15 +6,18 @@ import android.view.Menu
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import de.deftk.lonet.api.model.Group
+import de.deftk.lonet.api.implementation.Group
+import de.deftk.lonet.api.implementation.feature.forum.ForumPost
+import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.ForumPostAdapter
 import de.deftk.openlonet.databinding.ActivityForumPostsBinding
+import de.deftk.openlonet.utils.getJsonExtra
+import de.deftk.openlonet.utils.putJsonExtra
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.Serializable
 
 /**
  * Activity holding a list of all forum posts for a specific group
@@ -26,6 +29,7 @@ class ForumPostsActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityForumPostsBinding
+
     private lateinit var group: Group
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,29 +37,29 @@ class ForumPostsActivity : AppCompatActivity() {
         binding = ActivityForumPostsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val extraGroup = intent.getSerializableExtra(EXTRA_GROUP) as? Group?
-        if (extraGroup != null) {
-            group = extraGroup
+        if (intent.hasExtra(EXTRA_GROUP)) {
+            group = intent.getJsonExtra(EXTRA_GROUP)!!
+
+            setSupportActionBar(binding.toolbar)
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setDisplayShowHomeEnabled(true)
+            supportActionBar?.title = group.name
+
+            binding.forumSwipeRefresh.setOnRefreshListener {
+                reloadForumPosts()
+            }
+            binding.forumList.setOnItemClickListener { _, _, position, _ ->
+                val intent = Intent(this, ForumPostActivity::class.java)
+                val post = binding.forumList.getItemAtPosition(position) as ForumPost
+                intent.putJsonExtra(ForumPostActivity.EXTRA_FORUM_POST, post)
+                intent.putJsonExtra(ForumPostActivity.EXTRA_GROUP, group)
+                startActivity(intent)
+            }
+
+            reloadForumPosts()
         } else {
             finish()
-            return
         }
-
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.title = extraGroup.fullName ?: extraGroup.getName()
-
-        binding.forumSwipeRefresh.setOnRefreshListener {
-            reloadForumPosts()
-        }
-        binding.forumList.setOnItemClickListener { _, _, position, _ ->
-            val intent = Intent(this, ForumPostActivity::class.java)
-            intent.putExtra(ForumPostActivity.EXTRA_FORUM_POST, binding.forumList.getItemAtPosition(position) as Serializable)
-            startActivity(intent)
-        }
-
-        reloadForumPosts()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -87,7 +91,7 @@ class ForumPostsActivity : AppCompatActivity() {
 
     private suspend fun loadForumPosts() {
         try {
-            val posts = group.getForumPosts()
+            val posts = group.getForumPosts(context = group.getRequestContext(AuthStore.getApiContext()))
             withContext(Dispatchers.Main) {
                 binding.forumList.adapter = ForumPostAdapter(this@ForumPostsActivity, posts)
                 binding.forumEmpty.isVisible = posts.isEmpty()

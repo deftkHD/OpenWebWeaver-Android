@@ -19,12 +19,15 @@ import android.provider.DocumentsProvider
 import android.util.Log
 import android.util.Patterns
 import androidx.preference.PreferenceManager
-import de.deftk.lonet.api.LoNet
+import de.deftk.lonet.api.LoNetClient
+import de.deftk.lonet.api.implementation.ApiContext
+import de.deftk.lonet.api.implementation.Group
+import de.deftk.lonet.api.implementation.OperatingScope
+import de.deftk.lonet.api.implementation.feature.filestorage.RemoteFile
 import de.deftk.lonet.api.model.Feature
 import de.deftk.lonet.api.model.Permission
-import de.deftk.lonet.api.model.abstract.AbstractOperator
-import de.deftk.lonet.api.model.feature.files.OnlineFile
-import de.deftk.lonet.api.model.feature.files.filters.FileFilter
+import de.deftk.lonet.api.model.feature.filestorage.FileType
+import de.deftk.lonet.api.model.feature.filestorage.filter.FileFilter
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.activities.LoginActivity
@@ -107,7 +110,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
                 }
             }
             Patterns.EMAIL_ADDRESS.matcher(documentId).matches() -> {
-                val operator = AuthStore.getAppUser().getContext().getOperator(documentId)
+                val operator = AuthStore.getApiContext().findOperatingScope(documentId)
                 if (operator != null) {
                     includeOperator(cursor, operator)
                 } else {
@@ -136,8 +139,8 @@ class ApiDocumentsProvider: DocumentsProvider() {
                     }
                 } else {
                     val file = cached
-                        .map { it as OnlineFile }
-                        .firstOrNull { it.id == fileId && it.operator.getLogin() == operatorId }
+                        .map { Pair(it.first as RemoteFile, it.second) }
+                        .firstOrNull { it.first.getId() == fileId && it.second.login == operatorId }
                     if (file != null) {
                         includeFile(cursor, file)
                     } else {
@@ -175,9 +178,9 @@ class ApiDocumentsProvider: DocumentsProvider() {
             Log.i(LOG_TAG, "Documents in cache, returning")
             MatrixCursor(projection ?: DEFAULT_DOCUMENT_PROJECTION).also { cursor ->
                 cached.forEach { file ->
-                    when (file) {
-                        is OnlineFile -> includeFile(cursor, file)
-                        is AbstractOperator -> includeOperator(cursor, file)
+                    when (file.first) {
+                        is RemoteFile -> includeFile(cursor, file as Pair<RemoteFile, Group>)
+                        is OperatingScope -> includeOperator(cursor, file.second)
                         else -> Log.e(LOG_TAG, "Unknown IFilePrimitive instance: ${file::class.java.name}")
                     }
                 }
@@ -194,7 +197,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
                 val storageManager = acquireContext().getSystemService(StorageManager::class.java)
                 return storageManager.openProxyFileDescriptor(
                     ParcelFileDescriptor.parseMode(mode),
-                    FileDescriptorCallback(signal) { file.getTempDownloadUrl() },
+                    FileDescriptorCallback(signal) { file.first.getDownloadUrl(file.second.getRequestContext(AuthStore.getApiContext())) },
                     handler
                 )
             } else {
@@ -202,13 +205,13 @@ class ApiDocumentsProvider: DocumentsProvider() {
                 CoroutineScope(Dispatchers.IO).launch {
                     withContext(Dispatchers.IO) {
                         try {
-                            val download = file.getTempDownloadUrl()
+                            val download = file.first.getDownloadUrl(file.second.getRequestContext(AuthStore.getApiContext()))
                             val out = ParcelFileDescriptor.AutoCloseOutputStream(pipes[1])
                             val stream = URL(download.url).openStream()
                             val buffer = ByteArray(1024)
 
                             var actualRead = 0
-                            while (actualRead < download.size) {
+                            while (actualRead < download.size ?: -1) {
                                 if (signal?.isCanceled == true)
                                     break
                                 val read = stream.read(buffer, 0, buffer.size)
@@ -235,12 +238,12 @@ class ApiDocumentsProvider: DocumentsProvider() {
         Log.i(LOG_TAG, "openDocumentThumbnail(documentId=$documentId, sizeHint=$sizeHint, signal=$signal)")
 
         val file = getCachedFileById(documentId)
-        if (file != null && file.preview == true) {
+        if (file != null && file.first.hasPreview() == true) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val storageManager = acquireContext().getSystemService(StorageManager::class.java)
                 val pfd = storageManager.openProxyFileDescriptor(
                     ParcelFileDescriptor.MODE_READ_ONLY,
-                    FileDescriptorCallback(signal) { file.getPreviewDownloadUrl() },
+                    FileDescriptorCallback(signal) { file.first.getPreviewUrl(file.second.getRequestContext(AuthStore.getApiContext())) },
                     handler
                 )
                 return AssetFileDescriptor(pfd, 0, AssetFileDescriptor.UNKNOWN_LENGTH)
@@ -249,13 +252,13 @@ class ApiDocumentsProvider: DocumentsProvider() {
                 CoroutineScope(Dispatchers.IO).launch {
                     withContext(Dispatchers.IO) {
                         try {
-                            val preview = file.getPreviewDownloadUrl()
+                            val preview = file.first.getPreviewUrl(file.second.getRequestContext(AuthStore.getApiContext()))
                             val out = ParcelFileDescriptor.AutoCloseOutputStream(pipes[1])
                             val stream = URL(preview.url).openStream()
                             val buffer = ByteArray(1024)
 
                             var actualRead = 0
-                            while (actualRead < preview.size) {
+                            while (actualRead < (preview.size ?: 0)) {
                                 if (signal?.isCanceled == true)
                                     break
                                 val read = stream.read(buffer, 0, buffer.size)
@@ -281,7 +284,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
     override fun getDocumentType(documentId: String): String {
         val cached = getCachedFileById(documentId)
         return if (cached != null) {
-            FileUtil.getMimeType(cached.getName())
+            FileUtil.getMimeType(cached.first.name)
         } else {
             FileUtil.getMimeType(documentId.substring(documentId.lastIndexOf('/')))
         }
@@ -302,7 +305,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
         Log.i(LOG_TAG, "queryChildDocumentsFromNetwork(parentDocumentId=$parentDocumentId, sortOrder=$sortOrder, filter=$filter, notifyUri=$notifyUri)")
 
         val sessionValid = try {
-            AuthStore.getAppUser().checkSession()
+            AuthStore.getApiUser().checkSession(AuthStore.getUserContext())
         } catch (e: Exception) {
             e.printStackTrace()
             null
@@ -313,7 +316,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
                 // try silent login
                 val username = AuthStore.getSavedUsername(acquireContext()) ?: error("No username")
                 val token = AuthStore.getSavedToken(acquireContext()) ?: error("No token")
-                AuthStore.setAppUser(LoNet.loginToken(username, token))
+                AuthStore.setApiContext(LoNetClient.loginToken(username, token, false, ApiContext::class.java))
             } catch (e: Exception) {
                 e.printStackTrace()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -331,19 +334,18 @@ class ApiDocumentsProvider: DocumentsProvider() {
 
         when {
             parentDocumentId == ROOT_FOLDER_ID -> {
-                val documents = mutableListOf<AbstractOperator>()
-                if (Feature.FILES.isAvailable(AuthStore.getAppUser().effectiveRights))
-                    documents.add(AuthStore.getAppUser())
-                documents.addAll(AuthStore.getAppUser().groups.filter { Feature.FILES.isAvailable(it.effectiveRights) })
-                cache.put(notifyUri, documents)
+                val documents = mutableListOf<OperatingScope>()
+                if (Feature.FILES.isAvailable(AuthStore.getApiUser().effectiveRights))
+                    documents.add(AuthStore.getApiUser())
+                documents.addAll(AuthStore.getApiUser().getGroups().filter { Feature.FILES.isAvailable(it.effectiveRights) })
+                cache.put(notifyUri, documents.map { Pair(it, it) })
             }
             Patterns.EMAIL_ADDRESS.matcher(parentDocumentId).matches() -> {
                 val rootCache = cache.get(buildNotifyUri(ROOT_FOLDER_ID))
                 val operator = rootCache
-                    ?.map { it as AbstractOperator }
-                    ?.firstOrNull { it.getLogin() == parentDocumentId }
+                    ?.firstOrNull { it.second.login == parentDocumentId }
                 if (operator != null) {
-                    cache.put(notifyUri, operator.getFiles(filter))
+                    cache.put(notifyUri, operator.second.getFiles(filter = filter, context = operator.second.getRequestContext(AuthStore.getApiContext())).map { Pair(it, operator.second) })
                 } else {
                     if (rootCache != null) {
                         Log.e(LOG_TAG, "Requested operator $parentDocumentId not found inside cache")
@@ -372,10 +374,10 @@ class ApiDocumentsProvider: DocumentsProvider() {
                     buildNotifyUri(buildDocumentId(operatorId, fileId.getParentPath()))
                 ) ?: emptyList()
                 val parent = parentCache
-                    .map { it as OnlineFile }
-                    .firstOrNull { it.id == fileId && it.operator.getLogin() == operatorId }
+                    .map { Pair(it.first as RemoteFile, it.second) }
+                    .firstOrNull { it.first.getId() == fileId && it.second.login == operatorId }
                 if (parent != null) {
-                    cache.put(notifyUri, parent.getFiles(filter))
+                    cache.put(notifyUri, parent.second.getFiles(filter = filter, context = parent.second.getRequestContext(AuthStore.getApiContext())).map { Pair(it, parent.second) })
                 } else {
                     Log.e(LOG_TAG, "Requested document $parentDocumentId not found")
                     cache.put(notifyUri, emptyList()) // prevent infinite loop
@@ -395,7 +397,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
      * @param documentId: Id of the document to resolve
      * @return Cached document or null if not found in cache
      */
-    private fun getCachedFileById(documentId: String): OnlineFile? {
+    private fun getCachedFileById(documentId: String): Pair<RemoteFile, OperatingScope>? {
         val operatorId = documentId.split(":")[0]
         val fileId = documentId.split(":", limit = 2)[1]
         val parentId = buildDocumentId(operatorId, fileId.getParentPath())
@@ -406,8 +408,8 @@ class ApiDocumentsProvider: DocumentsProvider() {
             return null
         } else {
             val file = cached
-                .map { it as OnlineFile }
-                .firstOrNull { it.id == fileId && it.operator.getLogin() == operatorId }
+                .map { Pair(it.first as RemoteFile, it.second) }
+                .firstOrNull { it.first.getId() == fileId && it.second.login == operatorId }
             if (file != null) {
                 return file
             } else {
@@ -468,7 +470,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
      * @param cursor: Cursor to add new row with data to
      * @param operator: Data source
      */
-    private fun includeOperator(cursor: MatrixCursor, operator: AbstractOperator) {
+    private fun includeOperator(cursor: MatrixCursor, operator: OperatingScope) {
         var flags = 0
         if (operator.effectiveRights.contains(Permission.FILES_WRITE)
             || operator.effectiveRights.contains(Permission.FILES_ADMIN)) {
@@ -476,8 +478,8 @@ class ApiDocumentsProvider: DocumentsProvider() {
         }
 
         val row = cursor.newRow()
-        row.add(Document.COLUMN_DOCUMENT_ID, operator.getLogin())
-        row.add(Document.COLUMN_DISPLAY_NAME, operator.getName())
+        row.add(Document.COLUMN_DOCUMENT_ID, operator.login)
+        row.add(Document.COLUMN_DISPLAY_NAME, operator.name)
         row.add(Document.COLUMN_SIZE, -1)
         row.add(Document.COLUMN_MIME_TYPE, Document.MIME_TYPE_DIR)
         row.add(Document.COLUMN_LAST_MODIFIED, 0)
@@ -488,36 +490,37 @@ class ApiDocumentsProvider: DocumentsProvider() {
     /**
      * Adds data of given file to a new row in the given cursor
      * @param cursor: Cursor to add new row with data to
-     * @param file: Data source
+     * @param filePair: Data source
      */
-    private fun includeFile(cursor: MatrixCursor, file: OnlineFile) {
+    private fun includeFile(cursor: MatrixCursor, filePair: Pair<RemoteFile, OperatingScope>) {
         var flags = 0
-        if (file.effectiveWrite == true) {
-            flags = if (file.type == OnlineFile.FileType.FOLDER) {
+        val file = filePair.first
+        if (file.effectiveModify() == true) {
+            flags = if (file.getType() == FileType.FOLDER) {
                 flags or Document.FLAG_DIR_SUPPORTS_CREATE
             } else {
                 flags or Document.FLAG_SUPPORTS_WRITE
             }
         }
-        if (file.effectiveDelete == true) {
+        if (file.effectiveDelete() == true) {
             flags = flags or Document.FLAG_SUPPORTS_DELETE
         }
-        if (file.preview == true && shouldShowThumbnail()) {
+        if (file.hasPreview() == true && shouldShowThumbnail()) {
             //FIXME some images cause weird behaviour of document chooser activity (documents don't show up anymore, ...)
             // this is probably related to some other stuff (?)
             flags = flags or Document.FLAG_SUPPORTS_THUMBNAIL
         }
 
         val row = cursor.newRow()
-        row.add(Document.COLUMN_DOCUMENT_ID, "${file.operator.getLogin()}:${file.id}")
-        row.add(Document.COLUMN_DISPLAY_NAME, file.getName())
-        row.add(Document.COLUMN_SIZE, file.size)
-        if (file.type == OnlineFile.FileType.FILE) {
-            row.add(Document.COLUMN_MIME_TYPE, FileUtil.getMimeType(file.getName()))
+        row.add(Document.COLUMN_DOCUMENT_ID, "${filePair.second.login}:${file.getId()}")
+        row.add(Document.COLUMN_DISPLAY_NAME, file.name)
+        row.add(Document.COLUMN_SIZE, file.getSize())
+        if (file.getType() == FileType.FILE) {
+            row.add(Document.COLUMN_MIME_TYPE, FileUtil.getMimeType(file.name))
         } else {
             row.add(Document.COLUMN_MIME_TYPE, Document.MIME_TYPE_DIR)
         }
-        row.add(Document.COLUMN_LAST_MODIFIED, file.modificationDate.time)
+        row.add(Document.COLUMN_LAST_MODIFIED, file.getModified().date.time)
         row.add(Document.COLUMN_FLAGS, flags)
         row.add(Document.COLUMN_ICON, R.drawable.ic_launcher_foreground)
     }

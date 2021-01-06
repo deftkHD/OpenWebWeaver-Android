@@ -4,10 +4,10 @@ import android.content.Intent
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.core.view.isVisible
+import de.deftk.lonet.api.implementation.Group
+import de.deftk.lonet.api.implementation.OperatingScope
+import de.deftk.lonet.api.implementation.User
 import de.deftk.lonet.api.model.Feature
-import de.deftk.lonet.api.model.Group
-import de.deftk.lonet.api.model.User
-import de.deftk.lonet.api.model.abstract.AbstractOperator
 import de.deftk.lonet.api.model.feature.Quota
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
@@ -16,6 +16,7 @@ import de.deftk.openlonet.activities.feature.FilesActivity
 import de.deftk.openlonet.adapter.FileStorageAdapter
 import de.deftk.openlonet.feature.AppFeature
 import de.deftk.openlonet.utils.filter.FilterableAdapter
+import de.deftk.openlonet.utils.putJsonExtra
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -33,24 +34,24 @@ class FileStorageGroupFragment : GroupFragment(
         const val ARGUMENT_FILE_ID = "de.deftk.openlonet.files.argument_file_id"
     }
 
-    override fun createAdapter(groups: List<AbstractOperator>): FilterableAdapter<*> {
-        throw IllegalStateException("Not implemented")
+    override fun createAdapter(groups: List<OperatingScope>): FilterableAdapter<*> {
+        throw IllegalStateException("Not available")
     }
 
     override suspend fun loadGroups() {
         try {
-            val groups = mutableListOf<AbstractOperator>()
+            val groups = mutableListOf<OperatingScope>()
             groups.addAll(
-                AuthStore.getAppUser().getContext().getGroups()
+                AuthStore.getApiUser().getGroups()
                 .filter { shouldGroupBeShown(it) })
-            if (shouldUserBeShown(AuthStore.getAppUser()))
-                groups.add(0, AuthStore.getAppUser())
-            //TODO inefficient to query file storage quota for every file storage; should only be one big request
+            if (shouldUserBeShown(AuthStore.getApiUser()))
+                groups.add(0, AuthStore.getApiUser())
+            //FIXME inefficient to query file storage quota for every file storage; should only be one big request
             val groupData = groups.map {
                 Pair(
                     it,
                     try {
-                        it.getFileStorageState().second
+                        it.getFileStorageState(it.getRequestContext(AuthStore.getApiContext())).second
                     } catch (e: Exception) {
                         e.printStackTrace()
                         Quota(0, 0, 0, 0, -1, -1)
@@ -84,9 +85,10 @@ class FileStorageGroupFragment : GroupFragment(
         return Feature.FILES.isAvailable(user.effectiveRights)
     }
 
-    override fun onItemClick(operator: AbstractOperator) {
+    override fun onItemClick(operator: OperatingScope) {
         val intent = Intent(context, FilesActivity::class.java)
-        intent.putExtra(FilesActivity.EXTRA_FOLDER, operator)
+        //intent.putJsonExtra(FilesActivity.EXTRA_FOLDER, operator)
+        intent.putJsonExtra(FilesActivity.EXTRA_OPERATOR, operator)
         startActivity(intent)
     }
 

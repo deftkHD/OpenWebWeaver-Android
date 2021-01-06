@@ -7,14 +7,17 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
-import de.deftk.lonet.api.model.Group
+import de.deftk.lonet.api.implementation.Group
+import de.deftk.lonet.api.implementation.feature.board.BoardNotification
 import de.deftk.lonet.api.model.Permission
-import de.deftk.lonet.api.model.feature.board.BoardNotification
+import de.deftk.lonet.api.model.feature.board.BoardType
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.NotificationAdapter
 import de.deftk.openlonet.databinding.ActivityEditNotificationBinding
 import de.deftk.openlonet.utils.TextUtils
+import de.deftk.openlonet.utils.getJsonExtra
+import de.deftk.openlonet.utils.putJsonExtra
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,12 +27,18 @@ class EditNotificationActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_NOTIFICATION = "de.deftk.openlonet.notification.notification_extra"
+        const val EXTRA_GROUP = "de.deftk.openlonet.notification.group_extra"
 
         const val ACTIVITY_RESULT_ADD = 2
         const val ACTIVITY_RESULT_EDIT = 3
     }
 
     private lateinit var binding: ActivityEditNotificationBinding
+
+    private var notification: BoardNotification? = null
+    private var group: Group? = null
+
+    //TODO allow selecting board
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,23 +50,23 @@ class EditNotificationActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
-        val notification = intent.getSerializableExtra(EXTRA_NOTIFICATION) as? BoardNotification?
-
-        val effectiveGroups = AuthStore.getAppUser().groups.filter { it.effectiveRights.contains(Permission.BOARD_ADMIN) }
-        binding.notificationGroup.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.getLogin() })
+        val effectiveGroups = AuthStore.getApiUser().getGroups().filter { it.effectiveRights.contains(Permission.BOARD_ADMIN) }
+        binding.notificationGroup.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.login })
 
         val colors = NotificationAdapter.BoardNotificationColors.values()
         binding.notificationAccent.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, colors.map { getString(it.text) })
 
-        if (notification != null) {
+        if (intent.hasExtra(EXTRA_NOTIFICATION) && intent.hasExtra(EXTRA_GROUP)) {
             // edit existing notification
+            notification = intent.getJsonExtra(EXTRA_NOTIFICATION)
+            group = intent.getJsonExtra(EXTRA_GROUP)
             supportActionBar?.setTitle(R.string.edit_notification)
-            binding.notificationTitle.setText(notification.title ?: "")
-            binding.notificationText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text)))
+            binding.notificationTitle.setText(notification!!.getTitle())
+            binding.notificationText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification!!.getText())))
             binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
-            binding.notificationGroup.setSelection(effectiveGroups.indexOf(notification.operator as Group))
+            binding.notificationGroup.setSelection(effectiveGroups.indexOf(group))
             binding.notificationGroup.isEnabled = false
-            val index = colors.indexOf(NotificationAdapter.BoardNotificationColors.getByApiColor(notification.color))
+            val index = colors.indexOf(NotificationAdapter.BoardNotificationColors.getByApiColor(notification!!.getColor()))
             binding.notificationAccent.setSelection(index)
         } else {
             // create new notification
@@ -74,30 +83,44 @@ class EditNotificationActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.save) {
             val title = binding.notificationTitle.text.toString()
-            val group = binding.notificationGroup.selectedItem
+            val selectedGroup = binding.notificationGroup.selectedItem
             val color = binding.notificationAccent.selectedItemPosition
             val text = binding.notificationText.text.toString()
             CoroutineScope(Dispatchers.IO).launch {
-                val notification = intent.getSerializableExtra(EXTRA_NOTIFICATION) as? BoardNotification?
-                if (notification != null) {
-                    notification.edit(
+                if (notification != null && group != null) {
+                    notification!!.edit(
                         title,
                         text,
-                        NotificationAdapter.BoardNotificationColors.values()[color].apiColor
+                        NotificationAdapter.BoardNotificationColors.values()[color].apiColor,
+                        killDate = null, //TODO allow setting kill date
+                        BoardType.ALL,
+                        group!!.getRequestContext(AuthStore.getApiContext())
                     )
                     withContext(Dispatchers.Main) {
                         val intent = Intent()
-                        intent.putExtra(EXTRA_NOTIFICATION, notification)
+                        intent.putJsonExtra(EXTRA_NOTIFICATION, notification)
+                        intent.putJsonExtra(EXTRA_GROUP, group)
                         setResult(ACTIVITY_RESULT_EDIT, intent)
                         finish()
                     }
                 } else {
-                    val newNotification = AuthStore.getAppUser().groups.firstOrNull { it.getLogin() == group }
-                        ?.addBoardNotification(title, text, NotificationAdapter.BoardNotificationColors.values()[color].apiColor)
+                    group = AuthStore.getApiUser().getGroups().firstOrNull { it.login == selectedGroup }
+                    val newNotification = group?.addBoardNotification(
+                        title,
+                        text,
+                        NotificationAdapter.BoardNotificationColors.values()[color].apiColor,
+                        killDate = null,
+                        group!!.getRequestContext(AuthStore.getApiContext())
+                    )
                     withContext(Dispatchers.Main) {
                         val intent = Intent()
-                        intent.putExtra(EXTRA_NOTIFICATION, newNotification)
-                        setResult(ACTIVITY_RESULT_ADD, intent)
+                        if (newNotification == null) {
+                            setResult(RESULT_CANCELED, intent)
+                        } else {
+                            intent.putJsonExtra(EXTRA_NOTIFICATION, newNotification)
+                            intent.putJsonExtra(EXTRA_GROUP, group)
+                            setResult(ACTIVITY_RESULT_ADD, intent)
+                        }
                         finish()
                     }
                 }

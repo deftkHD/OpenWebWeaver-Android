@@ -5,8 +5,10 @@ import android.content.Intent
 import android.util.Base64
 import android.util.Log
 import android.widget.Toast
-import de.deftk.lonet.api.LoNet
-import de.deftk.lonet.api.model.User
+import de.deftk.lonet.api.LoNetClient
+import de.deftk.lonet.api.implementation.ApiContext
+import de.deftk.lonet.api.implementation.User
+import de.deftk.lonet.api.model.IRequestContext
 import de.deftk.openlonet.activities.LoginActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -33,7 +35,7 @@ object AuthStore {
     private val key = byteArrayOf(65, 44, 22, 64, 86, 26, 23, 111, 76, 98, 71, 84, 15, 76, 63, 24)
     private val random = SecureRandom()
 
-    private var appUser: User? = null
+    private var apiContext: ApiContext? = null
 
     fun getSavedUsername(context: Context): String? {
         val prefs = context.getSharedPreferences(PREFERENCE_NAME, 0)
@@ -100,16 +102,24 @@ object AuthStore {
         return Base64.decode(base64, Base64.NO_WRAP)
     }
 
-    fun getAppUser(): User {
-        return appUser ?: error("No user logged in")
+    fun getApiUser(): User {
+        return getApiContext().getUser()
     }
 
-    fun setAppUser(user: User) {
-        appUser = user
+    fun getUserContext(): IRequestContext {
+        return getApiUser().getRequestContext(getApiContext())
+    }
+
+    fun getApiContext(): ApiContext {
+        return apiContext ?: error("No user logged in")
+    }
+
+    fun setApiContext(context: ApiContext) {
+        apiContext = context
     }
 
     fun isUserLoggedIn(): Boolean {
-        return appUser != null
+        return apiContext != null
     }
 
     /**
@@ -131,7 +141,7 @@ object AuthStore {
             val token = getSavedToken(context)!!
 
             try {
-                appUser = LoNet.loginToken(username, token)
+                apiContext = LoNetClient.loginToken(username, token, false, ApiContext::class.java)
                 return true
             } catch (e: Exception) {
                 Log.e(LOG_TAG, "Login failed")

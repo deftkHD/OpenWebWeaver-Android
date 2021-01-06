@@ -59,7 +59,7 @@ class OverviewFragment: StartFragment() {
     private suspend fun refreshOverview() {
         try {
             val elements = mutableListOf<AbstractOverviewElement>()
-            val request = UserApiRequest(AuthStore.getAppUser())
+            val request = UserApiRequest(AuthStore.getUserContext())
             val idMap = mutableMapOf<AppFeature, List<Int>>()
             AppFeature.values().forEach { feature ->
                 if (feature.overviewBuilder != null) {

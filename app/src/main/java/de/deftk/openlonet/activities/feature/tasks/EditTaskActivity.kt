@@ -11,13 +11,15 @@ import android.view.MenuItem
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import de.deftk.lonet.api.model.Group
+import de.deftk.lonet.api.implementation.Group
+import de.deftk.lonet.api.implementation.feature.tasks.Task
 import de.deftk.lonet.api.model.Permission
-import de.deftk.lonet.api.model.feature.Task
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.databinding.ActivityEditTaskBinding
 import de.deftk.openlonet.utils.TextUtils
+import de.deftk.openlonet.utils.getJsonExtra
+import de.deftk.openlonet.utils.putJsonExtra
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -30,12 +32,16 @@ class EditTaskActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_TASK = "de.deftk.openlonet.task.task_extra"
+        const val EXTRA_GROUP = "de.deftk.openlonet.task.group_extra"
 
         const val ACTIVITY_RESULT_ADD = 2
         const val ACTIVITY_RESULT_EDIT = 3
     }
 
     private lateinit var binding: ActivityEditTaskBinding
+
+    private var task: Task? = null
+    private var group: Group? = null
 
     private var startDate: Date? = null
     private var dueDate: Date? = null
@@ -50,27 +56,28 @@ class EditTaskActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setDisplayShowHomeEnabled(true)
 
-        val task = intent.getSerializableExtra(EXTRA_TASK) as? Task?
+        val effectiveGroups = AuthStore.getApiUser().getGroups().filter { it.effectiveRights.contains(Permission.TASKS_ADMIN) }
+        binding.taskGroup.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.login })
 
-        val effectiveGroups = AuthStore.getAppUser().groups.filter { it.effectiveRights.contains(Permission.TASKS_ADMIN) }
-        binding.taskGroup.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.getLogin() })
+        if (intent.hasExtra(EXTRA_TASK) && intent.hasExtra(EXTRA_GROUP)) {
+            task = intent.getJsonExtra(EXTRA_TASK)!!
+            group = intent.getJsonExtra(EXTRA_GROUP)!!
 
-        if (task != null) {
             // edit existing task
             supportActionBar?.setTitle(R.string.edit_task)
-            binding.taskTitle.setText(task.title ?: "")
-            binding.taskCompleted.isChecked = task.completed
-            startDate = task.startDate
+            binding.taskTitle.setText(task!!.getTitle())
+            binding.taskCompleted.isChecked = task!!.isCompleted()
+            startDate = task!!.getStartDate()
             if (startDate != null) {
                 binding.taskStart.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(startDate!!))
             }
-            dueDate = task.endDate
+            dueDate = task!!.getEndDate()
             if (dueDate != null) {
                 binding.taskDue.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(dueDate!!))
             }
-            binding.taskGroup.setSelection(effectiveGroups.indexOf(task.operator as Group))
+            binding.taskGroup.setSelection(effectiveGroups.indexOf(group))
             binding.taskGroup.isEnabled = true
-            binding.taskText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description)))
+            binding.taskText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(task!!.getDescription())))
             binding.taskText.movementMethod = LinkMovementMethod.getInstance()
         } else {
             // create new task
@@ -134,24 +141,41 @@ class EditTaskActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.save) {
             val title = binding.taskTitle.text.toString()
-            val group = binding.taskGroup.selectedItem
+            val selectedGroup = binding.taskGroup.selectedItem
             val completed = binding.taskCompleted.isChecked
             val description = binding.taskText.text.toString()
             CoroutineScope(Dispatchers.IO).launch {
-                val task = intent.getSerializableExtra(EXTRA_TASK) as? Task?
-                if (task != null) {
-                    task.edit(completed, description, dueDate, startDate, title)
+                if (task != null && group != null) {
+                    task!!.edit(
+                        title = title,
+                        description = description,
+                        completed = completed,
+                        startDate = startDate,
+                        endDate = dueDate,
+                        context = group!!.getRequestContext(AuthStore.getApiContext())
+                    )
+
                     withContext(Dispatchers.Main) {
                         val intent = Intent()
-                        intent.putExtra(EXTRA_TASK, task)
+                        intent.putJsonExtra(EXTRA_TASK, task)
+                        intent.putJsonExtra(EXTRA_GROUP, group)
                         setResult(ACTIVITY_RESULT_EDIT, intent)
                         finish()
                     }
                 } else {
-                    val newTask = AuthStore.getAppUser().groups.firstOrNull { it.getLogin() == group }?.addTask(title, completed, description, dueDate, startDate)
+                    group = AuthStore.getApiUser().getGroups().firstOrNull { it.login == selectedGroup }
+                    val newTask = group?.addTask(
+                        title = title,
+                        description = description,
+                        completed = completed,
+                        startDate = startDate?.time,
+                        dueDate = dueDate?.time,
+                        context = group!!.getRequestContext(AuthStore.getApiContext())
+                    )
                     withContext(Dispatchers.Main) {
                         val intent = Intent()
-                        intent.putExtra(EXTRA_TASK, newTask)
+                        intent.putJsonExtra(EXTRA_TASK, newTask)
+                        intent.putJsonExtra(EXTRA_GROUP, group)
                         setResult(ACTIVITY_RESULT_ADD, intent)
                         finish()
                     }

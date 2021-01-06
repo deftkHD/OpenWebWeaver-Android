@@ -50,7 +50,6 @@ abstract class FilterableAdapter<T>(protected val context: Context, elements: Li
         originalElements.add(index, obj)
     }
 
-
     override fun getFilter(): Filter {
         return filter
     }

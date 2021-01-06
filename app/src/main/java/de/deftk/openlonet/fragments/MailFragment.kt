@@ -7,8 +7,9 @@ import android.text.InputType
 import android.view.*
 import android.widget.*
 import androidx.core.view.isVisible
+import de.deftk.lonet.api.implementation.feature.mailbox.Email
+import de.deftk.lonet.api.implementation.feature.mailbox.EmailFolder
 import de.deftk.lonet.api.model.Permission
-import de.deftk.lonet.api.model.feature.mailbox.EmailFolder
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.abstract.FeatureFragment
@@ -19,11 +20,11 @@ import de.deftk.openlonet.adapter.MailAdapter
 import de.deftk.openlonet.adapter.MailFolderAdapter
 import de.deftk.openlonet.databinding.FragmentMailBinding
 import de.deftk.openlonet.feature.AppFeature
+import de.deftk.openlonet.utils.putJsonExtra
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.Serializable
 
 class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
 
@@ -59,10 +60,11 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
         }
         binding.mailList.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(requireContext(), ReadMailActivity::class.java)
-            intent.putExtra(ReadMailActivity.EXTRA_MAIL, binding.mailList.getItemAtPosition(position) as Serializable)
+            intent.putJsonExtra(ReadMailActivity.EXTRA_MAIL, binding.mailList.getItemAtPosition(position) as Email)
+            intent.putJsonExtra(ReadMailActivity.EXTRA_FOLDER, currentFolder)
             startActivity(intent)
         }
-        if (AuthStore.getAppUser().effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
+        if (AuthStore.getApiUser().effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
             binding.fabMailAdd.visibility = View.VISIBLE
             binding.fabMailAdd.setOnClickListener {
                 val intent = Intent(requireContext(), WriteMailActivity::class.java)
@@ -137,7 +139,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
             binding.progressMail.visibility = View.VISIBLE
         }
         try {
-            AuthStore.getAppUser().addEmailFolder(name)
+            AuthStore.getApiUser().addEmailFolder(name, AuthStore.getUserContext())
             withContext(Dispatchers.Main) {
                 reloadEmailFolders()
             }
@@ -160,7 +162,7 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
 
     private suspend fun loadEmailFolders() {
         try {
-            val folders = AuthStore.getAppUser().getEmailFolders()
+            val folders = AuthStore.getApiUser().getEmailFolders(AuthStore.getUserContext())
             withContext(Dispatchers.Main) {
                 toolbarSpinner.adapter = MailFolderAdapter(requireContext(), folders)
             }
@@ -184,9 +186,9 @@ class MailFragment: FeatureFragment(AppFeature.FEATURE_MAIL), IBackHandler {
 
     private suspend fun loadEmails() {
         try {
-            val emails = currentFolder?.getEmails() ?: emptyList()
+            val emails = currentFolder?.getEmails(context = AuthStore.getUserContext()) ?: emptyList()
             withContext(Dispatchers.Main) {
-                binding.mailList.adapter = MailAdapter(requireContext(), emails)
+                binding.mailList.adapter = MailAdapter(requireContext(), emails, currentFolder!!)
                 binding.mailEmpty.isVisible = emails.isEmpty()
                 binding.progressMail.visibility = ProgressBar.GONE
                 binding.mailSwipeRefresh.isRefreshing = false

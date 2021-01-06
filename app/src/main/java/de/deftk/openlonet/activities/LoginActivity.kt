@@ -9,7 +9,9 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import de.deftk.lonet.api.LoNet
+import de.deftk.lonet.api.LoNetClient
+import de.deftk.lonet.api.auth.Credentials
+import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.databinding.ActivityLoginBinding
@@ -57,11 +59,12 @@ class LoginActivity : AppCompatActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         if (stayLoggedIn) {
-                            AuthStore.setAppUser(LoNet.loginCreateTrust(username, password, "OpenLoNet", "${Build.BRAND} ${Build.MODEL}"))
-                            AuthStore.saveUsername(AuthStore.getAppUser().getLogin(), this@LoginActivity)
-                            AuthStore.saveToken(AuthStore.getAppUser().authKey, this@LoginActivity)
+                            val loginData = LoNetClient.loginCreateToken(username, password, "OpenLoNet", "${Build.BRAND} ${Build.MODEL}", ApiContext::class.java)
+                            AuthStore.setApiContext(loginData.first)
+                            AuthStore.saveUsername(AuthStore.getApiUser().login, this@LoginActivity)
+                            AuthStore.saveToken(loginData.second, this@LoginActivity)
                         } else {
-                            AuthStore.setAppUser(LoNet.login(username, password))
+                            AuthStore.setApiContext(LoNetClient.login(Credentials.fromPassword(username, password), ApiContext::class.java))
                         }
                         withContext(Dispatchers.Main) {
                             Log.i(LOG_TAG, "Got login result")

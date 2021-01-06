@@ -5,8 +5,9 @@ import android.os.Bundle
 import android.view.*
 import android.widget.*
 import androidx.core.view.isVisible
+import de.deftk.lonet.api.implementation.Group
+import de.deftk.lonet.api.implementation.feature.tasks.Task
 import de.deftk.lonet.api.model.Permission
-import de.deftk.lonet.api.model.feature.Task
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.abstract.FeatureFragment
@@ -15,6 +16,8 @@ import de.deftk.openlonet.activities.feature.tasks.ReadTaskActivity
 import de.deftk.openlonet.adapter.TaskAdapter
 import de.deftk.openlonet.databinding.FragmentTasksBinding
 import de.deftk.openlonet.feature.AppFeature
+import de.deftk.openlonet.utils.getJsonExtra
+import de.deftk.openlonet.utils.putJsonExtra
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,10 +40,13 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
         }
         binding.tasksList.setOnItemClickListener { _, _, position, _ ->
             val intent = Intent(context, ReadTaskActivity::class.java)
-            intent.putExtra(ReadTaskActivity.EXTRA_TASK, binding.tasksList.getItemAtPosition(position) as Task)
+            @Suppress("UNCHECKED_CAST")
+            val item = binding.tasksList.getItemAtPosition(position) as Pair<Task, Group>
+            intent.putJsonExtra(ReadTaskActivity.EXTRA_TASK, item.first)
+            intent.putJsonExtra(ReadTaskActivity.EXTRA_GROUP, item.second)
             startActivityForResult(intent, 0)
         }
-        if (AuthStore.getAppUser().groups.any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }) {
+        if (AuthStore.getApiUser().getGroups().any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }) {
             binding.fabAddTask.visibility = View.VISIBLE
             binding.fabAddTask.setOnClickListener {
                 val intent = Intent(context, EditTaskActivity::class.java)
@@ -76,8 +82,8 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is AdapterView.AdapterContextMenuInfo) {
-            val task = binding.tasksList.adapter.getItem(menuInfo.position) as Task
-            if (task.operator.effectiveRights.contains(Permission.TASKS_ADMIN)) {
+            val task = (binding.tasksList.adapter as TaskAdapter).getItem(menuInfo.position)!!
+            if (task.second.effectiveRights.contains(Permission.TASKS_ADMIN)) {
                 requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
             }
         }
@@ -87,17 +93,18 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
         return when (item.itemId) {
             R.id.menu_item_edit -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-                val task = binding.tasksList.adapter.getItem(info.position) as Task
+                val task = (binding.tasksList.adapter as TaskAdapter).getItem(info.position)!!
                 val intent = Intent(requireContext(), EditTaskActivity::class.java)
-                intent.putExtra(EditTaskActivity.EXTRA_TASK, task)
+                intent.putJsonExtra(EditTaskActivity.EXTRA_TASK, task.first)
+                intent.putJsonExtra(EditTaskActivity.EXTRA_GROUP, task.second)
                 startActivityForResult(intent, EditTaskActivity.ACTIVITY_RESULT_EDIT)
                 true
             }
             R.id.menu_item_delete -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-                val task = binding.tasksList.adapter.getItem(info.position) as Task
+                val task = (binding.tasksList.adapter as TaskAdapter).getItem(info.position)!!
                 CoroutineScope(Dispatchers.IO).launch {
-                    task.delete()
+                    task.first.delete(task.second.getRequestContext(AuthStore.getApiContext()))
                     withContext(Dispatchers.Main) {
                         val adapter = binding.tasksList.adapter as TaskAdapter
                         adapter.remove(task)
@@ -113,29 +120,35 @@ class TasksFragment : FeatureFragment(AppFeature.FEATURE_TASKS) {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == EditTaskActivity.ACTIVITY_RESULT_EDIT && data != null) {
             val adapter = binding.tasksList.adapter as TaskAdapter
-            val task = data.getSerializableExtra(EditTaskActivity.EXTRA_TASK) as Task
-            val i = adapter.getPosition(task)
-            adapter.remove(task)
-            adapter.insert(task, i)
+            val task = data.getJsonExtra<Task>(EditTaskActivity.EXTRA_TASK)!!
+            val group = data.getJsonExtra<Group>(EditTaskActivity.EXTRA_GROUP)!!
+            val pair = Pair(task, group)
+            val i = adapter.getPosition(pair)
+            adapter.remove(pair)
+            adapter.insert(pair, i)
             adapter.notifyDataSetChanged()
         } else if (resultCode == EditTaskActivity.ACTIVITY_RESULT_ADD && data != null) {
             val adapter = binding.tasksList.adapter as TaskAdapter
-            val task = data.getSerializableExtra(EditTaskActivity.EXTRA_TASK) as Task
-            adapter.insert(task, 0)
+            val task = data.getJsonExtra<Task>(EditTaskActivity.EXTRA_TASK)!!
+            val group = data.getJsonExtra<Group>(EditTaskActivity.EXTRA_GROUP)!!
+            val pair = Pair(task, group)
+            adapter.insert(pair, 0)
             adapter.notifyDataSetChanged()
         } else if (resultCode == ReadTaskActivity.ACTIVITY_RESULT_DELETE && data != null) {
             val adapter = binding.tasksList.adapter as TaskAdapter
-            val task = data.getSerializableExtra(EditTaskActivity.EXTRA_TASK) as Task
-            adapter.remove(task)
+            val task = data.getJsonExtra<Task>(EditTaskActivity.EXTRA_TASK)!!
+            val group = data.getJsonExtra<Group>(EditTaskActivity.EXTRA_GROUP)!!
+            val pair = Pair(task, group)
+            adapter.remove(pair)
             adapter.notifyDataSetChanged()
         } else super.onActivityResult(requestCode, resultCode, data)
     }
 
     private suspend fun refreshTasks() {
         try {
-            val tasks = AuthStore.getAppUser().getAllTasks()
+            val tasks = AuthStore.getApiUser().getAllTasks(AuthStore.getApiContext())
             withContext(Dispatchers.Main) {
-                binding.tasksList.adapter = TaskAdapter(requireContext(), tasks)
+                binding.tasksList.adapter = TaskAdapter(requireContext(), tasks.map { Pair(it.first as Task, it.second as Group) })
                 binding.tasksEmpty.isVisible = tasks.isEmpty()
                 binding.progressTasks.visibility = ProgressBar.INVISIBLE
                 binding.tasksSwipeRefresh.isRefreshing = false

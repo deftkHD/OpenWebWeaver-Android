@@ -1,16 +1,17 @@
 package de.deftk.openlonet.feature
 
 import androidx.fragment.app.Fragment
-import com.google.gson.JsonObject
+import de.deftk.lonet.api.LoNetClient
+import de.deftk.lonet.api.implementation.feature.systemnotification.SystemNotification
+import de.deftk.lonet.api.implementation.feature.tasks.Task
 import de.deftk.lonet.api.model.Feature
 import de.deftk.lonet.api.model.feature.Quota
-import de.deftk.lonet.api.model.feature.SystemNotification
-import de.deftk.lonet.api.model.feature.Task
 import de.deftk.lonet.api.request.UserApiRequest
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.feature.overview.*
 import de.deftk.openlonet.fragments.*
+import kotlinx.serialization.json.*
 
 enum class AppFeature(
     val feature: Feature,
@@ -23,7 +24,7 @@ enum class AppFeature(
 
     FEATURE_TASKS(Feature.TASKS, TasksFragment::class.java, R.drawable.ic_edit_24, R.string.tasks, TasksOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest): List<Int> {
-            return request.addGetAllTasksRequest()
+            return request.addGetAllTasksRequest(AuthStore.getApiUser())
         }
 
         override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
@@ -31,14 +32,13 @@ enum class AppFeature(
             response.values.withIndex().forEach { (index, subResponse) ->
                 if (index % 2 == 1) {
                     val focus = response.values.toList()[index - 1]
-                    check(focus.get("method").asString == "set_focus")
-                    val operator = AuthStore.getAppUser().getContext().getOperator(focus.get("user").asJsonObject.get("login").asString)!!
-                    subResponse.get("entries").asJsonArray.forEach { taskResponse ->
-                        tasks.add(Task.fromJson(taskResponse.asJsonObject, operator))
+                    check(focus["method"]!!.jsonPrimitive.content == "set_focus")
+                    subResponse["entries"]!!.jsonArray.forEach { taskResponse ->
+                        tasks.add(Json.decodeFromJsonElement(taskResponse))
                     }
                 }
             }
-            return TasksOverview(tasks.count { it.completed }, tasks.size)
+            return TasksOverview(tasks.count { it.isCompleted() }, tasks.size)
         }
     }),
     FEATURE_MAIL(Feature.MAILBOX, MailFragment::class.java, R.drawable.ic_email_24, R.string.mail, MailOverview::class.java, object: OverviewBuilder {
@@ -48,8 +48,8 @@ enum class AppFeature(
 
         override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
             val subResponse = response.values.toList()[1]
-            val quota = Quota.fromJson(subResponse.get("quota").asJsonObject)
-            val unread = subResponse.get("unread_messages").asInt
+            val quota = LoNetClient.json.decodeFromJsonElement<Quota>(subResponse["quota"]!!)
+            val unread = subResponse["unread_messages"]!!.jsonPrimitive.int
             return MailOverview(quota, unread)
         }
     }),
@@ -60,13 +60,13 @@ enum class AppFeature(
 
         override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
             val subResponse = response.values.toList()[1]
-            val quota = Quota.fromJson(subResponse.get("quota").asJsonObject)
+            val quota = LoNetClient.json.decodeFromJsonElement<Quota>(subResponse["quota"]!!)
             return FileStorageOverview(quota)
         }
     }),
     FEATURE_NOTIFICATIONS(Feature.BOARD, NotificationsFragment::class.java, R.drawable.ic_notifications_24, R.string.notifications, NotificationsOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest): List<Int> {
-            return request.addGetAllNotificationsRequest()
+            return request.addGetAllBoardNotificationsRequest(AuthStore.getApiUser())
         }
 
         override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
@@ -74,8 +74,8 @@ enum class AppFeature(
             response.values.withIndex().forEach { (index, subResponse) ->
                 if (index % 2 == 1) {
                     val focus = response.values.toList()[index - 1]
-                    check(focus.get("method").asString == "set_focus")
-                    count += subResponse.get("entries").asJsonArray.size()
+                    check(focus["method"]!!.jsonPrimitive.content == "set_focus")
+                    count += subResponse["entries"]!!.jsonArray.size
                 }
             }
             return NotificationsOverview(count)
@@ -91,10 +91,10 @@ enum class AppFeature(
         override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
             val subResponse = response.values.toList()[1]
             val systemNotifications = mutableListOf<SystemNotification>()
-            subResponse.get("messages").asJsonArray.forEach { messageResponse ->
-                systemNotifications.add(SystemNotification.fromJson(messageResponse.asJsonObject, AuthStore.getAppUser()))
+            subResponse["messages"]!!.jsonArray.forEach { messageResponse ->
+                systemNotifications.add(Json.decodeFromJsonElement(messageResponse))
             }
-            return SystemNotificationsOverview(systemNotifications.count { !it.read })
+            return SystemNotificationsOverview(systemNotifications.count { !it.isRead() })
         }
     });
 

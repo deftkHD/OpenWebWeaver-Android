@@ -5,38 +5,40 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import de.deftk.lonet.api.model.feature.board.BoardNotification
+import de.deftk.lonet.api.implementation.Group
+import de.deftk.lonet.api.implementation.feature.board.BoardNotification
 import de.deftk.lonet.api.model.feature.board.BoardNotificationColor
 import de.deftk.openlonet.R
 import de.deftk.openlonet.utils.TextUtils
 import de.deftk.openlonet.utils.filter.FilterableAdapter
 import de.deftk.openlonet.utils.filter.filterApplies
 
-class NotificationAdapter(context: Context, elements: List<BoardNotification>): FilterableAdapter<BoardNotification>(context, elements) {
+class NotificationAdapter(context: Context, elements: List<Pair<BoardNotification, Group>>): FilterableAdapter<Pair<BoardNotification, Group>>(context, elements) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val listItemView = convertView ?: LayoutInflater.from(context).inflate(R.layout.list_item_notification, parent, false)
         val item = getItem(position) ?: return listItemView
+        val notification = item.first
 
-        listItemView.findViewById<TextView>(R.id.notification_title).text = item.title
-        listItemView.findViewById<TextView>(R.id.notification_author).text = item.creationMember.getName()
-        listItemView.findViewById<TextView>(R.id.notification_date).text = TextUtils.parseShortDate(item.modificationDate)
-        listItemView.findViewById<View>(R.id.notification_accent).setBackgroundResource(BoardNotificationColors.getByApiColor(item.color)?.androidColor ?: BoardNotificationColors.BLUE.androidColor)
+        listItemView.findViewById<TextView>(R.id.notification_title).text = notification.getTitle()
+        listItemView.findViewById<TextView>(R.id.notification_author).text = notification.getCreated().member.name
+        listItemView.findViewById<TextView>(R.id.notification_date).text = TextUtils.parseShortDate(notification.getModified().date)
+        listItemView.findViewById<View>(R.id.notification_accent).setBackgroundResource(BoardNotificationColors.getByApiColor(notification.getColor())?.androidColor ?: BoardNotificationColors.BLUE.androidColor)
         return listItemView
     }
 
-    override fun search(constraint: String?): List<BoardNotification> {
+    override fun search(constraint: String?): List<Pair<BoardNotification, Group>> {
         if (constraint == null)
             return originalElements
         return originalElements.filter {
-            it.title.filterApplies(constraint)
-                    || it.text.filterApplies(constraint)
-                    || it.creationMember.filterApplies(constraint)
+            it.first.getTitle().filterApplies(constraint)
+                    || it.first.getText().filterApplies(constraint)
+                    || it.first.getCreated().member.filterApplies(constraint)
         }
     }
 
-    override fun sort(elements: List<BoardNotification>): List<BoardNotification> {
-        return elements.sortedByDescending { it.creationDate }
+    override fun sort(elements: List<Pair<BoardNotification, Group>>): List<Pair<BoardNotification, Group>> {
+        return elements.sortedByDescending { it.first.getCreated().date }
     }
 
     enum class BoardNotificationColors(val apiColor: BoardNotificationColor, val androidColor: Int, val text: Int) {

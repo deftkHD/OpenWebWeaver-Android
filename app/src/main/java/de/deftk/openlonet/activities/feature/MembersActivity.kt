@@ -10,12 +10,13 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import de.deftk.lonet.api.model.Group
-import de.deftk.lonet.api.model.abstract.IManageable
+import de.deftk.lonet.api.implementation.Group
+import de.deftk.lonet.api.model.IScope
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.MemberAdapter
 import de.deftk.openlonet.databinding.ActivityMembersBinding
+import de.deftk.openlonet.utils.getJsonExtra
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,27 +39,25 @@ class MembersActivity : AppCompatActivity() {
         binding = ActivityMembersBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val extraGroup = intent.getSerializableExtra(EXTRA_GROUP) as? Group?
-        if (extraGroup != null) {
-            group = extraGroup
+        if (intent.hasExtra(EXTRA_GROUP)) {
+            group = intent.getJsonExtra(EXTRA_GROUP)!!
+
+            setSupportActionBar(binding.toolbar)
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setDisplayShowHomeEnabled(true)
+            supportActionBar?.title = group.name
+
+            binding.membersSwipeRefresh.setOnRefreshListener {
+                reloadMembers()
+            }
+            binding.membersList.setOnItemClickListener { _, view, _, _ ->
+                openContextMenu(view)
+            }
+            registerForContextMenu(binding.membersList)
+            reloadMembers()
         } else {
             finish()
-            return
         }
-
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.title = extraGroup.fullName ?: extraGroup.getName()
-
-        binding.membersSwipeRefresh.setOnRefreshListener {
-            reloadMembers()
-        }
-        binding.membersList.setOnItemClickListener { _, view, _, _ ->
-            openContextMenu(view)
-        }
-        registerForContextMenu(binding.membersList)
-        reloadMembers()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -83,8 +82,8 @@ class MembersActivity : AppCompatActivity() {
     override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is AdapterView.AdapterContextMenuInfo) {
-            val member = binding.membersList.adapter?.getItem(menuInfo.position) as IManageable
-            if (member.getLogin() != AuthStore.getAppUser().getLogin()) {
+            val member = binding.membersList.adapter?.getItem(menuInfo.position) as IScope
+            if (member.login != AuthStore.getApiUser().login) {
                 menuInflater.inflate(R.menu.member_action_menu, menu)
             }
         }
@@ -94,8 +93,8 @@ class MembersActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.member_action_write_mail -> {
                 val info = item.menuInfo as AdapterView.AdapterContextMenuInfo
-                val member = binding.membersList.adapter?.getItem(info.position) as IManageable
-                val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${Uri.encode(member.getLogin())}"))
+                val member = binding.membersList.adapter?.getItem(info.position) as IScope
+                val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${Uri.encode(member.login)}"))
                 startActivity(intent)
                 true
             }
@@ -113,7 +112,7 @@ class MembersActivity : AppCompatActivity() {
 
     private suspend fun loadMembers() {
         try {
-            val members = group.getMembers()
+            val members = group.getMembers(group.getRequestContext(AuthStore.getApiContext()))
             withContext(Dispatchers.Main) {
                 binding.membersList.adapter = MemberAdapter(this@MembersActivity, members)
                 binding.membersEmpty.isVisible = members.isEmpty()

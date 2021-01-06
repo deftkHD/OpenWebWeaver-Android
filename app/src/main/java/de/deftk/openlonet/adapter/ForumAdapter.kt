@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import de.deftk.lonet.api.model.Group
+import de.deftk.lonet.api.implementation.Group
 import de.deftk.openlonet.R
 import de.deftk.openlonet.utils.filter.FilterableAdapter
 import de.deftk.openlonet.utils.filter.filterApplies
@@ -15,7 +15,7 @@ class ForumAdapter(context: Context, elements: List<Group>): FilterableAdapter<G
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val listItemView = convertView ?: LayoutInflater.from(context).inflate(R.layout.list_item_forum, parent, false)
         val item = getItem(position) ?: return listItemView
-        listItemView.findViewById<TextView>(R.id.forum_name).text = item.getName()
+        listItemView.findViewById<TextView>(R.id.forum_name).text = item.name
         return listItemView
     }
 
@@ -26,6 +26,6 @@ class ForumAdapter(context: Context, elements: List<Group>): FilterableAdapter<G
     }
 
     override fun sort(elements: List<Group>): List<Group> {
-        return elements.sortedBy { it.getName() }
+        return elements.sortedBy { it.name }
     }
 }

@@ -6,7 +6,8 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import de.deftk.lonet.api.LoNet
+import de.deftk.lonet.api.LoNetClient
+import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.databinding.ActivityTokenLoginBinding
@@ -38,7 +39,7 @@ class TokenLoginActivity : AppCompatActivity() {
             if (isEmailValid(email) && isTokenValid(token)) {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        AuthStore.setAppUser(LoNet.loginToken(email, token))
+                        AuthStore.setApiContext(LoNetClient.loginToken(email, token, false, ApiContext::class.java))
                         if (rememberToken) {
                             AuthStore.saveUsername(email, this@TokenLoginActivity)
                             AuthStore.saveToken(token, this@TokenLoginActivity)

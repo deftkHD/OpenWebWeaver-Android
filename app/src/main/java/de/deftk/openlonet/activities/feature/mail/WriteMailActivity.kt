@@ -90,7 +90,14 @@ class WriteMailActivity : AppCompatActivity() {
         val to = binding.mailToAddress.text.toString()
         val toCC = binding.mailToAddressCc.text.toString()
         val toBCC = binding.mailToAddressBcc.text.toString()
-        AuthStore.getAppUser().sendEmail(to, subject, message, null, toBCC.nullIfEmpty(), toCC.nullIfEmpty())
+        AuthStore.getApiUser().sendEmail(
+            to = to,
+            subject = subject,
+            plainBody = message,
+            bcc = toBCC.nullIfEmpty(),
+            cc = toCC.nullIfEmpty(),
+            context = AuthStore.getUserContext()
+        )
         withContext(Dispatchers.Main) {
             binding.progressSendMail.visibility = View.GONE
             setResult(RESULT_CODE_MAIL)

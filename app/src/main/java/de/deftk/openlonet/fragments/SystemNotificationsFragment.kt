@@ -8,7 +8,7 @@ import android.widget.ProgressBar
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.core.view.isVisible
-import de.deftk.lonet.api.model.feature.SystemNotification
+import de.deftk.lonet.api.implementation.feature.systemnotification.SystemNotification
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.abstract.FeatureFragment
@@ -16,6 +16,7 @@ import de.deftk.openlonet.activities.feature.SystemNotificationActivity
 import de.deftk.openlonet.adapter.SystemNotificationAdapter
 import de.deftk.openlonet.databinding.FragmentSystemNotificationsBinding
 import de.deftk.openlonet.feature.AppFeature
+import de.deftk.openlonet.utils.putJsonExtra
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,7 +40,7 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
         binding.systemNotificationList.setOnItemClickListener { _, _, position, _ ->
             val item = binding.systemNotificationList.getItemAtPosition(position) as SystemNotification
             val intent = Intent(context, SystemNotificationActivity::class.java)
-            intent.putExtra(SystemNotificationActivity.EXTRA_SYSTEM_NOTIFICATION, item)
+            intent.putJsonExtra(SystemNotificationActivity.EXTRA_SYSTEM_NOTIFICATION, item)
             startActivity(intent)
         }
         CoroutineScope(Dispatchers.IO).launch {
@@ -69,7 +70,7 @@ class SystemNotificationsFragment: FeatureFragment(AppFeature.FEATURE_SYSTEM_NOT
 
     private suspend fun loadSystemNotifications() {
         try {
-            val systemNotifications = AuthStore.getAppUser().getSystemNotifications()
+            val systemNotifications = AuthStore.getApiUser().getSystemNotifications(AuthStore.getUserContext())
             withContext(Dispatchers.Main) {
                 binding.systemNotificationList.adapter = SystemNotificationAdapter(requireContext(), systemNotifications)
                 binding.systemNotificationsEmpty.isVisible = systemNotifications.isEmpty()
