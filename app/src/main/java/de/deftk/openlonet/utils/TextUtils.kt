@@ -146,6 +146,13 @@ object TextUtils {
                     intent.putExtra(StartActivity.EXTRA_FOCUS_FEATURE_ARGUMENTS, args)
                     widget.context.startActivity(intent)
                 }
+                InternalReferenceType.LEANING_PLAN -> {
+                    Toast.makeText(
+                        widget.context,
+                        R.string.learning_plan_not_support,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
                 else -> {
                     Toast.makeText(
                         widget.context,
@@ -193,6 +200,7 @@ object TextUtils {
 
     enum class InternalReferenceType(val id: String) {
         FILE_STORAGE("files"),
+        LEANING_PLAN("learning_plan"),
         UNKNOWN("");
 
         companion object {

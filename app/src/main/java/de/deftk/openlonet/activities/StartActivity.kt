@@ -231,6 +231,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         }
     }
 
+    @Deprecated("Use autologin handler offered by LoNetApi")
     private suspend fun verifySession() {
         try {
             if (!AuthStore.getApiUser().checkSession(AuthStore.getUserContext())) {

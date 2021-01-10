@@ -134,5 +134,6 @@
     <string name="token">Token</string>
     <string name="remember_token">Remember token</string>
     <string name="import_into_calendar">Imoprt into calendar</string>
+    <string name="learning_plan_not_support">Learning plans are currently not supported</string>
 
 </resources>

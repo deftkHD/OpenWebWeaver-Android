@@ -135,4 +135,5 @@
     <string name="token">Zugangsschlüssel</string>
     <string name="remember_token">Zugangsschlüssel merken</string>
     <string name="import_into_calendar">Zu Kalendar hinzufügen</string>
+    <string name="learning_plan_not_support">Lernpläne werden momentan nicht unterstützt</string>
 </resources>
