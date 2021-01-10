@@ -109,6 +109,8 @@ class ReadNotificationActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode == EditNotificationActivity.ACTIVITY_RESULT_EDIT && data != null) {
+            val notification = data.getJsonExtra<BoardNotification>(EditNotificationActivity.EXTRA_NOTIFICATION)!!
+            val group = data.getJsonExtra<Group>(EditNotificationActivity.EXTRA_GROUP)!!
             displayNotification(notification, group)
             setResult(EditNotificationActivity.ACTIVITY_RESULT_EDIT, data)
         } else super.onActivityResult(requestCode, resultCode, data)
