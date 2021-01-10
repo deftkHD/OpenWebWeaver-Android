@@ -134,4 +134,5 @@
     <string name="token_login_link"><a href="www.www.com">Anmelden mit Zugangsschlüssel</a></string>
     <string name="token">Zugangsschlüssel</string>
     <string name="remember_token">Zugangsschlüssel merken</string>
+    <string name="import_into_calendar">Zu Kalendar hinzufügen</string>
 </resources>

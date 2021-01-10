@@ -2,6 +2,7 @@ package de.deftk.openlonet.activities.feature.tasks
 
 import android.content.Intent
 import android.os.Bundle
+import android.provider.CalendarContract
 import android.text.method.LinkMovementMethod
 import android.view.Menu
 import android.view.MenuItem
@@ -57,14 +58,27 @@ class ReadTaskActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        return if (group.effectiveRights.contains(Permission.TASKS_ADMIN)) {
+        if (group.effectiveRights.contains(Permission.TASKS_ADMIN))
             menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
-            true
-        } else super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.read_task_menu, menu)
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.menu_item_import_in_calendar -> {
+                val intent = Intent(Intent.ACTION_INSERT)
+                intent.data = CalendarContract.Events.CONTENT_URI
+                intent.putExtra(CalendarContract.Events.TITLE, task.getTitle())
+                if (task.getStartDate() != null)
+                    intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, task.getStartDate()!!.time)
+                if (task.getEndDate() != null)
+                    intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, task.getEndDate()!!.time)
+                if (task.getDescription() != null)
+                    intent.putExtra(CalendarContract.Events.DESCRIPTION, task.getDescription())
+                startActivity(intent)
+                true
+            }
             R.id.menu_item_edit -> {
                 val intent = Intent(this, EditTaskActivity::class.java)
                 intent.putJsonExtra(EditTaskActivity.EXTRA_TASK, task)

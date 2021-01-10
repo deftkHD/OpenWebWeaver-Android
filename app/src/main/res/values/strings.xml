@@ -133,5 +133,6 @@
     <string name="token_login_link"><a href="www.www.com">Token login</a></string>
     <string name="token">Token</string>
     <string name="remember_token">Remember token</string>
+    <string name="import_into_calendar">Imoprt into calendar</string>
 
 </resources>
