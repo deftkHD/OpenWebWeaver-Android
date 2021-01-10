@@ -76,7 +76,7 @@ class EditTaskActivity : AppCompatActivity() {
                 binding.taskDue.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(dueDate!!))
             }
             binding.taskGroup.setSelection(effectiveGroups.indexOf(group))
-            binding.taskGroup.isEnabled = true
+            binding.taskGroup.isEnabled = false
             binding.taskText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(task!!.getDescription())))
             binding.taskText.movementMethod = LinkMovementMethod.getInstance()
         } else {
