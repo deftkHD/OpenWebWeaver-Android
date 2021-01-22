@@ -1,5 +1,7 @@
 package de.deftk.openlonet.activities
 
+import android.accounts.Account
+import android.accounts.AccountManager
 import android.os.Bundle
 import android.util.Patterns
 import android.widget.ProgressBar
@@ -41,8 +43,10 @@ class TokenLoginActivity : AppCompatActivity() {
                     try {
                         AuthStore.setApiContext(LoNetClient.loginToken(email, token, false, ApiContext::class.java))
                         if (rememberToken) {
-                            AuthStore.saveUsername(email, this@TokenLoginActivity)
-                            AuthStore.saveToken(token, this@TokenLoginActivity)
+                            val accountManager = AccountManager.get(this@TokenLoginActivity)
+                            val account = Account(email, AuthStore.ACCOUNT_TYPE)
+                            accountManager.addAccountExplicitly(account, null, null)
+                            accountManager.setAuthToken(account, AuthStore.EXTRA_TOKEN_TYPE, token)
                         }
                         withContext(Dispatchers.Main) {
                             binding.pgbLogin.visibility = ProgressBar.INVISIBLE

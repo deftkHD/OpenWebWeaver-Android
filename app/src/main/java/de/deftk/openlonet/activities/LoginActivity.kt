@@ -1,7 +1,8 @@
 package de.deftk.openlonet.activities
 
+import android.accounts.Account
+import android.accounts.AccountManager
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
@@ -59,10 +60,11 @@ class LoginActivity : AppCompatActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         if (stayLoggedIn) {
-                            val loginData = LoNetClient.loginCreateToken(username, password, "OpenLoNet", "${Build.BRAND} ${Build.MODEL}", ApiContext::class.java)
-                            AuthStore.setApiContext(loginData.first)
-                            AuthStore.saveUsername(AuthStore.getApiUser().login, this@LoginActivity)
-                            AuthStore.saveToken(loginData.second, this@LoginActivity)
+                            val accountManager = AccountManager.get(this@LoginActivity)
+                            val account = Account(username, AuthStore.ACCOUNT_TYPE)
+                            accountManager.addAccountExplicitly(account, password, null)
+                            val token = accountManager.blockingGetAuthToken(account, AuthStore.ACCOUNT_TYPE, true)
+                            accountManager.setAuthToken(account, AuthStore.EXTRA_TOKEN_TYPE, token)
                         } else {
                             AuthStore.setApiContext(LoNetClient.login(Credentials.fromPassword(username, password), ApiContext::class.java))
                         }

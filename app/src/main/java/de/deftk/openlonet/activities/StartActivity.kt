@@ -1,5 +1,6 @@
 package de.deftk.openlonet.activities
 
+import android.accounts.AccountManager
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
@@ -38,6 +39,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
     companion object {
         const val EXTRA_FOCUS_FEATURE = "de.deftk.openlonet.start.extra_focus_feature"
         const val EXTRA_FOCUS_FEATURE_ARGUMENTS = "de.deftk.openlonet.start.extra_focus_feature_arguments"
+        const val EXTRA_LOGOUT = "de.deftk.openlonet.start.logout"
 
         private const val LOG_TAG = "StartActivity"
     }
@@ -104,23 +106,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         })
         addMenuItem(object : AbstractNavigableMenuItem(R.string.logout, R.id.utility_group, R.drawable.ic_lock_open_24) {
             override fun onClick(activity: AppCompatActivity) {
-                if (AuthStore.getSavedToken(this@StartActivity) != null) {
-                    val listener = DialogInterface.OnClickListener { _, which ->
-                        when (which) {
-                            DialogInterface.BUTTON_POSITIVE -> {
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    logout(true)
-                                }
-                            }
-                            DialogInterface.BUTTON_NEGATIVE -> { /* do nothing */ }
-                        }
-                    }
-                    AlertDialog.Builder(this@StartActivity).setMessage(R.string.logout_description).setPositiveButton(R.string.yes, listener).setNegativeButton(R.string.no, listener).show()
-                } else {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        logout(false)
-                    }
-                }
+                logout()
             }
         })
 
@@ -139,7 +125,11 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                 (menuMap.values.first { it.getName() == R.string.overview } as IMenuNavigable).onClick(this)
             }
         }
-        binding.navView.menu.getItem(0).isChecked = true
+        if (intent.getBooleanExtra(EXTRA_LOGOUT, false)) {
+            logout()
+        } else {
+            binding.navView.menu.getItem(0).isChecked = true
+        }
         Log.i(LOG_TAG, "Activity created")
     }
 
@@ -212,22 +202,54 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         //TODO VerifySessionTask should also be executed in onCreate() and removed from MainActivity
     }
 
+    private fun logout() {
+        if (AuthStore.currentApiToken != null) {
+            val listener = DialogInterface.OnClickListener { _, which ->
+                when (which) {
+                    DialogInterface.BUTTON_POSITIVE -> {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            logout(true)
+                        }
+                    }
+                    DialogInterface.BUTTON_NEGATIVE -> { /* do nothing */ }
+                }
+            }
+            AlertDialog.Builder(this@StartActivity).setMessage(R.string.logout_description).setPositiveButton(R.string.yes, listener).setNegativeButton(R.string.no, listener).show()
+        } else {
+            CoroutineScope(Dispatchers.IO).launch {
+                logout(false)
+            }
+        }
+    }
+
     private suspend fun logout(removeTrust: Boolean) {
         try {
             if (removeTrust) {
-                AuthStore.getApiUser().logoutDestroyToken(AuthStore.getSavedToken(this)!!, AuthStore.getUserContext())
+                AuthStore.getApiUser().logoutDestroyToken(AuthStore.currentApiToken!!, AuthStore.getUserContext())
             } else {
                 AuthStore.getApiUser().logout(AuthStore.getUserContext())
             }
             withContext(Dispatchers.Main) {
-                this@StartActivity.getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("token").apply()
-                this@StartActivity.getSharedPreferences(AuthStore.PREFERENCE_NAME, 0).edit().remove("login").apply()
-                val intent = Intent(this@StartActivity, LoginActivity::class.java)
-                this@StartActivity.startActivity(intent)
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    AccountManager.get(this@StartActivity).removeAccountExplicitly(AuthStore.currentAccount)
+                } else {
+                    @Suppress("DEPRECATION")
+                    AccountManager.get(this@StartActivity).removeAccount(AuthStore.currentAccount, null, null)
+                }
+                if (!intent.getBooleanExtra(EXTRA_LOGOUT, false)) {
+                    val intent = Intent(this@StartActivity, LoginActivity::class.java)
+                    this@StartActivity.startActivity(intent)
+                }
                 this@StartActivity.finish()
             }
         } catch (e: Exception) {
-            Toast.makeText(baseContext, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    baseContext,
+                    getString(R.string.request_failed_other).format(e.message ?: e),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
         }
     }
 

@@ -13,6 +13,10 @@ import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        const val EXTRA_LOGOUT = "de.deftk.openlonet.main.logout"
+    }
+
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,6 +31,8 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             if (AuthStore.performLogin(this@MainActivity)) {
                 val intent = Intent(this@MainActivity, StartActivity::class.java)
+                if (getIntent().getBooleanExtra(EXTRA_LOGOUT, false))
+                    intent.putExtra(StartActivity.EXTRA_LOGOUT, true)
                 withContext(Dispatchers.Main) {
                     startActivity(intent)
                     finish()

@@ -1,5 +1,6 @@
 package de.deftk.openlonet.feature.filestorage
 
+import android.accounts.AccountManager
 import android.app.AuthenticationRequiredException
 import android.app.PendingIntent
 import android.content.ContentResolver
@@ -19,8 +20,6 @@ import android.provider.DocumentsProvider
 import android.util.Log
 import android.util.Patterns
 import androidx.preference.PreferenceManager
-import de.deftk.lonet.api.LoNetClient
-import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.lonet.api.implementation.Group
 import de.deftk.lonet.api.implementation.OperatingScope
 import de.deftk.lonet.api.implementation.feature.filestorage.RemoteFile
@@ -75,7 +74,8 @@ class ApiDocumentsProvider: DocumentsProvider() {
 
     override fun onCreate(): Boolean {
         Log.i(LOG_TAG, "onCreate()")
-        return AuthStore.getSavedToken(acquireContext()) != null
+        val accountManager = AccountManager.get(acquireContext())
+        return accountManager.getAccountsByType(AuthStore.ACCOUNT_TYPE).isNotEmpty()
     }
 
     override fun queryRoots(projection: Array<out String>?): Cursor {
@@ -314,9 +314,10 @@ class ApiDocumentsProvider: DocumentsProvider() {
         if (!AuthStore.isUserLoggedIn() || sessionValid != true) {
             try {
                 // try silent login
-                val username = AuthStore.getSavedUsername(acquireContext()) ?: error("No username")
-                val token = AuthStore.getSavedToken(acquireContext()) ?: error("No token")
-                AuthStore.setApiContext(LoNetClient.loginToken(username, token, false, ApiContext::class.java))
+                TODO("The ApiDocumentsProvider is in general broken and needs a bit of cleanup")
+                //val username = AuthStore.getSavedUsername(acquireContext()) ?: error("No username")
+                //val token = AuthStore.getSavedToken(acquireContext()) ?: error("No token")
+                //AuthStore.setApiContext(LoNetClient.loginToken(username, token, false, ApiContext::class.java))
             } catch (e: Exception) {
                 e.printStackTrace()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
