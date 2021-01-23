@@ -45,17 +45,17 @@ class ForumPostActivity : AppCompatActivity() {
             post = intent.getJsonExtra(EXTRA_FORUM_POST)!!
             group = intent.getJsonExtra(EXTRA_GROUP)!!
 
-            binding.forumPostImage.setImageResource(ForumPostAdapter.postIconMap[post.getIcon()] ?: R.drawable.ic_help_24)
-            binding.forumPostTitle.text = post.getTitle()
-            binding.forumPostAuthor.text = post.getCreated().member.name
-            binding.forumPostDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.getCreated().date)
-            binding.forumPostText.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(post.getText())))
+            binding.forumPostImage.setImageResource(ForumPostAdapter.postIconMap[post.icon] ?: R.drawable.ic_help_24)
+            binding.forumPostTitle.text = post.title
+            binding.forumPostAuthor.text = post.created.member.name
+            binding.forumPostDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.created.date)
+            binding.forumPostText.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(post.text)))
             binding.forumPostText.movementMethod = LinkMovementMethod.getInstance()
             binding.forumPostText.transformationMethod = CustomTabTransformationMethod(binding.forumPostText.autoLinkMask)
 
             binding.forumPostNoComments.isVisible = post.getComments().isEmpty()
             binding.forumPostCommentRecyclerView.layoutManager = LinearLayoutManager(this)
-            binding.forumPostCommentRecyclerView.adapter = ForumPostCommentRecyclerAdapter(post.getComments().sortedBy { it.getCreated().date.time }, group)
+            binding.forumPostCommentRecyclerView.adapter = ForumPostCommentRecyclerAdapter(post.getComments().sortedBy { it.created.date.time }, group)
         } else {
             finish()
         }

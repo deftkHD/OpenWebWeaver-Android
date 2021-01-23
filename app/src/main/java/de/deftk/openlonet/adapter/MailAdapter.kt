@@ -33,11 +33,11 @@ class MailAdapter(context: Context, elements: List<Email>, private val folder: E
             override fun onOpen(layout: SwipeLayout) {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        if (folder.isTrash()) {
+                        if (folder.isTrash) {
                             item.delete(folder, AuthStore.getUserContext())
                         } else {
                             val trash = AuthStore.getApiUser().getEmailFolders(AuthStore.getUserContext())
-                                .firstOrNull { it.isTrash() }
+                                .firstOrNull { it.isTrash }
                             if (trash != null) {
                                 item.move(folder, trash, AuthStore.getUserContext())
                             } else {

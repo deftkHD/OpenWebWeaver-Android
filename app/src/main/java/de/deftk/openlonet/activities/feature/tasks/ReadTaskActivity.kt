@@ -115,9 +115,9 @@ class ReadTaskActivity : AppCompatActivity() {
 
     private fun displayTask(task: Task) {
         binding.taskTitle.text = task.getTitle()
-        binding.taskAuthor.text = task.getCreated().member.name
+        binding.taskAuthor.text = task.created.member.name
         binding.taskGroup.text = group.name
-        binding.taskCreated.text = String.format(getString(R.string.created_date), DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.getCreated().date))
+        binding.taskCreated.text = String.format(getString(R.string.created_date), DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.created.date))
         binding.taskDue.text = String.format(getString(R.string.until_date), if (task.getEndDate() != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.getEndDate()!!) else getString(R.string.not_set))
         binding.taskDetail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.getDescription()))
         binding.taskDetail.movementMethod = LinkMovementMethod.getInstance()

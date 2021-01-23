@@ -21,7 +21,7 @@ class NotificationAdapter(context: Context, elements: List<Pair<BoardNotificatio
         val notification = item.first
 
         listItemView.findViewById<TextView>(R.id.notification_title).text = notification.getTitle()
-        listItemView.findViewById<TextView>(R.id.notification_author).text = notification.getCreated().member.name
+        listItemView.findViewById<TextView>(R.id.notification_author).text = notification.created.member.name
         listItemView.findViewById<TextView>(R.id.notification_date).text = TextUtils.parseShortDate(notification.getModified().date)
         listItemView.findViewById<View>(R.id.notification_accent).setBackgroundResource(BoardNotificationColors.getByApiColor(notification.getColor())?.androidColor ?: BoardNotificationColors.BLUE.androidColor)
         return listItemView
@@ -33,12 +33,12 @@ class NotificationAdapter(context: Context, elements: List<Pair<BoardNotificatio
         return originalElements.filter {
             it.first.getTitle().filterApplies(constraint)
                     || it.first.getText().filterApplies(constraint)
-                    || it.first.getCreated().member.filterApplies(constraint)
+                    || it.first.created.member.filterApplies(constraint)
         }
     }
 
     override fun sort(elements: List<Pair<BoardNotification, Group>>): List<Pair<BoardNotification, Group>> {
-        return elements.sortedByDescending { it.first.getCreated().date }
+        return elements.sortedByDescending { it.first.created.date }
     }
 
     enum class BoardNotificationColors(val apiColor: BoardNotificationColor, val androidColor: Int, val text: Int) {

@@ -60,7 +60,7 @@ object AuthStore {
                 currentAccount = accounts[0]
                 currentApiToken = accountManager.blockingGetAuthToken(currentAccount, ACCOUNT_TYPE, true)
                 try {
-                    apiContext = LoNetClient.loginToken(accounts[0].name, currentApiToken ?: error("No token provided!"), false, ApiContext::class.java)
+                    apiContext = LoNetClient.loginToken(accounts[0].name, currentApiToken ?: error("No token provided!"), false)
                     return true
                 } catch (e: Exception) {
                     Log.e(LOG_TAG, "Login failed")

@@ -27,11 +27,11 @@ class ForumPostCommentRecyclerAdapter(private val comments: List<IForumPost>, pr
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val comment = comments[position]
-        holder.commentImage.setImageResource(ForumPostAdapter.postIconMap[comment.getIcon()] ?: R.drawable.ic_help_24)
-        holder.commentTitle.text = comment.getTitle()
-        holder.commentAuthor.text = comment.getCreated().member.name
-        holder.commentDate.text = TextUtils.parseShortDate(comment.getCreated().date)
-        holder.commentText.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(comment.getText())))
+        holder.commentImage.setImageResource(ForumPostAdapter.postIconMap[comment.icon] ?: R.drawable.ic_help_24)
+        holder.commentTitle.text = comment.title
+        holder.commentAuthor.text = comment.created.member.name
+        holder.commentDate.text = TextUtils.parseShortDate(comment.created.date)
+        holder.commentText.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(comment.text)))
         holder.commentText.movementMethod = LinkMovementMethod.getInstance()
         holder.showComments.isVisible = comment.getComments().isNotEmpty()
         if (comment.getComments().isNotEmpty()) {

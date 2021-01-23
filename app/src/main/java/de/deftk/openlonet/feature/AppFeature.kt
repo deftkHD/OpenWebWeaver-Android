@@ -94,7 +94,7 @@ enum class AppFeature(
             subResponse["messages"]!!.jsonArray.forEach { messageResponse ->
                 systemNotifications.add(Json.decodeFromJsonElement(messageResponse))
             }
-            return SystemNotificationsOverview(systemNotifications.count { !it.isRead() })
+            return SystemNotificationsOverview(systemNotifications.count { it.isUnread })
         }
     });
 

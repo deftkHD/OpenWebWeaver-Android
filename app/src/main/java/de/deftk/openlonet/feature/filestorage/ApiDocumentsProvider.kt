@@ -140,7 +140,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
                 } else {
                     val file = cached
                         .map { Pair(it.first as RemoteFile, it.second) }
-                        .firstOrNull { it.first.getId() == fileId && it.second.login == operatorId }
+                        .firstOrNull { it.first.id == fileId && it.second.login == operatorId }
                     if (file != null) {
                         includeFile(cursor, file)
                     } else {
@@ -376,7 +376,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
                 ) ?: emptyList()
                 val parent = parentCache
                     .map { Pair(it.first as RemoteFile, it.second) }
-                    .firstOrNull { it.first.getId() == fileId && it.second.login == operatorId }
+                    .firstOrNull { it.first.id == fileId && it.second.login == operatorId }
                 if (parent != null) {
                     cache.put(notifyUri, parent.second.getFiles(filter = filter, context = parent.second.getRequestContext(AuthStore.getApiContext())).map { Pair(it, parent.second) })
                 } else {
@@ -410,7 +410,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
         } else {
             val file = cached
                 .map { Pair(it.first as RemoteFile, it.second) }
-                .firstOrNull { it.first.getId() == fileId && it.second.login == operatorId }
+                .firstOrNull { it.first.id == fileId && it.second.login == operatorId }
             if (file != null) {
                 return file
             } else {
@@ -497,7 +497,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
         var flags = 0
         val file = filePair.first
         if (file.effectiveModify() == true) {
-            flags = if (file.getType() == FileType.FOLDER) {
+            flags = if (file.type == FileType.FOLDER) {
                 flags or Document.FLAG_DIR_SUPPORTS_CREATE
             } else {
                 flags or Document.FLAG_SUPPORTS_WRITE
@@ -513,10 +513,10 @@ class ApiDocumentsProvider: DocumentsProvider() {
         }
 
         val row = cursor.newRow()
-        row.add(Document.COLUMN_DOCUMENT_ID, "${filePair.second.login}:${file.getId()}")
+        row.add(Document.COLUMN_DOCUMENT_ID, "${filePair.second.login}:${file.id}")
         row.add(Document.COLUMN_DISPLAY_NAME, file.name)
         row.add(Document.COLUMN_SIZE, file.getSize())
-        if (file.getType() == FileType.FILE) {
+        if (file.type == FileType.FILE) {
             row.add(Document.COLUMN_MIME_TYPE, FileUtil.getMimeType(file.name))
         } else {
             row.add(Document.COLUMN_MIME_TYPE, Document.MIME_TYPE_DIR)

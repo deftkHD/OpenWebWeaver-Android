@@ -33,13 +33,13 @@ class SystemNotificationActivity : AppCompatActivity() {
 
         if (intent.hasExtra(EXTRA_SYSTEM_NOTIFICATION)) {
             val notification = intent.getJsonExtra<SystemNotification>(EXTRA_SYSTEM_NOTIFICATION)!!
-            val type = notification.getMessageType()
+            val type = notification.messageType
             binding.systemNotificationTitle.text = getString(SystemNotificationAdapter.typeTranslationMap[type] ?: R.string.system_notification_type_unknown)
 
-            binding.systemNotificationAuthor.text = notification.getMember().name
-            binding.systemNotificationGroup.text = notification.getGroup().name
-            binding.systemNotificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.getDate())
-            binding.systemNotificationMessage.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.getMessage()))
+            binding.systemNotificationAuthor.text = notification.member.name
+            binding.systemNotificationGroup.text = notification.member.name
+            binding.systemNotificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.date)
+            binding.systemNotificationMessage.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.message))
             binding.systemNotificationMessage.movementMethod = LinkMovementMethod.getInstance()
             binding.systemNotificationMessage.transformationMethod = CustomTabTransformationMethod(binding.systemNotificationMessage.autoLinkMask)
         }

@@ -17,10 +17,10 @@ class MailFolderAdapter(context: Context, elements: List<EmailFolder>) :
     companion object {
         fun getTranslatedFolderName(context: Context, folder: EmailFolder): String {
             val resource = when {
-                folder.isInbox() -> R.string.mail_folder_inbox
-                folder.isDrafts() -> R.string.mail_folder_drafts
-                folder.isSent() -> R.string.mail_folder_sent
-                folder.isTrash() -> R.string.mail_folder_trash
+                folder.isInbox -> R.string.mail_folder_inbox
+                folder.isDrafts -> R.string.mail_folder_drafts
+                folder.isSent -> R.string.mail_folder_sent
+                folder.isTrash -> R.string.mail_folder_trash
                 else -> null
             }
             return if (resource != null) context.getString(resource) else folder.getName()
@@ -28,10 +28,10 @@ class MailFolderAdapter(context: Context, elements: List<EmailFolder>) :
 
         fun getFolderIcon(folder: EmailFolder): Int {
             return when {
-                folder.isInbox() -> R.drawable.ic_inbox_24
-                folder.isDrafts() -> R.drawable.ic_drafts_24
-                folder.isSent() -> R.drawable.ic_send_24
-                folder.isTrash() -> R.drawable.ic_delete_24
+                folder.isInbox -> R.drawable.ic_inbox_24
+                folder.isDrafts -> R.drawable.ic_drafts_24
+                folder.isSent -> R.drawable.ic_send_24
+                folder.isTrash -> R.drawable.ic_delete_24
                 else -> R.drawable.ic_folder_special_24
             }
         }

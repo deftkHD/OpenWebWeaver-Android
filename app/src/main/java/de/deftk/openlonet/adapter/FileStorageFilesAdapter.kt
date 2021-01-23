@@ -29,10 +29,10 @@ class FileStorageFilesAdapter(context: Context, elements: List<IRemoteFile>, pri
         val item = getItem(position) ?: return listItemView
 
         listItemView.findViewById<TextView>(R.id.file_name).text = item.name
-        listItemView.findViewById<TextView>(R.id.file_size).text = if (item.getType() == FileType.FILE) Formatter.formatFileSize(context, item.getSize()) else context.getString(R.string.directory)
+        listItemView.findViewById<TextView>(R.id.file_size).text = if (item.type == FileType.FILE) Formatter.formatFileSize(context, item.getSize()) else context.getString(R.string.directory)
         listItemView.findViewById<TextView>(R.id.file_modified_date).text = TextUtils.parseShortDate(item.getModified().date)
         val imageView = listItemView.findViewById<ImageView>(R.id.file_image)
-        when (item.getType()) {
+        when (item.type) {
             FileType.FILE -> {
                 if (item.hasPreview() == true) {
                     CoroutineScope(Dispatchers.IO).launch {
@@ -65,13 +65,13 @@ class FileStorageFilesAdapter(context: Context, elements: List<IRemoteFile>, pri
         if (constraint == null)
             return originalElements
         return originalElements.filter {
-            it.getCreated().member.filterApplies(constraint)
+            it.created.member.filterApplies(constraint)
                     || it.name.filterApplies(constraint)
                     || it.getDescription().filterApplies(constraint)
         }
     }
 
     override fun sort(elements: List<IRemoteFile>): List<IRemoteFile> {
-        return elements.sortedWith(compareBy({ it.getType() == FileType.FILE }, { it.name }))
+        return elements.sortedWith(compareBy({ it.type == FileType.FILE }, { it.name }))
     }
 }

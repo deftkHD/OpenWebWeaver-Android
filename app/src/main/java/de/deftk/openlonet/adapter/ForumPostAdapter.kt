@@ -29,12 +29,12 @@ class ForumPostAdapter(context: Context, elements: List<ForumPost>): FilterableA
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val listItemView = convertView ?: LayoutInflater.from(context).inflate(R.layout.list_item_forum_post, parent, false)
         val item = getItem(position) ?: return listItemView
-        listItemView.findViewById<ImageView>(R.id.forum_post_image).setImageResource(postIconMap[item.getIcon()] ?: R.drawable.ic_help_24)
-        listItemView.findViewById<TextView>(R.id.forum_post_title).text = item.getTitle()
-        listItemView.findViewById<TextView>(R.id.forum_post_author).text = item.getCreated().member.name
-        listItemView.findViewById<TextView>(R.id.forum_post_date).text = TextUtils.parseShortDate(item.getCreated().date)
-        listItemView.findViewById<ImageView>(R.id.forum_post_locked).visibility = if (item.isLocked() == true) View.VISIBLE else View.INVISIBLE
-        listItemView.findViewById<ImageView>(R.id.forum_post_pinned).visibility = if (item.isPinned() == true) View.VISIBLE else View.INVISIBLE
+        listItemView.findViewById<ImageView>(R.id.forum_post_image).setImageResource(postIconMap[item.icon] ?: R.drawable.ic_help_24)
+        listItemView.findViewById<TextView>(R.id.forum_post_title).text = item.title
+        listItemView.findViewById<TextView>(R.id.forum_post_author).text = item.created.member.name
+        listItemView.findViewById<TextView>(R.id.forum_post_date).text = TextUtils.parseShortDate(item.created.date)
+        listItemView.findViewById<ImageView>(R.id.forum_post_locked).visibility = if (item.isLocked == true) View.VISIBLE else View.INVISIBLE
+        listItemView.findViewById<ImageView>(R.id.forum_post_pinned).visibility = if (item.isPinned == true) View.VISIBLE else View.INVISIBLE
         return listItemView
     }
 
@@ -42,13 +42,13 @@ class ForumPostAdapter(context: Context, elements: List<ForumPost>): FilterableA
         if (constraint == null)
             return originalElements
         return originalElements.filter {
-            it.getTitle().filterApplies(constraint)
-                    || it.getText().filterApplies(constraint)
-                    || it.getCreated().member.filterApplies(constraint)
+            it.title.filterApplies(constraint)
+                    || it.text.filterApplies(constraint)
+                    || it.created.member.filterApplies(constraint)
         }
     }
 
     override fun sort(elements: List<ForumPost>): List<ForumPost> {
-        return elements.sortedWith(compareBy({ it.isPinned() }, { it.getCreated().date })).reversed()
+        return elements.sortedWith(compareBy({ it.isPinned }, { it.created.date })).reversed()
     }
 }

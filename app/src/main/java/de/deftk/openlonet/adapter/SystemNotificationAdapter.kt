@@ -62,15 +62,15 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
 
         listItemView.addSwipeListener(swp)
 
-        val type = item.getMessageType()
+        val type = item.messageType
         val titleView = listItemView.findViewById<TextView>(R.id.system_notification_title)
         titleView.text = context.getString(typeTranslationMap[type] ?: R.string.system_notification_type_unknown)
-        if (item.isRead())
+        if (!item.isUnread)
             titleView.setTypeface(null, Typeface.NORMAL)
         else
             titleView.setTypeface(null, Typeface.BOLD)
-        listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.getGroup().type != -1) item.getGroup().name else item.getMember().name
-        listItemView.findViewById<TextView>(R.id.system_notification_date).text = TextUtils.parseShortDate(item.getDate())
+        listItemView.findViewById<TextView>(R.id.system_notification_author).text = if (item.group.type != -1) item.group.name else item.member.name
+        listItemView.findViewById<TextView>(R.id.system_notification_date).text = TextUtils.parseShortDate(item.date)
         return listItemView
     }
 
@@ -78,14 +78,14 @@ class SystemNotificationAdapter(context: Context, elements: List<SystemNotificat
         if (constraint == null)
             return originalElements
         return originalElements.filter {
-            context.getString(typeTranslationMap[it.getMessageType()] ?: R.string.system_notification_type_unknown).filterApplies(constraint)
-                    || it.getMessage().filterApplies(constraint)
-                    || it.getMember().filterApplies(constraint)
-                    || it.getGroup().filterApplies(constraint)
+            context.getString(typeTranslationMap[it.messageType] ?: R.string.system_notification_type_unknown).filterApplies(constraint)
+                    || it.message.filterApplies(constraint)
+                    || it.member.filterApplies(constraint)
+                    || it.group.filterApplies(constraint)
         }
     }
 
     override fun sort(elements: List<SystemNotification>): List<SystemNotification> {
-        return elements.sortedByDescending { it.getDate() }
+        return elements.sortedByDescending { it.date }
     }
 }

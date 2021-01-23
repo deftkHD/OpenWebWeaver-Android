@@ -32,7 +32,7 @@ class TaskAdapter(context: Context, tasks: List<Pair<Task, OperatingScope>>): Fi
             else
                 titleView.paintFlags = titleView.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
             // author
-            listItemView.findViewById<TextView>(R.id.task_author).text = task.getCreated().member.name
+            listItemView.findViewById<TextView>(R.id.task_author).text = task.created.member.name
             // completed
             if (task.isCompleted())
                 listItemView.findViewById<ImageView>(R.id.task_completed).setImageResource(R.drawable.ic_check_green_32)
@@ -50,11 +50,11 @@ class TaskAdapter(context: Context, tasks: List<Pair<Task, OperatingScope>>): Fi
         return originalElements.filter {
             it.first.getTitle().contains(constraint, true)
                     || it.first.getDescription()?.contains(constraint, true) == true
-                    || it.first.getCreated().member.filterApplies(constraint)
+                    || it.first.created.member.filterApplies(constraint)
         }
     }
 
     override fun sort(elements: List<Pair<Task, OperatingScope>>): List<Pair<Task, OperatingScope>> {
-        return elements.sortedByDescending { it.first.getCreated().date }
+        return elements.sortedByDescending { it.first.created.date }
     }
 }

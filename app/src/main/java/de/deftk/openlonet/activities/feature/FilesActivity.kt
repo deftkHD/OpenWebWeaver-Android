@@ -77,10 +77,10 @@ class FilesActivity : AppCompatActivity() {
         binding.fileList.setOnItemClickListener { _, _, position, _ ->
             val item = binding.fileList.getItemAtPosition(position) as IRemoteFileProvider
             if (item is RemoteFile) {
-                if (item.getType() == FileType.FILE) {
+                if (item.type == FileType.FILE) {
                     if (item.effectiveRead() == true)
                         openFile(item)
-                } else if (item.getType() == FileType.FOLDER) {
+                } else if (item.type == FileType.FOLDER) {
                     val intent = Intent(this, FilesActivity::class.java)
                     intent.putJsonExtra(EXTRA_FOLDER, item)
                     intent.putJsonExtra(EXTRA_OPERATOR, operator)

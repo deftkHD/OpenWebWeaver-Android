@@ -118,9 +118,9 @@ class ReadNotificationActivity : AppCompatActivity() {
 
     private fun displayNotification(notification: BoardNotification, group: Group) {
         binding.notificationTitle.text = notification.getTitle()
-        binding.notificationAuthor.text = notification.getCreated().member.name
+        binding.notificationAuthor.text = notification.created.member.name
         binding.notificationGroup.text = group.name
-        binding.notificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.getCreated().date)
+        binding.notificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.created.date)
         binding.notificationText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.getText()))
         binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
         binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)

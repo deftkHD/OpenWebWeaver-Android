@@ -9,7 +9,6 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import de.deftk.lonet.api.LoNetClient
-import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.activities.LoginActivity
 import de.deftk.openlonet.activities.MainActivity
@@ -47,7 +46,7 @@ class LoNetAuthenticator(private val context: Context): AbstractAccountAuthentic
         var token = accountManager.peekAuthToken(account, authTokenType)
         if (token.isNullOrEmpty()) {
             val result = try {
-                LoNetClient.loginCreateToken(account.name, accountManager.getPassword(account), "OpenLoNet", "${Build.BRAND} ${Build.MODEL}", ApiContext::class.java)
+                LoNetClient.loginCreateToken(account.name, accountManager.getPassword(account), "OpenLoNet", "${Build.BRAND} ${Build.MODEL}")
             } catch (e: Exception) {
                 val bundle = Bundle()
                 bundle.putString(AccountManager.KEY_ERROR_CODE, e::class.java.simpleName)
