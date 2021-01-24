@@ -44,4 +44,14 @@
         android:layout_toEndOf="@+id/overview_mail_image"
         tools:text="Quota" />
 
+    <ProgressBar
+        android:id="@+id/progress_mail_quota"
+        style="@android:style/Widget.Material.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/overview_mail_quota"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="2dp"
+        tools:progress="75" />
+
 </RelativeLayout>

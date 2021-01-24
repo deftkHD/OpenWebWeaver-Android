@@ -35,4 +35,14 @@
         android:layout_toEndOf="@+id/overview_file_storage_image"
         tools:text="Storage" />
 
+    <ProgressBar
+        android:id="@+id/progress_personal_file_storage"
+        style="@android:style/Widget.Material.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/overview_file_quota"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="2dp"
+        tools:progress="75" />
+
 </RelativeLayout>
