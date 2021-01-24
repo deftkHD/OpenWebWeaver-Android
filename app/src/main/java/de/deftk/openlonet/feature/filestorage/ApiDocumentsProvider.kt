@@ -78,7 +78,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
         Log.i(LOG_TAG, "onCreate()")
         val accountManager = AccountManager.get(acquireContext())
         // one account is needed to provide functionality
-        val accounts = AuthStore.findAccounts(accountManager, acquireContext())
+        val accounts = AuthStore.findAccounts(accountManager, null, acquireContext())
         if (accounts.size == 1) {
             account = accounts[0]
             return true
@@ -315,7 +315,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
         if (!AuthStore.isUserLoggedIn()) {
             try {
                 // try silent login
-                if (!AuthStore.performLogin(account, AccountManager.get(acquireContext()), acquireContext())) {
+                if (!AuthStore.performLogin(account, AccountManager.get(acquireContext()), true, acquireContext())) {
                     throw IllegalStateException("Login failed!")
                 }
             } catch (e: Exception) {

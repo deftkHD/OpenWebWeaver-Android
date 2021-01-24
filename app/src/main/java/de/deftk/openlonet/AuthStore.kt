@@ -68,10 +68,10 @@ object AuthStore {
         return apiContext != null
     }
 
-    fun doLoginProcedure(context: Context, fragmentManager: FragmentManager, allowNewLogin: Boolean, onSuccess: suspend () -> Unit, onFailure: suspend () -> Unit) {
+    fun doLoginProcedure(context: Context, fragmentManager: FragmentManager, allowNewLogin: Boolean, allowRefreshLogin: Boolean, priorisedLogin: String?, onSuccess: suspend () -> Unit, onFailure: suspend () -> Unit) {
         fun doLogin(account: Account, accountManager: AccountManager) {
             CoroutineScope(Dispatchers.IO).launch {
-                if (performLogin(account, accountManager, context)) {
+                if (performLogin(account, accountManager, allowRefreshLogin, context)) {
                     onSuccess()
                 } else {
                     onFailure()
@@ -80,7 +80,7 @@ object AuthStore {
         }
 
         val accountManager = AccountManager.get(context)
-        val accounts = findAccounts(accountManager, context)
+        val accounts = findAccounts(accountManager, priorisedLogin, context)
         when {
             accounts.size == 1 -> doLogin(accounts[0], accountManager)
             accounts.size > 1 -> {
@@ -102,9 +102,11 @@ object AuthStore {
         }
     }
 
-    fun findAccounts(accountManager: AccountManager, context: Context): Array<Account> {
+    fun findAccounts(accountManager: AccountManager, priorisedLogin: String?, context: Context): Array<Account> {
         val lastLogin = PreferenceManager.getDefaultSharedPreferences(context).getString(LAST_LOGIN_PREFERENCE, null)
         val allAccounts = accountManager.getAccountsByType(ACCOUNT_TYPE)
+        if (priorisedLogin != null && allAccounts.any { it.name == priorisedLogin })
+            return allAccounts.filter { it.name == priorisedLogin }.toTypedArray()
         if (lastLogin == null)
             return allAccounts
         if (allAccounts.any { it.name == lastLogin })
@@ -115,14 +117,15 @@ object AuthStore {
     /**
      * @return login successful or not
      */
-    suspend fun performLogin(account: Account, accountManager: AccountManager, context: Context): Boolean {
+    suspend fun performLogin(account: Account, accountManager: AccountManager, allowRefreshLogin: Boolean, context: Context): Boolean {
         try {
+            val token = accountManager.blockingGetAuthToken(account, ACCOUNT_TYPE, true)
+            setApiContext(LoNetClient.loginToken(account.name, token ?: error("No token provided!"), false))
             PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putString(LAST_LOGIN_PREFERENCE, account.name)
                 .apply()
             currentAccount = account
-            currentApiToken = accountManager.blockingGetAuthToken(currentAccount, ACCOUNT_TYPE, true)
-            setApiContext(LoNetClient.loginToken(account.name, currentApiToken ?: error("No token provided!"), false))
+            currentApiToken = token
             return true
         } catch (e: Exception) {
             Log.e(LOG_TAG, "Login failed")
@@ -136,14 +139,16 @@ object AuthStore {
                     }
                 } else {
                     accountManager.invalidateAuthToken(ACCOUNT_TYPE, currentApiToken)
-                    Toast.makeText(context, context.getString(R.string.token_expired), Toast.LENGTH_LONG).show()
 
-                    val intent = Intent(context, LoginActivity::class.java)
-                    val savedUser = currentAccount?.name
-                    if (savedUser != null) {
-                        intent.putExtra(LoginActivity.EXTRA_LOGIN, savedUser)
+                    if (allowRefreshLogin) {
+                        Toast.makeText(context, context.getString(R.string.token_expired), Toast.LENGTH_LONG).show()
+                        val intent = Intent(context, LoginActivity::class.java)
+                        val savedUser = currentAccount?.name
+                        if (savedUser != null) {
+                            intent.putExtra(LoginActivity.EXTRA_LOGIN, savedUser)
+                        }
+                        context.startActivity(intent)
                     }
-                    context.startActivity(intent)
                 }
             }
         }

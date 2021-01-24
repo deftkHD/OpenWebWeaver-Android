@@ -1,5 +1,6 @@
 package de.deftk.openlonet.activities
 
+import android.accounts.AccountManager
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -96,19 +97,40 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun doLogin() {
-        AuthStore.doLoginProcedure(this, supportFragmentManager, true, {
-            // on success
-            val intent = Intent(this, StartActivity::class.java)
-            if (getIntent().getBooleanExtra(EXTRA_LOGOUT, false))
-                intent.putExtra(StartActivity.EXTRA_LOGOUT, true)
-            withContext(Dispatchers.Main) {
-                startActivity(intent)
-                finish()
-            }
-        }, {
-            // on failure
-            Toast.makeText(this, R.string.login_failed, Toast.LENGTH_LONG).show()
-        })
+        val logoutName = if (intent.hasExtra(EXTRA_LOGOUT))  intent.getStringExtra(EXTRA_LOGOUT) else null
+        AuthStore.doLoginProcedure(this, supportFragmentManager,
+            allowNewLogin = true,
+            allowRefreshLogin = logoutName == null,
+            priorisedLogin = logoutName,
+            onSuccess = {
+                val intent = Intent(this, StartActivity::class.java)
+                if (logoutName != null)
+                    intent.putExtra(EXTRA_LOGOUT, logoutName)
+                withContext(Dispatchers.Main) {
+                    startActivity(intent)
+                    finish()
+                }
+            },
+            onFailure = {
+                if (logoutName != null) {
+                    val accountManager = AccountManager.get(this)
+                    val accounts = accountManager.getAccountsByType(AuthStore.ACCOUNT_TYPE).filter { it.name == logoutName }
+                    accounts.forEach { account ->
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP_MR1) {
+                            AccountManager.get(this@MainActivity).removeAccountExplicitly(account)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            AccountManager.get(this@MainActivity).removeAccount(account, null, null)
+                        }
+                    }
+
+                    finish()
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@MainActivity, R.string.login_failed, Toast.LENGTH_LONG).show()
+                    }
+                }
+            })
     }
 
 }

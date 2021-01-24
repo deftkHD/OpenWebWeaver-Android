@@ -15,9 +15,9 @@ import de.deftk.openlonet.activities.MainActivity
 
 class LoNetAuthenticator(private val context: Context): AbstractAccountAuthenticator(context) {
 
-    override fun getAccountRemovalAllowed(response: AccountAuthenticatorResponse?, account: Account?): Bundle {
+    override fun getAccountRemovalAllowed(response: AccountAuthenticatorResponse?, account: Account): Bundle {
         val intent = Intent(context, MainActivity::class.java)
-        intent.putExtra(MainActivity.EXTRA_LOGOUT, true)
+        intent.putExtra(MainActivity.EXTRA_LOGOUT, account.name)
         val bundle = Bundle()
         bundle.putParcelable(AccountManager.KEY_INTENT, intent)
         return bundle

@@ -65,13 +65,20 @@ class WriteMailActivity : AppCompatActivity() {
                 val context = this@WriteMailActivity
                 try {
                     if (!AuthStore.isUserLoggedIn()) {
-                        AuthStore.doLoginProcedure(context, context.supportFragmentManager, false, {
-                            // on success
-                            sendEmail()
-                        }, {
-                            // on failure
-                            Toast.makeText(context, R.string.login_failed, Toast.LENGTH_LONG).show()
-                        })
+                        AuthStore.doLoginProcedure(context, context.supportFragmentManager,
+                            allowNewLogin = false,
+                            allowRefreshLogin = true,
+                            priorisedLogin = null,
+                            onSuccess = {
+                                // on success
+                                sendEmail()
+                            },
+                            onFailure = {
+                                // on failure
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, R.string.login_failed, Toast.LENGTH_LONG).show()
+                                }
+                            })
                     } else {
                         sendEmail()
                     }

@@ -41,7 +41,6 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
     companion object {
         const val EXTRA_FOCUS_FEATURE = "de.deftk.openlonet.start.extra_focus_feature"
         const val EXTRA_FOCUS_FEATURE_ARGUMENTS = "de.deftk.openlonet.start.extra_focus_feature_arguments"
-        const val EXTRA_LOGOUT = "de.deftk.openlonet.start.logout"
 
         private const val LOG_TAG = "StartActivity"
     }
@@ -122,7 +121,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                     ChooseAccountDialogFragment(accounts, object: ChooseAccountDialogFragment.AccountSelectListener {
                         override fun onAccountSelected(account: Account) {
                             CoroutineScope(Dispatchers.IO).launch {
-                                if (AuthStore.performLogin(account, accountManager, this@StartActivity)) {
+                                if (AuthStore.performLogin(account, accountManager, true,this@StartActivity)) {
                                     finish()
                                     startActivity(intent)
                                 }
@@ -153,7 +152,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                 (menuMap.values.first { it.getName() == R.string.overview } as IMenuNavigable).onClick(this)
             }
         }
-        if (intent.getBooleanExtra(EXTRA_LOGOUT, false)) {
+        if (intent.hasExtra(MainActivity.EXTRA_LOGOUT)) {
             logout()
         } else {
             binding.navView.menu.getItem(0).isChecked = true
@@ -255,10 +254,8 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                     @Suppress("DEPRECATION")
                     AccountManager.get(this@StartActivity).removeAccount(AuthStore.currentAccount, null, null)
                 }
-                if (!intent.getBooleanExtra(EXTRA_LOGOUT, false)) {
-                    val intent = Intent(this@StartActivity, MainActivity::class.java)
-                    this@StartActivity.startActivity(intent)
-                }
+                val intent = Intent(this@StartActivity, MainActivity::class.java)
+                this@StartActivity.startActivity(intent)
                 this@StartActivity.finish()
             }
         } catch (e: Exception) {
