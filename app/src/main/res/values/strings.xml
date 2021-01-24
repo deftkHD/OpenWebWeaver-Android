@@ -139,5 +139,12 @@
     <string name="switch_account">Switch account</string>
     <string name="add_account">Add account</string>
     <string name="no_user">No user logged in</string>
+    <string name="next">Next</string>
+    <string name="beta_disclaimer">Beta disclaimer</string>
+    <string name="beta_disclaimer_text">Hi!\nThanks for using my app.\nSince this is just the beta-version of my app, there might be issues.\nIf you found any or have suggestions for improvement, feel free to create an issue here: https://github.com/deftkHD/OpenLoNet-Android/issues</string>
+    <string name="privacy_title">Privacy statement</string>
+    <string name="agree">Agree</string>
+    <string name="decline">Decline</string>
+    <string name="privacy_short">The complete data privacy statement can be accessed here: https://github.com/deftkHD/OpenLoNet-Android/blob/master/PRIVACY_DE.md\n\nIn short:\nThe provider of this app doesn\'t collect data, but can\'t guarantee how data sent to lo-net² is handled by lo-net².\nData privacy statement of lo-net²: https://www.lo-net2.de/wws/9.php#/wws/554809.php</string>
 
 </resources>
