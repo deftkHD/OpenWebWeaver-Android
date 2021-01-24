@@ -102,7 +102,7 @@ object AuthStore {
         }
     }
 
-    private fun findAccounts(accountManager: AccountManager, context: Context): Array<Account> {
+    fun findAccounts(accountManager: AccountManager, context: Context): Array<Account> {
         val lastLogin = PreferenceManager.getDefaultSharedPreferences(context).getString(LAST_LOGIN_PREFERENCE, null)
         val allAccounts = accountManager.getAccountsByType(ACCOUNT_TYPE)
         if (lastLogin == null)

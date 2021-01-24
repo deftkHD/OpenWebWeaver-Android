@@ -1,5 +1,6 @@
 package de.deftk.openlonet.feature.filestorage
 
+import android.accounts.Account
 import android.accounts.AccountManager
 import android.app.AuthenticationRequiredException
 import android.app.PendingIntent
@@ -65,6 +66,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
 
     private val cache = DocumentCache()
     private val handler: Handler
+    private lateinit var account: Account
 
     init {
         val thread = LooperThread()
@@ -75,7 +77,13 @@ class ApiDocumentsProvider: DocumentsProvider() {
     override fun onCreate(): Boolean {
         Log.i(LOG_TAG, "onCreate()")
         val accountManager = AccountManager.get(acquireContext())
-        return accountManager.getAccountsByType(AuthStore.ACCOUNT_TYPE).isNotEmpty()
+        // one account is needed to provide functionality
+        val accounts = AuthStore.findAccounts(accountManager, acquireContext())
+        if (accounts.size == 1) {
+            account = accounts[0]
+            return true
+        }
+        return false
     }
 
     override fun queryRoots(projection: Array<out String>?): Cursor {
@@ -301,23 +309,15 @@ class ApiDocumentsProvider: DocumentsProvider() {
     }
 
     @Throws(SecurityException::class)
-    private fun queryChildDocumentsFromNetwork(parentDocumentId: String, sortOrder: String?, filter: FileFilter?, notifyUri: Uri) {
+    private suspend fun queryChildDocumentsFromNetwork(parentDocumentId: String, sortOrder: String?, filter: FileFilter?, notifyUri: Uri) {
         Log.i(LOG_TAG, "queryChildDocumentsFromNetwork(parentDocumentId=$parentDocumentId, sortOrder=$sortOrder, filter=$filter, notifyUri=$notifyUri)")
 
-        val sessionValid = try {
-            AuthStore.getApiUser().checkSession(AuthStore.getUserContext())
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        } // ?: return
-
-        if (!AuthStore.isUserLoggedIn() || sessionValid != true) {
+        if (!AuthStore.isUserLoggedIn()) {
             try {
                 // try silent login
-                TODO("The ApiDocumentsProvider is in general broken and needs a bit of cleanup")
-                //val username = AuthStore.getSavedUsername(acquireContext()) ?: error("No username")
-                //val token = AuthStore.getSavedToken(acquireContext()) ?: error("No token")
-                //AuthStore.setApiContext(LoNetClient.loginToken(username, token, false, ApiContext::class.java))
+                if (!AuthStore.performLogin(account, AccountManager.get(acquireContext()), acquireContext())) {
+                    throw IllegalStateException("Login failed!")
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -378,7 +378,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
                     .map { Pair(it.first as RemoteFile, it.second) }
                     .firstOrNull { it.first.id == fileId && it.second.login == operatorId }
                 if (parent != null) {
-                    cache.put(notifyUri, parent.second.getFiles(filter = filter, context = parent.second.getRequestContext(AuthStore.getApiContext())).map { Pair(it, parent.second) })
+                    cache.put(notifyUri, parent.first.getFiles(filter = filter, context = parent.second.getRequestContext(AuthStore.getApiContext())).map { Pair(it, parent.second) })
                 } else {
                     Log.e(LOG_TAG, "Requested document $parentDocumentId not found")
                     cache.put(notifyUri, emptyList()) // prevent infinite loop
@@ -437,12 +437,11 @@ class ApiDocumentsProvider: DocumentsProvider() {
      * functionality
      * @return NotifyUri for the given parentDocumentId
      */
-    private fun buildNotifyUri(parentDocumentId: String): Uri {
-        return DocumentsContract.buildChildDocumentsUri(
+    private fun buildNotifyUri(parentDocumentId: String) =
+        DocumentsContract.buildChildDocumentsUri(
             "de.deftk.openlonet.filestorage.fileprovider",
             parentDocumentId
         )
-    }
 
     /**
      * @param projection: Column names provided when creating cursor the cursor
@@ -473,8 +472,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
      */
     private fun includeOperator(cursor: MatrixCursor, operator: OperatingScope) {
         var flags = 0
-        if (operator.effectiveRights.contains(Permission.FILES_WRITE)
-            || operator.effectiveRights.contains(Permission.FILES_ADMIN)) {
+        if (operator.effectiveRights.contains(Permission.FILES_WRITE) || operator.effectiveRights.contains(Permission.FILES_ADMIN)) {
             flags = flags or Document.FLAG_DIR_SUPPORTS_CREATE
         }
 
@@ -496,6 +494,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
     private fun includeFile(cursor: MatrixCursor, filePair: Pair<RemoteFile, OperatingScope>) {
         var flags = 0
         val file = filePair.first
+        //TODO not sure if this permission check works
         if (file.effectiveModify() == true) {
             flags = if (file.type == FileType.FOLDER) {
                 flags or Document.FLAG_DIR_SUPPORTS_CREATE
@@ -513,7 +512,7 @@ class ApiDocumentsProvider: DocumentsProvider() {
         }
 
         val row = cursor.newRow()
-        row.add(Document.COLUMN_DOCUMENT_ID, "${filePair.second.login}:${file.id}")
+        row.add(Document.COLUMN_DOCUMENT_ID, buildDocumentId(filePair.second.login, file.id))
         row.add(Document.COLUMN_DISPLAY_NAME, file.name)
         row.add(Document.COLUMN_SIZE, file.getSize())
         if (file.type == FileType.FILE) {
