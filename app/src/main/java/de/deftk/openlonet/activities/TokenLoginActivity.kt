@@ -35,16 +35,16 @@ class TokenLoginActivity : AppCompatActivity() {
         }
 
         binding.btnLogin.setOnClickListener {
-            val email = binding.txtEmail.text.toString()
+            val username = binding.txtEmail.text.toString()
             val token = binding.txtToken.text.toString()
             val rememberToken = binding.chbRememberToken.isChecked
-            if (isEmailValid(email) && isTokenValid(token)) {
+            if (isEmailValid(username) && isTokenValid(token)) {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        AuthStore.setApiContext(LoNetClient.loginToken(email, token, false, ApiContext::class.java))
+                        AuthStore.setApiContext(LoNetClient.loginToken(username, token, false, ApiContext::class.java))
                         if (rememberToken) {
                             val accountManager = AccountManager.get(this@TokenLoginActivity)
-                            val account = Account(email, AuthStore.ACCOUNT_TYPE)
+                            val account = Account(username, AuthStore.ACCOUNT_TYPE)
                             accountManager.addAccountExplicitly(account, null, null)
                             accountManager.setAuthToken(account, AuthStore.EXTRA_TOKEN_TYPE, token)
                         }

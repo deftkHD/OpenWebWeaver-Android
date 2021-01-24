@@ -30,6 +30,8 @@ class LoginActivity : AppCompatActivity() {
         const val EXTRA_LOGIN = "de.deftk.openlonet.login.extra_login"
         const val EXTRA_REMEMBER = "de.deftk.openlonet.login.extra_remember"
         private const val LOG_TAG = "LoginActivity"
+
+        private const val REQUEST_TOKEN_LOGIN = 1
     }
 
     private lateinit var binding: ActivityLoginBinding
@@ -48,9 +50,9 @@ class LoginActivity : AppCompatActivity() {
 
         binding.tokenLogin.setOnClickListener {
             val intent = Intent(this, TokenLoginActivity::class.java)
-            if (this.intent.hasExtra(EXTRA_LOGIN))
-                intent.putExtra(EXTRA_LOGIN, this.intent.getStringExtra(EXTRA_LOGIN))
-            startActivity(intent)
+            if (binding.txtEmail.text.isNotEmpty())
+                intent.putExtra(EXTRA_LOGIN, binding.txtEmail.text.toString())
+            startActivityForResult(intent, REQUEST_TOKEN_LOGIN)
         }
 
         binding.btnLogin.setOnClickListener {
@@ -115,6 +117,15 @@ class LoginActivity : AppCompatActivity() {
 
     private fun isPasswordValid(password: String): Boolean {
         return password.isNotBlank()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_TOKEN_LOGIN) {
+            if (resultCode == RESULT_OK) {
+                startActivity(Intent(this@LoginActivity, StartActivity::class.java))
+                finish()
+            }
+        } else super.onActivityResult(requestCode, resultCode, data)
     }
 
 }

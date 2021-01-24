@@ -28,7 +28,7 @@ object AuthStore {
 
     private const val LOG_TAG = "AuthStore"
     const val ACCOUNT_TYPE = "OpenLoNet/lo-net2.de"
-    const val EXTRA_TOKEN_TYPE = "de.deftk.openlonet.auth.extra_token_type"
+    const val EXTRA_TOKEN_TYPE = "OpenLoNetApiToken"
     private const val LAST_LOGIN_PREFERENCE = "last_login"
 
     var currentApiToken: String? = null
@@ -118,8 +118,8 @@ object AuthStore {
      * @return login successful or not
      */
     suspend fun performLogin(account: Account, accountManager: AccountManager, allowRefreshLogin: Boolean, context: Context): Boolean {
+        val token = accountManager.blockingGetAuthToken(account, ACCOUNT_TYPE, true)
         try {
-            val token = accountManager.blockingGetAuthToken(account, ACCOUNT_TYPE, true)
             setApiContext(LoNetClient.loginToken(account.name, token ?: error("No token provided!"), false))
             PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putString(LAST_LOGIN_PREFERENCE, account.name)
@@ -138,12 +138,12 @@ object AuthStore {
                         else -> Toast.makeText(context, String.format(context.getString(R.string.request_failed_other), e.message), Toast.LENGTH_LONG).show()
                     }
                 } else {
-                    accountManager.invalidateAuthToken(ACCOUNT_TYPE, currentApiToken)
+                    accountManager.invalidateAuthToken(ACCOUNT_TYPE, token)
 
                     if (allowRefreshLogin) {
                         Toast.makeText(context, context.getString(R.string.token_expired), Toast.LENGTH_LONG).show()
                         val intent = Intent(context, LoginActivity::class.java)
-                        val savedUser = currentAccount?.name
+                        val savedUser = account.name
                         if (savedUser != null) {
                             intent.putExtra(LoginActivity.EXTRA_LOGIN, savedUser)
                         }
