@@ -256,7 +256,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                     AccountManager.get(this@StartActivity).removeAccount(AuthStore.currentAccount, null, null)
                 }
                 if (!intent.getBooleanExtra(EXTRA_LOGOUT, false)) {
-                    val intent = Intent(this@StartActivity, LoginActivity::class.java)
+                    val intent = Intent(this@StartActivity, MainActivity::class.java)
                     this@StartActivity.startActivity(intent)
                 }
                 this@StartActivity.finish()
