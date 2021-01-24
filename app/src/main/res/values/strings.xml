@@ -135,5 +135,9 @@
     <string name="remember_token">Remember token</string>
     <string name="import_into_calendar">Imoprt into calendar</string>
     <string name="learning_plan_not_support">Learning plans are currently not supported</string>
+    <string name="choose_account">Choose account</string>
+    <string name="switch_account">Switch account</string>
+    <string name="add_account">Add account</string>
+    <string name="no_user">No user logged in</string>
 
 </resources>

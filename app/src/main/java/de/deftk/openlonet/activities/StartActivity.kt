@@ -1,5 +1,6 @@
 package de.deftk.openlonet.activities
 
+import android.accounts.Account
 import android.accounts.AccountManager
 import android.content.DialogInterface
 import android.content.Intent
@@ -29,6 +30,7 @@ import de.deftk.openlonet.databinding.ActivityStartBinding
 import de.deftk.openlonet.feature.AppFeature
 import de.deftk.openlonet.fragments.OverviewFragment
 import de.deftk.openlonet.fragments.SettingsFragment
+import de.deftk.openlonet.fragments.dialog.ChooseAccountDialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -104,7 +106,33 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                 displayFragment(SettingsFragment())
             }
         })
-        addMenuItem(object : AbstractNavigableMenuItem(R.string.logout, R.id.utility_group, R.drawable.ic_lock_open_24) {
+        addMenuItem(object : AbstractClickableMenuItem(R.string.add_account, R.id.account_group, R.drawable.ic_person_add_24) {
+            override fun onClick(activity: AppCompatActivity) {
+                val intent = Intent(this@StartActivity, LoginActivity::class.java)
+                intent.putExtra(LoginActivity.EXTRA_REMEMBER, true)
+                finish()
+                startActivity(intent)
+            }
+        })
+        val accountManager = AccountManager.get(this@StartActivity)
+        val accounts = accountManager.getAccountsByType(AuthStore.ACCOUNT_TYPE)
+        if (accounts.size > 1) {
+            addMenuItem(object : AbstractClickableMenuItem(R.string.switch_account, R.id.account_group, R.drawable.ic_account_circle_24) {
+                override fun onClick(activity: AppCompatActivity) {
+                    ChooseAccountDialogFragment(accounts, object: ChooseAccountDialogFragment.AccountSelectListener {
+                        override fun onAccountSelected(account: Account) {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                if (AuthStore.performLogin(account, accountManager, this@StartActivity)) {
+                                    finish()
+                                    startActivity(intent)
+                                }
+                            }
+                        }
+                    }).show(supportFragmentManager, "ChooseAccount")
+                }
+            })
+        }
+        addMenuItem(object : AbstractNavigableMenuItem(R.string.logout, R.id.account_group, R.drawable.ic_lock_open_24) {
             override fun onClick(activity: AppCompatActivity) {
                 logout()
             }

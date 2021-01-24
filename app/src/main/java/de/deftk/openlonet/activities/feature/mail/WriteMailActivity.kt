@@ -64,9 +64,13 @@ class WriteMailActivity : AppCompatActivity() {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     if (!AuthStore.isUserLoggedIn()) {
-                        if (AuthStore.performLogin(this@WriteMailActivity)) {
+                        AuthStore.doLoginProcedure(this@WriteMailActivity, this@WriteMailActivity.supportFragmentManager, false, {
+                            // on success
                             sendEmail()
-                        }
+                        }, {
+                            // on failure
+                            Toast.makeText(this@WriteMailActivity, R.string.login_failed, Toast.LENGTH_LONG).show()
+                        })
                     } else {
                         sendEmail()
                     }

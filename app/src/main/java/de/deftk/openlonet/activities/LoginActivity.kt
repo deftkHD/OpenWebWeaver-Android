@@ -27,7 +27,8 @@ import java.util.concurrent.TimeoutException
 class LoginActivity : AppCompatActivity() {
 
     companion object {
-        const val EXTRA_LOGIN = "extra_login"
+        const val EXTRA_LOGIN = "de.deftk.openlonet.login.extra_login"
+        const val EXTRA_REMEMBER = "de.deftk.openlonet.login.extra_remember"
         private const val LOG_TAG = "LoginActivity"
     }
 
@@ -43,6 +44,7 @@ class LoginActivity : AppCompatActivity() {
         if (intent.hasExtra(EXTRA_LOGIN)) {
             binding.txtEmail.setText(intent.getStringExtra(EXTRA_LOGIN), TextView.BufferType.EDITABLE)
         }
+        binding.chbStayLoggedIn.isChecked = intent.getBooleanExtra(EXTRA_REMEMBER, false)
 
         binding.tokenLogin.setOnClickListener {
             val intent = Intent(this, TokenLoginActivity::class.java)

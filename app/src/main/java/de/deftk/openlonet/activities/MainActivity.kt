@@ -2,13 +2,13 @@ package de.deftk.openlonet.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.BuildConfig
+import de.deftk.openlonet.R
 import de.deftk.openlonet.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
@@ -28,17 +28,19 @@ class MainActivity : AppCompatActivity() {
 
         binding.lblVersion.append(" ${BuildConfig.VERSION_NAME}")
 
-        CoroutineScope(Dispatchers.IO).launch {
-            if (AuthStore.performLogin(this@MainActivity)) {
-                val intent = Intent(this@MainActivity, StartActivity::class.java)
-                if (getIntent().getBooleanExtra(EXTRA_LOGOUT, false))
-                    intent.putExtra(StartActivity.EXTRA_LOGOUT, true)
-                withContext(Dispatchers.Main) {
-                    startActivity(intent)
-                    finish()
-                }
+        AuthStore.doLoginProcedure(this, supportFragmentManager, true, {
+            // on success
+            val intent = Intent(this, StartActivity::class.java)
+            if (getIntent().getBooleanExtra(EXTRA_LOGOUT, false))
+                intent.putExtra(StartActivity.EXTRA_LOGOUT, true)
+            withContext(Dispatchers.Main) {
+                startActivity(intent)
+                finish()
             }
-        }
+        }, {
+            // on failure
+            Toast.makeText(this, R.string.login_failed, Toast.LENGTH_LONG).show()
+        })
     }
 
 }

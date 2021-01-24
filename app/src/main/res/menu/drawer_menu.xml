@@ -15,4 +15,8 @@
         android:id="@+id/utility_group"
         android:checkableBehavior="single" />
 
+    <group
+        android:id="@+id/account_group"
+        android:checkableBehavior="single" />
+
 </menu>
