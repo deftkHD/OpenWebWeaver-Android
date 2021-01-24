@@ -9,9 +9,11 @@ import android.widget.Toast
 import androidx.fragment.app.FragmentManager
 import androidx.preference.PreferenceManager
 import de.deftk.lonet.api.LoNetClient
+import de.deftk.lonet.api.auth.Credentials
 import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.lonet.api.implementation.User
 import de.deftk.lonet.api.model.IRequestContext
+import de.deftk.lonet.api.request.handler.AutoLoginRequestHandler
 import de.deftk.openlonet.activities.LoginActivity
 import de.deftk.openlonet.fragments.dialog.ChooseAccountDialogFragment
 import kotlinx.coroutines.CoroutineScope
@@ -27,7 +29,7 @@ object AuthStore {
     private const val LOG_TAG = "AuthStore"
     const val ACCOUNT_TYPE = "OpenLoNet/lo-net2.de"
     const val EXTRA_TOKEN_TYPE = "de.deftk.openlonet.auth.extra_token_type"
-    const val LAST_LOGIN_PREFERENCE = "last_login"
+    private const val LAST_LOGIN_PREFERENCE = "last_login"
 
     var currentApiToken: String? = null
     var currentAccount: Account? = null
@@ -48,6 +50,18 @@ object AuthStore {
 
     fun setApiContext(context: ApiContext) {
         apiContext = context
+        context.setRequestHandler(AutoLoginRequestHandler(object : AutoLoginRequestHandler.LoginHandler<ApiContext> {
+            override fun getCredentials(): Credentials {
+                if (currentApiToken != null) {
+                    return Credentials.fromToken(getApiUser().login, currentApiToken!!)
+                }
+                error("Can't provide credentials")
+            }
+
+            override fun onLogin(context: ApiContext) {
+                setApiContext(context)
+            }
+        }, ApiContext::class.java))
     }
 
     fun isUserLoggedIn(): Boolean {
@@ -88,7 +102,7 @@ object AuthStore {
         }
     }
 
-    fun findAccounts(accountManager: AccountManager, context: Context): Array<Account> {
+    private fun findAccounts(accountManager: AccountManager, context: Context): Array<Account> {
         val lastLogin = PreferenceManager.getDefaultSharedPreferences(context).getString(LAST_LOGIN_PREFERENCE, null)
         val allAccounts = accountManager.getAccountsByType(ACCOUNT_TYPE)
         if (lastLogin == null)
@@ -108,7 +122,7 @@ object AuthStore {
                 .apply()
             currentAccount = account
             currentApiToken = accountManager.blockingGetAuthToken(currentAccount, ACCOUNT_TYPE, true)
-            apiContext = LoNetClient.loginToken(account.name, currentApiToken ?: error("No token provided!"), false)
+            setApiContext(LoNetClient.loginToken(account.name, currentApiToken ?: error("No token provided!"), false))
             return true
         } catch (e: Exception) {
             Log.e(LOG_TAG, "Login failed")

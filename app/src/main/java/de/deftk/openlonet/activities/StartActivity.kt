@@ -221,15 +221,6 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         return features
     }
 
-    override fun onRestart() {
-        super.onRestart()
-        CoroutineScope(Dispatchers.IO).launch {
-            verifySession()
-        }
-
-        //TODO VerifySessionTask should also be executed in onCreate() and removed from MainActivity
-    }
-
     private fun logout() {
         if (AuthStore.currentApiToken != null) {
             val listener = DialogInterface.OnClickListener { _, which ->
@@ -279,19 +270,6 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                 ).show()
             }
         }
-    }
-
-    @Deprecated("Use autologin handler offered by LoNetApi")
-    private suspend fun verifySession() {
-        try {
-            if (!AuthStore.getApiUser().checkSession(AuthStore.getUserContext())) {
-                val intent = Intent(this, MainActivity::class.java)
-                withContext(Dispatchers.Main) {
-                    startActivity(intent)
-                    finish()
-                }
-            }
-        } catch (ignored: Exception) {}
     }
 
 }

@@ -62,14 +62,15 @@ class WriteMailActivity : AppCompatActivity() {
             }
             binding.progressSendMail.visibility = View.VISIBLE
             CoroutineScope(Dispatchers.IO).launch {
+                val context = this@WriteMailActivity
                 try {
                     if (!AuthStore.isUserLoggedIn()) {
-                        AuthStore.doLoginProcedure(this@WriteMailActivity, this@WriteMailActivity.supportFragmentManager, false, {
+                        AuthStore.doLoginProcedure(context, context.supportFragmentManager, false, {
                             // on success
                             sendEmail()
                         }, {
                             // on failure
-                            Toast.makeText(this@WriteMailActivity, R.string.login_failed, Toast.LENGTH_LONG).show()
+                            Toast.makeText(context, R.string.login_failed, Toast.LENGTH_LONG).show()
                         })
                     } else {
                         sendEmail()
@@ -78,7 +79,7 @@ class WriteMailActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     e.printStackTrace()
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@WriteMailActivity, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
                         binding.progressSendMail.visibility = View.GONE
                         setResult(RESULT_CODE_CANCEL)
                         finish()
@@ -107,20 +108,6 @@ class WriteMailActivity : AppCompatActivity() {
             setResult(RESULT_CODE_MAIL)
             finish()
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        //FIXME use API features to handle login
-        /*when (requestCode) {
-            AuthStore.REQUEST_LOGIN -> {
-                if (resultCode == RESULT_OK) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        sendEmail()
-                    }
-                }
-            }
-            else ->*/ super.onActivityResult(requestCode, resultCode, data)
-        //}
     }
 
     // back button in toolbar functionality
