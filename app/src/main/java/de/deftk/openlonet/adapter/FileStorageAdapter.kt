@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import de.deftk.lonet.api.implementation.OperatingScope
 import de.deftk.lonet.api.model.IScope
@@ -26,6 +27,10 @@ class FileStorageAdapter(context: Context, val elements: Map<OperatingScope, Quo
         listItemView.findViewById<TextView>(R.id.file_size).text = String.format(context.getString(R.string.quota), Formatter.formatFileSize(context, quota.free), Formatter.formatFileSize(context, quota.limit))
         val imageView = listItemView.findViewById<ImageView>(R.id.file_image)
         imageView.setImageResource(R.drawable.ic_folder_24)
+
+        val progressBar = listItemView.findViewById<ProgressBar>(R.id.progress_file)
+        progressBar.progress = ((quota.usage.toFloat() / quota.limit) * 100).toInt()
+        progressBar.visibility = View.VISIBLE
 
         return listItemView
     }
