@@ -221,7 +221,7 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
     }
 
     private fun logout() {
-        if (AuthStore.currentApiToken != null) {
+        if (AuthStore.currentAccount != null) {
             val listener = DialogInterface.OnClickListener { _, which ->
                 when (which) {
                     DialogInterface.BUTTON_POSITIVE -> {
@@ -243,7 +243,8 @@ class StartActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
     private suspend fun logout(removeTrust: Boolean) {
         try {
             if (removeTrust) {
-                AuthStore.getApiUser().logoutDestroyToken(AuthStore.currentApiToken!!, AuthStore.getUserContext())
+                val accountManager = AccountManager.get(this)
+                AuthStore.getApiUser().logoutDestroyToken(accountManager.getPassword(AuthStore.currentAccount), AuthStore.getUserContext())
             } else {
                 AuthStore.getApiUser().logout(AuthStore.getUserContext())
             }

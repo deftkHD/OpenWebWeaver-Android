@@ -31,10 +31,10 @@ object AuthStore {
     const val EXTRA_TOKEN_TYPE = "OpenLoNetApiToken"
     private const val LAST_LOGIN_PREFERENCE = "last_login"
 
-    var currentApiToken: String? = null
     var currentAccount: Account? = null
 
     private var apiContext: ApiContext? = null
+    private lateinit var accountManager: AccountManager
 
     fun getApiUser(): User {
         return getApiContext().getUser()
@@ -52,13 +52,17 @@ object AuthStore {
         apiContext = context
         context.setRequestHandler(AutoLoginRequestHandler(object : AutoLoginRequestHandler.LoginHandler<ApiContext> {
             override fun getCredentials(): Credentials {
-                if (currentApiToken != null) {
-                    return Credentials.fromToken(getApiUser().login, currentApiToken!!)
+                if (currentAccount != null) {
+                    return Credentials.fromToken(currentAccount!!.name, accountManager.getPassword(currentAccount))
                 }
                 error("Can't provide credentials")
             }
 
             override fun onLogin(context: ApiContext) {
+                if (currentAccount != null) {
+                    // make sure old session id is invalidated
+                    accountManager.invalidateAuthToken(EXTRA_TOKEN_TYPE, getApiContext().getSessionId())
+                }
                 setApiContext(context)
             }
         }, ApiContext::class.java))
@@ -78,8 +82,7 @@ object AuthStore {
                 }
             }
         }
-
-        val accountManager = AccountManager.get(context)
+        accountManager = AccountManager.get(context)
         val accounts = findAccounts(accountManager, priorisedLogin, context)
         when {
             accounts.size == 1 -> doLogin(accounts[0], accountManager)
@@ -118,41 +121,43 @@ object AuthStore {
      * @return login successful or not
      */
     suspend fun performLogin(account: Account, accountManager: AccountManager, allowRefreshLogin: Boolean, context: Context): Boolean {
-        val token = accountManager.blockingGetAuthToken(account, ACCOUNT_TYPE, true)
         try {
-            setApiContext(LoNetClient.loginToken(account.name, token ?: error("No token provided!"), false))
+            val token = accountManager.getPassword(account)
+            setApiContext(LoNetClient.loginToken(account.name, accountManager.getPassword(account)))
+            token.toString()
             PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putString(LAST_LOGIN_PREFERENCE, account.name)
                 .apply()
             currentAccount = account
-            currentApiToken = token
             return true
         } catch (e: Exception) {
-            Log.e(LOG_TAG, "Login failed")
-            e.printStackTrace()
             withContext(Dispatchers.Main) {
-                if (e is IOException) {
-                    when (e) {
-                        is UnknownHostException -> Toast.makeText(context, context.getString(R.string.request_failed_connection), Toast.LENGTH_LONG).show()
-                        is TimeoutException -> Toast.makeText(context, context.getString(R.string.request_failed_timeout), Toast.LENGTH_LONG).show()
-                        else -> Toast.makeText(context, String.format(context.getString(R.string.request_failed_other), e.message), Toast.LENGTH_LONG).show()
-                    }
-                } else {
-                    accountManager.invalidateAuthToken(ACCOUNT_TYPE, token)
-
-                    if (allowRefreshLogin) {
-                        Toast.makeText(context, context.getString(R.string.token_expired), Toast.LENGTH_LONG).show()
-                        val intent = Intent(context, LoginActivity::class.java)
-                        val savedUser = account.name
-                        if (savedUser != null) {
-                            intent.putExtra(LoginActivity.EXTRA_LOGIN, savedUser)
-                        }
-                        context.startActivity(intent)
-                    }
-                }
+                handleLoginException(e, context, allowRefreshLogin, account.name)
             }
         }
         return false
+    }
+
+    fun handleLoginException(e: Exception, context: Context, allowRefreshLogin: Boolean, login: String) {
+        Log.e(LOG_TAG, "Login failed")
+        e.printStackTrace()
+        if (e is IOException) {
+            when (e) {
+                is UnknownHostException -> Toast.makeText(context, context.getString(R.string.request_failed_connection), Toast.LENGTH_LONG).show()
+                is TimeoutException -> Toast.makeText(context, context.getString(R.string.request_failed_timeout), Toast.LENGTH_LONG).show()
+                else -> Toast.makeText(context, String.format(context.getString(R.string.request_failed_other), e.message), Toast.LENGTH_LONG).show()
+            }
+        } else {
+            if (allowRefreshLogin) {
+                Toast.makeText(context, context.getString(R.string.token_expired), Toast.LENGTH_LONG).show()
+                val intent = Intent(context, LoginActivity::class.java)
+                intent.putExtra(LoginActivity.EXTRA_REFRESH_ACCOUNT, login)
+                intent.putExtra(LoginActivity.EXTRA_LOGIN, login)
+                context.startActivity(intent)
+            } else {
+                Toast.makeText(context, "${context.getString(R.string.login_failed)}: ${e.message ?: e}", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
 }

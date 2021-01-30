@@ -6,7 +6,6 @@ import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import de.deftk.lonet.api.LoNetClient
 import de.deftk.openlonet.AuthStore
@@ -43,25 +42,23 @@ class LoNetAuthenticator(private val context: Context): AbstractAccountAuthentic
 
     override fun getAuthToken(response: AccountAuthenticatorResponse, account: Account, authTokenType: String?, options: Bundle): Bundle {
         val accountManager = AccountManager.get(context)
-        var token = accountManager.peekAuthToken(account, authTokenType)
-        if (token.isNullOrEmpty()) {
-            val result = try {
-                LoNetClient.loginCreateToken(account.name, accountManager.getPassword(account), "OpenLoNet", "${Build.BRAND} ${Build.MODEL}")
-            } catch (e: Exception) {
-                val bundle = Bundle()
-                bundle.putString(AccountManager.KEY_ERROR_CODE, e::class.java.simpleName)
-                bundle.putString(AccountManager.KEY_ERROR_MESSAGE, e.message)
-                return bundle
-            }
-            AuthStore.setApiContext(result.first)
-            token = result.second
+        val result = try {
+            //LoNetClient.loginCreateToken(account.name, accountManager.getPassword(account), "OpenLoNet", "${Build.BRAND} ${Build.MODEL}")
+            LoNetClient.loginToken(account.name, accountManager.getPassword(account))
+        } catch (e: Exception) {
+            val bundle = Bundle()
+            bundle.putString(AccountManager.KEY_ERROR_CODE, e::class.java.simpleName)
+            bundle.putString(AccountManager.KEY_ERROR_MESSAGE, e.message)
+            return bundle
         }
+        AuthStore.setApiContext(result)
+        val sessionId = result.getSessionId()
 
-        if (token.isNotEmpty()) {
+        if (sessionId.isNotEmpty()) {
             val bundle = Bundle()
             bundle.putString(AccountManager.KEY_ACCOUNT_NAME, account.name)
             bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, account.type)
-            bundle.putString(AccountManager.KEY_AUTHTOKEN, token)
+            bundle.putString(AccountManager.KEY_AUTHTOKEN, sessionId)
             return bundle
         }
 

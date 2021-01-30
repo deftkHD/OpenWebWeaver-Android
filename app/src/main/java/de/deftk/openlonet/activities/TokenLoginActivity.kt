@@ -17,9 +17,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.IOException
-import java.net.UnknownHostException
-import java.util.concurrent.TimeoutException
 
 class TokenLoginActivity : AppCompatActivity() {
 
@@ -45,8 +42,8 @@ class TokenLoginActivity : AppCompatActivity() {
                         if (rememberToken) {
                             val accountManager = AccountManager.get(this@TokenLoginActivity)
                             val account = Account(username, AuthStore.ACCOUNT_TYPE)
-                            accountManager.addAccountExplicitly(account, null, null)
-                            accountManager.setAuthToken(account, AuthStore.EXTRA_TOKEN_TYPE, token)
+                            accountManager.addAccountExplicitly(account, token, null)
+                            AuthStore.setApiContext(LoNetClient.loginToken(username, token))
                         }
                         withContext(Dispatchers.Main) {
                             binding.pgbLogin.visibility = ProgressBar.INVISIBLE
@@ -57,22 +54,10 @@ class TokenLoginActivity : AppCompatActivity() {
                         }
                     } catch (e: Exception) {
                         withContext(Dispatchers.Main) {
-                            e.printStackTrace()
                             binding.pgbLogin.visibility = ProgressBar.INVISIBLE
                             binding.btnLogin.isEnabled = true
+                            AuthStore.handleLoginException(e, this@TokenLoginActivity, false, username)
                             setResult(RESULT_CANCELED)
-                            if (e is IOException) {
-                                when (e) {
-                                    is UnknownHostException ->
-                                        Toast.makeText(this@TokenLoginActivity, getString(R.string.request_failed_connection), Toast.LENGTH_LONG).show()
-                                    is TimeoutException ->
-                                        Toast.makeText(this@TokenLoginActivity, getString(R.string.request_failed_timeout), Toast.LENGTH_LONG).show()
-                                    else ->
-                                        Toast.makeText(this@TokenLoginActivity, String.format(getString(R.string.request_failed_other), e.message), Toast.LENGTH_LONG).show()
-                                }
-                            } else {
-                                Toast.makeText(this@TokenLoginActivity, "${getString(R.string.login_failed)}: ${e.message ?: e}", Toast.LENGTH_LONG).show()
-                            }
                         }
                     }
                 }

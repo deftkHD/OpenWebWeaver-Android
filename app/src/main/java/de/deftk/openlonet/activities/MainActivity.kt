@@ -8,7 +8,6 @@ import android.text.SpannableString
 import android.text.method.LinkMovementMethod
 import android.text.util.Linkify
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 import de.deftk.openlonet.AuthStore
@@ -125,10 +124,6 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     finish()
-                } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@MainActivity, R.string.login_failed, Toast.LENGTH_LONG).show()
-                    }
                 }
             })
     }
