@@ -112,7 +112,7 @@ class MembersActivity : AppCompatActivity() {
 
     private suspend fun loadMembers() {
         try {
-            val members = group.getMembers(group.getRequestContext(AuthStore.getApiContext()))
+            val members = group.getMembers(context = group.getRequestContext(AuthStore.getApiContext()))
             withContext(Dispatchers.Main) {
                 binding.membersList.adapter = MemberAdapter(this@MembersActivity, members)
                 binding.membersEmpty.isVisible = members.isEmpty()
