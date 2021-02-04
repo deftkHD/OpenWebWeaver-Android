@@ -147,4 +147,12 @@
     <string name="agree">Zustimmen</string>
     <string name="decline">Ablehnen</string>
     <string name="privacy_short">Die komplette Datenschutzerklärung kann hier eingesehen werden: https://github.com/deftkHD/OpenLoNet-Android/blob/master/PRIVACY_DE.md\n\nKurz:\nDer Anbieter dieser App sammelt keine Daten, kann aber nicht garantieren, wie mit den Daten, die zu lo-net² gesendet werden, seitens lo-net² umgegangen wird.\nDatenschutzerklärung von lo-net²: https://www.lo-net2.de/wws/9.php#/wws/554809.php</string>
+    <string name="notification_channel_upload_name">Upload Fortschritt</string>
+    <string name="notification_channel_upload_description">Fortschrittsanzeige für Uploads</string>
+    <string name="notification_channel_download_name">Download Fortschritt</string>
+    <string name="notification_channel_download_description">Fortschrittsanzeigt für Downloads</string>
+    <string name="notification_upload_title">Hochladen</string>
+    <string name="notification_upload_content">Lade Datei %s hoch...</string>
+    <string name="notification_download_title">Herunterladen</string>
+    <string name="notification_download_content">Lade Datei %s herunter...</string>
 </resources>

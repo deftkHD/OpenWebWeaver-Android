@@ -1,4 +1,4 @@
-package de.deftk.openlonet.feature.filestorage
+package de.deftk.openlonet.feature.filestorage.integration
 
 import android.os.Build
 import android.os.CancellationSignal

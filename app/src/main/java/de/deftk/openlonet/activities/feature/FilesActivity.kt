@@ -12,18 +12,25 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.preference.PreferenceManager
+import androidx.work.*
+import de.deftk.lonet.api.LoNetClient
 import de.deftk.lonet.api.implementation.OperatingScope
 import de.deftk.lonet.api.implementation.feature.filestorage.RemoteFile
+import de.deftk.lonet.api.implementation.feature.filestorage.session.SessionFile
 import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.filestorage.FileType
+import de.deftk.lonet.api.model.feature.filestorage.IRemoteFile
 import de.deftk.lonet.api.model.feature.filestorage.IRemoteFileProvider
+import de.deftk.lonet.api.request.UserApiRequest
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.FileStorageFilesAdapter
 import de.deftk.openlonet.databinding.ActivityFilesBinding
+import de.deftk.openlonet.feature.filestorage.DownloadOpenWorker
+import de.deftk.openlonet.feature.filestorage.DownloadSaveWorker
+import de.deftk.openlonet.feature.filestorage.UploadWorker
 import de.deftk.openlonet.utils.FileUtil
 import de.deftk.openlonet.utils.getJsonExtra
 import de.deftk.openlonet.utils.putJsonExtra
@@ -31,13 +38,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
 import java.io.File
-import java.net.URL
 
 class FilesActivity : AppCompatActivity() {
 
     companion object {
-        private const val FILE_PROVIDER_AUTHORITY = "de.deftk.openlonet.fileprovider"
+        const val FILE_PROVIDER_AUTHORITY = "de.deftk.openlonet.fileprovider"
 
         const val EXTRA_FOLDER = "de.deftk.openlonet.files.extra_folder"
         const val EXTRA_OPERATOR = "de.deftk.openlonet.files.extra_group"
@@ -50,6 +57,7 @@ class FilesActivity : AppCompatActivity() {
 
     private val requestedActivities = mutableMapOf<Int, RequestableAction>()
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
+    private val workManager by lazy { WorkManager.getInstance(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -160,17 +168,10 @@ class FilesActivity : AppCompatActivity() {
                     CoroutineScope(Dispatchers.IO).launch {
                         withContext(Dispatchers.IO) {
                             check(action.target is RemoteFile) { "Invalid target; must be of type OnlineFile" }
-                            val outputStream = contentResolver.openOutputStream(data.data!!, "w") ?: return@withContext
-                            val inputStream = URL(action.target.getDownloadUrl(operator.getRequestContext(AuthStore.getApiContext())).url).openStream()
-                            val buffer = ByteArray(2048)
-                            while (true) {
-                                val read = inputStream.read(buffer)
-                                if (read <= 0)
-                                    break
-                                outputStream.write(buffer, 0, read)
+                            val downloadUrl = action.target.getDownloadUrl(operator.getRequestContext(AuthStore.getApiContext())).url
+                            withContext(Dispatchers.Main) {
+                                doSaveDownload(data.data!!.toString(), downloadUrl, action.target)
                             }
-                            outputStream.close()
-                            inputStream.close()
                         }
                         withContext(Dispatchers.Main) {
                             Toast.makeText(this@FilesActivity, R.string.download_finished, Toast.LENGTH_LONG).show()
@@ -178,41 +179,8 @@ class FilesActivity : AppCompatActivity() {
                     }
                 }
                 FileAction.UPLOAD_DOCUMENT -> {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        withContext(Dispatchers.IO) {
-                            try {
-                                val inputStream = contentResolver.openInputStream(data.data!!) ?: return@withContext
-                                val sessionFile = AuthStore.getApiUser().addSessionFile(queryFileName(data.data!!), byteArrayOf(), AuthStore.getUserContext())
-                                val buffer = ByteArray(1024 * 1024)
-                                while (true) {
-                                    val read = inputStream.read(buffer)
-                                    if (read < 0) break
-                                    if (read != buffer.size) {
-                                        val newBuffer = ByteArray(read)
-                                        System.arraycopy(buffer, 0, newBuffer, 0, read)
-                                        sessionFile.append(newBuffer, AuthStore.getUserContext())
-                                    } else {
-                                        sessionFile.append(buffer, AuthStore.getUserContext())
-                                    }
-                                }
-                                val newFile = fileStorage.importSessionFile(sessionFile, context = operator.getRequestContext(AuthStore.getApiContext()))
-                                val adapter = (binding.fileList.adapter as FileStorageFilesAdapter)
-                                sessionFile.delete(AuthStore.getUserContext())
-                                withContext(Dispatchers.Main) {
-                                    adapter.insert(newFile, 0)
-                                    adapter.notifyDataSetChanged()
-                                    Toast.makeText(
-                                        this@FilesActivity,
-                                        R.string.upload_finished,
-                                        Toast.LENGTH_LONG
-                                    ).show()
-                                }
-                            } catch (e: Exception) {
-                                Toast.makeText(this@FilesActivity, getString(R.string.request_failed_other).format(e.message ?: e), Toast.LENGTH_LONG).show()
-                                e.printStackTrace()
-                            }
-                        }
-                    }
+                    //TODO check if file exists
+                    doUpload(data.data!!, queryFileName(data.data!!))
                 }
             }
         } else {
@@ -242,30 +210,17 @@ class FilesActivity : AppCompatActivity() {
         return filename
     }
 
-    private fun openFile(file: RemoteFile) {
+    private fun openFile(file: RemoteFile) { //TODO replace with worker
         CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.IO) {
-                val mime = FileUtil.getMimeType(file.name)
                 val download = file.getDownloadUrl(context = operator.getRequestContext(AuthStore.getApiContext())).url
-                val inputStream = URL(download).openStream() ?: return@withContext
                 val tempDir = File(cacheDir, "filestorage")
                 if (!tempDir.isDirectory)
                     tempDir.mkdir()
                 val tempFile = File(tempDir, file.name)
-                inputStream.copyTo(tempFile.outputStream())
-                inputStream.close()
-                val fileUri = FileProvider.getUriForFile(this@FilesActivity, FILE_PROVIDER_AUTHORITY, tempFile)
-
-                val sendIntent = Intent(Intent.ACTION_SEND)
-                sendIntent.type = mime
-                sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                sendIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
-                sendIntent.putExtra(Intent.EXTRA_SUBJECT, normalizeFileName(file.name))
-                val viewIntent = Intent(Intent.ACTION_VIEW)
-                viewIntent.setDataAndType(fileUri, mime)
-                viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                startActivity(Intent.createChooser(sendIntent, file.name).apply { putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(viewIntent)) })
+                withContext(Dispatchers.Main) {
+                    doOpenDownload(tempFile.absolutePath, download, file)
+                }
             }
         }
     }
@@ -304,6 +259,115 @@ class FilesActivity : AppCompatActivity() {
                 ).show()
             }
         }
+    }
+
+    private fun doUpload(uri: Uri, fileName: String) {
+        val workRequest = OneTimeWorkRequestBuilder<UploadWorker>()
+            .setInputData(workDataOf(
+                UploadWorker.DATA_FILE_URI to uri.toString(),
+                UploadWorker.DATA_FILE_NAME to fileName
+            ))
+            .build()
+        workManager.getWorkInfoByIdLiveData(workRequest.id).observe(this) { workInfo ->
+            if (workInfo != null) {
+                //val progress = workInfo.progress.getInt(UploadWorker.ARGUMENT_PROGRESS, 0)
+
+                when (workInfo.state) {
+                    WorkInfo.State.SUCCEEDED -> {
+                        val sessionFile = LoNetClient.json.decodeFromString<SessionFile>(workInfo.outputData.getString(UploadWorker.DATA_SESSION_FILE)!!)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            val newFile = fileStorage.importSessionFile(sessionFile, context = operator.getRequestContext(AuthStore.getApiContext()))
+                            sessionFile.delete(AuthStore.getUserContext())
+
+                            withContext(Dispatchers.Main) {
+                                val adapter = (binding.fileList.adapter as FileStorageFilesAdapter)
+                                adapter.insert(newFile, 0)
+                                adapter.notifyDataSetChanged()
+                                Toast.makeText(
+                                    this@FilesActivity,
+                                    R.string.upload_finished,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
+                    WorkInfo.State.CANCELLED -> {
+                        val request = UserApiRequest(AuthStore.getUserContext())
+
+                        //TODO delete session file
+                    }
+                    WorkInfo.State.FAILED -> {
+
+                    }
+                    else -> { /* ignore */ }
+                }
+            }
+        }
+        workManager.enqueue(workRequest)
+    }
+
+    private fun doSaveDownload(destinationUrl: String, downloadUrl: String, file: IRemoteFile) {
+        val workRequest = OneTimeWorkRequestBuilder<DownloadSaveWorker>()
+            .setInputData(workDataOf(
+                DownloadSaveWorker.DATA_DOWNLOAD_URL to downloadUrl,
+                DownloadSaveWorker.DATA_DESTINATION_URI to destinationUrl,
+                DownloadSaveWorker.DATA_FILE_NAME to file.name,
+                DownloadSaveWorker.DATA_FILE_SIZE to file.getSize()
+            ))
+            .build()
+        workManager.getWorkInfoByIdLiveData(workRequest.id).observe(this) { workInfo ->
+            when (workInfo.state) {
+                WorkInfo.State.SUCCEEDED -> {
+                    Toast.makeText(this, "YEET", Toast.LENGTH_LONG).show()
+                }
+                WorkInfo.State.CANCELLED -> {
+                    //TODO delete local file
+                }
+                WorkInfo.State.FAILED -> {
+
+                }
+                else -> { /* ignore */ }
+            }
+        }
+        workManager.enqueue(workRequest)
+    }
+
+    private fun doOpenDownload(destinationUrl: String, downloadUrl: String, file: IRemoteFile) {
+        val workRequest = OneTimeWorkRequestBuilder<DownloadOpenWorker>()
+            .setInputData(workDataOf(
+                DownloadOpenWorker.DATA_DESTINATION_URI to destinationUrl,
+                DownloadOpenWorker.DATA_DOWNLOAD_URL to downloadUrl,
+                DownloadOpenWorker.DATA_FILE_NAME to file.name,
+                DownloadOpenWorker.DATA_FILE_SIZE to file.getSize()
+            ))
+            .build()
+        workManager.getWorkInfoByIdLiveData(workRequest.id).observe(this) { workInfo ->
+            when (workInfo.state) {
+                WorkInfo.State.SUCCEEDED -> {
+                    val fileUri = Uri.parse(workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_URI))
+
+                    val mime = FileUtil.getMimeType(file.name)
+                    val sendIntent = Intent(Intent.ACTION_SEND)
+                    sendIntent.type = mime
+                    sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    sendIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
+                    sendIntent.putExtra(Intent.EXTRA_SUBJECT, normalizeFileName(file.name))
+                    val viewIntent = Intent(Intent.ACTION_VIEW)
+                    viewIntent.setDataAndType(fileUri, mime)
+                    viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    startActivity(Intent.createChooser(sendIntent, file.name).apply { putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(viewIntent)) })
+                }
+                WorkInfo.State.CANCELLED -> {
+                    //TODO delete file
+                }
+                WorkInfo.State.FAILED -> {
+                    //TODO delete file
+                }
+                else -> { /* ignore */ }
+            }
+        }
+        workManager.enqueue(workRequest)
     }
 
     private fun normalizeFileName(name: String): String {
