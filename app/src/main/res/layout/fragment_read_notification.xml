@@ -9,8 +9,8 @@
         android:id="@+id/notification_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
         android:layout_below="@+id/toolbar"
+        android:layout_alignParentStart="true"
         android:padding="16dp">
 
         <TextView
@@ -63,8 +63,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autoLink="web|email"
-            android:textColor="?android:attr/textColorPrimary"
             android:padding="8dp"
+            android:textColor="?android:attr/textColorPrimary"
             tools:text="Notification text" />
 
     </ScrollView>
@@ -73,11 +73,11 @@
         android:id="@+id/fab_edit_notification"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:src="@drawable/ic_edit_32"
+        android:layout_margin="16dp"
         android:contentDescription="@string/edit_notification"
+        android:src="@drawable/ic_edit_32"
         android:visibility="invisible"
         tools:visibility="visible" />
 

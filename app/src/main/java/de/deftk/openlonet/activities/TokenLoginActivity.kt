@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Deprecated("use fragment architecture")
 class TokenLoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityTokenLoginBinding

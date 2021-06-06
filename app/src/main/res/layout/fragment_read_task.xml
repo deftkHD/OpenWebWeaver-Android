@@ -29,8 +29,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/task_title"
             android:layout_alignParentStart="true"
-            android:maxLength="27"
             android:ellipsize="end"
+            android:maxLength="27"
             tools:text="abc.exampleuser" />
 
         <TextView
@@ -74,8 +74,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autoLink="web|email"
-            android:textColor="?android:attr/textColorPrimary"
             android:padding="8dp"
+            android:textColor="?android:attr/textColorPrimary"
             tools:text="Task details" />
 
     </ScrollView>
@@ -84,11 +84,11 @@
         android:id="@+id/fab_edit_task"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:src="@drawable/ic_edit_32"
+        android:layout_margin="16dp"
         android:contentDescription="@string/edit_task"
+        android:src="@drawable/ic_edit_32"
         android:visibility="invisible"
         tools:visibility="visible" />
 

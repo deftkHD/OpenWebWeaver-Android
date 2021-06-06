@@ -63,8 +63,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autoLink="web|email"
-            android:textColor="?android:attr/textColorPrimary"
             android:padding="8dp"
+            android:textColor="?android:attr/textColorPrimary"
             tools:text="Notification message" />
 
     </ScrollView>

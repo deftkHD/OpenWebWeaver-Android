@@ -63,9 +63,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:autoLink="all"
+            android:padding="8dp"
             android:scrollbars="vertical"
             android:textColor="?android:attr/textColorPrimary"
-            android:padding="8dp"
             tools:text="Mail message" />
 
     </ScrollView>
