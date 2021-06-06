@@ -24,6 +24,7 @@ import java.io.IOException
 import java.net.UnknownHostException
 import java.util.concurrent.TimeoutException
 
+@Deprecated("use viewmodel instead")
 object AuthStore {
 
     private const val LOG_TAG = "AuthStore"
@@ -122,9 +123,7 @@ object AuthStore {
      */
     suspend fun performLogin(account: Account, accountManager: AccountManager, allowRefreshLogin: Boolean, context: Context): Boolean {
         try {
-            val token = accountManager.getPassword(account)
             setApiContext(LoNetClient.loginToken(account.name, accountManager.getPassword(account)))
-            token.toString()
             PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putString(LAST_LOGIN_PREFERENCE, account.name)
                 .apply()

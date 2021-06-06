@@ -4,44 +4,43 @@ import android.os.Bundle
 import android.view.*
 import android.widget.*
 import androidx.core.view.isVisible
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import de.deftk.lonet.api.implementation.Group
+import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.lonet.api.implementation.OperatingScope
-import de.deftk.lonet.api.implementation.User
-import de.deftk.openlonet.AuthStore
+import de.deftk.lonet.api.model.IGroup
+import de.deftk.lonet.api.model.IOperatingScope
+import de.deftk.lonet.api.model.IUser
 import de.deftk.openlonet.R
-import de.deftk.openlonet.abstract.FeatureFragment
-import de.deftk.openlonet.abstract.IBackHandler
 import de.deftk.openlonet.feature.AppFeature
-import de.deftk.openlonet.utils.filter.FilterableAdapter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
  * A fragment containing a list of groups (or other objects e.g. the user) capable of performing
  * operations that belong to the given AppFeature
  * @param layoutId: Id of the layout file of the fragment (R.layout.?)
  * @param groupListId: Id of the ListView in which the groups will be shown
- * @param swipeRefreshLayoutId: Id of the SwipeRefreshLayout that will be used to refresh the groups
  * @param progressBarId: Id of the ProgressBar indicating a running action
  * @param emptyLabelId: Id of the TextView shown when no entries are available
- *
+ * @param swipeRefreshLayoutId: Id the the SwipeRefreshLayout or null if none is used
  */
 abstract class GroupFragment(
-    feature: AppFeature,
+    val feature: AppFeature,
     private val layoutId: Int,
     private val groupListId: Int,
-    private val swipeRefreshLayoutId: Int,
     private val progressBarId: Int,
-    private val emptyLabelId: Int
-) : FeatureFragment(feature), IBackHandler {
+    private val emptyLabelId: Int,
+    private val swipeRefreshLayoutId: Int?
+) : AbstractListFragment<IOperatingScope>() {
 
-    protected lateinit var groupList: ListView
-    protected lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    //TODO fix swipe refresh
+
+    private lateinit var groupList: ListView
     protected lateinit var progressBar: ProgressBar
     protected lateinit var emptyLabel: TextView
+    private  var swipeRefreshLayout: SwipeRefreshLayout? = null
+
+    override val dataHolder: Lazy<LiveData<List<IOperatingScope>>> = lazy { userViewModel.apiContext.map { filterScopes(it!!) } }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         setHasOptionsMenu(true)
@@ -49,20 +48,14 @@ abstract class GroupFragment(
         groupList = view.findViewById(groupListId)
         progressBar = view.findViewById(progressBarId)
         emptyLabel = view.findViewById(emptyLabelId)
-        swipeRefreshLayout = view.findViewById(swipeRefreshLayoutId)
+        if (swipeRefreshLayoutId != null)
+            swipeRefreshLayout = view.findViewById(swipeRefreshLayoutId)
 
-        // setup listeners
-        swipeRefreshLayout.setOnRefreshListener {
-            reloadGroups()
-        }
         groupList.setOnItemClickListener { _, _, position, _ ->
             val item = groupList.getItemAtPosition(position)
             if (item is OperatingScope)
                 onItemClick(item)
         }
-
-        // load content
-        reloadGroups()
 
         return view
     }
@@ -86,46 +79,35 @@ abstract class GroupFragment(
         super.onCreateOptionsMenu(menu, inflater)
     }
 
-    protected open fun reloadGroups() {
-        groupList.adapter = null
-        emptyLabel.visibility = TextView.GONE
-        CoroutineScope(Dispatchers.IO).launch {
-            loadGroups()
-        }
+    override fun disableLoading(emptyResult: Boolean) {
+        emptyLabel.isVisible = emptyResult
+        progressBar.visibility = ProgressBar.INVISIBLE
     }
 
-    protected open suspend fun loadGroups() {
-        try {
-            val groups = mutableListOf<OperatingScope>()
-            groups.addAll(AuthStore.getApiUser().getGroups().filter { shouldGroupBeShown(it) })
-            if (shouldUserBeShown(AuthStore.getApiUser()))
-                groups.add(0, AuthStore.getApiUser())
-            withContext(Dispatchers.Main) {
-                groupList.adapter = createAdapter(groups)
-                emptyLabel.isVisible = groups.isEmpty()
-                swipeRefreshLayout.isRefreshing = false
-                progressBar.visibility = ProgressBar.INVISIBLE
-            }
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                swipeRefreshLayout.isRefreshing = false
-                progressBar.visibility = ProgressBar.INVISIBLE
-                Toast.makeText(
-                    context,
-                    getString(R.string.request_failed_other).format(e.message ?: e),
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
+    override fun showDetails(item: IOperatingScope, view: View) {
+        onItemClick(item)
     }
 
-    abstract fun createAdapter(groups: List<OperatingScope>): FilterableAdapter<*>
+    private fun filterScopes(apiContext: ApiContext): List<IOperatingScope> {
+        val groups = mutableListOf<OperatingScope>()
+        if (shouldUserBeShown(apiContext.getUser()))
+            groups.add(0, apiContext.getUser())
+        groups.addAll(apiContext.getUser().getGroups().filter { shouldGroupBeShown(it) })
+        return groups
+    }
 
-    abstract fun shouldGroupBeShown(group: Group): Boolean
+    override fun startRefreshDataHolder(apiContext: ApiContext) {
+        // groups don't need to be refreshed normally (or rather say can't be refreshed except
+        // by sending a new login request)
+    }
 
-    abstract fun shouldUserBeShown(user: User): Boolean
+    override fun getListView(): ListView = groupList
 
-    abstract fun onItemClick(operator: OperatingScope)
+    override fun getSwipeRefreshLayout(): SwipeRefreshLayout? = swipeRefreshLayout
 
-    override fun onBackPressed() = false
+    abstract fun shouldGroupBeShown(group: IGroup): Boolean
+
+    abstract fun shouldUserBeShown(user: IUser): Boolean
+
+    abstract fun onItemClick(operator: IOperatingScope)
 }

@@ -81,7 +81,7 @@ class EditTaskActivity : AppCompatActivity() {
             binding.taskText.movementMethod = LinkMovementMethod.getInstance()
         } else {
             // create new task
-            supportActionBar?.setTitle(R.string.add_new_task)
+            supportActionBar?.setTitle(R.string.new_task)
             binding.taskGroup.isEnabled = true
         }
 

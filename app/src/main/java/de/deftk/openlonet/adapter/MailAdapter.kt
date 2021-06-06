@@ -8,55 +8,86 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.LifecycleOwner
 import com.daimajia.swipe.SwipeLayout
-import de.deftk.lonet.api.implementation.feature.mailbox.Email
-import de.deftk.lonet.api.implementation.feature.mailbox.EmailFolder
-import de.deftk.openlonet.AuthStore
+import de.deftk.lonet.api.model.feature.mailbox.IEmail
+import de.deftk.lonet.api.model.feature.mailbox.IEmailFolder
 import de.deftk.openlonet.R
+import de.deftk.openlonet.api.Response
 import de.deftk.openlonet.utils.SwipeAdapter
 import de.deftk.openlonet.utils.TextUtils
 import de.deftk.openlonet.utils.filter.FilterableAdapter
 import de.deftk.openlonet.utils.filter.filterApplies
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import de.deftk.openlonet.viewmodel.MailboxViewModel
+import de.deftk.openlonet.viewmodel.UserViewModel
 
 
-class MailAdapter(context: Context, elements: List<Email>, private val folder: EmailFolder): FilterableAdapter<Email>(context, elements) {
+class MailAdapter(
+    context: Context,
+    elements: List<IEmail>,
+    private val folder: IEmailFolder,
+    private val mailboxViewModel: MailboxViewModel,
+    private val userViewModel: UserViewModel,
+    private val viewLifecycleOwner: LifecycleOwner
+) : FilterableAdapter<IEmail>(context, elements) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val listItemView = (convertView ?: LayoutInflater.from(context).inflate(R.layout.list_item_mail, parent, false)) as SwipeLayout
+        val listItemView = (convertView ?: LayoutInflater.from(context)
+            .inflate(R.layout.list_item_mail, parent, false)) as SwipeLayout
         val item = getItem(position) ?: return listItemView
 
         val swp = object : SwipeAdapter() {
             override fun onOpen(layout: SwipeLayout) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        if (folder.isTrash) {
-                            item.delete(folder, AuthStore.getUserContext())
-                        } else {
-                            val trash = AuthStore.getApiUser().getEmailFolders(AuthStore.getUserContext())
-                                .firstOrNull { it.isTrash }
-                            if (trash != null) {
-                                item.move(folder, trash, AuthStore.getUserContext())
-                            } else {
-                                item.delete(folder, AuthStore.getUserContext())
+                if (folder.isTrash) {
+                    /*userViewModel.apiContext.value?.apply {
+                        mailboxViewModel.deleteEmail(item, folder, this)
+                            .observe(viewLifecycleOwner) { result ->
+                                if (result is Response.Failure) {
+                                    result.exception.printStackTrace()
+                                    Toast.makeText(
+                                        context,
+                                        context.getString(R.string.error)
+                                            .format(result.exception.message ?: result.exception),
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
                             }
+                    }*/
+                } else {
+                    /*val trash = mailboxViewModel.foldersResponse.value?.firstOrNull { it.isTrash }
+                    if (trash != null) {
+                        userViewModel.apiContext.value?.apply {
+                            mailboxViewModel.moveEmail(item, folder, trash, this)
+                                .observe(viewLifecycleOwner) { result ->
+                                    if (result is Response.Failure) {
+                                        result.exception.printStackTrace()
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.error).format(
+                                                result.exception.message ?: result.exception
+                                            ),
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
                         }
-                        withContext(Dispatchers.Main) {
-                            remove(item)
-                            notifyDataSetChanged()
+                    } else {
+                        userViewModel.apiContext.value?.apply {
+                            mailboxViewModel.deleteEmail(item, folder, this)
+                                .observe(viewLifecycleOwner) { result ->
+                                    if (result is Response.Failure) {
+                                        result.exception.printStackTrace()
+                                        Toast.makeText(
+                                            context,
+                                            context.getString(R.string.error).format(
+                                                result.exception.message ?: result.exception
+                                            ),
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
                         }
-                    } catch (e: Exception) {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.error).format(e.message ?: e),
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
+                    }*/
                 }
             }
         }
@@ -74,8 +105,10 @@ class MailAdapter(context: Context, elements: List<Email>, private val folder: E
         else
             subjectView.setTypeface(null, Typeface.BOLD)
         listItemView.findViewById<TextView>(R.id.mail_author).text = item.getFrom()
-            ?.joinToString { it.name } ?: AuthStore.getApiUser().name //TODO not verified if this is useful
-        listItemView.findViewById<TextView>(R.id.mail_date).text = TextUtils.parseShortDate(item.getDate())
+            ?.joinToString { it.name }
+            ?: "UNKNOWN" //AuthStore.getApiUser().name //TODO display name of user (most likely this will only happen in "sent")
+        listItemView.findViewById<TextView>(R.id.mail_date).text =
+            TextUtils.parseShortDate(item.getDate())
 
         listItemView.findViewById<ImageView>(R.id.mail_answered).visibility =
             if (item.isAnswered()) View.VISIBLE else View.INVISIBLE
@@ -85,16 +118,16 @@ class MailAdapter(context: Context, elements: List<Email>, private val folder: E
         return listItemView
     }
 
-    override fun search(constraint: String?): List<Email> {
+    override fun search(constraint: String?): List<IEmail> {
         if (constraint == null)
             return originalElements
-        return originalElements.filter {
-                mail -> mail.getSubject().filterApplies(constraint) ||
-                mail.getFrom()?.any { it.filterApplies(constraint) } == true
+        return originalElements.filter { mail ->
+            mail.getSubject().filterApplies(constraint) ||
+                    mail.getFrom()?.any { it.filterApplies(constraint) } == true
         }
     }
 
-    override fun sort(elements: List<Email>): List<Email> {
+    override fun sort(elements: List<IEmail>): List<IEmail> {
         return elements.sortedByDescending { it.getDate() }
     }
 }

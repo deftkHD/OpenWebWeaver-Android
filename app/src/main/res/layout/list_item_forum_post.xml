@@ -1,69 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="16dp">
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ImageView
-        android:id="@+id/forum_post_image"
-        android:layout_width="wrap_content"
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="clickListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="post"
+            type="de.deftk.lonet.api.model.feature.forum.IForumPost" />
+
+        <variable
+            name="group"
+            type="de.deftk.lonet.api.model.IGroup" />
+
+        <variable
+            name="parentIds"
+            type="String[]" />
+
+    </data>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="2dp"
-        android:src="@drawable/ic_forum_24"
-        tools:ignore="ContentDescription" />
+        android:onClick="@{clickListener}"
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/forum_post_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@id/forum_post_locked"
-        android:layout_marginStart="5dp"
-        android:layout_toEndOf="@+id/forum_post_image"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="20sp"
-        tools:text="Post title" />
+        <ImageView
+            android:id="@+id/forum_post_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="2dp"
+            android:src="@drawable/ic_forum_24"
+            app:forumPostIcon="@{post}"
+            tools:ignore="ContentDescription" />
 
-    <ImageView
-        android:id="@+id/forum_post_locked"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toStartOf="@id/forum_post_pinned"
-        android:layout_alignParentTop="true"
-        android:src="@drawable/ic_lock_24"
-        android:contentDescription="@string/locked" />
+        <TextView
+            android:id="@+id/forum_post_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="5dp"
+            android:layout_toStartOf="@id/forum_post_locked"
+            android:layout_toEndOf="@+id/forum_post_image"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@{post.title}"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="20sp"
+            tools:text="Post title" />
 
-    <ImageView
-        android:id="@+id/forum_post_pinned"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:src="@drawable/ic_push_pin_24"
-        android:contentDescription="@string/pinned" />
+        <ImageView
+            android:id="@+id/forum_post_locked"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toStartOf="@id/forum_post_pinned"
+            android:contentDescription="@string/locked"
+            android:src="@drawable/ic_lock_24"
+            android:visibility="@{post.isLocked() ? View.VISIBLE : View.INVISIBLE}" />
 
-    <TextView
-        android:id="@+id/forum_post_author"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/forum_post_title"
-        android:layout_marginStart="5dp"
-        android:layout_toEndOf="@+id/forum_post_image"
-        android:maxLength="30"
-        android:ellipsize="end"
-        tools:text="abc.exampleuser" />
+        <ImageView
+            android:id="@+id/forum_post_pinned"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:contentDescription="@string/pinned"
+            android:src="@drawable/ic_push_pin_24"
+            android:visibility="@{post.isPinned() ? View.VISIBLE : View.INVISIBLE}" />
 
-    <TextView
-        android:id="@+id/forum_post_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/forum_post_title"
-        android:layout_alignParentEnd="true"
-        tools:text="1.1.2020 12:00" />
+        <TextView
+            android:id="@+id/forum_post_author"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/forum_post_title"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/forum_post_image"
+            android:ellipsize="end"
+            android:maxLength="30"
+            android:text="@{post.created.member.name}"
+            tools:text="abc.exampleuser" />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/forum_post_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/forum_post_title"
+            android:layout_alignParentEnd="true"
+            app:dateText="@{post.created.date}"
+            tools:text="1.1.2020 12:00" />
+
+    </RelativeLayout>
+
+</layout>

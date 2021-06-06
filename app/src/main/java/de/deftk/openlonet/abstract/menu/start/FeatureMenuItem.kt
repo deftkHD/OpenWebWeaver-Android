@@ -6,6 +6,7 @@ import de.deftk.openlonet.R
 import de.deftk.openlonet.abstract.menu.IMenuNavigable
 import de.deftk.openlonet.feature.AppFeature
 
+@Deprecated("remove")
 class FeatureMenuItem(val feature: AppFeature): IMenuNavigable {
 
     override fun getName(): Int {
@@ -25,7 +26,7 @@ class FeatureMenuItem(val feature: AppFeature): IMenuNavigable {
     }
 
     fun displayFragment(activity: AppCompatActivity, args: Bundle = Bundle()) {
-        activity.supportFragmentManager.beginTransaction().replace(R.id.fragment_container, feature.fragmentClass, args).commit()
-        activity.supportActionBar?.title = activity.getString(feature.translationResource)
+        //activity.supportFragmentManager.beginTransaction().replace(R.id.fragment_container, feature.fragmentId, args).commit()
+        //activity.supportActionBar?.title = activity.getString(feature.translationResource)
     }
 }

@@ -1,6 +1,5 @@
 package de.deftk.openlonet.adapter
 
-import android.content.Intent
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
@@ -8,16 +7,15 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
+import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
-import de.deftk.lonet.api.implementation.Group
-import de.deftk.lonet.api.implementation.feature.forum.ForumPost
+import de.deftk.lonet.api.model.IGroup
 import de.deftk.lonet.api.model.feature.forum.IForumPost
 import de.deftk.openlonet.R
-import de.deftk.openlonet.activities.feature.forum.ForumPostActivity
+import de.deftk.openlonet.fragments.feature.forum.ForumPostFragmentDirections
 import de.deftk.openlonet.utils.TextUtils
-import de.deftk.openlonet.utils.putJsonExtra
 
-class ForumPostCommentRecyclerAdapter(private val comments: List<IForumPost>, private val group: Group): RecyclerView.Adapter<ForumPostCommentRecyclerAdapter.ViewHolder>() {
+class ForumPostCommentRecyclerAdapter(private val comments: List<IForumPost>, private val group: IGroup, private val navController: NavController, private val parentPostIds: Array<String>, private val postId: String): RecyclerView.Adapter<ForumPostCommentRecyclerAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -36,11 +34,8 @@ class ForumPostCommentRecyclerAdapter(private val comments: List<IForumPost>, pr
         holder.showComments.isVisible = comment.getComments().isNotEmpty()
         if (comment.getComments().isNotEmpty()) {
             holder.showComments.setOnClickListener {
-                val context = holder.itemView.context
-                val intent = Intent(context, ForumPostActivity::class.java)
-                intent.putJsonExtra(ForumPostActivity.EXTRA_FORUM_POST, comment as ForumPost)
-                intent.putJsonExtra(ForumPostActivity.EXTRA_GROUP, group)
-                context.startActivity(intent)
+                val action = ForumPostFragmentDirections.actionForumPostFragmentSelf(group.login, comment.id, arrayOf(*parentPostIds, postId), holder.itemView.context.getString(R.string.see_comment))
+                navController.navigate(action)
             }
         }
     }

@@ -74,7 +74,7 @@
     <string name="tasks_empty">No tasks</string>
     <string name="delete">Delete</string>
     <string name="error">Error: %s</string>
-    <string name="add_new_notification">New notification</string>
+    <string name="new_notification">New notification</string>
     <string name="title">Title</string>
     <string name="text">Text</string>
     <string name="edit">Edit</string>
@@ -85,7 +85,7 @@
     <string name="yellow">Yellow</string>
     <string name="white">White</string>
     <string name="save">Save</string>
-    <string name="add_new_task">New task</string>
+    <string name="new_task">New task</string>
     <string name="edit_task">Edit task</string>
     <string name="task_start">Start</string>
     <string name="task_due">Due</string>
@@ -154,5 +154,8 @@
     <string name="notification_upload_content">Uploading file %s...</string>
     <string name="notification_download_title">Downloading</string>
     <string name="notification_download_content">Downloading file %s...</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
+    <string name="see_comment">See comment</string>
 
 </resources>

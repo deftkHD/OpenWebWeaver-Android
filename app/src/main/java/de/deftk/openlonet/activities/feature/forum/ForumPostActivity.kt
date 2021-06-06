@@ -55,7 +55,7 @@ class ForumPostActivity : AppCompatActivity() {
 
             binding.forumPostNoComments.isVisible = post.getComments().isEmpty()
             binding.forumPostCommentRecyclerView.layoutManager = LinearLayoutManager(this)
-            binding.forumPostCommentRecyclerView.adapter = ForumPostCommentRecyclerAdapter(post.getComments().sortedBy { it.created.date.time }, group)
+            //binding.forumPostCommentRecyclerView.adapter = ForumPostCommentRecyclerAdapter(post.getComments().sortedBy { it.created.date.time }, group)
         } else {
             finish()
         }

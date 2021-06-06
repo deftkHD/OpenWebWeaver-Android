@@ -2,8 +2,11 @@ package de.deftk.openlonet.feature.filestorage
 
 import android.content.Context
 import androidx.core.content.FileProvider
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import de.deftk.lonet.api.model.feature.filestorage.IRemoteFile
 import de.deftk.openlonet.R
 import de.deftk.openlonet.activities.feature.FilesActivity
 import de.deftk.openlonet.feature.AbstractNotifyingWorker
@@ -26,12 +29,29 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
         private const val NOTIFICATION_CHANNEL_ID = "notification_channel_download"
         private const val NOTIFICATION_ID = 43
 
+        // input
         const val DATA_DOWNLOAD_URL = "data_download_url"
         const val DATA_DESTINATION_URI = "data_destination_uri"
-        const val DATA_FILE_NAME = "data_file_name"
         const val DATA_FILE_SIZE = "data_file_size"
 
+        // output
         const val DATA_FILE_URI = "data_file_uri"
+
+        // io
+        const val DATA_FILE_NAME = "data_file_name"
+
+        fun createRequest(destinationUrl: String, downloadUrl: String, file: IRemoteFile): OneTimeWorkRequest {
+            return OneTimeWorkRequestBuilder<DownloadOpenWorker>()
+                .setInputData(
+                    workDataOf(
+                        DATA_DESTINATION_URI to destinationUrl,
+                        DATA_DOWNLOAD_URL to downloadUrl,
+                        DATA_FILE_NAME to file.name,
+                        DATA_FILE_SIZE to file.getSize()
+                    )
+                )
+                .build()
+        }
     }
 
     override suspend fun doWork(): Result {
@@ -60,7 +80,7 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
             }
             inputStream.close()
             val fileUri = FileProvider.getUriForFile(applicationContext, FilesActivity.FILE_PROVIDER_AUTHORITY, file)
-            return Result.success(workDataOf(DATA_FILE_URI to fileUri.toString()))
+            return Result.success(workDataOf(DATA_FILE_URI to fileUri.toString(), DATA_FILE_NAME to fileName))
         } catch (e: Exception) {
             return Result.failure()
         }

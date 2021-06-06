@@ -1,5 +1,6 @@
 package de.deftk.openlonet.fragments
 
+import android.accounts.AccountManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -7,86 +8,122 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.Toast
-import de.deftk.lonet.api.request.UserApiRequest
-import de.deftk.lonet.api.response.ResponseUtil
-import de.deftk.openlonet.AuthStore
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.NavController
+import androidx.navigation.fragment.findNavController
+import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.openlonet.R
-import de.deftk.openlonet.abstract.StartFragment
-import de.deftk.openlonet.activities.StartActivity
 import de.deftk.openlonet.adapter.OverviewAdapter
+import de.deftk.openlonet.api.ApiState
+import de.deftk.openlonet.api.Response
+import de.deftk.openlonet.auth.AuthHelper
 import de.deftk.openlonet.databinding.FragmentOverviewBinding
 import de.deftk.openlonet.feature.AppFeature
 import de.deftk.openlonet.feature.overview.AbstractOverviewElement
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import de.deftk.openlonet.viewmodel.UserViewModel
 
-class OverviewFragment: StartFragment() {
+class OverviewFragment: Fragment() {
 
     companion object {
         private const val LOG_TAG = "OverviewFragment"
     }
 
+    private val userViewModel: UserViewModel by activityViewModels()
+
     private lateinit var binding: FragmentOverviewBinding
+    private lateinit var navController: NavController
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        navController = findNavController()
+
+        val currentBackStackEntry = navController.currentBackStackEntry!!
+        val savedStateHandle = currentBackStackEntry.savedStateHandle
+        savedStateHandle.getLiveData<Boolean>(LoginFragment.LOGIN_SUCCESSFUL).observe(currentBackStackEntry) { success ->
+            if (!success) {
+                requireActivity().finish()
+            }
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, bundle: Bundle?): View {
         binding = FragmentOverviewBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        binding.overviewSwipeRefresh.isEnabled = false // will be enabled when apiContext exists
         binding.overviewSwipeRefresh.setOnRefreshListener {
             binding.overviewList.adapter = null
-            CoroutineScope(Dispatchers.IO).launch {
-                refreshOverview()
+            if (userViewModel.apiContext.value != null) {
+                refreshOverview(userViewModel.apiContext.value!!)
             }
         }
         binding.overviewList.setOnItemClickListener { _, _, position, _ ->
             val item = binding.overviewList.getItemAtPosition(position) as AbstractOverviewElement
             val feature = AppFeature.getByOverviewClass(item::class.java)
             if (feature != null)
-                (activity as StartActivity).displayFeatureFragment(feature)
+                navController.navigate(feature.fragmentId)
         }
-        CoroutineScope(Dispatchers.IO).launch {
-            refreshOverview()
-        }
-        Log.i(LOG_TAG, "Created overview fragment")
-        return binding.root
-    }
 
-    override fun getTitle(): String {
-        return getString(R.string.overview)
-    }
-
-    private suspend fun refreshOverview() {
-        try {
-            val elements = mutableListOf<AbstractOverviewElement>()
-            val request = UserApiRequest(AuthStore.getUserContext())
-            val idMap = mutableMapOf<AppFeature, List<Int>>()
-            AppFeature.values().forEach { feature ->
-                if (feature.overviewBuilder != null) {
-                    idMap[feature] = feature.overviewBuilder.appendRequests(request)
+        if (userViewModel.apiContext.value == null) {
+            when (AuthHelper.estimateAuthState(requireContext())) {
+                AuthHelper.AuthState.SINGLE -> {
+                    val account = AuthHelper.findAccounts(null, requireContext())[0]
+                    val token = AccountManager.get(requireContext()).getPassword(account)
+                    userViewModel.loginResource.observe(viewLifecycleOwner) { result ->
+                        if (result is Response.Success) {
+                            AuthHelper.rememberLogin(account, requireContext())
+                        } else if (result is Response.Failure) {
+                            result.exception.printStackTrace()
+                        }
+                    }
+                    userViewModel.loginAccount(account, token)
+                }
+                AuthHelper.AuthState.CHOOSE -> {
+                    TODO("not implemented yet")
+                }
+                AuthHelper.AuthState.ADD_NEW -> {
+                    navController.navigate(R.id.loginFragment)
                 }
             }
-            val response = request.fireRequest().toJson()
-            idMap.forEach { (feature, ids) ->
-                elements.add(feature.overviewBuilder!!.createElementFromResponse(ids.map { Pair(it, ResponseUtil.getSubResponseResult(response, it)) }.toMap()))
-            }
+        }
 
-            withContext(Dispatchers.Main) {
-                binding.overviewList.adapter = OverviewAdapter(requireContext(), elements)
-                Log.i(LOG_TAG, "Initialized ${elements.size} overview elements")
+        userViewModel.apiContext.observe(viewLifecycleOwner, { apiContext ->
+            binding.overviewSwipeRefresh.isEnabled = apiContext != null
+            if (apiContext != null) {
+                refreshOverview(apiContext)
+            } else {
+                navController.navigate(R.id.loginFragment)
+            }
+        })
+
+        userViewModel.overviewResponse.observe(viewLifecycleOwner) { resource ->
+            if (resource is Response.Success) {
+                binding.overviewList.adapter = OverviewAdapter(requireContext(), resource.value)
+                Log.i(LOG_TAG, "Initialized ${resource.value.size} overview elements")
                 binding.progressOverview.visibility = ProgressBar.GONE
                 binding.overviewSwipeRefresh.isRefreshing = false
             }
-        } catch (e: Exception) {
-            withContext(Dispatchers.Main) {
-                e.printStackTrace()
+        }
+    }
+
+    private fun refreshOverview(apiContext: ApiContext) {
+        userViewModel.overviewResponse.observe(viewLifecycleOwner) { resource ->
+            if (resource is Response.Failure) {
+                resource.exception.printStackTrace()
                 Toast.makeText(
                     context,
-                    getString(R.string.overview_request_failed).format(e.message ?: e),
+                    getString(R.string.overview_request_failed).format(resource.exception.message ?: resource.exception),
                     Toast.LENGTH_LONG
                 ).show()
             }
         }
+
+        userViewModel.loadOverview(apiContext)
     }
 
 }

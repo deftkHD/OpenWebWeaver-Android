@@ -6,16 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import de.deftk.lonet.api.implementation.feature.mailbox.EmailFolder
+import de.deftk.lonet.api.model.feature.mailbox.IEmailFolder
 import de.deftk.openlonet.R
 import de.deftk.openlonet.utils.filter.FilterableAdapter
 import de.deftk.openlonet.utils.filter.filterApplies
 
-class MailFolderAdapter(context: Context, elements: List<EmailFolder>) :
-    FilterableAdapter<EmailFolder>(context, elements) {
+class MailFolderAdapter(context: Context, elements: List<IEmailFolder>) :
+    FilterableAdapter<IEmailFolder>(context, elements) {
 
     companion object {
-        fun getTranslatedFolderName(context: Context, folder: EmailFolder): String {
+        fun getTranslatedFolderName(context: Context, folder: IEmailFolder): String {
             val resource = when {
                 folder.isInbox -> R.string.mail_folder_inbox
                 folder.isDrafts -> R.string.mail_folder_drafts
@@ -26,7 +26,7 @@ class MailFolderAdapter(context: Context, elements: List<EmailFolder>) :
             return if (resource != null) context.getString(resource) else folder.getName()
         }
 
-        fun getFolderIcon(folder: EmailFolder): Int {
+        fun getFolderIcon(folder: IEmailFolder): Int {
             return when {
                 folder.isInbox -> R.drawable.ic_inbox_24
                 folder.isDrafts -> R.drawable.ic_drafts_24
@@ -45,7 +45,7 @@ class MailFolderAdapter(context: Context, elements: List<EmailFolder>) :
         return listItemView
     }
 
-    override fun search(constraint: String?): List<EmailFolder> {
+    override fun search(constraint: String?): List<IEmailFolder> {
         if (constraint == null)
             return originalElements
         return originalElements.filter { getTranslatedFolderName(context, it).filterApplies(constraint) }

@@ -42,7 +42,7 @@ class UploadWorker(context: Context, params: WorkerParameters) :
         try {
             val fileSize = applicationContext.contentResolver.openFileDescriptor(uri, "r")?.statSize ?: return Result.failure()
             val inputStream = applicationContext.contentResolver.openInputStream(uri) ?: return Result.failure()
-            val sessionFile = AuthStore.getApiUser().addSessionFile(fileName, byteArrayOf(), AuthStore.getUserContext())
+            val sessionFile = AuthStore.getApiUser().addSessionFile(fileName, byteArrayOf(), AuthStore.getUserContext()) //FIXME can't imagine why this fails...
             val buffer = ByteArray(1024 * 1024)
             var writtenBytes = 0
             while (!isStopped) {

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragments.feature.tasks.ReadTaskFragment">
+
+    <RelativeLayout
+        android:id="@+id/task_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/task_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="20sp"
+            tools:text="Title" />
+
+        <TextView
+            android:id="@+id/task_author"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/task_title"
+            android:layout_alignParentStart="true"
+            android:maxLength="27"
+            android:ellipsize="end"
+            tools:text="abc.exampleuser" />
+
+        <TextView
+            android:id="@+id/task_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/task_author"
+            android:layout_alignParentStart="true"
+            android:ellipsize="end"
+            android:maxLength="27"
+            tools:text="abc.examplegroup" />
+
+        <TextView
+            android:id="@+id/task_created"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/task_title"
+            android:layout_alignParentEnd="true"
+            tools:text="Created 1.1.2020 12:00" />
+
+        <TextView
+            android:id="@+id/task_due"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/task_created"
+            android:layout_alignParentEnd="true"
+            tools:text="Due 2.2.2020 12:00" />
+
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/task_header"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true">
+
+        <TextView
+            android:id="@+id/task_detail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autoLink="web|email"
+            android:textColor="?android:attr/textColorPrimary"
+            android:padding="8dp"
+            tools:text="Task details" />
+
+    </ScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_edit_task"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/ic_edit_32"
+        android:contentDescription="@string/edit_task"
+        android:visibility="invisible"
+        tools:visibility="visible" />
+
+</RelativeLayout>

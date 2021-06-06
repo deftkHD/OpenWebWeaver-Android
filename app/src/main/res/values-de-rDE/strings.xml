@@ -75,7 +75,7 @@
     <string name="tasks_empty">Keine Aufgaben</string>
     <string name="delete">Löschen</string>
     <string name="error">Fehler: %s</string>
-    <string name="add_new_notification">Mitteilung hinzufügen</string>
+    <string name="new_notification">Mitteilung hinzufügen</string>
     <string name="title">Titel</string>
     <string name="text">Text</string>
     <string name="edit">Bearbeiten</string>
@@ -86,7 +86,7 @@
     <string name="yellow">Gelb</string>
     <string name="white">Weiß</string>
     <string name="save">Speichern</string>
-    <string name="add_new_task">Neue Aufgabe</string>
+    <string name="new_task">Neue Aufgabe</string>
     <string name="edit_task">Aufgabe bearbeiten</string>
     <string name="task_start">Von</string>
     <string name="task_due">Bis</string>
@@ -155,4 +155,5 @@
     <string name="notification_upload_content">Lade Datei %s hoch...</string>
     <string name="notification_download_title">Herunterladen</string>
     <string name="notification_download_content">Lade Datei %s herunter...</string>
+    <string name="see_comment">Kommentar ansehen</string>
 </resources>

@@ -210,7 +210,7 @@ class FilesActivity : AppCompatActivity() {
         return filename
     }
 
-    private fun openFile(file: RemoteFile) { //TODO replace with worker
+    private fun openFile(file: RemoteFile) {
         CoroutineScope(Dispatchers.IO).launch {
             withContext(Dispatchers.IO) {
                 val download = file.getDownloadUrl(context = operator.getRequestContext(AuthStore.getApiContext())).url
@@ -243,7 +243,7 @@ class FilesActivity : AppCompatActivity() {
         try {
             val files = fileStorage.getFiles(context = operator.getRequestContext(AuthStore.getApiContext()))
             withContext(Dispatchers.Main) {
-                binding.fileList.adapter = FileStorageFilesAdapter(this@FilesActivity, files, operator)
+                //binding.fileList.adapter = FileStorageFilesAdapter(this@FilesActivity, files, operator)
                 binding.fileEmpty.isVisible = files.isEmpty()
                 binding.progressFileStorage.visibility = ProgressBar.INVISIBLE
                 binding.fileStorageSwipeRefresh.isRefreshing = false

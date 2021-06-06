@@ -15,7 +15,6 @@ import android.widget.Toast
 import de.deftk.lonet.api.model.Feature
 import de.deftk.openlonet.R
 import de.deftk.openlonet.activities.StartActivity
-import de.deftk.openlonet.fragments.FileStorageGroupFragment
 import java.text.DateFormat
 import java.util.*
 
@@ -133,16 +132,18 @@ object TextUtils {
         }
     }
 
+
     class InternalReferenceSpan(private val type: InternalReferenceType, private val group: String, private val extra: String) : ClickableSpan() {
         override fun onClick(widget: View) {
             when (type) {
                 InternalReferenceType.FILE_STORAGE -> {
                     //TODO file revisions
+                    TODO("update")
                     val intent = Intent(widget.context, StartActivity::class.java)
                     intent.putExtra(StartActivity.EXTRA_FOCUS_FEATURE, Feature.FILES)
                     val args = Bundle()
-                    args.putString(FileStorageGroupFragment.ARGUMENT_GROUP, group)
-                    args.putString(FileStorageGroupFragment.ARGUMENT_FILE_ID, extra)
+                    //args.putString(FileStorageGroupFragment.ARGUMENT_GROUP, group)
+                    //args.putString(FileStorageGroupFragment.ARGUMENT_FILE_ID, extra)
                     intent.putExtra(StartActivity.EXTRA_FOCUS_FEATURE_ARGUMENTS, args)
                     widget.context.startActivity(intent)
                 }

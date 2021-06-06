@@ -13,8 +13,8 @@ import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.board.BoardType
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
-import de.deftk.openlonet.adapter.NotificationAdapter
 import de.deftk.openlonet.databinding.ActivityEditNotificationBinding
+import de.deftk.openlonet.feature.board.BoardNotificationColors
 import de.deftk.openlonet.utils.TextUtils
 import de.deftk.openlonet.utils.getJsonExtra
 import de.deftk.openlonet.utils.putJsonExtra
@@ -33,7 +33,7 @@ class EditNotificationActivity : AppCompatActivity() {
         const val ACTIVITY_RESULT_EDIT = 3
     }
 
-    private lateinit var binding: ActivityEditNotificationBinding
+    /*private lateinit var binding: ActivityEditNotificationBinding
 
     private var notification: BoardNotification? = null
     private var group: Group? = null
@@ -53,7 +53,7 @@ class EditNotificationActivity : AppCompatActivity() {
         val effectiveGroups = AuthStore.getApiUser().getGroups().filter { it.effectiveRights.contains(Permission.BOARD_ADMIN) }
         binding.notificationGroup.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.login })
 
-        val colors = NotificationAdapter.BoardNotificationColors.values()
+        val colors = BoardNotificationColors.values()
         binding.notificationAccent.adapter = ArrayAdapter(this, R.layout.support_simple_spinner_dropdown_item, colors.map { getString(it.text) })
 
         if (intent.hasExtra(EXTRA_NOTIFICATION) && intent.hasExtra(EXTRA_GROUP)) {
@@ -66,11 +66,11 @@ class EditNotificationActivity : AppCompatActivity() {
             binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
             binding.notificationGroup.setSelection(effectiveGroups.indexOf(group))
             binding.notificationGroup.isEnabled = false
-            val index = colors.indexOf(NotificationAdapter.BoardNotificationColors.getByApiColor(notification!!.getColor()))
+            val index = colors.indexOf(BoardNotificationColors.getByApiColor(notification!!.getColor()))
             binding.notificationAccent.setSelection(index)
         } else {
             // create new notification
-            supportActionBar?.setTitle(R.string.add_new_notification)
+            supportActionBar?.setTitle(R.string.new_notification)
             binding.notificationGroup.isEnabled = true
         }
     }
@@ -91,7 +91,7 @@ class EditNotificationActivity : AppCompatActivity() {
                     notification!!.edit(
                         title,
                         text,
-                        NotificationAdapter.BoardNotificationColors.values()[color].apiColor,
+                        BoardNotificationColors.values()[color].apiColor,
                         killDate = null, //TODO allow setting kill date
                         BoardType.ALL,
                         group!!.getRequestContext(AuthStore.getApiContext())
@@ -108,7 +108,7 @@ class EditNotificationActivity : AppCompatActivity() {
                     val newNotification = group?.addBoardNotification(
                         title,
                         text,
-                        NotificationAdapter.BoardNotificationColors.values()[color].apiColor,
+                        BoardNotificationColors.values()[color].apiColor,
                         killDate = null,
                         group!!.getRequestContext(AuthStore.getApiContext())
                     )
@@ -134,6 +134,6 @@ class EditNotificationActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
-    }
+    }*/
 
 }

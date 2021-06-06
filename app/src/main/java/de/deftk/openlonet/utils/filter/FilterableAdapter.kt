@@ -8,13 +8,14 @@ import android.widget.Filter
 import android.widget.Filterable
 import java.util.*
 
+@Deprecated("use a different approach with view models in mind")
 abstract class FilterableAdapter<T>(protected val context: Context, elements: List<T>) :
     BaseAdapter(), Filterable {
 
     private val filter = AdapterFilter()
 
     protected val originalElements = elements.toMutableList()
-    private val elements by lazy { sort(originalElements).toMutableList() }
+    private val _elements by lazy { sort(originalElements).toMutableList() }
 
     abstract override fun getView(position: Int, convertView: View?, parent: ViewGroup): View
 
@@ -27,11 +28,11 @@ abstract class FilterableAdapter<T>(protected val context: Context, elements: Li
     }
 
     override fun getCount(): Int {
-        return elements.size
+        return _elements.size
     }
 
     override fun getItem(position: Int): T? {
-        return elements[position]
+        return _elements[position]
     }
 
     override fun getItemId(position: Int): Long {
@@ -39,16 +40,18 @@ abstract class FilterableAdapter<T>(protected val context: Context, elements: Li
     }
 
     fun remove(obj: T) {
-        elements.remove(obj)
+        _elements.remove(obj)
         originalElements.remove(obj)
     }
 
-    fun getPosition(obj: T) = elements.indexOf(obj)
+    fun getPosition(obj: T) = _elements.indexOf(obj)
 
     fun insert(obj: T, index: Int) {
-        elements.add(index, obj)
+        _elements.add(index, obj)
         originalElements.add(index, obj)
     }
+
+    fun getElements(): List<T> = _elements
 
     override fun getFilter(): Filter {
         return filter
@@ -67,12 +70,14 @@ abstract class FilterableAdapter<T>(protected val context: Context, elements: Li
         override fun publishResults(constraint: CharSequence?, results: FilterResults) {
             val result = results.values
             if (result is List<*>) {
-                elements.clear()
+                _elements.clear()
                 @Suppress("UNCHECKED_CAST")
-                elements.addAll(result as List<T>)
+                _elements.addAll(result as List<T>)
                 notifyDataSetChanged()
             }
         }
     }
+
+
 
 }

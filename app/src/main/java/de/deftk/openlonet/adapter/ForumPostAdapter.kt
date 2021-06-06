@@ -6,14 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import de.deftk.lonet.api.implementation.feature.forum.ForumPost
 import de.deftk.lonet.api.model.feature.forum.ForumPostIcon
+import de.deftk.lonet.api.model.feature.forum.IForumPost
 import de.deftk.openlonet.R
 import de.deftk.openlonet.utils.TextUtils
 import de.deftk.openlonet.utils.filter.FilterableAdapter
 import de.deftk.openlonet.utils.filter.filterApplies
 
-class ForumPostAdapter(context: Context, elements: List<ForumPost>): FilterableAdapter<ForumPost>(context, elements) {
+class ForumPostAdapter(context: Context, elements: List<IForumPost>): FilterableAdapter<IForumPost>(context, elements) {
 
     companion object {
         val postIconMap = mapOf(
@@ -38,7 +38,7 @@ class ForumPostAdapter(context: Context, elements: List<ForumPost>): FilterableA
         return listItemView
     }
 
-    override fun search(constraint: String?): List<ForumPost> {
+    override fun search(constraint: String?): List<IForumPost> {
         if (constraint == null)
             return originalElements
         return originalElements.filter {
@@ -48,7 +48,7 @@ class ForumPostAdapter(context: Context, elements: List<ForumPost>): FilterableA
         }
     }
 
-    override fun sort(elements: List<ForumPost>): List<ForumPost> {
+    override fun sort(elements: List<IForumPost>): List<IForumPost> {
         return elements.sortedWith(compareBy({ it.isPinned }, { it.created.date })).reversed()
     }
 }
