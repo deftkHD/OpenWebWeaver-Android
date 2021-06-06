@@ -21,9 +21,9 @@ import de.deftk.openlonet.R
 import de.deftk.openlonet.databinding.ListItemFileBinding
 import de.deftk.openlonet.fragments.feature.filestorage.FileClickHandler
 import de.deftk.openlonet.fragments.feature.filestorage.FilesFragmentDirections
-import de.deftk.openlonet.viewmodel.FileStorageViewModel2
+import de.deftk.openlonet.viewmodel.FileStorageViewModel
 
-class FileAdapter(private val scope: IOperatingScope, private val clickHandler: FileClickHandler, private val folderId: String?, private val path: Array<String>?, private val fileStorageViewModel: FileStorageViewModel2) : ListAdapter<IRemoteFile, RecyclerView.ViewHolder>(FileDiffCallback()) {
+class FileAdapter(private val scope: IOperatingScope, private val clickHandler: FileClickHandler, private val folderId: String?, private val path: Array<String>?, private val fileStorageViewModel: FileStorageViewModel) : ListAdapter<IRemoteFile, RecyclerView.ViewHolder>(FileDiffCallback()) {
 
     companion object {
 

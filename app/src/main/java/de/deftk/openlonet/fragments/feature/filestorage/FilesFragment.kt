@@ -31,16 +31,20 @@ import de.deftk.openlonet.feature.AbstractNotifyingWorker
 import de.deftk.openlonet.feature.filestorage.DownloadOpenWorker
 import de.deftk.openlonet.feature.filestorage.NetworkTransfer
 import de.deftk.openlonet.utils.FileUtil
-import de.deftk.openlonet.viewmodel.FileStorageViewModel2
+import de.deftk.openlonet.viewmodel.FileStorageViewModel
 import de.deftk.openlonet.viewmodel.UserViewModel
 import java.io.File
 import kotlin.math.max
 
 class FilesFragment : Fragment(), FileClickHandler {
 
+    companion object {
+        const val FILE_PROVIDER_AUTHORITY = "de.deftk.openlonet.fileprovider"
+    }
+
     private val args: FilesFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
-    private val fileStorageViewModel: FileStorageViewModel2 by activityViewModels()
+    private val fileStorageViewModel: FileStorageViewModel by activityViewModels()
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(requireContext()) }
     private val workManager by lazy { WorkManager.getInstance(requireContext()) }
 

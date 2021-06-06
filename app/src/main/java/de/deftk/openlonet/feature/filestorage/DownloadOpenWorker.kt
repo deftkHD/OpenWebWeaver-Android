@@ -8,8 +8,8 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import de.deftk.lonet.api.model.feature.filestorage.IRemoteFile
 import de.deftk.openlonet.R
-import de.deftk.openlonet.activities.feature.FilesActivity
 import de.deftk.openlonet.feature.AbstractNotifyingWorker
+import de.deftk.openlonet.fragments.feature.filestorage.FilesFragment
 import java.io.File
 import java.net.URL
 import kotlin.math.roundToInt
@@ -79,7 +79,7 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
                 updateProgress(((bytesCopied.toFloat() / fileSize.toFloat()) * 100).roundToInt(), fileName)
             }
             inputStream.close()
-            val fileUri = FileProvider.getUriForFile(applicationContext, FilesActivity.FILE_PROVIDER_AUTHORITY, file)
+            val fileUri = FileProvider.getUriForFile(applicationContext, FilesFragment.FILE_PROVIDER_AUTHORITY, file)
             return Result.success(workDataOf(DATA_FILE_URI to fileUri.toString(), DATA_FILE_NAME to fileName))
         } catch (e: Exception) {
             return Result.failure()

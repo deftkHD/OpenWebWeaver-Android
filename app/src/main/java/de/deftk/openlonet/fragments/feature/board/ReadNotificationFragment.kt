@@ -12,7 +12,6 @@ import de.deftk.lonet.api.model.IGroup
 import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.board.IBoardNotification
 import de.deftk.openlonet.R
-import de.deftk.openlonet.api.ApiState
 import de.deftk.openlonet.api.Response
 import de.deftk.openlonet.databinding.FragmentReadNotificationBinding
 import de.deftk.openlonet.utils.CustomTabTransformationMethod

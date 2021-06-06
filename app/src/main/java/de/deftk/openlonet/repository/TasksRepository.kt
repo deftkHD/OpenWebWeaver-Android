@@ -1,7 +1,6 @@
 package de.deftk.openlonet.repository
 
 import de.deftk.lonet.api.implementation.ApiContext
-import de.deftk.lonet.api.model.IGroup
 import de.deftk.lonet.api.model.IOperatingScope
 import de.deftk.lonet.api.model.feature.tasks.ITask
 import de.deftk.openlonet.api.Response

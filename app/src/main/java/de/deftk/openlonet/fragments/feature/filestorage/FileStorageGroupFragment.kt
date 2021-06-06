@@ -10,13 +10,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openlonet.api.Response
 import de.deftk.openlonet.databinding.FragmentFileStorageBinding
-import de.deftk.openlonet.viewmodel.FileStorageViewModel2
+import de.deftk.openlonet.viewmodel.FileStorageViewModel
 import de.deftk.openlonet.viewmodel.UserViewModel
 
 class FileStorageGroupFragment : Fragment() {
 
     private val userViewModel: UserViewModel by activityViewModels()
-    private val fileStorageViewModel: FileStorageViewModel2 by activityViewModels()
+    private val fileStorageViewModel: FileStorageViewModel by activityViewModels()
 
     private lateinit var binding: FragmentFileStorageBinding
 

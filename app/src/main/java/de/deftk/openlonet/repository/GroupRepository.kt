@@ -9,8 +9,7 @@ import javax.inject.Inject
 class GroupRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun getMembers(group: IGroup, onlineOnly: Boolean, apiContext: ApiContext): Response<List<IScope>> = apiCall {
-        group.getMembers(onlineOnly = onlineOnly, context = group.getRequestContext(apiContext))
-            .sortedBy { it.name }
+        group.getMembers(onlineOnly = onlineOnly, context = group.getRequestContext(apiContext)).sortedBy { it.name }
     }
 
 }

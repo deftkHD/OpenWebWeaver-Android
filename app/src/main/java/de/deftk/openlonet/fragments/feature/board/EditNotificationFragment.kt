@@ -15,8 +15,6 @@ import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.board.BoardNotificationColor
 import de.deftk.lonet.api.model.feature.board.IBoardNotification
 import de.deftk.openlonet.R
-import de.deftk.openlonet.adapter.NotificationAdapter
-import de.deftk.openlonet.api.ApiState
 import de.deftk.openlonet.api.Response
 import de.deftk.openlonet.databinding.FragmentEditNotificationBinding
 import de.deftk.openlonet.feature.board.BoardNotificationColors
@@ -27,6 +25,7 @@ import de.deftk.openlonet.viewmodel.UserViewModel
 
 class EditNotificationFragment : Fragment() {
 
+    //TODO implement board type
     //TODO implement kill date
 
     private val args: EditNotificationFragmentArgs by navArgs()

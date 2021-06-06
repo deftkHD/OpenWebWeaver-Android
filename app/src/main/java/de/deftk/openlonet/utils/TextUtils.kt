@@ -1,9 +1,7 @@
 package de.deftk.openlonet.utils
 
-import android.content.Intent
 import android.content.res.Resources
 import android.os.Build
-import android.os.Bundle
 import android.text.Html
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -12,9 +10,7 @@ import android.text.format.DateUtils
 import android.text.style.ClickableSpan
 import android.view.View
 import android.widget.Toast
-import de.deftk.lonet.api.model.Feature
 import de.deftk.openlonet.R
-import de.deftk.openlonet.activities.StartActivity
 import java.text.DateFormat
 import java.util.*
 
@@ -139,13 +135,13 @@ object TextUtils {
                 InternalReferenceType.FILE_STORAGE -> {
                     //TODO file revisions
                     TODO("update")
-                    val intent = Intent(widget.context, StartActivity::class.java)
+                    /*val intent = Intent(widget.context, StartActivity::class.java)
                     intent.putExtra(StartActivity.EXTRA_FOCUS_FEATURE, Feature.FILES)
                     val args = Bundle()
                     //args.putString(FileStorageGroupFragment.ARGUMENT_GROUP, group)
                     //args.putString(FileStorageGroupFragment.ARGUMENT_FILE_ID, extra)
                     intent.putExtra(StartActivity.EXTRA_FOCUS_FEATURE_ARGUMENTS, args)
-                    widget.context.startActivity(intent)
+                    widget.context.startActivity(intent)*/
                 }
                 InternalReferenceType.LEANING_PLAN -> {
                     Toast.makeText(

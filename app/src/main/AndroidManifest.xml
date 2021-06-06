@@ -25,7 +25,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.TokenLoginActivity" />
         <activity android:name=".activities.feature.mail.WriteMailActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SENDTO" />
@@ -35,18 +34,6 @@
                 <data android:scheme="mailto" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.feature.FilesActivity" />
-        <activity android:name=".activities.feature.forum.ForumPostsActivity" />
-        <activity android:name=".activities.feature.MembersActivity" />
-        <activity android:name=".activities.feature.tasks.EditTaskActivity" />
-        <activity android:name=".activities.feature.board.EditNotificationActivity" />
-        <activity android:name=".activities.feature.forum.ForumPostActivity" />
-        <activity android:name=".activities.feature.mail.ReadMailActivity" />
-        <activity android:name=".activities.feature.board.ReadNotificationActivity" />
-        <activity android:name=".activities.feature.tasks.ReadTaskActivity" />
-        <activity
-            android:name=".activities.StartActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

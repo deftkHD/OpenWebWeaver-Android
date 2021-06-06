@@ -79,10 +79,11 @@ class ApiDocumentsProvider: DocumentsProvider() {
         val accountManager = AccountManager.get(acquireContext())
         // one account is needed to provide functionality
         val accounts = AuthStore.findAccounts(accountManager, null, acquireContext())
-        if (accounts.size == 1) {
+        /*if (accounts.size == 1) {
             account = accounts[0]
             return true
-        }
+        }*/
+        //TODO reimplement
         return false
     }
 

@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 
+@Deprecated("use deeplinks")
 class WriteMailActivity : AppCompatActivity() {
 
     companion object {

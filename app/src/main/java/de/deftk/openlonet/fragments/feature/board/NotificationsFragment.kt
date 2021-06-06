@@ -21,7 +21,7 @@ import de.deftk.openlonet.viewmodel.UserViewModel
 class NotificationsFragment: Fragment() {
 
     private val userViewModel: UserViewModel by activityViewModels()
-    private val boardViewModel: BoardViewModel by activityViewModels(/*factoryProducer = { SavedStateViewModelFactory(requireActivity().application, this) }*/)
+    private val boardViewModel: BoardViewModel by activityViewModels()
     private val navController by lazy { findNavController() }
     private lateinit var binding: FragmentNotificationsBinding
 

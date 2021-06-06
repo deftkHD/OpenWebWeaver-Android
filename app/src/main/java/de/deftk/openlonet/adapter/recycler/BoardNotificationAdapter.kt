@@ -1,7 +1,6 @@
 package de.deftk.openlonet.adapter.recycler
 
 import android.view.LayoutInflater
-import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.ColorRes
@@ -11,9 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import de.deftk.lonet.api.model.IGroup
-import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.board.IBoardNotification
-import de.deftk.openlonet.R
 import de.deftk.openlonet.databinding.ListItemNotificationBinding
 import de.deftk.openlonet.fragments.feature.board.NotificationsFragmentDirections
 

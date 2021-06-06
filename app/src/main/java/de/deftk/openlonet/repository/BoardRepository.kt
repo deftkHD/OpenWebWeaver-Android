@@ -6,8 +6,6 @@ import de.deftk.lonet.api.model.IRequestContext
 import de.deftk.lonet.api.model.feature.board.BoardNotificationColor
 import de.deftk.lonet.api.model.feature.board.BoardType
 import de.deftk.lonet.api.model.feature.board.IBoardNotification
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 

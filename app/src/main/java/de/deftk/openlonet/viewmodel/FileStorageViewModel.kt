@@ -1,122 +1,96 @@
 package de.deftk.openlonet.viewmodel
 
 import androidx.lifecycle.*
-import de.deftk.lonet.api.LoNetClient
+import androidx.work.WorkManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.lonet.api.implementation.ApiContext
-import de.deftk.lonet.api.model.Feature
 import de.deftk.lonet.api.model.IOperatingScope
-import de.deftk.lonet.api.model.IUser
 import de.deftk.lonet.api.model.feature.Quota
 import de.deftk.lonet.api.model.feature.filestorage.IRemoteFile
-import de.deftk.lonet.api.request.UserApiRequest
 import de.deftk.openlonet.api.Response
+import de.deftk.openlonet.feature.filestorage.DownloadOpenWorker
+import de.deftk.openlonet.feature.filestorage.DownloadSaveWorker
 import de.deftk.openlonet.feature.filestorage.FileCacheElement
-import kotlinx.serialization.json.*
+import de.deftk.openlonet.feature.filestorage.NetworkTransfer
+import de.deftk.openlonet.repository.FileStorageRepository
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class FileStorageViewModel : ViewModel() {
+@HiltViewModel
+class FileStorageViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val fileStorageRepository: FileStorageRepository) : ViewModel() {
 
-    /*private val _quotas = mutableMapOf<IOperatingScope, MutableLiveData<Quota>>()
+    private val _quotas = MutableLiveData<Response<Map<IOperatingScope, Quota>>>()
+    val quotasResponse: LiveData<Response<Map<IOperatingScope, Quota>>> = _quotas
 
-    private val _quotaSummary = MutableLiveData<List<Pair<IOperatingScope, Quota>>>(null)
-    val quotaSummaryResponse: LiveData<List<Pair<IOperatingScope, Quota>>> = _quotaSummary
+    private val _files = mutableMapOf<IOperatingScope, MutableLiveData<Response<List<FileCacheElement>>>>()
 
-    private val _files = mutableMapOf<IOperatingScope, MutableLiveData<List<FileCacheElement>>>()
+    private val _networkTransfers = MutableLiveData<List<NetworkTransfer>>()
+    val networkTransfers: LiveData<List<NetworkTransfer>> = _networkTransfers
 
-    private val _previews = mutableMapOf<IOperatingScope, MutableMap<IRemoteFile, MutableLiveData<String>>>()
-
-    fun getQuota(scope: IOperatingScope?): LiveData<Quota> {
-        if (scope == null)
-            return MutableLiveData(Quota(-1, -1, -1, -1, -1, -1))
-        return _quotas.getOrPut(scope) { MutableLiveData() }
-    }
-
-    fun refreshQuota(scope: IOperatingScope, apiContext: ApiContext): LiveData<Response<Quota>> {
-        return liveData {
-            /*emit(Response<Quota>(ApiState.LOADING, null))
-            try {
-                val quota = withContext(Dispatchers.IO) {
-                    scope.getFileStorageState(context = scope.getRequestContext(apiContext)).second
-                }
-                _quotas.getOrPut(scope) { MutableLiveData() }.value = quota
-                val list = _quotaSummary.value?.toMutableList() ?: mutableListOf()
-                if (list.any { it.first == scope }) {
-                    list.remove(list.first { it.first == scope })
-                }
-                list.add(Pair(scope, quota))
-                _quotaSummary.value = list
-
-                emit(Response(ApiState.SUCCESS, quota))
-            } catch (e: Exception) {
-                emit(Response<Quota>(ApiState.ERROR, null, e))
-            }*/
+    fun loadQuotas(apiContext: ApiContext) {
+        viewModelScope.launch {
+            _quotas.value = fileStorageRepository.getAllFileStorageQuotas(apiContext)
         }
     }
 
-    fun refreshQuotaSummary(apiContext: ApiContext): LiveData<Response<Unit>> {
-        return liveData {
-            /*emit(Response<Unit>(ApiState.LOADING, null))
-            try {
-                val quotas = withContext(Dispatchers.IO) {
-                    apiContext.getUser().getAllFileStorageQuotas(apiContext)
-                }.toList()
-                _quotaSummary.value = quotas
-                quotas.forEach { (scope, quota) ->
-                    _quotas[scope]?.value = quota
-                }
-                emit(Response<Unit>(ApiState.SUCCESS, null))
-            } catch (e: Exception) {
-                emit(Response<Unit>(ApiState.ERROR, null, e))
-            }*/
-        }
-    }
-
-    fun getRootFiles(operator: IOperatingScope?): LiveData<List<FileCacheElement>> {
-        if (operator == null)
-            return MutableLiveData(emptyList())
-        return _files.getOrPut(operator) { MutableLiveData() }
-    }
-
-    fun refreshRootFiles(scope: IOperatingScope, apiContext: ApiContext): LiveData<Response<List<FileCacheElement>>> {
-        return liveData {
-            /*emit(Response<List<FileCacheElement>>(ApiState.LOADING, null))
-            try {
-                val files = withContext(Dispatchers.IO) {
-                    scope.getFiles(context = scope.getRequestContext(apiContext))
-                }.map { FileCacheElement(it, null) }
-                _files.getOrPut(scope) { MutableLiveData() }.value = files
-                emit(Response(ApiState.SUCCESS, files))
-            } catch (e: Exception) {
-                emit(Response<List<FileCacheElement>>(ApiState.ERROR, null, e))
-            }*/
-        }
-    }
-
-    fun getFolderDataHolder(operator: IOperatingScope, path: Array<String>?, folderId: String?): LiveData<List<IRemoteFile>> {
-        return if (folderId == null) {
-            getRootFiles(operator).map { it.map { it.file } }
+    fun loadFiles(scope: IOperatingScope, directoryId: String?, path: List<String>?, apiContext: ApiContext) {
+        if (directoryId != null) {
+            cacheDirectory(scope, path, directoryId, apiContext)
         } else {
-            Transformations.map(_files[operator]!!) {
-                getFolderLiveDataFromCache(operator, path, folderId)?.children?.map { it.file }
+            loadRootFiles(scope, apiContext)
+        }
+    }
+
+    private fun loadRootFiles(scope: IOperatingScope, apiContext: ApiContext) {
+        viewModelScope.launch {
+            val files = fileStorageRepository.getFiles(scope, scope, apiContext).smartMap { list -> list.map { FileCacheElement(it) } }
+            loadPreviews(files, scope, apiContext)
+            _files.getOrPut(scope) { MutableLiveData() }.value = files
+        }
+    }
+
+    private suspend fun loadPreviews(filesResponse: Response<List<FileCacheElement>>, scope: IOperatingScope, apiContext: ApiContext) {
+        if (filesResponse is Response.Success) {
+            val previews = fileStorageRepository.getFilePreviews(filesResponse.value.map { it.file }, scope, apiContext)
+            if (previews is Response.Success) {
+                filesResponse.value.forEach { file ->
+                    if (previews.value.containsKey(file.file.id)) {
+                        file.previewUrl = previews.value[file.file.id]
+                    }
+                }
+            } else if (previews is Response.Failure) {
+                //TODO handle error
+                previews.exception.printStackTrace()
             }
         }
     }
 
-    private fun getFolderLiveDataFromCache(operator: IOperatingScope?, path: Array<String>?, id: String): FileCacheElement? {
-        val rootFiles = _files[operator]?.value ?: return null
-        return findFolderLiveData(rootFiles, path?.toMutableList(), id)
+    fun getProviderLiveData(scope: IOperatingScope, folderId: String?, path: List<String>?): LiveData<Response<List<FileCacheElement>>> {
+        return if (folderId == null) {
+            _files.getOrPut(scope) { MutableLiveData() }
+        } else {
+            val cacheElement = getLiveDataFromCache(scope, folderId, path)!!
+            cacheElement.children
+        }
     }
 
-    fun findFolderLiveData(rootFiles: List<FileCacheElement>, path: MutableList<String>?, id: String): FileCacheElement? {
+    fun getLiveDataFromCache(scope: IOperatingScope, id: String, path: List<String>?): FileCacheElement? {
+        val rootFiles = _files[scope] ?: return null
+        return findLiveData(rootFiles, path, id)
+    }
+
+    private fun findLiveData(rootFiles: MutableLiveData<Response<List<FileCacheElement>>>, path: List<String>?, id: String): FileCacheElement? {
+        val pathSteps = path?.toMutableList()
         var files = rootFiles
 
         while (true) {
-            if (path == null || path.isEmpty()) {
-                return files.firstOrNull { it.file.id == id }
+            if (pathSteps == null || pathSteps.isEmpty()) {
+                return files.value?.valueOrNull()?.firstOrNull { it.file.id == id }
             } else {
-                val root = files.firstOrNull { it.file.id == path[0] }
+                val root = files.value?.valueOrNull()?.firstOrNull { it.file.id == pathSteps[0] }
                 if (root != null) {
-                    path.removeFirst()
-                    files = root.children ?: emptyList()
+                    pathSteps.removeFirst()
+                    files = root.children
                     // repeat loop
                 } else {
                     // path segment not found
@@ -127,80 +101,110 @@ class FileStorageViewModel : ViewModel() {
     }
 
     // hopefully this never breaks
-    fun cacheDirectory(scope: IOperatingScope, path: MutableList<String>?, directoryId: String, apiContext: ApiContext): LiveData<Response<FileCacheElement>> {
-        return liveData {
-            /*emit(Response<FileCacheElement>(ApiState.LOADING, null))
-            try {
-                val requestContext = scope.getRequestContext(apiContext)
-                val rootFiles =_files[scope]?.value ?: withContext(Dispatchers.IO) {
-                    scope.getFiles(context = requestContext).map { FileCacheElement(it, null) }
-                }
-                var files = rootFiles
+    private fun cacheDirectory(scope: IOperatingScope, path: List<String>?, directoryId: String, apiContext: ApiContext) {
+        val pathSteps = path?.toMutableList()
+        viewModelScope.launch {
+            val cachedRootFiles = _files[scope]?.value
+            val rootFiles = if (cachedRootFiles == null) {
+                val response = fileStorageRepository.getFiles(scope, scope, apiContext).smartMap { list -> list.map { FileCacheElement(it) } }
+                loadPreviews(response, scope, apiContext)
+                _files.getOrPut(scope) { MutableLiveData() }.value = response
+                response.valueOrNull() ?: return@launch
+            } else {
+                cachedRootFiles.valueOrNull() ?: return@launch
+            }
+            var files = rootFiles
+            var lastHolder: MutableLiveData<Response<List<FileCacheElement>>>? = _files[scope]!!
 
-                while (true) {
-                    if (path == null || path.isEmpty()) {
-                        val targetDirectory = files.firstOrNull { it.file.id == directoryId }
-                        if (targetDirectory != null) {
-                            if (targetDirectory.children == null) {
-                                targetDirectory.children = withContext(Dispatchers.IO) {
-                                    targetDirectory.file.getFiles(context = requestContext).map { FileCacheElement(it, null) }
-                                }
+            while (true) {
+                if (pathSteps == null || pathSteps.isEmpty()) {
+                    val targetDirectory = files.firstOrNull { it.file.id == directoryId }
+                    if (targetDirectory != null) {
+                        if (targetDirectory.children.value == null) {
+                            val childrenResponse = fileStorageRepository.getFiles(targetDirectory.file, scope, apiContext).smartMap { list -> list.map { FileCacheElement(it) } }
+                            loadPreviews(childrenResponse, scope, apiContext)
+                            targetDirectory.children.value = childrenResponse
+                            if (childrenResponse is Response.Failure) {
+                                childrenResponse.exception.printStackTrace()
+                                //TODO handle error
+                                return@launch
                             }
-                            _files.getOrPut(scope) { MutableLiveData() }.value = rootFiles
-                            emit(Response(ApiState.SUCCESS, targetDirectory))
-                            return@liveData
-                        } else {
-                            // directory not found
-                            emit(Response<FileCacheElement>(ApiState.ERROR, null, IllegalStateException("directory $directoryId not found")))
-                            return@liveData
                         }
+                        lastHolder = targetDirectory.children
+                        lastHolder.value = targetDirectory.children.value ?: Response.Failure(IllegalStateException("no children"))
+                        return@launch
                     } else {
-                        val root = files.firstOrNull { it.file.id == path[0] }
-                        if (root != null) {
-                            path.removeFirst()
-                            if (root.children == null) {
-                                root.children = withContext(Dispatchers.IO) {
-                                    root.file.getFiles(context = requestContext).map { FileCacheElement(it, null) }
-                                }
+                        lastHolder?.value = Response.Failure(IllegalStateException("directory $directoryId not found"))
+                        return@launch
+                    }
+                } else {
+                    val root = files.firstOrNull { it.file.id == pathSteps[0] }
+                    if (root != null) {
+                        pathSteps.removeFirst()
+                        if (root.children.value == null) {
+                            val response = fileStorageRepository.getFiles(root.file, scope, apiContext).smartMap { list -> list.map { FileCacheElement(it) } }
+                            loadPreviews(response, scope, apiContext)
+                            root.children.value = response
+                            lastHolder = root.children
+                            if (response is Response.Failure) {
+                                response.exception.printStackTrace()
+                                //TODO handle error
+                                return@launch
                             }
-                            files = root.children ?: emptyList()
-                            // repeat loop
-                        } else {
-                            // path segment not found
-                            emit(Response<FileCacheElement>(ApiState.ERROR, null, IllegalStateException("path segment ${path[0]} not found")))
-                            return@liveData
                         }
+                        files = root.children.value?.valueOrNull() ?: emptyList()
+                        // repeat loop
+                    } else {
+                        // path segment not found
+                        lastHolder?.value = Response.Failure(IllegalStateException("path segment ${pathSteps[0]} not found"))
+                        return@launch
                     }
                 }
-            } catch (e: Exception) {
-                emit(Response<FileCacheElement>(ApiState.ERROR, null, e))
-            }*/
+            }
         }
     }
 
-    fun getFilePreview(operator: IOperatingScope, file: IRemoteFile): LiveData<String> {
-        val map = _previews.getOrPut(operator) { mutableMapOf() }
-        return map.getOrPut(file) { MutableLiveData() }
-    }
-
-    fun refreshFilePreview(scope: IOperatingScope, file: IRemoteFile, apiContext: ApiContext): LiveData<Response<String>> {
-        return liveData {
-            /*emit(Response<String>(ApiState.LOADING, null))
-            try {
-                val previewUrl = withContext(Dispatchers.IO) {
-                    file.getPreviewUrl(scope.getRequestContext(apiContext))
-                }.url
-                _previews.getOrPut(scope) { mutableMapOf() }.getOrPut(file) { MutableLiveData() }.value = previewUrl
-                emit(Response(ApiState.SUCCESS, previewUrl))
-            } catch (e: Exception) {
-                emit(Response<String>(ApiState.ERROR, null, e))
-            }*/
+    fun cleanCache(scope: IOperatingScope, folderId: String?, path: List<String>?) {
+        if (folderId == null) {
+            _files[scope]?.value = null
+        } else {
+            val data = getLiveDataFromCache(scope, folderId, path)
+            data?.children?.value = null
         }
     }
 
-    fun invalidateFilePreviews(scope: IOperatingScope) {
-        if (_previews.containsKey(scope))
-            _previews.remove(scope)
-    }*/
+    fun startOpenDownload(workManager: WorkManager, apiContext: ApiContext, file: IRemoteFile, scope: IOperatingScope, destinationUrl: String) {
+        viewModelScope.launch {
+            val response = fileStorageRepository.getFileDownloadUrl(file, scope, apiContext)
+            if (response is Response.Success) {
+                val workRequest = DownloadOpenWorker.createRequest(destinationUrl, response.value.url, file)
+                addNetworkTransfer(NetworkTransfer.DownloadOpen(workRequest.id, file.id))
+                workManager.enqueue(workRequest)
+            }
+        }
+    }
+
+    fun startSaveDownload(workManager: WorkManager, apiContext: ApiContext, file: IRemoteFile, scope: IOperatingScope, destinationUrl: String) {
+        viewModelScope.launch {
+            val response = fileStorageRepository.getFileDownloadUrl(file, scope, apiContext)
+            if (response is Response.Success) {
+                val workRequest = DownloadSaveWorker.createRequest(destinationUrl, response.value.url, file)
+                addNetworkTransfer(NetworkTransfer.DownloadSave(workRequest.id, file.id))
+                workManager.enqueue(workRequest)
+            }
+        }
+    }
+
+    private fun addNetworkTransfer(networkTransfer: NetworkTransfer) {
+        val transfers = (_networkTransfers.value ?: emptyList()).toMutableList()
+        transfers.add(networkTransfer)
+        _networkTransfers.value = transfers
+    }
+
+    fun hideNetworkTransfer(networkTransfer: NetworkTransfer) {
+        val transfers = (_networkTransfers.value ?: emptyList()).toMutableList()
+        transfers.remove(networkTransfer)
+        _networkTransfers.value = transfers
+    }
 
 }

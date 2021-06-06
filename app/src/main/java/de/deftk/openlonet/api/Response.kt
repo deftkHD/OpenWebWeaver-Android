@@ -1,7 +1,5 @@
 package de.deftk.openlonet.api
 
-import java.lang.Exception
-
 sealed class Response<out T> {
 
     data class Success<out T>(val value: T) : Response<T>() {

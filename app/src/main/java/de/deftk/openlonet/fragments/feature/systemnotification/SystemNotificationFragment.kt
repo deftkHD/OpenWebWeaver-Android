@@ -44,7 +44,8 @@ class SystemNotificationFragment : Fragment() {
                     binding.systemNotificationMessage.movementMethod = LinkMovementMethod.getInstance()
                     binding.systemNotificationMessage.transformationMethod = CustomTabTransformationMethod(binding.systemNotificationMessage.autoLinkMask)
                 }
-            } else {
+            } else if (resource is Response.Failure) {
+                resource.exception.printStackTrace()
                 //TODO report error
             }
         }

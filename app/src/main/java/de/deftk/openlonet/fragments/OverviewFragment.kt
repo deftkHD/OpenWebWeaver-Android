@@ -15,7 +15,6 @@ import androidx.navigation.fragment.findNavController
 import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.openlonet.R
 import de.deftk.openlonet.adapter.OverviewAdapter
-import de.deftk.openlonet.api.ApiState
 import de.deftk.openlonet.api.Response
 import de.deftk.openlonet.auth.AuthHelper
 import de.deftk.openlonet.databinding.FragmentOverviewBinding

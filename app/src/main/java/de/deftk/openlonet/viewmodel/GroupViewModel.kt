@@ -1,6 +1,9 @@
 package de.deftk.openlonet.viewmodel
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.lonet.api.model.IGroup

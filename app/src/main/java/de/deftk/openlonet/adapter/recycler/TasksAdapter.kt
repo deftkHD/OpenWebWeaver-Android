@@ -2,10 +2,7 @@ package de.deftk.openlonet.adapter.recycler
 
 import android.graphics.Paint
 import android.view.LayoutInflater
-import android.view.MenuInflater
 import android.view.ViewGroup
-import android.widget.Filter
-import android.widget.Filterable
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.databinding.BindingAdapter
@@ -14,7 +11,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import de.deftk.lonet.api.model.IOperatingScope
-import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.tasks.ITask
 import de.deftk.openlonet.R
 import de.deftk.openlonet.databinding.ListItemTaskBinding

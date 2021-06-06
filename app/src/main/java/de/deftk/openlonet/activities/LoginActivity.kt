@@ -90,7 +90,7 @@ class LoginActivity : AppCompatActivity() {
                             binding.btnLogin.isEnabled = true
                             Log.i(LOG_TAG, "Login succeeded")
                             Toast.makeText(this@LoginActivity, "${getString(R.string.login_success)}!", Toast.LENGTH_SHORT).show()
-                            startActivity(Intent(this@LoginActivity, StartActivity::class.java))
+                            //startActivity(Intent(this@LoginActivity, StartActivity::class.java))
                             finish()
                         }
                     } catch (e: Exception) {
@@ -120,7 +120,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_TOKEN_LOGIN) {
             if (resultCode == RESULT_OK) {
-                startActivity(Intent(this@LoginActivity, StartActivity::class.java))
+                //startActivity(Intent(this@LoginActivity, StartActivity::class.java))
                 finish()
             }
         } else super.onActivityResult(requestCode, resultCode, data)

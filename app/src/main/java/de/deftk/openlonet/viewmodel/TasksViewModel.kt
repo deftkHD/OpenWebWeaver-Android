@@ -6,7 +6,6 @@ import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.lonet.api.model.IOperatingScope
 import de.deftk.lonet.api.model.feature.tasks.ITask
 import de.deftk.openlonet.api.Response
-import de.deftk.openlonet.filter.TaskFilter
 import de.deftk.openlonet.repository.TasksRepository
 import kotlinx.coroutines.launch
 import java.util.*
