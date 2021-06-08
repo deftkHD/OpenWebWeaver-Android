@@ -14,13 +14,15 @@ import de.deftk.openlonet.activities.MainActivity
 
 class LoNetAuthenticator(private val context: Context): AbstractAccountAuthenticator(context) {
 
-    override fun getAccountRemovalAllowed(response: AccountAuthenticatorResponse?, account: Account): Bundle {
+    //TODO reimplement with deeplinks
+
+    /*override fun getAccountRemovalAllowed(response: AccountAuthenticatorResponse?, account: Account): Bundle {
         val intent = Intent(context, MainActivity::class.java)
         intent.putExtra(MainActivity.EXTRA_LOGOUT, account.name)
         val bundle = Bundle()
         bundle.putParcelable(AccountManager.KEY_INTENT, intent)
         return bundle
-    }
+    }*/
 
     override fun editProperties(response: AccountAuthenticatorResponse, accountType: String?): Bundle {
         throw IllegalStateException("Not supported")
