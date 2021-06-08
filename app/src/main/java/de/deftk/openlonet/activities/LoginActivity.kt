@@ -17,6 +17,7 @@ import de.deftk.lonet.api.auth.Credentials
 import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
+import de.deftk.openlonet.auth.LoNetAuthenticator
 import de.deftk.openlonet.databinding.ActivityLoginBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -69,7 +70,7 @@ class LoginActivity : AppCompatActivity() {
                         if (stayLoggedIn) {
                             val accountManager = AccountManager.get(this@LoginActivity)
                             if (refreshAccount != null) {
-                                val account = accountManager.getAccountsByType(AuthStore.ACCOUNT_TYPE).firstOrNull { it.name == refreshAccount } ?: error("Unknown account")
+                                val account = accountManager.getAccountsByType(LoNetAuthenticator.ACCOUNT_TYPE).firstOrNull { it.name == refreshAccount } ?: error("Unknown account")
                                 val (context, token) = LoNetClient.loginCreateToken(username, password, "OpenLoNet", "${Build.BRAND} ${Build.MODEL}")
                                 accountManager.setPassword(account, token)
                                 AuthStore.setApiContext(context)
@@ -77,7 +78,7 @@ class LoginActivity : AppCompatActivity() {
                                     accountManager.notifyAccountAuthenticated(account)
                                 }
                             } else {
-                                val account = Account(username, AuthStore.ACCOUNT_TYPE)
+                                val account = Account(username, LoNetAuthenticator.ACCOUNT_TYPE)
                                 val (context, token) = LoNetClient.loginCreateToken(username, password, "OpenLoNet", "${Build.BRAND} ${Build.MODEL}")
                                 accountManager.addAccountExplicitly(account, token, null)
                                 AuthStore.setApiContext(context)

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/overviewFragment">
+    app:startDestination="@id/launchFragment">
 
     <fragment
         android:id="@+id/overviewFragment"
@@ -44,10 +44,14 @@
         tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_loginFragment_to_tokenLoginFragment"
-            app:destination="@id/tokenLoginFragment" />
+            app:destination="@id/tokenLoginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_loginFragment_to_overviewFragment"
-            app:destination="@id/overviewFragment" />
+            app:destination="@id/overviewFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/fileStorageGroupFragment"
@@ -293,7 +297,13 @@
     <dialog
         android:id="@+id/chooseAccountDialogFragment"
         android:name="de.deftk.openlonet.fragments.dialog.ChooseAccountDialogFragment"
-        android:label="ChooseAccountDialogFragment" />
+        android:label="ChooseAccountDialogFragment" >
+        <action
+            android:id="@+id/action_chooseAccountDialogFragment_to_overviewFragment"
+            app:destination="@id/overviewFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </dialog>
     <fragment
         android:id="@+id/tokenLoginFragment"
         android:name="de.deftk.openlonet.fragments.TokenLoginFragment"
@@ -301,6 +311,28 @@
         tools:layout="@layout/fragment_token_login" >
         <action
             android:id="@+id/action_tokenLoginFragment_to_overviewFragment"
-            app:destination="@id/overviewFragment" />
+            app:destination="@id/overviewFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/launchFragment"
+        android:name="de.deftk.openlonet.fragments.LaunchFragment"
+        android:label="LaunchFragment" >
+        <action
+            android:id="@+id/action_launchFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_launchFragment_to_overviewFragment"
+            app:destination="@id/overviewFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_launchFragment_to_chooseAccountDialogFragment"
+            app:destination="@id/chooseAccountDialogFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
 </navigation>

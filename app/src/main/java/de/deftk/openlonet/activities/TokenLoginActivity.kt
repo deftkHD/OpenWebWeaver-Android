@@ -12,6 +12,7 @@ import de.deftk.lonet.api.LoNetClient
 import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
+import de.deftk.openlonet.auth.LoNetAuthenticator
 import de.deftk.openlonet.databinding.ActivityTokenLoginBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,7 @@ class TokenLoginActivity : AppCompatActivity() {
                         AuthStore.setApiContext(LoNetClient.loginToken(username, token, false, ApiContext::class.java))
                         if (rememberToken) {
                             val accountManager = AccountManager.get(this@TokenLoginActivity)
-                            val account = Account(username, AuthStore.ACCOUNT_TYPE)
+                            val account = Account(username, LoNetAuthenticator.ACCOUNT_TYPE)
                             accountManager.addAccountExplicitly(account, token, null)
                             AuthStore.setApiContext(LoNetClient.loginToken(username, token))
                         }

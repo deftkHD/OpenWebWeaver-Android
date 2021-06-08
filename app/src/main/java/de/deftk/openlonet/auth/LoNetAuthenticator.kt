@@ -10,9 +10,13 @@ import android.os.Bundle
 import de.deftk.lonet.api.LoNetClient
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.activities.LoginActivity
-import de.deftk.openlonet.activities.MainActivity
 
 class LoNetAuthenticator(private val context: Context): AbstractAccountAuthenticator(context) {
+
+    companion object {
+        const val ACCOUNT_TYPE = "OpenLoNet/lo-net2.de"
+        const val EXTRA_TOKEN_TYPE = "OpenLoNetApiToken"
+    }
 
     //TODO reimplement with deeplinks
 
@@ -30,8 +34,8 @@ class LoNetAuthenticator(private val context: Context): AbstractAccountAuthentic
 
     override fun addAccount(response: AccountAuthenticatorResponse, accountType: String, authTokenType: String?, requiredFeatures: Array<out String>?, options: Bundle): Bundle {
         val intent = Intent(context, LoginActivity::class.java)
-        intent.putExtra(AuthStore.ACCOUNT_TYPE, accountType)
-        intent.putExtra(AuthStore.EXTRA_TOKEN_TYPE, authTokenType)
+        intent.putExtra(ACCOUNT_TYPE, accountType)
+        intent.putExtra(EXTRA_TOKEN_TYPE, authTokenType)
         intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
         val bundle = Bundle()
         bundle.putParcelable(AccountManager.KEY_INTENT, intent)
@@ -66,8 +70,8 @@ class LoNetAuthenticator(private val context: Context): AbstractAccountAuthentic
 
         val intent = Intent(context, LoginActivity::class.java)
         intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
-        intent.putExtra(AuthStore.ACCOUNT_TYPE, account.type)
-        intent.putExtra(AuthStore.EXTRA_TOKEN_TYPE, authTokenType)
+        intent.putExtra(ACCOUNT_TYPE, account.type)
+        intent.putExtra(EXTRA_TOKEN_TYPE, authTokenType)
         val bundle = Bundle()
         bundle.putParcelable(AccountManager.KEY_INTENT, intent)
         return bundle

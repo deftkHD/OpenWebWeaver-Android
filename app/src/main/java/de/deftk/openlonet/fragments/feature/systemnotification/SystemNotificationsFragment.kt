@@ -25,7 +25,7 @@ class SystemNotificationsFragment: Fragment() {
 
         val adapter = SystemNotificationAdapter()
         binding.systemNotificationList.adapter = adapter
-        userViewModel.systemNotifications.observe(viewLifecycleOwner) { resource ->
+        userViewModel.systemNotificationsResponse.observe(viewLifecycleOwner) { resource ->
             if (resource is Response.Success) {
                 adapter.submitList(resource.value)
                 binding.systemNotificationsEmpty.isVisible = resource.value.isEmpty()

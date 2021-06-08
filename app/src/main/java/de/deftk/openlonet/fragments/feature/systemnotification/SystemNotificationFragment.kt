@@ -31,7 +31,7 @@ class SystemNotificationFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        userViewModel.systemNotifications.observe(viewLifecycleOwner) { resource ->
+        userViewModel.systemNotificationsResponse.observe(viewLifecycleOwner) { resource ->
             if (resource is Response.Success) {
                 resource.value.firstOrNull { it.id == args.systemNotificationId }?.apply {
                     systemNotification = this

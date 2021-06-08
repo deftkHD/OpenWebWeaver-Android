@@ -15,6 +15,7 @@ import de.deftk.lonet.api.implementation.User
 import de.deftk.lonet.api.model.IRequestContext
 import de.deftk.lonet.api.request.handler.AutoLoginRequestHandler
 import de.deftk.openlonet.activities.LoginActivity
+import de.deftk.openlonet.auth.LoNetAuthenticator
 import de.deftk.openlonet.fragments.dialog.ChooseAccountDialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,8 +29,6 @@ import java.util.concurrent.TimeoutException
 object AuthStore {
 
     private const val LOG_TAG = "AuthStore"
-    const val ACCOUNT_TYPE = "OpenLoNet/lo-net2.de"
-    const val EXTRA_TOKEN_TYPE = "OpenLoNetApiToken"
     private const val LAST_LOGIN_PREFERENCE = "last_login"
 
     var currentAccount: Account? = null
@@ -62,7 +61,7 @@ object AuthStore {
             override fun onLogin(context: ApiContext) {
                 if (currentAccount != null) {
                     // make sure old session id is invalidated
-                    accountManager.invalidateAuthToken(EXTRA_TOKEN_TYPE, getApiContext().getSessionId())
+                    accountManager.invalidateAuthToken(LoNetAuthenticator.EXTRA_TOKEN_TYPE, getApiContext().getSessionId())
                 }
                 setApiContext(context)
             }
@@ -108,7 +107,7 @@ object AuthStore {
 
     fun findAccounts(accountManager: AccountManager, priorisedLogin: String?, context: Context): Array<Account> {
         val lastLogin = PreferenceManager.getDefaultSharedPreferences(context).getString(LAST_LOGIN_PREFERENCE, null)
-        val allAccounts = accountManager.getAccountsByType(ACCOUNT_TYPE)
+        val allAccounts = accountManager.getAccountsByType(LoNetAuthenticator.ACCOUNT_TYPE)
         if (priorisedLogin != null && allAccounts.any { it.name == priorisedLogin })
             return allAccounts.filter { it.name == priorisedLogin }.toTypedArray()
         if (lastLogin == null)

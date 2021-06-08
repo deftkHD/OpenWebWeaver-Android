@@ -29,6 +29,17 @@ class UserRepository @Inject constructor() : AbstractRepository() {
         LoNetClient.loginToken(username, token)
     }
 
+    suspend fun logout(apiContext: ApiContext) = apiCall {
+        apiContext.getUser().logout(apiContext.getUser().getRequestContext(apiContext))
+    }
+
+    suspend fun logoutDestroyToken(token: String, apiContext: ApiContext) = apiCall {
+        apiContext.getUser().logoutDestroyToken(
+            token,
+            apiContext.getUser().getRequestContext(apiContext)
+        )
+    }
+
     suspend fun getOverviewElements(apiContext: ApiContext) = apiCall {
         val elements = mutableListOf<AbstractOverviewElement>()
         val request = UserApiRequest(apiContext.getUser().getRequestContext(apiContext))

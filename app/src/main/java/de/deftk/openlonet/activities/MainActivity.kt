@@ -10,7 +10,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.view.GravityCompat
-import androidx.core.view.forEach
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
@@ -22,6 +21,7 @@ import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.lonet.api.model.Feature
 import de.deftk.lonet.api.model.Permission
 import de.deftk.openlonet.R
+import de.deftk.openlonet.api.Response
 import de.deftk.openlonet.databinding.ActivityMainBinding
 import de.deftk.openlonet.feature.AppFeature
 import de.deftk.openlonet.viewmodel.UserViewModel
@@ -85,12 +85,8 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
                 binding.navView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = apiContext.getUser().getFullName()
                 binding.navView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = apiContext.getUser().login
 
-                // cleanup old items
-                binding.navView.menu.forEach { item ->
-                    if (item.groupId == R.id.feature_group) {
-                        binding.navView.menu.removeItem(item.itemId)
-                    }
-                }
+                // cleanup old feature items
+                binding.navView.menu.removeGroup(R.id.feature_group)
 
                 // add new feature items
                 getEnabledFeatures(apiContext).forEach { feature ->
@@ -103,6 +99,15 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
                 }
             } else {
                 binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            }
+        }
+
+        userViewModel.logoutResponse.observe(this) { response ->
+            if (response is Response.Success) {
+                navController.navigate(R.id.launchFragment)
+            } else if (response is Response.Failure) {
+                //TODO handle error
+                response.exception.printStackTrace()
             }
         }
 
@@ -169,7 +174,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
     }
 
     private fun logout() {
-        TODO("not yet implemented")
+        userViewModel.logout(this)
     }
 
     private fun getEnabledFeatures(apiContext: ApiContext): List<Feature> {
