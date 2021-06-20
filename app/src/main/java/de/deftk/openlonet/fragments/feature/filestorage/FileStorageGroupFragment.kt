@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
+import de.deftk.openlonet.adapter.recycler.FileStorageAdapter
 import de.deftk.openlonet.api.Response
 import de.deftk.openlonet.databinding.FragmentFileStorageBinding
 import de.deftk.openlonet.viewmodel.FileStorageViewModel
@@ -23,7 +24,7 @@ class FileStorageGroupFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFileStorageBinding.inflate(inflater, container, false)
 
-        val adapter = de.deftk.openlonet.adapter.recycler.FileStorageAdapter()
+        val adapter = FileStorageAdapter()
         binding.fileList.adapter = adapter
         binding.fileList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         fileStorageViewModel.quotasResponse.observe(viewLifecycleOwner) { response ->

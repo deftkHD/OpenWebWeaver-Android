@@ -91,7 +91,7 @@
     </fragment>
     <fragment
         android:id="@+id/membersGroupFragment"
-        android:name="de.deftk.openlonet.fragments.feature.members.MembersGroupFragment"
+        android:name="de.deftk.openlonet.fragments.feature.members.MembersGroupsFragment"
         android:label="@string/members">
         <action
             android:id="@+id/action_membersGroupFragment_to_membersFragment"

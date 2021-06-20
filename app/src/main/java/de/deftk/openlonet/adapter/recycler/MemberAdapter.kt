@@ -4,14 +4,19 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import de.deftk.lonet.api.model.IGroup
 import de.deftk.lonet.api.model.IScope
+import de.deftk.lonet.api.model.IUser
 import de.deftk.lonet.api.model.RemoteScope
 import de.deftk.openlonet.R
 import de.deftk.openlonet.databinding.ListItemMemberBinding
+import de.deftk.openlonet.fragments.feature.members.MembersGroupsFragmentDirections
 
 class MemberAdapter: ListAdapter<IScope, RecyclerView.ViewHolder>(MemberDiffCallback()) {
 
@@ -26,8 +31,10 @@ class MemberAdapter: ListAdapter<IScope, RecyclerView.ViewHolder>(MemberDiffCall
                 } else {
                     view.setImageResource(R.drawable.ic_person_24)
                 }
-            } else {
+            } else if (scope is IUser) {
                 view.setImageResource(R.drawable.ic_person_orange_24)
+            } else {
+                view.setImageResource(R.drawable.ic_person_24)
             }
         }
 
@@ -40,8 +47,10 @@ class MemberAdapter: ListAdapter<IScope, RecyclerView.ViewHolder>(MemberDiffCall
                 } else {
                     view.setText(R.string.offline)
                 }
-            } else {
+            } else if (scope is IUser) {
                 view.setText(R.string.online)
+            } else {
+                view.isVisible = false
             }
         }
 
@@ -64,8 +73,12 @@ class MemberAdapter: ListAdapter<IScope, RecyclerView.ViewHolder>(MemberDiffCall
     class MemberViewHolder(val binding: ListItemMemberBinding) : RecyclerView.ViewHolder(binding.root) {
 
         init {
-            itemView.setOnClickListener {
-                itemView.showContextMenu()
+            binding.setClickListener {
+                if (binding.scope is IGroup) {
+                    itemView.findNavController().navigate(MembersGroupsFragmentDirections.actionMembersGroupFragmentToMembersFragment(binding.scope!!.login, binding.scope!!.name))
+                } else {
+                    itemView.showContextMenu()
+                }
             }
 
             itemView.setOnLongClickListener {

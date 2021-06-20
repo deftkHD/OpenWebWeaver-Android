@@ -34,8 +34,8 @@ class MembersFragment : Fragment() {
         group = userViewModel.apiContext.value?.getUser()?.getGroups()?.firstOrNull { it.login == args.groupId } ?: error("Failed to find given group")
 
         val adapter = MemberAdapter()
-        binding.membersList.adapter = adapter
-        binding.membersList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+        binding.memberList.adapter = adapter
+        binding.memberList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         groupViewModel.getGroupMembers(group).observe(viewLifecycleOwner) { resource ->
             if (resource is Response.Success) {
                 adapter.submitList(resource.value)
@@ -63,7 +63,7 @@ class MembersFragment : Fragment() {
         }
 
         setHasOptionsMenu(true)
-        registerForContextMenu(binding.membersList)
+        registerForContextMenu(binding.memberList)
         return binding.root
     }
 
@@ -88,7 +88,7 @@ class MembersFragment : Fragment() {
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
-            val member = (binding.membersList.adapter as MemberAdapter).getItem(menuInfo.position)
+            val member = (binding.memberList.adapter as MemberAdapter).getItem(menuInfo.position)
             if (member.login != userViewModel.apiContext.value?.getUser()?.login) {
                 requireActivity().menuInflater.inflate(R.menu.member_action_menu, menu)
             }
@@ -97,7 +97,7 @@ class MembersFragment : Fragment() {
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
-        val adapter = binding.membersList.adapter as MemberAdapter
+        val adapter = binding.memberList.adapter as MemberAdapter
         return when (item.itemId) {
             R.id.member_action_write_mail -> {
                 val member = adapter.getItem(menuInfo.position)
