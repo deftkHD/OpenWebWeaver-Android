@@ -32,15 +32,16 @@ class LaunchFragment : Fragment() {
         binding.version.text = BuildConfig.VERSION_NAME
         (requireActivity() as AppCompatActivity).supportActionBar?.hide()
 
-        userViewModel.apiContext.observe(viewLifecycleOwner, { apiContext ->
-            if (apiContext != null) {
+        userViewModel.loginResponse.observe(viewLifecycleOwner, { response ->
+            if (response is Response.Success) {
                 when (authState) {
                     AuthHelper.AuthState.SINGLE -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToOverviewFragment())
                     AuthHelper.AuthState.MULTIPLE -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToOverviewFragment())
                     else -> { /* ignore */ }
                 }
-            } else if (userViewModel.logoutResponse.value == null) {
-                Log.e("LaunchFragment", "Failed to obtain apiContext (null)")
+            } else if (response is Response.Failure) {
+                Log.e("LaunchFragment", "Failed to obtain apiContext")
+                response.exception.printStackTrace()
                 //TODO handle error
                 requireActivity().finish()
             }

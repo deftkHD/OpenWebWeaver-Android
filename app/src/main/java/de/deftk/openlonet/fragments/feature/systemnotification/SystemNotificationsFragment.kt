@@ -46,8 +46,13 @@ class SystemNotificationsFragment: Fragment() {
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            if (apiContext != null)
+            if (apiContext != null) {
                 userViewModel.loadSystemNotifications(apiContext)
+            } else {
+                binding.systemNotificationsEmpty.isVisible = false
+                adapter.submitList(emptyList())
+                binding.progressSystemNotifications.isVisible = true
+            }
         }
 
         setHasOptionsMenu(true)

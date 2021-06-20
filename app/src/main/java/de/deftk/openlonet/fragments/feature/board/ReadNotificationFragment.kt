@@ -2,6 +2,7 @@ package de.deftk.openlonet.fragments.feature.board
 
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
+import android.util.Log
 import android.view.*
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -74,6 +75,11 @@ class ReadNotificationFragment : Fragment() {
             } else if (result is Response.Failure) {
                 //TODO handle error
                 result.exception.printStackTrace()
+            }
+        }
+        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            if (apiContext == null) {
+                navController.popBackStack(R.id.notificationsFragment, false)
             }
         }
     }

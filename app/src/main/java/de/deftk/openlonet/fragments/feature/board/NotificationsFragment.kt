@@ -50,17 +50,21 @@ class NotificationsFragment: Fragment() {
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            apiContext?.apply {
-                if (getUser().getGroups().any { it.effectiveRights.contains(Permission.BOARD_ADMIN) }) {
+            if (apiContext != null) {
+                if (apiContext.getUser().getGroups().any { it.effectiveRights.contains(Permission.BOARD_ADMIN) }) {
                     binding.fabAddNotification.isVisible = true
                     binding.fabAddNotification.setOnClickListener {
                         val action = NotificationsFragmentDirections.actionNotificationsFragmentToEditNotificationFragment(null, null, getString(R.string.new_notification))
                         navController.navigate(action)
                     }
                 }
-                boardViewModel.loadBoardNotifications(this)
+                boardViewModel.loadBoardNotifications(apiContext)
+            } else {
+                binding.fabAddNotification.isVisible = false
+                binding.notificationsEmpty.isVisible = false
+                adapter.submitList(emptyList())
+                binding.progressNotifications.isVisible = true
             }
-
         }
 
         boardViewModel.postResponse.observe(viewLifecycleOwner) { resource ->

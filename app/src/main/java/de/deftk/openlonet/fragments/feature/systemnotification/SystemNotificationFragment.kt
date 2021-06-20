@@ -7,8 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.lonet.api.model.feature.systemnotification.ISystemNotification
+import de.deftk.openlonet.R
 import de.deftk.openlonet.api.Response
 import de.deftk.openlonet.databinding.FragmentSystemNotificationBinding
 import de.deftk.openlonet.utils.CustomTabTransformationMethod
@@ -47,6 +49,11 @@ class SystemNotificationFragment : Fragment() {
             } else if (resource is Response.Failure) {
                 resource.exception.printStackTrace()
                 //TODO report error
+            }
+        }
+        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            if (apiContext == null) {
+                findNavController().popBackStack(R.id.systemNotificationsFragment, false)
             }
         }
     }

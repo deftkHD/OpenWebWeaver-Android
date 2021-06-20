@@ -8,6 +8,7 @@ import android.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.lonet.api.model.IGroup
@@ -54,8 +55,10 @@ class MembersFragment : Fragment() {
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            apiContext?.apply {
-                groupViewModel.loadMembers(group, false, this)
+            if (apiContext != null) {
+                groupViewModel.loadMembers(group, false, apiContext)
+            } else {
+                findNavController().popBackStack(R.id.membersGroupFragment, false)
             }
         }
 

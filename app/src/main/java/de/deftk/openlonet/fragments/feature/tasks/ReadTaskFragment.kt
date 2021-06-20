@@ -79,6 +79,11 @@ class ReadTaskFragment : Fragment() {
                 result.exception.printStackTrace()
             }
         }
+        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            if (apiContext == null) {
+                navController.popBackStack(R.id.tasksFragment, false)
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

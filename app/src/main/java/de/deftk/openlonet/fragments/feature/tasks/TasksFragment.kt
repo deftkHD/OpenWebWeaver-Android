@@ -50,15 +50,20 @@ class TasksFragment : Fragment() {
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            apiContext?.apply {
-                if (getUser().getGroups().any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }) {
+            if (apiContext != null) {
+                if (apiContext.getUser().getGroups().any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }) {
                     binding.fabAddTask.visibility = View.VISIBLE
                     binding.fabAddTask.setOnClickListener {
                         val action = TasksFragmentDirections.actionTasksFragmentToEditTaskFragment(null, null, getString(R.string.new_task))
                         navController.navigate(action)
                     }
                 }
-                tasksViewModel.loadTasks(this)
+                tasksViewModel.loadTasks(apiContext)
+            } else {
+                binding.fabAddTask.isVisible = false
+                binding.tasksEmpty.isVisible = false
+                adapter.submitList(emptyList())
+                binding.progressTasks.isVisible = true
             }
         }
 

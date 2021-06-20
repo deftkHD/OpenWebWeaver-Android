@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavController
@@ -21,6 +22,8 @@ import de.deftk.openlonet.feature.overview.AbstractOverviewElement
 import de.deftk.openlonet.viewmodel.UserViewModel
 
 class OverviewFragment: Fragment() {
+
+    //TODO recycler view
 
     companion object {
         private const val LOG_TAG = "OverviewFragment"
@@ -79,6 +82,9 @@ class OverviewFragment: Fragment() {
             binding.overviewSwipeRefresh.isEnabled = apiContext != null
             if (apiContext != null) {
                 userViewModel.loadOverview(apiContext)
+            } else {
+                binding.progressOverview.isVisible = true
+                binding.overviewList.adapter = null
             }
         }
     }

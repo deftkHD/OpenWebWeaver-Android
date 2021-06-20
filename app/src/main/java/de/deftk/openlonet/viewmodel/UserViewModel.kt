@@ -59,6 +59,7 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
 
     fun loginToken(username: String, token: String) {
         viewModelScope.launch {
+            _loginResponse.value = null
             val resource = userRepository.loginToken(username, token)
             if (resource is Response.Success) {
                 setupApiContext(resource.value, Credentials.fromToken(username, token))

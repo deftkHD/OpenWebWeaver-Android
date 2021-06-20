@@ -40,7 +40,7 @@ abstract class GroupFragment(
     protected lateinit var emptyLabel: TextView
     private  var swipeRefreshLayout: SwipeRefreshLayout? = null
 
-    override val dataHolder: Lazy<LiveData<List<IOperatingScope>>> = lazy { userViewModel.apiContext.map { filterScopes(it!!) } }
+    override val dataHolder: Lazy<LiveData<List<IOperatingScope>>> = lazy { userViewModel.apiContext.map { filterScopes(it) } }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         setHasOptionsMenu(true)
@@ -88,7 +88,9 @@ abstract class GroupFragment(
         onItemClick(item)
     }
 
-    private fun filterScopes(apiContext: ApiContext): List<IOperatingScope> {
+    private fun filterScopes(apiContext: ApiContext?): List<IOperatingScope> {
+        if (apiContext == null)
+            return emptyList()
         val groups = mutableListOf<OperatingScope>()
         if (shouldUserBeShown(apiContext.getUser()))
             groups.add(0, apiContext.getUser())

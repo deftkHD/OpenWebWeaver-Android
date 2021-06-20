@@ -49,40 +49,46 @@ class EditTaskFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val effectiveGroups = userViewModel.apiContext.value?.getUser()?.getGroups()?.filter { it.effectiveRights.contains(Permission.BOARD_ADMIN) } ?: emptyList()
-        binding.taskGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.login })
+        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            if (apiContext != null) {
+                val effectiveGroups = apiContext.getUser().getGroups().filter { it.effectiveRights.contains(Permission.BOARD_ADMIN) }
+                binding.taskGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.login })
 
-        if (args.groupId != null && args.taskId != null) {
-            // edit existing
-            editMode = true
-            tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { resource ->
-                if (resource is Response.Success) {
-                    resource.value.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }?.apply {
-                        task = first
-                        operator = second
+                if (args.groupId != null && args.taskId != null) {
+                    // edit existing
+                    editMode = true
+                    tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { resource ->
+                        if (resource is Response.Success) {
+                            resource.value.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }?.apply {
+                                task = first
+                                operator = second
 
-                        binding.taskTitle.setText(task.getTitle())
-                        binding.taskGroup.setSelection(effectiveGroups.indexOf(operator))
-                        binding.taskCompleted.isChecked = task.isCompleted()
-                        binding.taskText.setText(task.getDescription())
+                                binding.taskTitle.setText(task.getTitle())
+                                binding.taskGroup.setSelection(effectiveGroups.indexOf(operator))
+                                binding.taskCompleted.isChecked = task.isCompleted()
+                                binding.taskText.setText(task.getDescription())
 
-                        startDate = task.getStartDate()
-                        if (startDate != null)
-                            binding.taskStart.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(startDate!!))
+                                startDate = task.getStartDate()
+                                if (startDate != null)
+                                    binding.taskStart.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(startDate!!))
 
-                        dueDate = task.getEndDate()
-                        if (dueDate != null)
-                            binding.taskDue.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(dueDate!!))
+                                dueDate = task.getEndDate()
+                                if (dueDate != null)
+                                    binding.taskDue.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(dueDate!!))
+                            }
+                        } else if (resource is Response.Failure) {
+                            resource.exception.printStackTrace()
+                            //TODO handle error
+                        }
                     }
-                } else if (resource is Response.Failure) {
-                    resource.exception.printStackTrace()
-                    //TODO handle error
+                } else {
+                    // add new
+                    editMode = false
+                    binding.taskGroup.isEnabled = true
                 }
+            } else {
+                navController.popBackStack(R.id.tasksFragment, false)
             }
-        } else {
-            // add new
-            editMode = false
-            binding.taskGroup.isEnabled = true
         }
 
         tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->

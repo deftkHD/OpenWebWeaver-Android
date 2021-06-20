@@ -42,38 +42,44 @@ class EditNotificationFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEditNotificationBinding.inflate(inflater, container, false)
 
-        val effectiveGroups = userViewModel.apiContext.value?.getUser()?.getGroups()?.filter { it.effectiveRights.contains(Permission.BOARD_ADMIN) } ?: emptyList()
-        binding.notificationGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.login })
+        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            if (apiContext != null) {
+                val effectiveGroups = apiContext.getUser().getGroups().filter { it.effectiveRights.contains(Permission.BOARD_ADMIN) }
+                binding.notificationGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.login })
 
-        val colors = BoardNotificationColors.values()
-        binding.notificationAccent.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, colors.map { getString(it.text) })
+                val colors = BoardNotificationColors.values()
+                binding.notificationAccent.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, colors.map { getString(it.text) })
 
-        if (args.groupId != null && args.notificationId != null) {
-            // edit existing
-            editMode = true
-            boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { resource ->
-                if (resource is Response.Success) {
-                    resource.value.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }?.apply {
-                        notification = first
-                        group = second
+                if (args.groupId != null && args.notificationId != null) {
+                    // edit existing
+                    editMode = true
+                    boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { resource ->
+                        if (resource is Response.Success) {
+                            resource.value.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }?.apply {
+                                notification = first
+                                group = second
 
-                        binding.notificationTitle.setText(notification.getTitle())
-                        binding.notificationGroup.setSelection(effectiveGroups.indexOf(group))
-                        binding.notificationGroup.isEnabled = false
-                        binding.notificationAccent.setSelection(colors.indexOf(BoardNotificationColors.getByApiColor(notification.getColor() ?: BoardNotificationColor.BLUE)))
-                        binding.notificationText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.getText())))
-                        binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
-                        binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
+                                binding.notificationTitle.setText(notification.getTitle())
+                                binding.notificationGroup.setSelection(effectiveGroups.indexOf(group))
+                                binding.notificationGroup.isEnabled = false
+                                binding.notificationAccent.setSelection(colors.indexOf(BoardNotificationColors.getByApiColor(notification.getColor() ?: BoardNotificationColor.BLUE)))
+                                binding.notificationText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.getText())))
+                                binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
+                                binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
+                            }
+                        } else if (resource is Response.Failure) {
+                            //TODO handle error
+                            resource.exception.printStackTrace()
+                        }
                     }
-                } else if (resource is Response.Failure) {
-                    //TODO handle error
-                    resource.exception.printStackTrace()
+                } else {
+                    // add new
+                    editMode = false
+                    binding.notificationGroup.isEnabled = true
                 }
+            } else {
+                navController.popBackStack(R.id.notificationsFragment, false)
             }
-        } else {
-            // add new
-            editMode = false
-            binding.notificationGroup.isEnabled = true
         }
 
         boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
