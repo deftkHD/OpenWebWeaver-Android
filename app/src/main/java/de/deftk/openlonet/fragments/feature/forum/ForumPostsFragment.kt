@@ -6,6 +6,7 @@ import android.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.lonet.api.model.IGroup
@@ -29,7 +30,12 @@ class ForumPostsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentForumPostsBinding.inflate(inflater, container, false)
-        group = userViewModel.apiContext.value?.getUser()?.getGroups()?.firstOrNull { it.login == args.groupId } ?: error("Failed to find given group")
+        val group = userViewModel.apiContext.value?.getUser()?.getGroups()?.firstOrNull { it.login == args.groupId }
+        if (group == null) {
+            findNavController().popBackStack(R.id.forumGroupFragment, false)
+            return binding.root
+        }
+        this.group = group
 
         val adapter = ForumPostAdapter(group)
         binding.forumList.adapter = adapter
@@ -53,8 +59,17 @@ class ForumPostsFragment : Fragment() {
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            apiContext?.apply {
-                forumViewModel.loadForumPosts(group, null, this)
+            if (apiContext != null) {
+                val newGroup = userViewModel.apiContext.value?.getUser()?.getGroups()?.firstOrNull { it.login == args.groupId }
+                if (newGroup != null) {
+                    forumViewModel.loadForumPosts(group, null, apiContext)
+                } else {
+                    findNavController().popBackStack(R.id.forumGroupFragment, false)
+                }
+            } else {
+                binding.forumEmpty.isVisible = false
+                adapter.submitList(emptyList())
+                binding.progressForum.isVisible = true
             }
         }
 

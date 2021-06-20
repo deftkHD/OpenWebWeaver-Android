@@ -21,7 +21,7 @@ enum class ForumPostIcons(val type: ForumPostIcon, @DrawableRes val resource: In
         }
 
         @JvmStatic
-        fun getByApiColorOrDefault(type: ForumPostIcon?): ForumPostIcons {
+        fun getByTypeOrDefault(type: ForumPostIcon?): ForumPostIcons {
             return getByType(type) ?: INFORMATION
         }
     }

@@ -15,7 +15,7 @@ import de.deftk.lonet.api.model.IGroup
 import de.deftk.lonet.api.model.Permission
 import de.deftk.lonet.api.model.feature.forum.IForumPost
 import de.deftk.openlonet.R
-import de.deftk.openlonet.adapter.ForumPostCommentRecyclerAdapter
+import de.deftk.openlonet.adapter.recycler.ForumPostCommentRecyclerAdapter
 import de.deftk.openlonet.api.Response
 import de.deftk.openlonet.databinding.FragmentForumPostBinding
 import de.deftk.openlonet.feature.forum.ForumPostIcons
@@ -26,6 +26,8 @@ import de.deftk.openlonet.viewmodel.UserViewModel
 import java.text.DateFormat
 
 class ForumPostFragment : Fragment() {
+
+    //TODO options menu
 
     companion object {
         private val TAG = ForumPostFragment::class.java.simpleName
@@ -60,7 +62,7 @@ class ForumPostFragment : Fragment() {
                 if (post != null) {
                     this.post = post
 
-                    binding.forumPostImage.setImageResource(ForumPostIcons.getByApiColorOrDefault(post.icon).resource)
+                    binding.forumPostImage.setImageResource(ForumPostIcons.getByTypeOrDefault(post.icon).resource)
                     binding.forumPostTitle.text = post.title
                     binding.forumPostAuthor.text = post.created.member.name
                     binding.forumPostDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.created.date)
@@ -77,6 +79,13 @@ class ForumPostFragment : Fragment() {
                 resource.exception.printStackTrace()
             }
         }
+
+        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            if (apiContext == null) {
+                navController.popBackStack(R.id.forumPostsFragment, false)
+            }
+        }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

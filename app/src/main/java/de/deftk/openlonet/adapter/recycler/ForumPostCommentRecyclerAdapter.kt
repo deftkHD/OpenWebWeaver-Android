@@ -1,4 +1,4 @@
-package de.deftk.openlonet.adapter
+package de.deftk.openlonet.adapter.recycler
 
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import de.deftk.lonet.api.model.IGroup
 import de.deftk.lonet.api.model.feature.forum.IForumPost
 import de.deftk.openlonet.R
+import de.deftk.openlonet.feature.forum.ForumPostIcons
 import de.deftk.openlonet.fragments.feature.forum.ForumPostFragmentDirections
 import de.deftk.openlonet.utils.TextUtils
 
@@ -25,7 +26,7 @@ class ForumPostCommentRecyclerAdapter(private val comments: List<IForumPost>, pr
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val comment = comments[position]
-        holder.commentImage.setImageResource(ForumPostAdapter.postIconMap[comment.icon] ?: R.drawable.ic_help_24)
+        holder.commentImage.setImageResource(ForumPostIcons.getByTypeOrDefault(comment.icon).resource)
         holder.commentTitle.text = comment.title
         holder.commentAuthor.text = comment.created.member.name
         holder.commentDate.text = TextUtils.parseShortDate(comment.created.date)

@@ -22,7 +22,7 @@ class ForumPostAdapter(private val group: IGroup): ListAdapter<IForumPost, Recyc
         @JvmStatic
         @BindingAdapter("app:forumPostIcon")
         fun forumPostIcon(view: ImageView, post: IForumPost) {
-            view.setImageResource(ForumPostIcons.getByApiColorOrDefault(post.icon).resource)
+            view.setImageResource(ForumPostIcons.getByTypeOrDefault(post.icon).resource)
         }
 
     }
@@ -40,7 +40,6 @@ class ForumPostAdapter(private val group: IGroup): ListAdapter<IForumPost, Recyc
     class ForumPostViewHolder(val binding: ListItemForumPostBinding) : RecyclerView.ViewHolder(binding.root) {
 
         init {
-            emptyArray<String>()
             binding.setClickListener { view ->
                 view.findNavController().navigate(ForumPostsFragmentDirections.actionForumPostsFragmentToForumPostFragment(binding.group!!.login, binding.post!!.id, null, view.context.getString(R.string.see_post)))
             }
