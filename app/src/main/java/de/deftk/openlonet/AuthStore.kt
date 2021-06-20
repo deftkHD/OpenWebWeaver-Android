@@ -3,7 +3,6 @@ package de.deftk.openlonet
 import android.accounts.Account
 import android.accounts.AccountManager
 import android.content.Context
-import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.FragmentManager
@@ -14,9 +13,7 @@ import de.deftk.lonet.api.implementation.ApiContext
 import de.deftk.lonet.api.implementation.User
 import de.deftk.lonet.api.model.IRequestContext
 import de.deftk.lonet.api.request.handler.AutoLoginRequestHandler
-import de.deftk.openlonet.activities.LoginActivity
 import de.deftk.openlonet.auth.LoNetAuthenticator
-import de.deftk.openlonet.fragments.dialog.ChooseAccountDialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -96,8 +93,8 @@ object AuthStore {
             else -> {
                 if (allowNewLogin) {
                     // add new account or simply login without adding an account
-                    val intent = Intent(context, LoginActivity::class.java)
-                    context.startActivity(intent)
+                    /*val intent = Intent(context, LoginActivity::class.java)
+                    context.startActivity(intent)*/
                 } else {
                     Toast.makeText(context, R.string.no_user, Toast.LENGTH_LONG).show()
                 }
@@ -148,10 +145,10 @@ object AuthStore {
         } else {
             if (allowRefreshLogin) {
                 Toast.makeText(context, context.getString(R.string.token_expired), Toast.LENGTH_LONG).show()
-                val intent = Intent(context, LoginActivity::class.java)
+                /*val intent = Intent(context, LoginActivity::class.java)
                 intent.putExtra(LoginActivity.EXTRA_REFRESH_ACCOUNT, login)
                 intent.putExtra(LoginActivity.EXTRA_LOGIN, login)
-                context.startActivity(intent)
+                context.startActivity(intent)*/
             } else {
                 Toast.makeText(context, "${context.getString(R.string.login_failed)}: ${e.message ?: e}", Toast.LENGTH_LONG).show()
             }

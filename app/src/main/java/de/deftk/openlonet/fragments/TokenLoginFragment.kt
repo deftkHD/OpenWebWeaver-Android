@@ -10,6 +10,8 @@ import de.deftk.openlonet.R
 
 class TokenLoginFragment : Fragment() {
 
+    //TODO implement
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

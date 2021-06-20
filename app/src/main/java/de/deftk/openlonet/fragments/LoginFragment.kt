@@ -83,7 +83,7 @@ class LoginFragment : Fragment() {
         }
 
         binding.tokenLogin.setOnClickListener {
-            navController.navigate(LoginFragmentDirections.actionLoginFragmentToTokenLoginFragment())
+            navController.navigate(LoginFragmentDirections.actionLoginFragmentToTokenLoginFragment(binding.txtEmail.text.toString().ifEmpty { null }))
         }
 
         binding.btnLogin.setOnClickListener {

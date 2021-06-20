@@ -2,11 +2,8 @@ package de.deftk.openlonet.feature.filestorage.integration
 
 import android.accounts.Account
 import android.accounts.AccountManager
-import android.app.AuthenticationRequiredException
-import android.app.PendingIntent
 import android.content.ContentResolver
 import android.content.Context
-import android.content.Intent
 import android.content.res.AssetFileDescriptor
 import android.database.Cursor
 import android.database.MatrixCursor
@@ -30,7 +27,6 @@ import de.deftk.lonet.api.model.feature.filestorage.FileType
 import de.deftk.lonet.api.model.feature.filestorage.filter.FileFilter
 import de.deftk.openlonet.AuthStore
 import de.deftk.openlonet.R
-import de.deftk.openlonet.activities.LoginActivity
 import de.deftk.openlonet.utils.FileUtil
 import kotlinx.coroutines.*
 import java.net.URL
@@ -324,9 +320,9 @@ class ApiDocumentsProvider: DocumentsProvider() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     // user should perform the login
                     //TODO verify functionality
-                    val intent = Intent(acquireContext(), LoginActivity::class.java)
+                    /*val intent = Intent(acquireContext(), LoginActivity::class.java)
                     val action = PendingIntent.getActivity(acquireContext(), 1, intent, 0)
-                    throw AuthenticationRequiredException(e, action)
+                    throw AuthenticationRequiredException(e, action)*/
                 } else {
                     // send a signal that login failed
                     throw SecurityException()
