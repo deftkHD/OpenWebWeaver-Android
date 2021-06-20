@@ -71,31 +71,44 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
         return loginToken(account.name, token)
     }
 
-    fun logout(context: Context) {
+    fun logout(login: String, context: Context) {
         val accountManager = AccountManager.get(context)
-        viewModelScope.launch {
-            apiContext.value?.also { apiContext ->
-                val currentAccount = AuthHelper.findAccounts(apiContext.getUser().login, context).firstOrNull()
-                val response = if (currentAccount != null) {
-                    val response = userRepository.logoutDestroyToken(
-                        accountManager.getPassword(currentAccount),
-                        apiContext
-                    )
-                    if (response is Response.Success) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                            accountManager.removeAccount(currentAccount, null, null, null)
-                        } else {
-                            @Suppress("DEPRECATION")
-                            accountManager.removeAccount(currentAccount, null, null)
-                        }
-                    }
-                    response
-                } else {
-                    userRepository.logout(apiContext)
+        val account = AuthHelper.findAccounts(login, context).firstOrNull()
+        if (account == null) {
+            viewModelScope.launch {
+                apiContext.value?.also { apiContext ->
+                    val response = userRepository.logout(apiContext)
+                    _logoutResponse.value = response
+                    _loginResponse.value = null
                 }
-                _logoutResponse.value = response
-                _loginResponse.value = null
             }
+            return
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            accountManager.removeAccount(account, null, { future ->
+                if (future.isDone) {
+                    val bundle = future.result
+                    when {
+                        bundle.containsKey(AccountManager.KEY_ERROR_MESSAGE) -> _logoutResponse.value = Response.Failure(IllegalStateException(bundle.getString(AccountManager.KEY_ERROR_MESSAGE)))
+                        bundle.containsKey(AccountManager.KEY_ERROR_CODE) -> _logoutResponse.value = Response.Failure(IllegalStateException("Code: " + bundle.getInt(AccountManager.KEY_ERROR_CODE)))
+                        bundle.containsKey(AccountManager.KEY_BOOLEAN_RESULT) -> _logoutResponse.value = if (bundle.getBoolean(AccountManager.KEY_BOOLEAN_RESULT)) Response.Success(Unit) else Response.Failure(IllegalStateException())
+                        else -> _logoutResponse.value = Response.Failure(IllegalArgumentException())
+                    }
+                    if (_logoutResponse.value is Response.Success) {
+                        _loginResponse.value = null
+                    }
+                }
+            }, null)
+        } else {
+            @Suppress("DEPRECATION")
+            accountManager.removeAccount(account, { future ->
+                if (future.isDone) {
+                    _logoutResponse.value = if (future.result) Response.Success(Unit) else Response.Failure(IllegalStateException())
+                    if (_logoutResponse.value is Response.Success) {
+                        _loginResponse.value = null
+                    }
+                }
+            }, null)
         }
     }
 

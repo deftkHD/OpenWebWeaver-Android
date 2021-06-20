@@ -75,8 +75,11 @@ class OverviewFragment: Fragment() {
                 ).show()
             }
         }
-        userViewModel.apiContext.value?.also { apiContext ->
-            userViewModel.loadOverview(apiContext)
+        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            binding.overviewSwipeRefresh.isEnabled = apiContext != null
+            if (apiContext != null) {
+                userViewModel.loadOverview(apiContext)
+            }
         }
     }
 

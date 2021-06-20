@@ -1,6 +1,7 @@
 package de.deftk.openlonet.fragments
 
 import android.accounts.Account
+import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import de.deftk.openlonet.BuildConfig
+import de.deftk.openlonet.R
 import de.deftk.openlonet.api.Response
 import de.deftk.openlonet.auth.AuthHelper
 import de.deftk.openlonet.databinding.FragmentLaunchBinding
@@ -44,11 +46,17 @@ class LaunchFragment : Fragment() {
             }
         })
 
-
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val authenticatorResponse: AccountAuthenticatorResponse? = requireActivity().intent?.getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
+        if (authenticatorResponse != null) {
+            authenticatorResponse.onRequestContinued()
+            navController.navigate(R.id.loginFragment, Bundle().apply { putBoolean("only_add", true) })
+            return
+        }
+
         authState = AuthHelper.estimateAuthState(requireContext())
         if (userViewModel.apiContext.value == null) {
             when (authState) {
@@ -78,7 +86,7 @@ class LaunchFragment : Fragment() {
         val token = AccountManager.get(requireContext()).getPassword(account)
         userViewModel.loginResponse.observe(viewLifecycleOwner) { result ->
             if (result is Response.Success) {
-                AuthHelper.rememberLogin(account, requireContext())
+                AuthHelper.rememberLogin(account.name, requireContext())
             } else if (result is Response.Failure) {
                 //TODO handle error
                 result.exception.printStackTrace()

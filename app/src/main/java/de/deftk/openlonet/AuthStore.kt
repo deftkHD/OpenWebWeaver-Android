@@ -87,11 +87,11 @@ object AuthStore {
         when {
             accounts.size == 1 -> doLogin(accounts[0], accountManager)
             accounts.size > 1 -> {
-                ChooseAccountDialogFragment(accounts, object: ChooseAccountDialogFragment.AccountSelectListener {
+                /*ChooseAccountDialogFragment(accounts, object: ChooseAccountDialogFragment.AccountSelectListener {
                     override fun onAccountSelected(account: Account) {
                         doLogin(account, accountManager)
                     }
-                }).show(fragmentManager, "ChooseAccount")
+                }).show(fragmentManager, "ChooseAccount")*/
             }
             else -> {
                 if (allowNewLogin) {

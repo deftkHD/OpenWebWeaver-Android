@@ -52,6 +52,10 @@
             app:destination="@id/overviewFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
+        <argument
+            android:name="only_add"
+            app:argType="boolean"
+            android:defaultValue="false" />
     </fragment>
     <fragment
         android:id="@+id/fileStorageGroupFragment"

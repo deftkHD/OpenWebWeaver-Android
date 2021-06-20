@@ -11,9 +11,9 @@ object AuthHelper {
     const val EXTRA_TOKEN_TYPE = "OpenLoNetApiToken"
     private const val LAST_LOGIN_PREFERENCE = "last_login"
 
-    fun rememberLogin(account: Account, context: Context) {
+    fun rememberLogin(login: String, context: Context) {
         PreferenceManager.getDefaultSharedPreferences(context).edit()
-            .putString(LAST_LOGIN_PREFERENCE, account.name)
+            .putString(LAST_LOGIN_PREFERENCE, login)
             .apply()
     }
 
@@ -31,14 +31,9 @@ object AuthHelper {
     }
 
     fun findAccounts(prioritizedLogin: String?, context: Context): Array<Account> {
-        val lastLogin = getRememberedLogin(context)
         val allAccounts = AccountManager.get(context).getAccountsByType(ACCOUNT_TYPE)
         if (prioritizedLogin != null && allAccounts.any { it.name == prioritizedLogin })
             return allAccounts.filter { it.name == prioritizedLogin }.toTypedArray()
-        if (lastLogin == null)
-            return allAccounts
-        if (allAccounts.any { it.name == lastLogin })
-            return allAccounts.filter { it.name == lastLogin }.toTypedArray()
         return allAccounts
     }
 
