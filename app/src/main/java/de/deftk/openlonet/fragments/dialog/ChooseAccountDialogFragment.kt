@@ -8,6 +8,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import de.deftk.openlonet.R
+import de.deftk.openlonet.adapter.AccountAdapter
 import de.deftk.openlonet.api.Response
 import de.deftk.openlonet.auth.AuthHelper
 import de.deftk.openlonet.auth.LoNetAuthenticator
@@ -38,7 +39,9 @@ class ChooseAccountDialogFragment : DialogFragment() {
         val accounts = accountManager.getAccountsByType(LoNetAuthenticator.ACCOUNT_TYPE)
         val builder = AlertDialog.Builder(requireContext())
         builder.setTitle(R.string.choose_account)
-        builder.setItems(accounts.map { account -> account.name }.toTypedArray()) { _, which ->
+        builder.setIcon(R.drawable.ic_account_circle_24)
+        val accountAdapter = AccountAdapter(requireContext(), accounts.toList())
+        builder.setAdapter(accountAdapter) { _, which ->
             actionPerformed = true
             val account = accounts[which]
             userViewModel.loginAccount(account, accountManager.getPassword(account))
