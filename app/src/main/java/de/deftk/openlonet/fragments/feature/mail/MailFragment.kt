@@ -107,12 +107,22 @@ class MailFragment: Fragment() {
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            apiContext?.apply {
-                mailboxViewModel.loadFolders(this)
+            if (apiContext != null) {
+                mailboxViewModel.cleanCache()
+                mailboxViewModel.loadFolders(apiContext)
+            } else {
+                binding.fabMailAdd.isVisible = false
+                binding.mailEmpty.isVisible = false
+                toolbarSpinner.adapter = null
+                adapter.submitList(emptyList())
+                binding.progressMail.isVisible = true
             }
         }
 
         mailboxViewModel.folderPostResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                mailboxViewModel.resetPostResponse() // mark as handled
+
             if (response is Response.Failure) {
                 //TODO handle error
                 response.exception.printStackTrace()

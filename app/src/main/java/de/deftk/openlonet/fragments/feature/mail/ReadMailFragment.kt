@@ -94,6 +94,12 @@ class ReadMailFragment : Fragment() {
                 resource.exception.printStackTrace()
             }
         }
+
+        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            if (apiContext == null) {
+                navController.popBackStack(R.id.mailFragment, false)
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

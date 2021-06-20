@@ -39,7 +39,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
             _foldersResponse.value = response
             if (response is Response.Success) {
                 val currentFolder = currentFolder.value
-                if (currentFolder == null || !response.value.contains(currentFolder)) {
+                if (currentFolder == null || !response.value.contains(currentFolder) || !emailResponses.containsKey(currentFolder)) {
                     selectFolder(response.value.first { it.isInbox }, apiContext)
                 }
             }
@@ -84,7 +84,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
 
     fun readEmail(email: IEmail, folder: IEmailFolder, apiContext: ApiContext) {
         viewModelScope.launch {
-            val response = mailboxRepository.readEmail(email, folder, null, apiContext)
+            val response = mailboxRepository.readEmail(email, folder, false, apiContext)
             _emailReadPostResponse.value = response
         }
     }
