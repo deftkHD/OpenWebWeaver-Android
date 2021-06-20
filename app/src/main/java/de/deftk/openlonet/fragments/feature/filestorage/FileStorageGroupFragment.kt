@@ -46,8 +46,12 @@ class FileStorageGroupFragment : Fragment() {
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            apiContext?.apply {
-                fileStorageViewModel.loadQuotas(this)
+            if (apiContext != null) {
+                fileStorageViewModel.loadQuotas(apiContext)
+            } else {
+                binding.fileEmpty.isVisible = false
+                adapter.submitList(emptyList())
+                binding.progressFileStorage.isVisible = true
             }
         }
 

@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -38,6 +39,8 @@ import kotlin.math.max
 
 class FilesFragment : Fragment(), FileClickHandler {
 
+    //TODO cancel ongoing network transfers on account switch
+
     companion object {
         const val FILE_PROVIDER_AUTHORITY = "de.deftk.openlonet.fileprovider"
     }
@@ -56,7 +59,12 @@ class FilesFragment : Fragment(), FileClickHandler {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFilesBinding.inflate(inflater, container, false)
-        scope = userViewModel.apiContext.value?.findOperatingScope(args.operatorId) ?: error("failed to find operator ${args.operatorId}")
+        val argScope = userViewModel.apiContext.value?.findOperatingScope(args.operatorId)
+        if (argScope == null) {
+            findNavController().popBackStack(R.id.fileStorageGroupFragment, false)
+            return binding.root
+        }
+        scope = argScope
 
         val adapter = FileAdapter(scope, this, args.folderId, args.path, fileStorageViewModel)
         binding.fileList.adapter = adapter
@@ -161,8 +169,19 @@ class FilesFragment : Fragment(), FileClickHandler {
             }
         }
 
-        userViewModel.apiContext.value?.also { apiContext ->
-            fileStorageViewModel.loadFiles(scope, args.folderId, args.path?.toList(), apiContext)
+        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            if (apiContext != null) {
+                val newScope = userViewModel.apiContext.value?.findOperatingScope(args.operatorId)
+                if (newScope == null) {
+                    findNavController().popBackStack(R.id.fileStorageGroupFragment, false)
+                    return@observe
+                } else {
+                    this.scope = newScope
+                    fileStorageViewModel.loadFiles(newScope, args.folderId, args.path?.toList(), apiContext)
+                }
+            } else {
+                findNavController().popBackStack(R.id.fileStorageGroupFragment, false)
+            }
         }
 
         downloadSaveLauncher = registerForActivityResult(SaveFileContract()) { (result, file) ->
