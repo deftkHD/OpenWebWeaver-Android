@@ -12,8 +12,8 @@
 
         <SwitchPreference
             app:key="file_storage_correct_file_names"
-            app:title="@string/setting_correct_file_storage_file_names"
-            app:summary="@string/setting_correct_file_storage_file_names_description" />
+            app:summary="@string/setting_correct_file_storage_file_names_description"
+            app:title="@string/setting_correct_file_storage_file_names" />
 
     </PreferenceCategory>
 
@@ -21,8 +21,8 @@
 
         <SwitchPreference
             app:key="file_storage_integration_enable_preview_images"
-            app:title="@string/setting_enable_preview_images"
-            app:summary="@string/setting_enable_preview_images_description" />
+            app:summary="@string/setting_enable_preview_images_description"
+            app:title="@string/setting_enable_preview_images" />
 
     </PreferenceCategory>
 
