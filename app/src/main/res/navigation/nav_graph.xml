@@ -56,6 +56,11 @@
             android:name="only_add"
             android:defaultValue="false"
             app:argType="boolean" />
+        <argument
+            android:name="login"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
     <fragment
         android:id="@+id/fileStorageGroupFragment"
@@ -321,7 +326,15 @@
         <argument
             android:name="login"
             app:argType="string"
-            app:nullable="true" />
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="only_add"
+            app:argType="boolean"
+            android:defaultValue="false" />
+        <action
+            android:id="@+id/action_tokenLoginFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
     </fragment>
     <fragment
         android:id="@+id/launchFragment"

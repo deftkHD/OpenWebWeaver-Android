@@ -74,11 +74,11 @@ class LaunchFragment : Fragment() {
                         if (accounts.isNotEmpty()) {
                             login(accounts[0])
                         } else {
-                            navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToLoginFragment())
+                            navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToLoginFragment(false, null))
                         }
                     }
                 }
-                AuthHelper.AuthState.ADD_NEW -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToLoginFragment())
+                AuthHelper.AuthState.ADD_NEW -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToLoginFragment(false, null))
             }
         }
     }

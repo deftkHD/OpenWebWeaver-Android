@@ -36,6 +36,8 @@ class LoginFragment : Fragment() {
         authenticatorResponse?.onRequestContinued()
         val forceRemember = args.onlyAdd || authenticatorResponse != null
 
+        binding.txtEmail.setText(args.login.orEmpty())
+
         binding.chbStayLoggedIn.isVisible = !forceRemember
         binding.chbStayLoggedIn.isChecked = forceRemember
 

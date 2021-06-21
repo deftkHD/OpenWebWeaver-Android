@@ -64,6 +64,7 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
             if (resource is Response.Success) {
                 setupApiContext(resource.value, Credentials.fromToken(username, token))
             }
+            _loginToken.value = resource.smartMap { username to token }
             _loginResponse.value = resource
         }
     }
