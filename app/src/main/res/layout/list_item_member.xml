@@ -9,7 +9,7 @@
 
         <variable
             name="scope"
-            type="de.deftk.lonet.api.model.IScope" />
+            type="de.deftk.openww.api.model.IScope" />
 
     </data>
 

@@ -9,11 +9,11 @@
 
         <variable
             name="file"
-            type="de.deftk.lonet.api.model.feature.filestorage.IRemoteFile" />
+            type="de.deftk.openww.api.model.feature.filestorage.IRemoteFile" />
 
         <variable
             name="scope"
-            type="de.deftk.lonet.api.model.IOperatingScope" />
+            type="de.deftk.openww.api.model.IOperatingScope" />
 
         <variable
             name="folderId"

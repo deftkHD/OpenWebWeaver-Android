@@ -9,7 +9,6 @@
         android:id="@+id/notification_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/toolbar"
         android:layout_alignParentStart="true"
         android:padding="16dp">
 

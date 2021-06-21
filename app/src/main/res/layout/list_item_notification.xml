@@ -3,9 +3,9 @@
 
     <data>
 
-        <import type="de.deftk.openlonet.utils.TextUtils" />
+        <import type="de.deftk.openww.android.utils.TextUtils" />
 
-        <import type="de.deftk.openlonet.utils.UIUtil" />
+        <import type="de.deftk.openww.android.utils.UIUtil" />
 
         <variable
             name="clickListener"
@@ -13,11 +13,11 @@
 
         <variable
             name="notification"
-            type="de.deftk.lonet.api.model.feature.board.IBoardNotification" />
+            type="de.deftk.openww.api.model.feature.board.IBoardNotification" />
 
         <variable
             name="group"
-            type="de.deftk.lonet.api.model.IGroup" />
+            type="de.deftk.openww.api.model.IGroup" />
     </data>
 
 

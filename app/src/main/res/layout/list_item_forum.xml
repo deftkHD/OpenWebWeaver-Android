@@ -9,7 +9,7 @@
 
         <variable
             name="group"
-            type="de.deftk.lonet.api.model.IGroup" />
+            type="de.deftk.openww.api.model.IGroup" />
 
     </data>
 

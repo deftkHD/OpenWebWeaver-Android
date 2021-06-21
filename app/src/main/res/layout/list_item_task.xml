@@ -3,7 +3,7 @@
 
     <data>
 
-        <import type="de.deftk.openlonet.utils.UIUtil" />
+        <import type="de.deftk.openww.android.utils.UIUtil" />
 
         <variable
             name="clickListener"
@@ -11,11 +11,11 @@
 
         <variable
             name="task"
-            type="de.deftk.lonet.api.model.feature.tasks.ITask" />
+            type="de.deftk.openww.api.model.feature.tasks.ITask" />
 
         <variable
             name="scope"
-            type="de.deftk.lonet.api.model.IOperatingScope" />
+            type="de.deftk.openww.api.model.IOperatingScope" />
 
     </data>
 

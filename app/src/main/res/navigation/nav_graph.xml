@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/overviewFragment"
-        android:name="de.deftk.openlonet.fragments.OverviewFragment"
+        android:name="de.deftk.openww.android.fragments.OverviewFragment"
         android:label="@string/overview">
         <action
             android:id="@+id/action_overviewFragment_to_notificationsFragment"
@@ -39,7 +39,7 @@
     </fragment>
     <fragment
         android:id="@+id/loginFragment"
-        android:name="de.deftk.openlonet.fragments.LoginFragment"
+        android:name="de.deftk.openww.android.fragments.LoginFragment"
         android:label="loginFragment"
         tools:layout="@layout/fragment_login">
         <action
@@ -64,7 +64,7 @@
     </fragment>
     <fragment
         android:id="@+id/fileStorageGroupFragment"
-        android:name="de.deftk.openlonet.fragments.feature.filestorage.FileStorageGroupFragment"
+        android:name="de.deftk.openww.android.fragments.feature.filestorage.FileStorageGroupFragment"
         android:label="@string/file_storage">
         <action
             android:id="@+id/action_fileStorageGroupFragment_to_filesFragment"
@@ -72,7 +72,7 @@
     </fragment>
     <fragment
         android:id="@+id/forumGroupFragment"
-        android:name="de.deftk.openlonet.fragments.feature.forum.ForumGroupFragment"
+        android:name="de.deftk.openww.android.fragments.feature.forum.ForumGroupFragment"
         android:label="@string/forum">
         <action
             android:id="@+id/action_forumGroupFragment_to_forumPostsFragment"
@@ -80,7 +80,7 @@
     </fragment>
     <fragment
         android:id="@+id/mailFragment"
-        android:name="de.deftk.openlonet.fragments.feature.mail.MailFragment"
+        android:name="de.deftk.openww.android.fragments.feature.mail.MailFragment"
         android:label="@string/email">
         <action
             android:id="@+id/action_mailFragment_to_readMailFragment"
@@ -96,7 +96,7 @@
     </fragment>
     <fragment
         android:id="@+id/membersGroupFragment"
-        android:name="de.deftk.openlonet.fragments.feature.members.MembersGroupsFragment"
+        android:name="de.deftk.openww.android.fragments.feature.members.MembersGroupsFragment"
         android:label="@string/members">
         <action
             android:id="@+id/action_membersGroupFragment_to_membersFragment"
@@ -104,7 +104,7 @@
     </fragment>
     <fragment
         android:id="@+id/notificationsFragment"
-        android:name="de.deftk.openlonet.fragments.feature.board.NotificationsFragment"
+        android:name="de.deftk.openww.android.fragments.feature.board.NotificationsFragment"
         android:label="@string/notifications">
         <action
             android:id="@+id/action_notificationsFragment_to_readNotificationFragment"
@@ -115,11 +115,11 @@
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="de.deftk.openlonet.fragments.SettingsFragment"
+        android:name="de.deftk.openww.android.fragments.SettingsFragment"
         android:label="@string/settings" />
     <fragment
         android:id="@+id/systemNotificationsFragment"
-        android:name="de.deftk.openlonet.fragments.feature.systemnotification.SystemNotificationsFragment"
+        android:name="de.deftk.openww.android.fragments.feature.systemnotification.SystemNotificationsFragment"
         android:label="@string/system_notifications">
         <action
             android:id="@+id/action_systemNotificationsFragment_to_systemNotificationFragment"
@@ -127,7 +127,7 @@
     </fragment>
     <fragment
         android:id="@+id/tasksFragment"
-        android:name="de.deftk.openlonet.fragments.feature.tasks.TasksFragment"
+        android:name="de.deftk.openww.android.fragments.feature.tasks.TasksFragment"
         android:label="@string/tasks">
         <action
             android:id="@+id/action_tasksFragment_to_readTaskFragment"
@@ -138,7 +138,7 @@
     </fragment>
     <fragment
         android:id="@+id/editNotificationFragment"
-        android:name="de.deftk.openlonet.fragments.feature.board.EditNotificationFragment"
+        android:name="de.deftk.openww.android.fragments.feature.board.EditNotificationFragment"
         android:label="{title}"
         tools:layout="@layout/fragment_edit_notification">
         <argument
@@ -155,7 +155,7 @@
     </fragment>
     <fragment
         android:id="@+id/editTaskFragment"
-        android:name="de.deftk.openlonet.fragments.feature.tasks.EditTaskFragment"
+        android:name="de.deftk.openww.android.fragments.feature.tasks.EditTaskFragment"
         android:label="{title}"
         tools:layout="@layout/fragment_edit_task">
         <argument
@@ -172,7 +172,7 @@
     </fragment>
     <fragment
         android:id="@+id/filesFragment"
-        android:name="de.deftk.openlonet.fragments.feature.filestorage.FilesFragment"
+        android:name="de.deftk.openww.android.fragments.feature.filestorage.FilesFragment"
         android:label="{title}"
         tools:layout="@layout/fragment_files">
         <argument
@@ -196,7 +196,7 @@
     </fragment>
     <fragment
         android:id="@+id/forumPostFragment"
-        android:name="de.deftk.openlonet.fragments.feature.forum.ForumPostFragment"
+        android:name="de.deftk.openww.android.fragments.feature.forum.ForumPostFragment"
         android:label="{title}"
         tools:layout="@layout/fragment_forum_post">
         <argument
@@ -219,7 +219,7 @@
     </fragment>
     <fragment
         android:id="@+id/forumPostsFragment"
-        android:name="de.deftk.openlonet.fragments.feature.forum.ForumPostsFragment"
+        android:name="de.deftk.openww.android.fragments.feature.forum.ForumPostsFragment"
         android:label="{title}"
         tools:layout="@layout/fragment_forum_posts">
         <action
@@ -234,7 +234,7 @@
     </fragment>
     <fragment
         android:id="@+id/membersFragment"
-        android:name="de.deftk.openlonet.fragments.feature.members.MembersFragment"
+        android:name="de.deftk.openww.android.fragments.feature.members.MembersFragment"
         android:label="{title}"
         tools:layout="@layout/fragment_members">
         <argument
@@ -246,7 +246,7 @@
     </fragment>
     <fragment
         android:id="@+id/readMailFragment"
-        android:name="de.deftk.openlonet.fragments.feature.mail.ReadMailFragment"
+        android:name="de.deftk.openww.android.fragments.feature.mail.ReadMailFragment"
         android:label="@string/read_mail"
         tools:layout="@layout/fragment_read_mail">
         <action
@@ -261,7 +261,7 @@
     </fragment>
     <fragment
         android:id="@+id/readNotificationFragment"
-        android:name="de.deftk.openlonet.fragments.feature.board.ReadNotificationFragment"
+        android:name="de.deftk.openww.android.fragments.feature.board.ReadNotificationFragment"
         android:label="@string/see_notification"
         tools:layout="@layout/fragment_read_notification">
         <argument
@@ -276,7 +276,7 @@
     </fragment>
     <fragment
         android:id="@+id/readTaskFragment"
-        android:name="de.deftk.openlonet.fragments.feature.tasks.ReadTaskFragment"
+        android:name="de.deftk.openww.android.fragments.feature.tasks.ReadTaskFragment"
         android:label="@string/task_details"
         tools:layout="@layout/fragment_read_task">
         <argument
@@ -291,7 +291,7 @@
     </fragment>
     <fragment
         android:id="@+id/systemNotificationFragment"
-        android:name="de.deftk.openlonet.fragments.feature.systemnotification.SystemNotificationFragment"
+        android:name="de.deftk.openww.android.fragments.feature.systemnotification.SystemNotificationFragment"
         android:label="@string/see_system_notification"
         tools:layout="@layout/fragment_system_notification">
         <argument
@@ -300,12 +300,12 @@
     </fragment>
     <fragment
         android:id="@+id/writeMailFragment"
-        android:name="de.deftk.openlonet.fragments.feature.mail.WriteMailFragment"
+        android:name="de.deftk.openww.android.fragments.feature.mail.WriteMailFragment"
         android:label="@string/write_mail"
         tools:layout="@layout/fragment_write_mail" />
     <dialog
         android:id="@+id/chooseAccountDialogFragment"
-        android:name="de.deftk.openlonet.fragments.dialog.ChooseAccountDialogFragment"
+        android:name="de.deftk.openww.android.fragments.dialog.ChooseAccountDialogFragment"
         android:label="ChooseAccountDialogFragment">
         <action
             android:id="@+id/action_chooseAccountDialogFragment_to_overviewFragment"
@@ -315,7 +315,7 @@
     </dialog>
     <fragment
         android:id="@+id/tokenLoginFragment"
-        android:name="de.deftk.openlonet.fragments.TokenLoginFragment"
+        android:name="de.deftk.openww.android.fragments.TokenLoginFragment"
         android:label="fragment_token_login"
         tools:layout="@layout/fragment_token_login">
         <action
@@ -338,7 +338,7 @@
     </fragment>
     <fragment
         android:id="@+id/launchFragment"
-        android:name="de.deftk.openlonet.fragments.LaunchFragment"
+        android:name="de.deftk.openww.android.fragments.LaunchFragment"
         android:label="LaunchFragment">
         <action
             android:id="@+id/action_launchFragment_to_loginFragment"

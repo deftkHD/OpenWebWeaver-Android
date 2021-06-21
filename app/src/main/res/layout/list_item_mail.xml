@@ -9,7 +9,7 @@
 
         <import type="android.graphics.Typeface" />
 
-        <import type="de.deftk.openlonet.utils.TextUtils" />
+        <import type="de.deftk.openww.android.utils.TextUtils" />
 
         <variable
             name="clickListener"
@@ -17,11 +17,11 @@
 
         <variable
             name="email"
-            type="de.deftk.lonet.api.model.feature.mailbox.IEmail" />
+            type="de.deftk.openww.api.model.feature.mailbox.IEmail" />
 
         <variable
             name="folder"
-            type="de.deftk.lonet.api.model.feature.mailbox.IEmailFolder" />
+            type="de.deftk.openww.api.model.feature.mailbox.IEmailFolder" />
 
     </data>
 

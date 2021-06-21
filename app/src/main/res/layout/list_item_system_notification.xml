@@ -3,9 +3,9 @@
 
     <data>
 
-        <import type="de.deftk.openlonet.utils.UIUtil" />
+        <import type="de.deftk.openww.android.utils.UIUtil" />
 
-        <import type="de.deftk.openlonet.utils.TextUtils" />
+        <import type="de.deftk.openww.android.utils.TextUtils" />
 
         <import type="android.graphics.Typeface" />
 
@@ -17,7 +17,7 @@
 
         <variable
             name="notification"
-            type="de.deftk.lonet.api.model.feature.systemnotification.ISystemNotification" />
+            type="de.deftk.openww.api.model.feature.systemnotification.ISystemNotification" />
     </data>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"

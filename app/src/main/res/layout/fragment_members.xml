@@ -14,7 +14,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true">
 
-        <de.deftk.openlonet.components.ContextMenuRecyclerView
+        <de.deftk.openww.android.components.ContextMenuRecyclerView
             android:id="@+id/member_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

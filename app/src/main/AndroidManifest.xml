@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="de.deftk.openlonet">
+    package="de.deftk.openww.android">
 
     <uses-permission
         android:name="android.permission.AUTHENTICATE_ACCOUNTS"
@@ -18,14 +18,14 @@
         android:maxSdkVersion="22" />
 
     <application
-        android:name=".OpenLoNet"
+        android:name="de.deftk.openww.android.OpenWebWeaver"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".activities.feature.mail.WriteMailActivity">
+        <activity android:name="de.deftk.openww.android.activities.feature.mail.WriteMailActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SENDTO" />
 
@@ -34,7 +34,7 @@
                 <data android:scheme="mailto" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.MainActivity">
+        <activity android:name="de.deftk.openww.android.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -44,7 +44,7 @@
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="de.deftk.openlonet.fileprovider"
+            android:authorities="de.deftk.openww.android.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
@@ -52,8 +52,8 @@
                 android:resource="@xml/provider_paths" />
         </provider>
         <provider
-            android:name=".feature.filestorage.integration.ApiDocumentsProvider"
-            android:authorities="de.deftk.openlonet.filestorage.fileprovider"
+            android:name="de.deftk.openww.android.feature.filestorage.integration.ApiDocumentsProvider"
+            android:authorities="de.deftk.openww.android.filestorage.fileprovider"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="android.permission.MANAGE_DOCUMENTS">
@@ -63,7 +63,7 @@
         </provider>
 
         <service
-            android:name=".auth.AuthenticatorService"
+            android:name="de.deftk.openww.android.auth.AuthenticatorService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>

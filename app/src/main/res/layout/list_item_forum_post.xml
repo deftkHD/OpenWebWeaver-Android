@@ -11,11 +11,11 @@
 
         <variable
             name="post"
-            type="de.deftk.lonet.api.model.feature.forum.IForumPost" />
+            type="de.deftk.openww.api.model.feature.forum.IForumPost" />
 
         <variable
             name="group"
-            type="de.deftk.lonet.api.model.IGroup" />
+            type="de.deftk.openww.api.model.IGroup" />
 
         <variable
             name="parentIds"

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accountType="OpenLoNet/lo-net2.de"
+    android:accountType="OpenWebWeaver/webweaver"
     android:icon="@drawable/ic_launcher_foreground"
     android:label="@string/app_name"
     android:smallIcon="@drawable/ic_launcher_foreground" />
