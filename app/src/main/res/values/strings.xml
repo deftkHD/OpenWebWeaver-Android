@@ -158,5 +158,6 @@
     <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="see_comment">See comment</string>
     <string name="password_login_link"><a href="www.www.com">Password login</a></string>
+    <string name="email_sent">Email sent!</string>
 
 </resources>

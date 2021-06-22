@@ -102,7 +102,7 @@ class MembersFragment : Fragment() {
             R.id.member_action_write_mail -> {
                 val member = adapter.getItem(menuInfo.position)
                 val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${Uri.encode(member.login)}"))
-                startActivity(intent)
+                startActivity(Intent.createChooser(intent, getString(R.string.send_mail)))
                 true
             }
             else -> super.onContextItemSelected(item)

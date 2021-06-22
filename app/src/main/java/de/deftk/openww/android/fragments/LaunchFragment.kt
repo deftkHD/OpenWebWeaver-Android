@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -17,7 +18,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.databinding.FragmentLaunchBinding
-import de.deftk.openww.android.fragments.dialog.ChooseAccountDialogFragmentDirections
+import de.deftk.openww.android.feature.LaunchMode
 import de.deftk.openww.android.viewmodel.UserViewModel
 
 class LaunchFragment : Fragment() {
@@ -28,6 +29,8 @@ class LaunchFragment : Fragment() {
     private lateinit var binding: FragmentLaunchBinding
     private lateinit var authState: AuthHelper.AuthState
 
+    private val launchMode by lazy { LaunchMode.getLaunchMode(requireActivity().intent) }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentLaunchBinding.inflate(inflater, container, false)
         binding.version.text = BuildConfig.VERSION_NAME
@@ -36,8 +39,20 @@ class LaunchFragment : Fragment() {
         userViewModel.loginResponse.observe(viewLifecycleOwner, { response ->
             if (response is Response.Success) {
                 when (authState) {
-                    AuthHelper.AuthState.SINGLE -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToOverviewFragment())
-                    AuthHelper.AuthState.MULTIPLE -> navController.navigate(R.id.overviewFragment)
+                    AuthHelper.AuthState.SINGLE -> {
+                        if (launchMode == LaunchMode.DEFAULT) {
+                            navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToOverviewFragment())
+                        } else if (launchMode == LaunchMode.EMAIL) {
+                            navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToWriteMailFragment())
+                        }
+                    }
+                    AuthHelper.AuthState.MULTIPLE -> {
+                        if (launchMode == LaunchMode.DEFAULT) {
+                            navController.navigate(R.id.overviewFragment)
+                        } else if (launchMode == LaunchMode.EMAIL) {
+                            navController.navigate(R.id.writeMailFragment)
+                        }
+                    }
                     else -> { /* ignore */ }
                 }
             } else if (response is Response.Failure) {
@@ -72,14 +87,18 @@ class LaunchFragment : Fragment() {
                         navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToChooseAccountDialogFragment())
                     } else {
                         val accounts = AuthHelper.findAccounts(prioritized, requireContext())
-                        if (accounts.isNotEmpty()) {
-                            login(accounts[0])
-                        } else {
-                            navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToLoginFragment(false, null))
-                        }
+                        login(accounts[0])
                     }
                 }
-                AuthHelper.AuthState.ADD_NEW -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToLoginFragment(false, null))
+                AuthHelper.AuthState.ADD_NEW -> {
+                    if (launchMode == LaunchMode.DEFAULT) {
+                        navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToLoginFragment(false, null))
+                    } else if (launchMode == LaunchMode.EMAIL) {
+                        Toast.makeText(requireContext(), R.string.login_failed, Toast.LENGTH_LONG).show()
+                        requireActivity().finish()
+                    }
+
+                }
             }
         }
     }

@@ -3,6 +3,7 @@ package de.deftk.openww.android.activities
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -24,6 +25,7 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.databinding.ActivityMainBinding
 import de.deftk.openww.android.feature.AppFeature
+import de.deftk.openww.android.feature.LaunchMode
 import de.deftk.openww.android.viewmodel.UserViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +41,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
 
     private val userViewModel: UserViewModel by viewModels()
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
+    private val launchMode by lazy { LaunchMode.getLaunchMode(intent) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,7 +82,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
             // allow or disallow switching accounts
             binding.navView.menu.findItem(R.id.drawer_item_switch_account).isVisible = AuthHelper.findAccounts(null, this).size > 1
 
-            if (apiContext != null) {
+            if (apiContext != null && launchMode == LaunchMode.DEFAULT) {
                 binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
                 binding.navView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = apiContext.getUser().getFullName()
                 binding.navView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = apiContext.getUser().login
@@ -159,15 +162,26 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        if (launchMode == LaunchMode.DEFAULT) {
+            return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        } else if (launchMode == LaunchMode.EMAIL) {
+            finish()
+            return true
+        }
+        return super.onSupportNavigateUp()
     }
 
     override fun onBackPressed() {
-        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            binding.drawerLayout.closeDrawer(GravityCompat.START)
-        } else {
-            super.onBackPressed()
+        if (launchMode == LaunchMode.DEFAULT) {
+            if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+            } else {
+                super.onBackPressed()
+            }
+        } else if (launchMode == LaunchMode.EMAIL) {
+            finish()
         }
+
     }
 
 }

@@ -156,4 +156,5 @@
     <string name="notification_download_content">Lade Datei %s herunter…</string>
     <string name="see_comment">Kommentar ansehen</string>
     <string name="password_login_link"><a href="www.www.com">Anmelden mit Passwort</a></string>
+    <string name="email_sent">Email gesendet!</string>
 </resources>

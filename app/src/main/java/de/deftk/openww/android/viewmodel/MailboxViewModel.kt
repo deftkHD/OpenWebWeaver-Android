@@ -7,6 +7,8 @@ import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.repository.MailboxRepository
+import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
+import de.deftk.openww.api.model.feature.mailbox.ReferenceMode
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -32,6 +34,9 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
 
     private val _emailReadPostResponse = MutableLiveData<Response<IEmail?>?>()
     val emailReadPostResponse: LiveData<Response<IEmail?>?> = _emailReadPostResponse
+
+    private val _emailSendResponse = MutableLiveData<Response<Unit>>()
+    val emailSendResponse: LiveData<Response<Unit>> = _emailSendResponse
 
     fun loadFolders(apiContext: ApiContext) {
         viewModelScope.launch {
@@ -80,6 +85,13 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
 
     fun cleanCache() {
         emailResponses.clear()
+    }
+
+    fun sendEmail(to: String, subject: String, plainBody: String, cc: String? = null, bcc: String? = null, importSessionFiles: List<ISessionFile>? = null, referenceFolderId: String? = null, referenceMessageId: Int? = null, referenceMode: ReferenceMode? = null, text: String? = null, apiContext: ApiContext) {
+        viewModelScope.launch {
+            val response = mailboxRepository.sendEmail(to, subject, plainBody, cc, bcc, importSessionFiles, referenceFolderId, referenceMessageId, referenceMode, text, apiContext)
+            _emailSendResponse.value = response
+        }
     }
 
     fun readEmail(email: IEmail, folder: IEmailFolder, apiContext: ApiContext) {

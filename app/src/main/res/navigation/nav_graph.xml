@@ -302,7 +302,11 @@
         android:id="@+id/writeMailFragment"
         android:name="de.deftk.openww.android.fragments.feature.mail.WriteMailFragment"
         android:label="@string/write_mail"
-        tools:layout="@layout/fragment_write_mail" />
+        tools:layout="@layout/fragment_write_mail" >
+        <action
+            android:id="@+id/action_writeMailFragment_to_chooseAccountDialogFragment"
+            app:destination="@id/chooseAccountDialogFragment" />
+    </fragment>
     <dialog
         android:id="@+id/chooseAccountDialogFragment"
         android:name="de.deftk.openww.android.fragments.dialog.ChooseAccountDialogFragment"
@@ -312,6 +316,9 @@
             app:destination="@id/overviewFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_chooseAccountDialogFragment_to_writeMailFragment"
+            app:destination="@id/writeMailFragment" />
     </dialog>
     <fragment
         android:id="@+id/tokenLoginFragment"
@@ -355,5 +362,8 @@
             app:destination="@id/chooseAccountDialogFragment"
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_launchFragment_to_writeMailFragment"
+            app:destination="@id/writeMailFragment" />
     </fragment>
 </navigation>
