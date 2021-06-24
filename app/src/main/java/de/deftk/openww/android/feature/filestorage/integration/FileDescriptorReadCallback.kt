@@ -10,7 +10,7 @@ import java.net.URL
 import kotlin.math.min
 
 @RequiresApi(Build.VERSION_CODES.O)
-class FileDescriptorCallback(private val cancellationSignal: CancellationSignal?, private val createDownloadUrl: () -> FileUrl): ProxyFileDescriptorCallback() {
+class FileDescriptorReadCallback(private val cancellationSignal: CancellationSignal?, private val createDownloadUrl: () -> FileUrl): ProxyFileDescriptorCallback() {
 
     private val downloadUrl by lazy { createDownloadUrl() }
 
@@ -43,7 +43,7 @@ class FileDescriptorCallback(private val cancellationSignal: CancellationSignal?
     }
 
     override fun onWrite(offset: Long, size: Int, data: ByteArray?): Int {
-        TODO("Not yet implemented")
+        throw IllegalStateException("Operation is not supported!")
     }
 
     override fun onRelease() {

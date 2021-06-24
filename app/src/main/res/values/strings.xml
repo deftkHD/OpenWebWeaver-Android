@@ -122,7 +122,7 @@
     <string name="pinned">Pinned</string>
     <string name="file_storage_integration">File storage integration</string>
     <string name="setting_enable_preview_images">Enable preview images</string>
-    <string name="setting_enable_preview_images_description">Activating preview images might result in file chooser working incorrect</string>
+    <string name="setting_enable_preview_images_description">Activating preview images results in undefined behaviour if there are too many files</string>
     <string name="flagged">Flagged</string>
     <string name="answered">Answered</string>
     <string name="open">Open</string>

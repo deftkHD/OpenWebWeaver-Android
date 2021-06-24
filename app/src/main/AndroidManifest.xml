@@ -48,8 +48,8 @@
                 android:resource="@xml/provider_paths" />
         </provider>
         <provider
-            android:name="de.deftk.openww.android.feature.filestorage.integration.ApiDocumentsProvider"
-            android:authorities="de.deftk.openww.android.filestorage.fileprovider"
+            android:name="de.deftk.openww.android.feature.filestorage.integration.WebWeaverDocumentsProvider"
+            android:authorities="de.deftk.openww.android.filestorage.integration.fileprovider"
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="android.permission.MANAGE_DOCUMENTS">
