@@ -10,7 +10,7 @@ import android.widget.TextView
 import de.deftk.openww.android.R
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 
-class MailFolderAdapter(context: Context, elements: List<IEmailFolder>) : ArrayAdapter<IEmailFolder>(context, 0, elements) {
+class MailFolderAdapter(context: Context, val elements: List<IEmailFolder>) : ArrayAdapter<IEmailFolder>(context, 0, elements) {
 
     companion object {
         fun getTranslatedFolderName(context: Context, folder: IEmailFolder): String {

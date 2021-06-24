@@ -79,7 +79,7 @@ class MailFragment: Fragment() {
         mailboxViewModel.foldersResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 val newAdapter = MailFolderAdapter(requireContext(), response.value)
-                if ((toolbarSpinner.adapter as? MailFolderAdapter?)?.getElements() != newAdapter.getElements()) {
+                if ((toolbarSpinner.adapter as? MailFolderAdapter?)?.elements != newAdapter.elements) {
                     toolbarSpinner.adapter = newAdapter
                     userViewModel.apiContext.value?.also { apiContext ->
                         mailboxViewModel.selectFolder(response.value.firstOrNull { it.id == args.folderId } ?: response.value.first { it.isInbox }, apiContext)
