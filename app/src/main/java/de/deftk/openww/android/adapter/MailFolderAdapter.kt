@@ -4,15 +4,13 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.TextView
-import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 import de.deftk.openww.android.R
-import de.deftk.openww.android.utils.filter.FilterableAdapter
-import de.deftk.openww.android.utils.filter.filterApplies
+import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 
-class MailFolderAdapter(context: Context, elements: List<IEmailFolder>) :
-    FilterableAdapter<IEmailFolder>(context, elements) {
+class MailFolderAdapter(context: Context, elements: List<IEmailFolder>) : ArrayAdapter<IEmailFolder>(context, 0, elements) {
 
     companion object {
         fun getTranslatedFolderName(context: Context, folder: IEmailFolder): String {
@@ -43,12 +41,6 @@ class MailFolderAdapter(context: Context, elements: List<IEmailFolder>) :
         listItemView.findViewById<TextView>(R.id.mail_folder_name).text = getTranslatedFolderName(context, item)
         listItemView.findViewById<ImageView>(R.id.mail_folder_image).setImageResource(getFolderIcon(item))
         return listItemView
-    }
-
-    override fun search(constraint: String?): List<IEmailFolder> {
-        if (constraint == null)
-            return originalElements
-        return originalElements.filter { getTranslatedFolderName(context, it).filterApplies(constraint) }
     }
 
 }
