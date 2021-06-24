@@ -5,18 +5,104 @@
 
     <group
         android:id="@+id/main_group"
-        android:checkableBehavior="single" />
+        android:checkableBehavior="single"
+        android:orderInCategory="0">
+
+        <item
+            android:id="@+id/overviewFragment"
+            android:icon="@drawable/ic_list_24"
+            android:title="@string/overview" />
+
+    </group>
 
     <group
         android:id="@+id/feature_group"
-        android:checkableBehavior="single" />
+        android:checkableBehavior="single"
+        android:orderInCategory="1">
+
+        <item
+            android:id="@+id/tasksFragment"
+            android:icon="@drawable/ic_edit_24"
+            android:title="@string/tasks"
+            android:visible="false" />
+
+        <item
+            android:id="@+id/mailFragment"
+            android:icon="@drawable/ic_email_24"
+            android:title="@string/mail"
+            android:visible="false" />
+
+        <item
+            android:id="@+id/fileStorageGroupFragment"
+            android:icon="@drawable/ic_file_24"
+            android:title="@string/file_storage"
+            android:visible="false" />
+
+        <item
+            android:id="@+id/notificationsFragment"
+            android:icon="@drawable/ic_notifications_24"
+            android:title="@string/notifications"
+            android:visible="false" />
+
+        <item
+            android:id="@+id/forumGroupFragment"
+            android:icon="@drawable/ic_forum_24"
+            android:title="@string/forum"
+            android:visible="false" />
+
+        <item
+            android:id="@+id/membersGroupFragment"
+            android:icon="@drawable/ic_people_24"
+            android:title="@string/members"
+            android:visible="false" />
+
+        <item
+            android:id="@+id/systemNotificationsFragment"
+            android:icon="@drawable/ic_warning_24"
+            android:title="@string/system_notifications"
+            android:visible="false" />
+
+
+    </group>
 
     <group
         android:id="@+id/utility_group"
-        android:checkableBehavior="single" />
+        android:checkableBehavior="none"
+        android:orderInCategory="2">
+
+        <item
+            android:id="@+id/drawer_item_open_website"
+            android:icon="@drawable/ic_language_24"
+            android:title="@string/open_website" />
+
+        <item
+            android:id="@+id/settingsFragment"
+            android:icon="@drawable/ic_settings_24"
+            android:title="@string/settings" />
+
+    </group>
 
     <group
         android:id="@+id/account_group"
-        android:checkableBehavior="single" />
+        android:checkableBehavior="none"
+        android:orderInCategory="3">
+
+        <item
+            android:id="@+id/drawer_item_add_account"
+            android:icon="@drawable/ic_person_add_24"
+            android:title="@string/add_account" />
+
+        <item
+            android:id="@+id/drawer_item_switch_account"
+            android:icon="@drawable/ic_account_circle_24"
+            android:title="@string/switch_account"
+            android:visible="false" />
+
+        <item
+            android:id="@+id/drawer_item_logout"
+            android:icon="@drawable/ic_lock_open_24"
+            android:title="@string/logout" />
+
+    </group>
 
 </menu>

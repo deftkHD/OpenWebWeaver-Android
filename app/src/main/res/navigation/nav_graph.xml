@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/launchFragment">
+
+    <fragment
+        android:id="@+id/overviewFragment"
+        android:name="de.deftk.openww.android.fragments.OverviewFragment"
+        android:label="@string/overview">
+        <action
+            android:id="@+id/action_overviewFragment_to_notificationsFragment"
+            app:destination="@id/notificationsFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_fileStorageGroupFragment"
+            app:destination="@id/fileStorageGroupFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_mailFragment"
+            app:destination="@id/mailFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_forumGroupFragment"
+            app:destination="@id/forumGroupFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_membersGroupFragment"
+            app:destination="@id/membersGroupFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_tasksFragment"
+            app:destination="@id/tasksFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_systemNotificationsFragment"
+            app:destination="@id/systemNotificationsFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_settingsFragment2"
+            app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_chooseAccountDialogFragment"
+            app:destination="@id/chooseAccountDialogFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="de.deftk.openww.android.fragments.LoginFragment"
+        android:label="loginFragment"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_loginFragment_to_tokenLoginFragment"
+            app:destination="@id/tokenLoginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_loginFragment_to_overviewFragment"
+            app:destination="@id/overviewFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <argument
+            android:name="only_add"
+            android:defaultValue="false"
+            app:argType="boolean" />
+        <argument
+            android:name="login"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
+    <fragment
+        android:id="@+id/fileStorageGroupFragment"
+        android:name="de.deftk.openww.android.fragments.feature.filestorage.FileStorageGroupFragment"
+        android:label="@string/file_storage">
+        <action
+            android:id="@+id/action_fileStorageGroupFragment_to_filesFragment"
+            app:destination="@id/filesFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/forumGroupFragment"
+        android:name="de.deftk.openww.android.fragments.feature.forum.ForumGroupFragment"
+        android:label="@string/forum">
+        <action
+            android:id="@+id/action_forumGroupFragment_to_forumPostsFragment"
+            app:destination="@id/forumPostsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/mailFragment"
+        android:name="de.deftk.openww.android.fragments.feature.mail.MailFragment"
+        android:label="@string/email">
+        <action
+            android:id="@+id/action_mailFragment_to_readMailFragment"
+            app:destination="@id/readMailFragment" />
+        <action
+            android:id="@+id/action_mailFragment_to_writeMailFragment"
+            app:destination="@id/writeMailFragment" />
+        <argument
+            android:name="folderId"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/membersGroupFragment"
+        android:name="de.deftk.openww.android.fragments.feature.members.MembersGroupsFragment"
+        android:label="@string/members">
+        <action
+            android:id="@+id/action_membersGroupFragment_to_membersFragment"
+            app:destination="@id/membersFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/notificationsFragment"
+        android:name="de.deftk.openww.android.fragments.feature.board.NotificationsFragment"
+        android:label="@string/notifications">
+        <action
+            android:id="@+id/action_notificationsFragment_to_readNotificationFragment"
+            app:destination="@id/readNotificationFragment" />
+        <action
+            android:id="@+id/action_notificationsFragment_to_editNotificationFragment"
+            app:destination="@id/editNotificationFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="de.deftk.openww.android.fragments.SettingsFragment"
+        android:label="@string/settings" />
+    <fragment
+        android:id="@+id/systemNotificationsFragment"
+        android:name="de.deftk.openww.android.fragments.feature.systemnotification.SystemNotificationsFragment"
+        android:label="@string/system_notifications">
+        <action
+            android:id="@+id/action_systemNotificationsFragment_to_systemNotificationFragment"
+            app:destination="@id/systemNotificationFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/tasksFragment"
+        android:name="de.deftk.openww.android.fragments.feature.tasks.TasksFragment"
+        android:label="@string/tasks">
+        <action
+            android:id="@+id/action_tasksFragment_to_readTaskFragment"
+            app:destination="@id/readTaskFragment" />
+        <action
+            android:id="@+id/action_tasksFragment_to_editTaskFragment"
+            app:destination="@id/editTaskFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editNotificationFragment"
+        android:name="de.deftk.openww.android.fragments.feature.board.EditNotificationFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_edit_notification">
+        <argument
+            android:name="notificationId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="groupId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/editTaskFragment"
+        android:name="de.deftk.openww.android.fragments.feature.tasks.EditTaskFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_edit_task">
+        <argument
+            android:name="taskId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="groupId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/filesFragment"
+        android:name="de.deftk.openww.android.fragments.feature.filestorage.FilesFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_files">
+        <argument
+            android:name="folderId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="operatorId"
+            app:argType="string" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_filesFragment_self"
+            app:destination="@id/filesFragment" />
+        <argument
+            android:name="path"
+            android:defaultValue="@null"
+            app:argType="string[]"
+            app:nullable="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/forumPostFragment"
+        android:name="de.deftk.openww.android.fragments.feature.forum.ForumPostFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_forum_post">
+        <argument
+            android:name="groupId"
+            app:argType="string" />
+        <argument
+            android:name="postId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_forumPostFragment_self"
+            app:destination="@id/forumPostFragment" />
+        <argument
+            android:name="parentPostIds"
+            android:defaultValue="@null"
+            app:argType="string[]"
+            app:nullable="true" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/forumPostsFragment"
+        android:name="de.deftk.openww.android.fragments.feature.forum.ForumPostsFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_forum_posts">
+        <action
+            android:id="@+id/action_forumPostsFragment_to_forumPostFragment"
+            app:destination="@id/forumPostFragment" />
+        <argument
+            android:name="groupId"
+            app:argType="string" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/membersFragment"
+        android:name="de.deftk.openww.android.fragments.feature.members.MembersFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_members">
+        <argument
+            android:name="groupId"
+            app:argType="string" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/readMailFragment"
+        android:name="de.deftk.openww.android.fragments.feature.mail.ReadMailFragment"
+        android:label="@string/read_mail"
+        tools:layout="@layout/fragment_read_mail">
+        <action
+            android:id="@+id/action_readMailFragment_to_writeMailFragment"
+            app:destination="@id/writeMailFragment" />
+        <argument
+            android:name="folderId"
+            app:argType="string" />
+        <argument
+            android:name="mailId"
+            app:argType="integer" />
+    </fragment>
+    <fragment
+        android:id="@+id/readNotificationFragment"
+        android:name="de.deftk.openww.android.fragments.feature.board.ReadNotificationFragment"
+        android:label="@string/see_notification"
+        tools:layout="@layout/fragment_read_notification">
+        <argument
+            android:name="notificationId"
+            app:argType="string" />
+        <argument
+            android:name="groupId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_readNotificationFragment_to_editNotificationFragment"
+            app:destination="@id/editNotificationFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/readTaskFragment"
+        android:name="de.deftk.openww.android.fragments.feature.tasks.ReadTaskFragment"
+        android:label="@string/task_details"
+        tools:layout="@layout/fragment_read_task">
+        <argument
+            android:name="taskId"
+            app:argType="string" />
+        <argument
+            android:name="groupId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_readTaskFragment_to_editTaskFragment"
+            app:destination="@id/editTaskFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/systemNotificationFragment"
+        android:name="de.deftk.openww.android.fragments.feature.systemnotification.SystemNotificationFragment"
+        android:label="@string/see_system_notification"
+        tools:layout="@layout/fragment_system_notification">
+        <argument
+            android:name="systemNotificationId"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/writeMailFragment"
+        android:name="de.deftk.openww.android.fragments.feature.mail.WriteMailFragment"
+        android:label="@string/write_mail"
+        tools:layout="@layout/fragment_write_mail" >
+        <action
+            android:id="@+id/action_writeMailFragment_to_chooseAccountDialogFragment"
+            app:destination="@id/chooseAccountDialogFragment" />
+    </fragment>
+    <dialog
+        android:id="@+id/chooseAccountDialogFragment"
+        android:name="de.deftk.openww.android.fragments.dialog.ChooseAccountDialogFragment"
+        android:label="ChooseAccountDialogFragment">
+        <action
+            android:id="@+id/action_chooseAccountDialogFragment_to_overviewFragment"
+            app:destination="@id/overviewFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_chooseAccountDialogFragment_to_writeMailFragment"
+            app:destination="@id/writeMailFragment" />
+    </dialog>
+    <fragment
+        android:id="@+id/tokenLoginFragment"
+        android:name="de.deftk.openww.android.fragments.TokenLoginFragment"
+        android:label="fragment_token_login"
+        tools:layout="@layout/fragment_token_login">
+        <action
+            android:id="@+id/action_tokenLoginFragment_to_overviewFragment"
+            app:destination="@id/overviewFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <argument
+            android:name="login"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="only_add"
+            app:argType="boolean"
+            android:defaultValue="false" />
+        <action
+            android:id="@+id/action_tokenLoginFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/launchFragment"
+        android:name="de.deftk.openww.android.fragments.LaunchFragment"
+        android:label="LaunchFragment">
+        <action
+            android:id="@+id/action_launchFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_launchFragment_to_overviewFragment"
+            app:destination="@id/overviewFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_launchFragment_to_chooseAccountDialogFragment"
+            app:destination="@id/chooseAccountDialogFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_launchFragment_to_writeMailFragment"
+            app:destination="@id/writeMailFragment" />
+    </fragment>
+</navigation>

@@ -1,40 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="16dp">
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ImageView
-        android:id="@+id/member_image"
-        android:layout_width="wrap_content"
+    <data>
+
+        <variable
+            name="clickListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="scope"
+            type="de.deftk.openww.api.model.IScope" />
+
+    </data>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="2dp"
-        android:src="@drawable/ic_person_24"
-        tools:ignore="ContentDescription" />
+        android:onClick="@{clickListener}"
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/member_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="5dp"
-        android:layout_toEndOf="@+id/member_image"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="20sp"
-        tools:text="Member name" />
+        <ImageView
+            android:id="@+id/member_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="2dp"
+            app:memberOnlineImage="@{scope}"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_person_24" />
 
-    <TextView
-        android:id="@+id/member_online_status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/member_name"
-        android:layout_marginStart="5dp"
-        android:layout_toEndOf="@+id/member_image"
-        tools:text="Online" />
+        <TextView
+            android:id="@+id/member_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/member_image"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@{scope.name}"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="20sp"
+            tools:text="Member name" />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/member_online_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/member_name"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/member_image"
+            app:memberOnlineText="@{scope}"
+            tools:text="Online" />
+
+    </RelativeLayout>
+
+</layout>

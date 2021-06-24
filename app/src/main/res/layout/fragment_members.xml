@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -12,15 +14,13 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true">
 
-        <ListView
-            android:id="@+id/members_list"
-            android:dividerHeight="1dp"
+        <de.deftk.openww.android.components.ContextMenuRecyclerView
+            android:id="@+id/member_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true" />
+            android:clipToPadding="false"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/list_item_member" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
@@ -28,12 +28,12 @@
         android:id="@+id/members_empty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
+        android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
         android:text="@string/members_empty"
-        android:visibility="invisible" />
+        android:visibility="invisible"
+        tools:text="No members" />
 
     <ProgressBar
         android:id="@+id/progress_members"

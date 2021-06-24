@@ -1,66 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:padding="16dp">
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <ImageView
-        android:id="@+id/file_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="2dp"
-        android:layout_marginEnd="8dp"
-        android:maxWidth="32dp"
-        android:maxHeight="32dp"
-        android:minWidth="32dp"
-        android:minHeight="32dp"
-        android:src="@drawable/ic_file_32"
-        tools:ignore="ContentDescription" />
+    <data>
 
-    <TextView
-        android:id="@+id/file_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="5dp"
-        android:layout_toEndOf="@+id/file_image"
-        android:ellipsize="end"
-        android:lines="1"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="20sp"
-        tools:text="File name" />
+        <variable
+            name="clickListener"
+            type="android.view.View.OnClickListener" />
 
-    <TextView
-        android:id="@+id/file_size"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/file_name"
-        android:layout_marginStart="5dp"
-        android:layout_toEndOf="@+id/file_image"
-        tools:text="1 MB" />
+        <variable
+            name="file"
+            type="de.deftk.openww.api.model.feature.filestorage.IRemoteFile" />
 
-    <TextView
-        android:id="@+id/file_modified_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/file_name"
-        android:layout_alignParentEnd="true"
-        tools:text="1.1.2020 12:00" />
+        <variable
+            name="scope"
+            type="de.deftk.openww.api.model.IOperatingScope" />
 
-    <ProgressBar
-        android:id="@+id/progress_file"
-        style="@android:style/Widget.Material.ProgressBar.Horizontal"
+        <variable
+            name="folderId"
+            type="String" />
+
+        <variable
+            name="path"
+            type="String[]" />
+
+    </data>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/file_size"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="2dp"
-        android:visibility="gone"
-        tools:visibility="visible"
-        tools:progress="75" />
+        android:onClick="@{clickListener}"
+        android:padding="16dp">
 
+        <ImageView
+            android:id="@+id/file_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="8dp"
+            android:maxWidth="32dp"
+            android:maxHeight="32dp"
+            android:minWidth="32dp"
+            android:minHeight="32dp"
+            android:src="@drawable/ic_folder_24"
+            app:filePreview="@{file}"
+            tools:ignore="ContentDescription" />
 
-</RelativeLayout>
+        <ProgressBar
+            android:id="@+id/progress_file"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="2dp"
+            android:layout_marginEnd="8dp"
+            android:maxWidth="32dp"
+            android:maxHeight="32dp"
+            android:minWidth="32dp"
+            android:minHeight="32dp"
+            android:progress="0"
+            android:visibility="gone"
+            tools:progress="75"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/file_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/file_image"
+            android:ellipsize="end"
+            android:lines="1"
+            android:text="@{file.name}"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="20sp"
+            tools:text="File name" />
+
+        <TextView
+            android:id="@+id/file_size"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/file_name"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/file_image"
+            app:fileSize="@{file}"
+            tools:text="1 MB" />
+
+        <TextView
+            android:id="@+id/file_modified_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/file_name"
+            android:layout_alignParentEnd="true"
+            app:dateText="@{file.modified.date}"
+            tools:text="1.1.2020 12:00" />
+
+    </RelativeLayout>
+
+</layout>

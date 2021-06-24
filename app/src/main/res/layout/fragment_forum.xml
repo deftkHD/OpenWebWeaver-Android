@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -13,15 +14,13 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true">
 
-        <ListView
+        <de.deftk.openww.android.components.ContextMenuRecyclerView
             android:id="@+id/forum_list"
-            android:dividerHeight="1dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true" />
+            android:clipToPadding="false"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/list_item_forum" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

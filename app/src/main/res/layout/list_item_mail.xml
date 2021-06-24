@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.daimajia.swipe.SwipeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <RelativeLayout
-        android:padding="16dp"
-        android:background="#ff0000"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <data>
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_delete_32"
-            android:contentDescription="@string/delete"
-            android:layout_alignParentStart="true"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp" />
+        <import type="android.view.View" />
 
-    </RelativeLayout>
+        <import type="android.graphics.Typeface" />
+
+        <import type="de.deftk.openww.android.utils.TextUtils" />
+
+        <variable
+            name="clickListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="email"
+            type="de.deftk.openww.api.model.feature.mailbox.IEmail" />
+
+        <variable
+            name="folder"
+            type="de.deftk.openww.api.model.feature.mailbox.IEmailFolder" />
+
+    </data>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:onClick="@{clickListener}"
         android:padding="16dp">
 
         <ImageView
@@ -34,8 +38,8 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_marginTop="2dp"
-            android:src="@drawable/ic_email_24"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_email_24" />
 
         <TextView
             android:id="@+id/mail_subject"
@@ -47,18 +51,21 @@
             android:layout_toEndOf="@+id/mail_image"
             android:ellipsize="end"
             android:lines="1"
+            android:text="@{email.subject}"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
+            app:bold="@{email.unread}"
             tools:text="Mail Subject" />
 
         <ImageView
             android:id="@+id/mail_flagged"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_flag_24"
             android:layout_alignParentTop="true"
             android:layout_toStartOf="@id/mail_answered"
-            android:contentDescription="@string/flagged" />
+            android:contentDescription="@string/flagged"
+            android:src="@drawable/ic_flag_24"
+            android:visibility="@{email.flagged ? View.VISIBLE : View.INVISIBLE}" />
 
         <ImageView
             android:id="@+id/mail_answered"
@@ -66,8 +73,9 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
+            android:contentDescription="@string/answered"
             android:src="@drawable/ic_reply_24"
-            android:contentDescription="@string/answered" />
+            android:visibility="@{email.answered ? View.VISIBLE : View.INVISIBLE}" />
 
         <TextView
             android:id="@+id/mail_author"
@@ -77,7 +85,9 @@
             android:layout_marginStart="5dp"
             android:layout_toEndOf="@+id/mail_image"
             android:ellipsize="end"
+            android:lines="1"
             android:maxLength="30"
+            app:mailAuthor="@{email}"
             tools:text="abc.exampleuser" />
 
         <TextView
@@ -86,7 +96,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/mail_subject"
             android:layout_alignParentEnd="true"
+            app:dateText="@{email.date}"
             tools:text="1.1.2020 12:00" />
 
     </RelativeLayout>
-</com.daimajia.swipe.SwipeLayout>
+
+</layout>
