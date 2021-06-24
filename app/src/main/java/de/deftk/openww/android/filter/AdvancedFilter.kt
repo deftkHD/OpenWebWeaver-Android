@@ -1,4 +1,4 @@
-package de.deftk.openww.android.utils.filter
+package de.deftk.openww.android.filter
 
 import de.deftk.openww.api.implementation.OperatingScope
 import de.deftk.openww.api.model.IScope
