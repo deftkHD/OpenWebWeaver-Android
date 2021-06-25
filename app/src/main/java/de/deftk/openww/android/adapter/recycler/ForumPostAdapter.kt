@@ -2,30 +2,17 @@ package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
-import androidx.databinding.BindingAdapter
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import de.deftk.openww.api.model.IGroup
-import de.deftk.openww.api.model.feature.forum.IForumPost
 import de.deftk.openww.android.R
 import de.deftk.openww.android.databinding.ListItemForumPostBinding
-import de.deftk.openww.android.feature.forum.ForumPostIcons
 import de.deftk.openww.android.fragments.feature.forum.ForumPostsFragmentDirections
+import de.deftk.openww.api.model.IGroup
+import de.deftk.openww.api.model.feature.forum.IForumPost
 
 class ForumPostAdapter(private val group: IGroup): ListAdapter<IForumPost, RecyclerView.ViewHolder>(ForumPostDiffCallback()) {
-
-    companion object {
-
-        @JvmStatic
-        @BindingAdapter("app:forumPostIcon")
-        fun forumPostIcon(view: ImageView, post: IForumPost) {
-            view.setImageResource(ForumPostIcons.getByTypeOrDefault(post.icon).resource)
-        }
-
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val binding = ListItemForumPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)

@@ -1,50 +1,17 @@
 package de.deftk.openww.android.adapter.recycler
 
-import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.databinding.BindingAdapter
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import de.deftk.openww.api.model.IOperatingScope
-import de.deftk.openww.api.model.feature.tasks.ITask
-import de.deftk.openww.android.R
 import de.deftk.openww.android.databinding.ListItemTaskBinding
 import de.deftk.openww.android.fragments.feature.tasks.TasksFragmentDirections
-import de.deftk.openww.android.utils.UIUtil
-import java.util.*
+import de.deftk.openww.api.model.IOperatingScope
+import de.deftk.openww.api.model.feature.tasks.ITask
 
 class TasksAdapter : ListAdapter<Pair<ITask, IOperatingScope>, RecyclerView.ViewHolder>(TaskDiffCallback()) {
-
-    companion object {
-
-        @JvmStatic
-        @BindingAdapter("app:strikeThroughTask")
-        fun strikeThrough(view: TextView, task: ITask) {
-            if (task.getEndDate() != null && Date().compareTo(task.getEndDate()) > -1) {
-                view.paintFlags = view.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-            } else {
-                view.paintFlags = view.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-            }
-        }
-
-        @JvmStatic
-        @BindingAdapter("app:taskDueDate")
-        fun taskDueDate(view: TextView, task: ITask) {
-            view.text = if (task.getEndDate() != null) UIUtil.getTaskDue(task) else view.context.getString(R.string.not_set)
-        }
-
-        @JvmStatic
-        @BindingAdapter("app:taskCompleted")
-        fun taskCompleted(view: ImageView, task: ITask) {
-            view.setBackgroundResource(if (task.isCompleted()) R.drawable.ic_check_green_32 else 0)
-        }
-
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val binding = ListItemTaskBinding.inflate(LayoutInflater.from(parent.context), parent, false)

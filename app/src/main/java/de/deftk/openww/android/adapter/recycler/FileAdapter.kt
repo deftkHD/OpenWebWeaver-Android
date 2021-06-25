@@ -1,53 +1,25 @@
 package de.deftk.openww.android.adapter.recycler
 
-import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.core.view.isVisible
-import androidx.databinding.BindingAdapter
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.signature.ObjectKey
-import de.deftk.openww.api.model.IOperatingScope
-import de.deftk.openww.api.model.feature.FilePreviewUrl
-import de.deftk.openww.api.model.feature.filestorage.FileType
-import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import de.deftk.openww.android.R
 import de.deftk.openww.android.databinding.ListItemFileBinding
 import de.deftk.openww.android.fragments.feature.filestorage.FileClickHandler
 import de.deftk.openww.android.fragments.feature.filestorage.FilesFragmentDirections
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
+import de.deftk.openww.api.model.IOperatingScope
+import de.deftk.openww.api.model.feature.FilePreviewUrl
+import de.deftk.openww.api.model.feature.filestorage.FileType
+import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 
 class FileAdapter(private val scope: IOperatingScope, private val clickHandler: FileClickHandler, private val folderId: String?, private val path: Array<String>?, private val fileStorageViewModel: FileStorageViewModel) : ListAdapter<IRemoteFile, RecyclerView.ViewHolder>(FileDiffCallback()) {
-
-    companion object {
-
-        @JvmStatic
-        @BindingAdapter("app:fileSize")
-        fun fileSize(view: TextView, file: IRemoteFile) {
-            if (file.type == FileType.FILE) {
-                view.text = Formatter.formatFileSize(view.context, file.getSize())
-            } else if (file.type == FileType.FOLDER) {
-                view.text = view.context.getString(R.string.directory)
-            }
-        }
-
-        @JvmStatic
-        @BindingAdapter("app:filePreview")
-        fun filePreview(view: ImageView, file: IRemoteFile) {
-            if (file.type == FileType.FILE) {
-                view.setImageResource(R.drawable.ic_file_32)
-            } else if (file.type == FileType.FOLDER) {
-                view.setImageResource(R.drawable.ic_folder_32)
-            }
-        }
-
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val binding = ListItemFileBinding.inflate(LayoutInflater.from(parent.context), parent, false)

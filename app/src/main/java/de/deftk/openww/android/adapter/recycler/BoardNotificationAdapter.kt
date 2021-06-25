@@ -1,28 +1,17 @@
 package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.ColorRes
-import androidx.databinding.BindingAdapter
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import de.deftk.openww.api.model.IGroup
-import de.deftk.openww.api.model.feature.board.IBoardNotification
 import de.deftk.openww.android.databinding.ListItemNotificationBinding
 import de.deftk.openww.android.fragments.feature.board.NotificationsFragmentDirections
+import de.deftk.openww.api.model.IGroup
+import de.deftk.openww.api.model.feature.board.IBoardNotification
 
 class BoardNotificationAdapter : ListAdapter<Pair<IBoardNotification, IGroup>, RecyclerView.ViewHolder>(BoardNotificationDiffCallback()) {
-
-    companion object {
-        @JvmStatic
-        @BindingAdapter("app:backgroundResource")
-        fun backgroundResource(view: View, @ColorRes color: Int) {
-            view.setBackgroundResource(color)
-        }
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val binding = ListItemNotificationBinding.inflate(LayoutInflater.from(parent.context), parent, false)
