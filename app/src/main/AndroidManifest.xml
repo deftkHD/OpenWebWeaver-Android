@@ -35,6 +35,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:scheme="mailto" />
             </intent-filter>
+
             <nav-graph android:value="@navigation/nav_graph" />
         </activity>
 
