@@ -1,0 +1,20 @@
+<b>OpenWebWeaver</b> allows you to interact with WebWeaver based online leaning platforms. Credentials provided by your institution are required in order to use this app.
+
+
+<b>Tasks</b>
+Read, edit and create tasks
+
+<b>Board notifications</b>
+Read, edit and create board notifications
+
+<b>Mail service</b>
+Read and send emails
+
+<b>File storage</b>
+Download files from file storage
+
+<b>System notifications</b>
+View system notifications
+
+<b>Forum</b>
+Read forum posts and comments
