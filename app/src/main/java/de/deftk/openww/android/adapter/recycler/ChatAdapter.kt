@@ -6,14 +6,14 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import de.deftk.openww.android.databinding.ListItemMemberBinding
+import de.deftk.openww.android.databinding.ListItemScopeBinding
 import de.deftk.openww.android.fragments.feature.messenger.MessengerFragmentDirections
 import de.deftk.openww.api.model.IScope
 
 class ChatAdapter: ListAdapter<IScope, RecyclerView.ViewHolder>(ChatDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val binding = ListItemMemberBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ListItemScopeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ChatViewHolder(binding)
     }
 
@@ -26,7 +26,7 @@ class ChatAdapter: ListAdapter<IScope, RecyclerView.ViewHolder>(ChatDiffCallback
         return super.getItem(position)
     }
 
-    class ChatViewHolder(val binding: ListItemMemberBinding) : RecyclerView.ViewHolder(binding.root) {
+    class ChatViewHolder(val binding: ListItemScopeBinding) : RecyclerView.ViewHolder(binding.root) {
 
         init {
             binding.setClickListener {

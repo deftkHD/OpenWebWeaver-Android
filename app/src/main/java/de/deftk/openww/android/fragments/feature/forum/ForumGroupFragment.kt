@@ -5,53 +5,34 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
-import de.deftk.openww.api.implementation.ApiContext
-import de.deftk.openww.api.model.Feature
-import de.deftk.openww.android.adapter.recycler.ForumGroupAdapter
 import de.deftk.openww.android.databinding.FragmentForumBinding
-import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.android.fragments.AbstractGroupFragment
+import de.deftk.openww.api.model.Feature
+import de.deftk.openww.api.model.IOperatingScope
 
-class ForumGroupFragment : Fragment() {
-
-    private val userViewModel: UserViewModel by activityViewModels()
+class ForumGroupFragment : AbstractGroupFragment() {
 
     private lateinit var binding: FragmentForumBinding
 
+    override val scopePredicate: (T: IOperatingScope) -> Boolean = { Feature.FORUM.isAvailable(it.effectiveRights) }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentForumBinding.inflate(inflater, container, false)
-
-        val adapter = ForumGroupAdapter()
         binding.forumList.adapter = adapter
         binding.forumList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-
-        binding.forumSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
-                updateGroups(adapter, apiContext)
-            }
-        }
-
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            if (apiContext != null) {
-                updateGroups(adapter, apiContext)
-            } else {
-                binding.forumEmpty.isVisible = false
-                adapter.submitList(emptyList())
-                binding.forumEmpty.isVisible = true
-            }
-        }
-
+        registerSwipeRefresh(binding.forumSwipeRefresh)
         return binding.root
     }
 
-    private fun updateGroups(adapter: ForumGroupAdapter, apiContext: ApiContext) {
-        val groups = apiContext.getUser().getGroups().filter { Feature.MEMBERS.isAvailable(it.effectiveRights) }
-        adapter.submitList(groups)
-        binding.forumEmpty.isVisible = groups.isEmpty()
-        binding.progressForum.isVisible = false
-        binding.forumSwipeRefresh.isRefreshing = false
+    override fun setUI(empty: Boolean, loading: Boolean, refreshing: Boolean) {
+        binding.forumEmpty.isVisible = empty
+        binding.progressForum.isVisible = loading
+        binding.forumSwipeRefresh.isRefreshing = refreshing
+    }
+
+    override fun onOperatingScopeClicked(scope: IOperatingScope) {
+        navController.navigate(ForumGroupFragmentDirections.actionForumGroupFragmentToForumPostsFragment(scope.login, scope.name))
     }
 
 }

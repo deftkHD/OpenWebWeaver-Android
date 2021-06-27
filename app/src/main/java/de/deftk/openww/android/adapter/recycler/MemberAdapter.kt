@@ -6,7 +6,7 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import de.deftk.openww.android.databinding.ListItemMemberBinding
+import de.deftk.openww.android.databinding.ListItemScopeBinding
 import de.deftk.openww.android.fragments.feature.members.MembersGroupsFragmentDirections
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.IScope
@@ -14,7 +14,7 @@ import de.deftk.openww.api.model.IScope
 class MemberAdapter: ListAdapter<IScope, RecyclerView.ViewHolder>(MemberDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val binding = ListItemMemberBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ListItemScopeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MemberViewHolder(binding)
     }
 
@@ -27,7 +27,7 @@ class MemberAdapter: ListAdapter<IScope, RecyclerView.ViewHolder>(MemberDiffCall
         return super.getItem(position)
     }
 
-    class MemberViewHolder(val binding: ListItemMemberBinding) : RecyclerView.ViewHolder(binding.root) {
+    class MemberViewHolder(val binding: ListItemScopeBinding) : RecyclerView.ViewHolder(binding.root) {
 
         init {
             binding.setClickListener {
