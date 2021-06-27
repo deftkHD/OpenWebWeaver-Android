@@ -92,6 +92,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
                     val item = binding.navView.menu.findItem(appFeature.fragmentId)
                     item?.isVisible = enabledFeatures.contains(appFeature.feature)
                 }
+                binding.navView.menu.findItem(R.id.overviewFragment).isVisible = true // seems like the last "enabled" menu item gets selected, so the overview has to be selected at app start
             } else {
                 binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
             }
