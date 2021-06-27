@@ -6,7 +6,7 @@
     android:layout_height="match_parent">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/forum_swipe_refresh"
+        android:id="@+id/groups_swipe_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"
@@ -15,7 +15,7 @@
         android:layout_alignParentBottom="true">
 
         <de.deftk.openww.android.components.ContextMenuRecyclerView
-            android:id="@+id/forum_list"
+            android:id="@+id/group_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
@@ -25,18 +25,18 @@
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <TextView
-        android:id="@+id/forum_empty"
+        android:id="@+id/groups_empty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="10dp"
-        android:text="@string/forum_empty"
+        android:text="@string/no_groups"
         android:visibility="invisible"
-        tools:text="No posts" />
+        tools:text="No groups" />
 
     <ProgressBar
-        android:id="@+id/progress_forum"
+        android:id="@+id/progress_groups"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"

@@ -1,14 +1,18 @@
 package de.deftk.openww.android.fragments
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import de.deftk.openww.android.adapter.recycler.OperatingScopeAdapter
+import de.deftk.openww.android.databinding.FragmentGroupsBinding
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IOperatingScope
@@ -16,21 +20,37 @@ import de.deftk.openww.api.model.IUser
 
 abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener {
 
+    protected lateinit var binding: FragmentGroupsBinding
+
     protected val userViewModel: UserViewModel by activityViewModels()
     protected val navController by lazy { findNavController() }
 
     abstract val scopePredicate: (T : IOperatingScope) -> Boolean
     open val adapter: ListAdapter<IOperatingScope, RecyclerView.ViewHolder> = OperatingScopeAdapter(this)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentGroupsBinding.inflate(inflater, container, false)
+        binding.groupList.adapter = adapter
+        binding.groupList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+
+        binding.groupsSwipeRefresh.setOnRefreshListener {
+            userViewModel.apiContext.value?.also { apiContext ->
+                updateGroups(apiContext)
+            }
+        }
+
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 updateGroups(apiContext)
             } else {
-                setUI(empty = false, loading = true, refreshing = false)
+                binding.groupsEmpty.isVisible = false
+                binding.progressGroups.isVisible = true
+                binding.groupsSwipeRefresh.isRefreshing = false
                 adapter.submitList(emptyList())
             }
         }
+
+        return binding.root
     }
 
     protected fun updateGroups(apiContext: ApiContext) {
@@ -39,18 +59,10 @@ abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener 
             scopes.add(0, apiContext.getUser())
         scopes = scopes.sortedWith(compareBy ({ it !is IUser }, { it.name })).toMutableList()
         adapter.submitList(scopes)
-        setUI(scopes.isEmpty(), loading = false, refreshing = false)
+        binding.groupsEmpty.isVisible = scopes.isEmpty()
+        binding.progressGroups.isVisible = false
+        binding.groupsSwipeRefresh.isRefreshing = false
     }
-
-    protected fun registerSwipeRefresh(swipeRefreshLayout: SwipeRefreshLayout) {
-        swipeRefreshLayout.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
-                updateGroups(apiContext)
-            }
-        }
-    }
-
-    abstract fun setUI(empty: Boolean, loading: Boolean, refreshing: Boolean)
 
 }
 

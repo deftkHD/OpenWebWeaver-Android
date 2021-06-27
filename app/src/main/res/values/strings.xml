@@ -164,5 +164,6 @@
     <string name="add_chat">Add new chat</string>
     <string name="send_message">Send message</string>
     <string name="attachment">Attachment</string>
+    <string name="no_groups">No groups</string>
 
 </resources>
