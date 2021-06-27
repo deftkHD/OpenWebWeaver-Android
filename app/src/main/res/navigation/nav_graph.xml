@@ -36,6 +36,9 @@
         <action
             android:id="@+id/action_overviewFragment_to_chooseAccountDialogFragment"
             app:destination="@id/chooseAccountDialogFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_chatsFragment"
+            app:destination="@id/chatsFragment" />
     </fragment>
     <fragment
         android:id="@+id/loginFragment"
@@ -365,5 +368,25 @@
         <action
             android:id="@+id/action_launchFragment_to_writeMailFragment"
             app:destination="@id/writeMailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/chatsFragment"
+        android:name="de.deftk.openww.android.fragments.feature.messenger.MessengerFragment"
+        android:label="@string/messenger" >
+        <action
+            android:id="@+id/action_chatsFragment_to_messengerChatFragment"
+            app:destination="@id/messengerChatFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/messengerChatFragment"
+        android:name="de.deftk.openww.android.fragments.feature.messenger.MessengerChatFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_messenger_chat">
+        <argument
+            android:name="user"
+            app:argType="string" />
+        <argument
+            android:name="title"
+            app:argType="string" />
     </fragment>
 </navigation>

@@ -45,6 +45,12 @@
             android:visible="false" />
 
         <item
+            android:id="@+id/chatsFragment"
+            android:icon="@drawable/ic_chat_24"
+            android:title="@string/messenger"
+            android:visible="false" />
+
+        <item
             android:id="@+id/forumGroupFragment"
             android:icon="@drawable/ic_forum_24"
             android:title="@string/forum"

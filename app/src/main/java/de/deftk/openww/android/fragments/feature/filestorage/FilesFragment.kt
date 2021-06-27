@@ -42,7 +42,7 @@ class FilesFragment : Fragment(), FileClickHandler {
     //TODO cancel ongoing network transfers on account switch
 
     companion object {
-        const val FILE_PROVIDER_AUTHORITY = "de.deftk.openlonet.fileprovider"
+        const val FILE_PROVIDER_AUTHORITY = "de.deftk.openww.android.fileprovider"
     }
 
     private val args: FilesFragmentArgs by navArgs()
@@ -105,7 +105,7 @@ class FilesFragment : Fragment(), FileClickHandler {
                                     sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                     sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                     sendIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
-                                    sendIntent.putExtra(Intent.EXTRA_SUBJECT, normalizeFileName(fileName))
+                                    sendIntent.putExtra(Intent.EXTRA_SUBJECT, FileUtil.normalizeFileName(fileName, preferences))
                                     val viewIntent = Intent(Intent.ACTION_VIEW)
                                     viewIntent.setDataAndType(fileUri, mime)
                                     viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -240,34 +240,6 @@ class FilesFragment : Fragment(), FileClickHandler {
         return filename
     }
 
-    private fun normalizeFileName(name: String): String {
-        return if (preferences.getBoolean("file_storage_correct_file_names", false)) {
-            if (name.contains('.')) {
-                name.substring(0, name.lastIndexOf('.')).replace("_", " ")
-            } else {
-                name.replace("_", " ")
-            }
-        } else {
-            name
-        }
-    }
-
-    private fun escapeFileName(name: String): String {
-        return name.map {
-            when (it) {
-                '|' -> '_'
-                '\\' -> '_'
-                '?' -> '_'
-                '*' -> '_'
-                '<' -> '_'
-                '\"' -> '_'
-                '>' -> '_'
-                ':' -> '_'
-                else -> it
-            }
-        }.toString()
-    }
-
     override fun onClick(view: View, viewHolder: FileAdapter.FileViewHolder) {
         openFile(viewHolder.binding.file!!)
     }
@@ -277,7 +249,7 @@ class FilesFragment : Fragment(), FileClickHandler {
             val tempDir = File(requireActivity().cacheDir, "filestorage")
             if (!tempDir.exists())
                 tempDir.mkdir()
-            val tempFile = File(tempDir, escapeFileName(file.name))
+            val tempFile = File(tempDir, FileUtil.escapeFileName(file.name))
             userViewModel.apiContext.value?.also { apiContext ->
                 fileStorageViewModel.startOpenDownload(workManager, apiContext, file, scope, tempFile.absolutePath)
             }

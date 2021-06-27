@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="attachmentClickListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="message"
+            type="de.deftk.openww.api.model.feature.messenger.IQuickMessage" />
+
+        <variable
+            name="alignRight"
+            type="Boolean" />
+
+    </data>
+
+    <RelativeLayout xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@{alignRight ? 100 : 10}"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="@{alignRight ? 10 : 100}"
+        android:background="@{alignRight ? @drawable/message_background_accent : @drawable/message_background_primary}"
+        android:padding="5dp">
+
+        <TextView
+            android:id="@+id/message_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="2dp"
+            android:isVisible="@{message.text != `null` &amp;&amp; message.text != null}"
+            android:textColor="?android:attr/textColorPrimary"
+            app:htmlText="@{message.text}"
+            tools:text="Message" />
+
+        <ImageView
+            android:id="@+id/message_attachment_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/message_text"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="2dp"
+            android:contentDescription="@string/attachment"
+            android:isVisible="@{message.file != null}"
+            android:src="@drawable/ic_attachment_24"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@id/message_attachment_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/message_text"
+            android:layout_marginStart="2dp"
+            android:layout_toEndOf="@id/message_attachment_image"
+            android:ellipsize="end"
+            android:isVisible="@{message.file != null}"
+            android:maxLines="1"
+            android:onClick="@{attachmentClickListener}"
+            android:paddingTop="2dp"
+            android:text="@{message.fileName}"
+            tools:text="Attachment.txt"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/message_date"
+            dateText="@{message.date}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/message_attachment_name"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="5dp"
+            android:textSize="12sp"
+            tools:text="1.1.2020 12:00" />
+
+    </RelativeLayout>
+
+</layout>

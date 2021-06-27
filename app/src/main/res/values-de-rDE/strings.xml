@@ -157,4 +157,9 @@
     <string name="see_comment">Kommentar ansehen</string>
     <string name="password_login_link"><a href="www.www.com">Anmelden mit Passwort</a></string>
     <string name="email_sent">Email gesendet!</string>
+    <string name="messenger">Messenger</string>
+    <string name="no_messages">Keine Nachrichten</string>
+    <string name="add_chat">Neuen Chat hinzufügen</string>
+    <string name="send_message">Nachricht senden</string>
+    <string name="attachment">Anhang</string>
 </resources>

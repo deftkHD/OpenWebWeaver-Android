@@ -177,7 +177,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         viewModelScope.launch {
             val response = fileStorageRepository.getFileDownloadUrl(file, scope, apiContext)
             if (response is Response.Success) {
-                val workRequest = DownloadOpenWorker.createRequest(destinationUrl, response.value.url, file)
+                val workRequest = DownloadOpenWorker.createRequest(destinationUrl, response.value.url, file.name, file.getSize())
                 addNetworkTransfer(NetworkTransfer.DownloadOpen(workRequest.id, file.id))
                 workManager.enqueue(workRequest)
             }

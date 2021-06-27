@@ -159,5 +159,10 @@
     <string name="see_comment">See comment</string>
     <string name="password_login_link"><a href="www.www.com">Password login</a></string>
     <string name="email_sent">Email sent!</string>
+    <string name="messenger">Messenger</string>
+    <string name="no_messages">No messages</string>
+    <string name="add_chat">Add new chat</string>
+    <string name="send_message">Send message</string>
+    <string name="attachment">Attachment</string>
 
 </resources>

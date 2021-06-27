@@ -3,7 +3,9 @@ package de.deftk.openww.android
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.text.format.Formatter
+import android.text.method.LinkMovementMethod
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -13,6 +15,7 @@ import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.feature.forum.ForumPostIcons
+import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.utils.UIUtil
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -157,6 +160,36 @@ object BindingAdapters {
     @BindingAdapter("taskCompleted")
     fun taskCompleted(view: ImageView, task: ITask) {
         view.setBackgroundResource(if (task.isCompleted()) R.drawable.ic_check_green_32 else 0)
+    }
+
+    @JvmStatic
+    @BindingAdapter("android:layout_marginStart")
+    fun layoutMarginStart(view: View, margin: Int) {
+        val params = view.layoutParams as ViewGroup.MarginLayoutParams
+        params.setMargins(margin, params.topMargin, params.rightMargin, params.bottomMargin)
+        view.layoutParams = params
+    }
+
+    @JvmStatic
+    @BindingAdapter("android:layout_marginEnd")
+    fun layoutMarginEnd(view: View, margin: Int) {
+        val params = view.layoutParams as ViewGroup.MarginLayoutParams
+        params.setMargins(params.leftMargin, params.topMargin, margin, params.bottomMargin)
+        view.layoutParams = params
+    }
+
+    @JvmStatic
+    @BindingAdapter("htmlText")
+    fun setHtmlText(view: TextView, text: String) {
+        view.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(text))
+        view.movementMethod = LinkMovementMethod.getInstance()
+        view.transformationMethod = CustomTabTransformationMethod(view.autoLinkMask)
+    }
+
+    @JvmStatic
+    @BindingAdapter("android:isVisible")
+    fun setIsVisible(view: View, visible: Boolean) {
+        view.isVisible = visible
     }
 
 }

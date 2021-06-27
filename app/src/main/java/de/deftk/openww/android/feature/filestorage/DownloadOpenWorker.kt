@@ -6,7 +6,6 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import de.deftk.openww.android.R
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.fragments.feature.filestorage.FilesFragment
@@ -30,9 +29,9 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
         private const val NOTIFICATION_ID = 43
 
         // input
-        const val DATA_DOWNLOAD_URL = "data_download_url"
-        const val DATA_DESTINATION_URI = "data_destination_uri"
-        const val DATA_FILE_SIZE = "data_file_size"
+        private const val DATA_DOWNLOAD_URL = "data_download_url"
+        private const val DATA_DESTINATION_URI = "data_destination_uri"
+        private const val DATA_FILE_SIZE = "data_file_size"
 
         // output
         const val DATA_FILE_URI = "data_file_uri"
@@ -40,14 +39,14 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
         // io
         const val DATA_FILE_NAME = "data_file_name"
 
-        fun createRequest(destinationUrl: String, downloadUrl: String, file: IRemoteFile): OneTimeWorkRequest {
+        fun createRequest(destinationUrl: String, downloadUrl: String, name: String, size: Long): OneTimeWorkRequest {
             return OneTimeWorkRequestBuilder<DownloadOpenWorker>()
                 .setInputData(
                     workDataOf(
                         DATA_DESTINATION_URI to destinationUrl,
                         DATA_DOWNLOAD_URL to downloadUrl,
-                        DATA_FILE_NAME to file.name,
-                        DATA_FILE_SIZE to file.getSize()
+                        DATA_FILE_NAME to name,
+                        DATA_FILE_SIZE to size
                     )
                 )
                 .build()
@@ -55,10 +54,10 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
     }
 
     override suspend fun doWork(): Result {
-        val downloadUrl = inputData.getString(DownloadSaveWorker.DATA_DOWNLOAD_URL) ?: return Result.failure()
-        val fileName = inputData.getString(DownloadSaveWorker.DATA_FILE_NAME) ?: return Result.failure()
-        val destinationUri = inputData.getString(DownloadSaveWorker.DATA_DESTINATION_URI) ?: return Result.failure()
-        val fileSize = inputData.getLong(DownloadSaveWorker.DATA_FILE_SIZE, -1L)
+        val downloadUrl = inputData.getString(DATA_DOWNLOAD_URL) ?: return Result.failure()
+        val fileName = inputData.getString(DATA_FILE_NAME) ?: return Result.failure()
+        val destinationUri = inputData.getString(DATA_DESTINATION_URI) ?: return Result.failure()
+        val fileSize = inputData.getLong(DATA_FILE_SIZE, -1L)
         if (fileSize == -1L)
             return Result.failure()
 
@@ -82,6 +81,7 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
             val fileUri = FileProvider.getUriForFile(applicationContext, FilesFragment.FILE_PROVIDER_AUTHORITY, file)
             return Result.success(workDataOf(DATA_FILE_URI to fileUri.toString(), DATA_FILE_NAME to fileName))
         } catch (e: Exception) {
+            e.printStackTrace()
             return Result.failure()
         }
     }

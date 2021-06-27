@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
+
     <cache-path
         name="shared_filestorage"
         path="filestorage/" />
+
+    <cache-path
+        name="shared_attachments"
+        path="attachments/" />
+
 </paths>
