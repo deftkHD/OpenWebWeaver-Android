@@ -43,4 +43,8 @@ class MailFolderAdapter(context: Context, val elements: List<IEmailFolder>) : Ar
         return listItemView
     }
 
+    override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+        return getView(position, convertView, parent)
+    }
+
 }
