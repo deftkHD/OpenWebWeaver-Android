@@ -6,7 +6,6 @@ import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
 import de.deftk.openww.api.model.feature.mailbox.ReferenceMode
-import kotlinx.serialization.json.JsonPrimitive
 import javax.inject.Inject
 
 class MailboxRepository @Inject constructor() : AbstractRepository() {
@@ -37,7 +36,7 @@ class MailboxRepository @Inject constructor() : AbstractRepository() {
             null,
             cc,
             bcc,
-            importSessionFiles?.map { JsonPrimitive(it.id) }?.toTypedArray(),
+            importSessionFiles,
             referenceFolderId,
             referenceMessageId,
             referenceMode,

@@ -53,7 +53,7 @@ class EditNotificationFragment : Fragment() {
                 if (args.groupId != null && args.notificationId != null) {
                     // edit existing
                     editMode = true
-                    boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { resource ->
+                    boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { resource -> //FIXME observe inside observe is not good
                         if (resource is Response.Success) {
                             resource.value.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }?.apply {
                                 notification = first
@@ -105,7 +105,7 @@ class EditNotificationFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.save) {
+        if (item.itemId == R.id.menu_item_save) {
             val apiContext = userViewModel.apiContext.value ?: return false
 
             val title = binding.notificationTitle.text.toString()

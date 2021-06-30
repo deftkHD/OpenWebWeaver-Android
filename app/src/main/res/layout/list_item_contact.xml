@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data>
+
+        <variable
+            name="clickListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="scope"
+            type="de.deftk.openww.api.model.IOperatingScope" />
+
+        <variable
+            name="contact"
+            type="de.deftk.openww.api.model.feature.contacts.IContact" />
+
+    </data>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="@{clickListener}"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/contact_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="2dp"
+            android:src="@drawable/ic_person_24"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/contact_name"
+            contactName="@{contact}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/contact_image"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="20sp"
+            tools:text="Max Mustermann" />
+
+        <TextView
+            android:id="@+id/contact_info"
+            contactDescription="@{contact}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/contact_name"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/contact_image"
+            tools:text="max.mustermann@mustermail.com" />
+
+    </RelativeLayout>
+
+</layout>

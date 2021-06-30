@@ -11,6 +11,7 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.ColorRes
+import androidx.annotation.DrawableRes
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import de.deftk.openww.android.activities.MainActivity
@@ -23,6 +24,7 @@ import de.deftk.openww.api.model.IScope
 import de.deftk.openww.api.model.IUser
 import de.deftk.openww.api.model.RemoteScope
 import de.deftk.openww.api.model.feature.Quota
+import de.deftk.openww.api.model.feature.contacts.IContact
 import de.deftk.openww.api.model.feature.filestorage.FileType
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import de.deftk.openww.api.model.feature.forum.IForumPost
@@ -190,6 +192,52 @@ object BindingAdapters {
     @BindingAdapter("android:isVisible")
     fun setIsVisible(view: View, visible: Boolean) {
         view.isVisible = visible
+    }
+
+    @JvmStatic
+    @BindingAdapter("contactName")
+    fun setContactName(view: TextView, contact: IContact) {
+        val name = StringBuilder()
+
+        if (contact.getNickName() != null) {
+            name.append(contact.getNickName())
+        } else if (contact.getFullName() != null) {
+            name.append(contact.getFullName())
+        } else {
+            if (contact.getFirstName() != null)
+                name.append(contact.getFirstName()).append(" ")
+            if (contact.getMiddleName() != null)
+                name.append(contact.getMiddleName()).append(" ")
+            if (contact.getLastName() != null)
+                name.append(contact.getLastName())
+        }
+
+        view.text = name.toString().trim()
+    }
+
+    @JvmStatic
+    @BindingAdapter("contactDescription")
+    fun setContactDescription(view: TextView, contact: IContact) {
+        val text = contact.getEmailAddress()
+            ?: contact.getEmailAddress2()
+            ?: contact.getEmailAddress3()
+            ?: contact.getHomePhone()
+            ?: contact.getMobilePhone()
+            ?: contact.getBusinessPhone()
+            ?: contact.getHomeFax()
+            ?: contact.getBusinessFax()
+        if (text != null) {
+            view.text = text
+            view.isVisible = true
+        } else {
+            view.isVisible = false
+        }
+    }
+
+    @JvmStatic
+    @BindingAdapter("android:srcRes")
+    fun setSrcRes(view: ImageView, @DrawableRes res: Int) {
+        view.setImageResource(res)
     }
 
 }

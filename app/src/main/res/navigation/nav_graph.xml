@@ -39,6 +39,9 @@
         <action
             android:id="@+id/action_overviewFragment_to_chatsFragment"
             app:destination="@id/chatsFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_contactsGroupFragment"
+            app:destination="@id/contactsGroupFragment" />
     </fragment>
     <fragment
         android:id="@+id/loginFragment"
@@ -385,6 +388,62 @@
         <argument
             android:name="user"
             app:argType="string" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/contactsGroupFragment"
+        android:name="de.deftk.openww.android.fragments.feature.contacts.ContactsGroupFragment"
+        android:label="@string/contacts">
+        <action
+            android:id="@+id/action_contactsGroupFragment_to_contactsFragment"
+            app:destination="@id/contactsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/contactsFragment"
+        android:name="de.deftk.openww.android.fragments.feature.contacts.ContactsFragment"
+        android:label="{title}">
+        <argument
+            android:name="login"
+            app:argType="string" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_contactsFragment_to_readContactFragment"
+            app:destination="@id/readContactFragment" />
+        <action
+            android:id="@+id/action_contactsFragment_to_editContactFragment"
+            app:destination="@id/editContactFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/readContactFragment"
+        android:name="de.deftk.openww.android.fragments.feature.contacts.ReadContactFragment"
+        android:label="@string/read_contact"
+        tools:layout="@layout/fragment_read_contact">
+        <action
+            android:id="@+id/action_readContactFragment_to_editContactFragment"
+            app:destination="@id/editContactFragment" />
+        <argument
+            android:name="scope"
+            app:argType="string" />
+        <argument
+            android:name="contactId"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/editContactFragment"
+        android:name="de.deftk.openww.android.fragments.feature.contacts.EditContactFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_edit_contact">
+        <argument
+            android:name="scope"
+            app:argType="string" />
+        <argument
+            android:name="contactId"
+            app:argType="string"
+            app:nullable="true" />
         <argument
             android:name="title"
             app:argType="string" />

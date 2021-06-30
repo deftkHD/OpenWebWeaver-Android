@@ -162,7 +162,7 @@ class EditTaskFragment : Fragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.save) {
+        if (item.itemId == R.id.menu_item_save) {
             val apiContext = userViewModel.apiContext.value ?: return false
             val title = binding.taskTitle.text.toString()
             val selectedGroup = binding.taskGroup.selectedItem

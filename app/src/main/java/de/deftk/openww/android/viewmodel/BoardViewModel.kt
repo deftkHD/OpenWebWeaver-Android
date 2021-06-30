@@ -52,7 +52,7 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
         }
     }
 
-    fun editBoardNotification(notification: IBoardNotification, title: String?, text: String?, color: BoardNotificationColor?, killDate: Date?, group: IGroup, apiContext: ApiContext) {
+    fun editBoardNotification(notification: IBoardNotification, title: String, text: String, color: BoardNotificationColor?, killDate: Date?, group: IGroup, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = boardRepository.editBoardNotification(
                 notification,

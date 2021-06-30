@@ -93,7 +93,8 @@ enum class AppFeature(
             return SystemNotificationsOverview(systemNotifications.count { it.isUnread })
         }
     }),
-    FEATURE_MESSENGER(Feature.MESSENGER, R.id.chatsFragment);
+    FEATURE_MESSENGER(Feature.MESSENGER, R.id.chatsFragment),
+    FEATURE_CONTACTS(Feature.ADDRESSES, R.id.contactsGroupFragment);
 
     companion object {
         fun getByOverviewClass(overviewClass: Class<out AbstractOverviewElement>): AppFeature? {

@@ -119,6 +119,7 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
             override fun getCredentials(): Credentials = credentials
 
             override fun onLogin(context: ApiContext) {
+                //FIXME has to be run on main thread
                 _loginResponse.value = Response.Success(context)
             }
         }, ApiContext::class.java))

@@ -24,7 +24,7 @@ class TasksRepository @Inject constructor() : AbstractRepository() {
         )
     }
 
-    suspend fun editTask(task: ITask, title: String? = null, completed: Boolean? = null, description: String? = null, dueDate: Date? = null, startDate: Date? = null, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
+    suspend fun editTask(task: ITask, title: String, completed: Boolean? = null, description: String? = null, dueDate: Date? = null, startDate: Date? = null, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
         task.edit(
             title,
             description,

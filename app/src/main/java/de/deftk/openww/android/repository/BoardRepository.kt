@@ -25,7 +25,7 @@ class BoardRepository @Inject constructor() : AbstractRepository() {
         )
     }
 
-    suspend fun editBoardNotification(notification: IBoardNotification, title: String? = null, text: String? = null, color: BoardNotificationColor? = null, killDate: Date? = null, boardType: BoardType = BoardType.ALL, context: IRequestContext) = apiCall {
+    suspend fun editBoardNotification(notification: IBoardNotification, title: String, text: String, color: BoardNotificationColor? = null, killDate: Date? = null, boardType: BoardType = BoardType.ALL, context: IRequestContext) = apiCall {
         notification.edit(title, text, color, killDate, boardType, context)
     }
 

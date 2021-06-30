@@ -39,7 +39,7 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
         }
     }
 
-    fun editTask(task: ITask, title: String?, description: String?, completed: Boolean?, startDate: Date?, dueDate: Date?, operator: IOperatingScope, apiContext: ApiContext) {
+    fun editTask(task: ITask, title: String, description: String?, completed: Boolean?, startDate: Date?, dueDate: Date?, operator: IOperatingScope, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = tasksRepository.editTask(
                 task,
