@@ -8,6 +8,7 @@ import android.widget.AdapterView
 import android.widget.EditText
 import android.widget.SearchView
 import android.widget.Spinner
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -38,6 +39,7 @@ class MailFragment: Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMailBinding.inflate(inflater, container, false)
+        (requireActivity() as AppCompatActivity).supportActionBar?.show()
 
         toolbarSpinner = requireActivity().findViewById(R.id.toolbar_spinner)
         toolbarSpinner.isVisible = true

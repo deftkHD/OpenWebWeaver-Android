@@ -2,6 +2,7 @@ package de.deftk.openww.android.fragments.feature.contacts
 
 import android.os.Bundle
 import android.view.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -30,6 +31,7 @@ class ContactsFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentContactsBinding.inflate(inflater, container, false)
+        (requireActivity() as AppCompatActivity).supportActionBar?.show()
         scope = userViewModel.apiContext.value?.findOperatingScope(args.login) ?: error("Failed to find operating scope ${args.login}") //TODO update scope with apiContext observer & pop if scope == null
 
         val adapter = ContactAdapter(scope)

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.provider.CalendarContract
 import android.text.method.LinkMovementMethod
 import android.view.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -35,6 +36,7 @@ class ReadTaskFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadTaskBinding.inflate(inflater, container, false)
+        (requireActivity() as AppCompatActivity).supportActionBar?.show()
         setHasOptionsMenu(true)
         return binding.root
     }
