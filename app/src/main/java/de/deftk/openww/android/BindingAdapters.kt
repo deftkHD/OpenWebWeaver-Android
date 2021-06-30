@@ -182,10 +182,14 @@ object BindingAdapters {
 
     @JvmStatic
     @BindingAdapter("htmlText")
-    fun setHtmlText(view: TextView, text: String) {
-        view.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(text))
-        view.movementMethod = LinkMovementMethod.getInstance()
-        view.transformationMethod = CustomTabTransformationMethod(view.autoLinkMask)
+    fun setHtmlText(view: TextView, text: String?) {
+        if (text != null) {
+            view.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(text))
+            view.movementMethod = LinkMovementMethod.getInstance()
+            view.transformationMethod = CustomTabTransformationMethod(view.autoLinkMask)
+        } else {
+            view.text = ""
+        }
     }
 
     @JvmStatic
