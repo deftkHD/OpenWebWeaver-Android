@@ -36,7 +36,7 @@ class ChooseAccountDialogFragment : DialogFragment() {
         }
 
         val accountManager = AccountManager.get(requireContext())
-        val accounts = accountManager.getAccountsByType(AuthHelper.ACCOUNT_TYPE)
+        val accounts = accountManager.getAccountsByType(getString(R.string.account_type))
         val builder = AlertDialog.Builder(requireContext())
         builder.setTitle(R.string.choose_account)
         builder.setIcon(R.drawable.ic_account_circle_24)

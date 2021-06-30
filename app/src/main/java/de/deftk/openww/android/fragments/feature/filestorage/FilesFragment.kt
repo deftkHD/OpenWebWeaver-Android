@@ -42,10 +42,6 @@ class FilesFragment : Fragment(), FileClickHandler {
 
     //TODO cancel ongoing network transfers on account switch
 
-    companion object {
-        const val FILE_PROVIDER_AUTHORITY = "de.deftk.openww.android.fileprovider"
-    }
-
     private val args: FilesFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
     private val fileStorageViewModel: FileStorageViewModel by activityViewModels()

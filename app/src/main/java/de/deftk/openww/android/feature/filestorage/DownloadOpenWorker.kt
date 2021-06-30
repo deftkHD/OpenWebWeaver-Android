@@ -78,7 +78,7 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
                 updateProgress(((bytesCopied.toFloat() / fileSize.toFloat()) * 100).roundToInt(), fileName)
             }
             inputStream.close()
-            val fileUri = FileProvider.getUriForFile(applicationContext, FilesFragment.FILE_PROVIDER_AUTHORITY, file)
+            val fileUri = FileProvider.getUriForFile(applicationContext, applicationContext.getString(R.string.file_provider_authority), file)
             return Result.success(workDataOf(DATA_FILE_URI to fileUri.toString(), DATA_FILE_NAME to fileName))
         } catch (e: Exception) {
             e.printStackTrace()

@@ -503,7 +503,7 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
      * @return uri for the given parentDocumentId
      */
     private fun buildCallbackUri(parentDocumentId: String) = buildChildDocumentsUri(
-        "de.deftk.openww.android.filestorage.integration.fileprovider",
+        context().getString(R.string.file_storage_integration_provider_authority),
         parentDocumentId
     )
 

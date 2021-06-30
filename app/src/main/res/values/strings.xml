@@ -221,5 +221,8 @@
     <string name="remove_contact_detail">Remove field</string>
     <string name="value">Value</string>
     <string name="no_contact_details">No fields</string>
+    <string name="account_type" translatable="false">OpenWebWeaver/webweaver</string>
+    <string name="file_provider_authority" translatable="false">de.deftk.openww.android.fileprovider</string>
+    <string name="file_storage_integration_provider_authority" translatable="false">de.deftk.openww.android.filestorage.integration.fileprovider</string>
 
 </resources>

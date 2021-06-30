@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import de.deftk.openww.android.R
 import de.deftk.openww.api.WebWeaverClient
 import de.deftk.openww.api.auth.Credentials
 import de.deftk.openww.android.activities.MainActivity
@@ -49,7 +50,7 @@ class WebWeaverAuthenticator(private val context: Context): AbstractAccountAuthe
 
     override fun addAccount(response: AccountAuthenticatorResponse, accountType: String, authTokenType: String?, requiredFeatures: Array<out String>?, options: Bundle): Bundle {
         val intent = Intent(context, MainActivity::class.java)
-        intent.putExtra(AuthHelper.ACCOUNT_TYPE, accountType)
+        check(accountType == context.getString(R.string.account_type))
         intent.putExtra(AuthHelper.EXTRA_TOKEN_TYPE, authTokenType)
         intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
         val bundle = Bundle()

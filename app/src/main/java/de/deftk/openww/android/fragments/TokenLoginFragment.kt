@@ -47,7 +47,7 @@ class TokenLoginFragment : Fragment() {
         userViewModel.loginToken.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success && actionPerformed && binding.chbRememberToken.isChecked) {
                 AccountManager.get(requireContext()).addAccountExplicitly(
-                    Account(response.value.first, AuthHelper.ACCOUNT_TYPE),
+                    Account(response.value.first, getString(R.string.account_type)),
                     response.value.second,
                     null
                 )
@@ -60,7 +60,7 @@ class TokenLoginFragment : Fragment() {
                     if (authenticatorResponse != null) {
                         val bundle = Bundle()
                         bundle.putString(AccountManager.KEY_ACCOUNT_NAME, response.value.getUser().login)
-                        bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, AuthHelper.ACCOUNT_TYPE)
+                        bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, getString(R.string.account_type))
                         authenticatorResponse.onResult(bundle)
                         requireActivity().finish()
                         return@observe

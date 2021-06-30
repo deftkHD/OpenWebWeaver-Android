@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.auth.WebWeaverAuthenticator
@@ -45,7 +46,7 @@ class LoginFragment : Fragment() {
         userViewModel.loginToken.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success && actionPerformed) {
                 AccountManager.get(requireContext()).addAccountExplicitly(
-                    Account(response.value.first, AuthHelper.ACCOUNT_TYPE),
+                    Account(response.value.first, getString(R.string.account_type)),
                     response.value.second,
                     null
                 )
@@ -58,7 +59,7 @@ class LoginFragment : Fragment() {
                     if (authenticatorResponse != null) {
                         val bundle = Bundle()
                         bundle.putString(AccountManager.KEY_ACCOUNT_NAME, response.value.getUser().login)
-                        bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, AuthHelper.ACCOUNT_TYPE)
+                        bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, getString(R.string.account_type))
                         authenticatorResponse.onResult(bundle)
                         requireActivity().finish()
                         return@observe

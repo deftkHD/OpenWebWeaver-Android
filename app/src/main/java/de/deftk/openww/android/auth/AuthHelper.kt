@@ -4,10 +4,10 @@ import android.accounts.Account
 import android.accounts.AccountManager
 import android.content.Context
 import androidx.preference.PreferenceManager
+import de.deftk.openww.android.R
 
 object AuthHelper {
 
-    const val ACCOUNT_TYPE = "OpenWebWeaver/webweaver"
     const val EXTRA_TOKEN_TYPE = "OpenWebWeaverApiToken"
     private const val LAST_LOGIN_PREFERENCE = "last_login"
 
@@ -31,7 +31,7 @@ object AuthHelper {
     }
 
     fun findAccounts(prioritizedLogin: String?, context: Context): Array<Account> {
-        val allAccounts = AccountManager.get(context).getAccountsByType(ACCOUNT_TYPE)
+        val allAccounts = AccountManager.get(context).getAccountsByType(context.getString(R.string.account_type))
         if (prioritizedLogin != null && allAccounts.any { it.name == prioritizedLogin })
             return allAccounts.filter { it.name == prioritizedLogin }.toTypedArray()
         return allAccounts
