@@ -42,6 +42,9 @@
         <action
             android:id="@+id/action_overviewFragment_to_contactsGroupFragment"
             app:destination="@id/contactsGroupFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_notesFragment"
+            app:destination="@id/notesFragment" />
     </fragment>
     <fragment
         android:id="@+id/loginFragment"
@@ -446,6 +449,42 @@
             app:nullable="true" />
         <argument
             android:name="title"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/notesFragment"
+        android:name="de.deftk.openww.android.fragments.feature.notes.NotesFragment"
+        android:label="@string/notes">
+        <action
+            android:id="@+id/action_notesFragment_to_editNoteFragment"
+            app:destination="@id/editNoteFragment" />
+        <action
+            android:id="@+id/action_notesFragment_to_readNoteFragment"
+            app:destination="@id/readNoteFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editNoteFragment"
+        android:name="de.deftk.openww.android.fragments.feature.notes.EditNoteFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_edit_note">
+        <argument
+            android:name="noteId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/readNoteFragment"
+        android:name="de.deftk.openww.android.fragments.feature.notes.ReadNoteFragment"
+        android:label="@string/see_note"
+        tools:layout="@layout/fragment_read_note">
+        <action
+            android:id="@+id/action_readNoteFragment_to_editNoteFragment"
+            app:destination="@id/editNoteFragment" />
+        <argument
+            android:name="noteId"
             app:argType="string" />
     </fragment>
 </navigation>

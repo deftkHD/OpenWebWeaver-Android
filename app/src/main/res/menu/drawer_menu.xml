@@ -70,6 +70,12 @@
             android:visible="false" />
 
         <item
+            android:id="@+id/notesFragment"
+            android:icon="@drawable/ic_notes_24"
+            android:title="@string/notes"
+            android:visible="false" />
+
+        <item
             android:id="@+id/systemNotificationsFragment"
             android:icon="@drawable/ic_warning_24"
             android:title="@string/system_notifications"

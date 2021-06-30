@@ -219,4 +219,8 @@
     <string name="remove_contact_detail">Feld entfernen</string>
     <string name="value">Wert</string>
     <string name="no_contact_details">Keine Felder</string>
+    <string name="notes_empty">Keine Notizen</string>
+    <string name="add_note">Notiz hinzufügen</string>
+    <string name="edit_note">Notiz bearbeiten</string>
+    <string name="see_note">Notiz betrachten</string>
 </resources>

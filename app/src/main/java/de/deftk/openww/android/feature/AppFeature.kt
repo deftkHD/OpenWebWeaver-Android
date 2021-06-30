@@ -94,7 +94,8 @@ enum class AppFeature(
         }
     }),
     FEATURE_MESSENGER(Feature.MESSENGER, R.id.chatsFragment),
-    FEATURE_CONTACTS(Feature.ADDRESSES, R.id.contactsGroupFragment);
+    FEATURE_CONTACTS(Feature.ADDRESSES, R.id.contactsGroupFragment),
+    FEATURE_NOTES(Feature.NOTES, R.id.notesFragment);
 
     companion object {
         fun getByOverviewClass(overviewClass: Class<out AbstractOverviewElement>): AppFeature? {

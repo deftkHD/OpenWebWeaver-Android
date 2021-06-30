@@ -224,5 +224,9 @@
     <string name="account_type" translatable="false">OpenWebWeaver/webweaver</string>
     <string name="file_provider_authority" translatable="false">de.deftk.openww.android.fileprovider</string>
     <string name="file_storage_integration_provider_authority" translatable="false">de.deftk.openww.android.filestorage.integration.fileprovider</string>
+    <string name="notes_empty">No notes</string>
+    <string name="add_note">Add note</string>
+    <string name="edit_note">Edit note</string>
+    <string name="see_note">Read note</string>
 
 </resources>

@@ -8,6 +8,9 @@ import de.deftk.openww.api.model.feature.systemnotification.SystemNotificationTy
 import de.deftk.openww.api.model.feature.tasks.ITask
 import de.deftk.openww.android.R
 import de.deftk.openww.android.feature.board.BoardNotificationColors
+import de.deftk.openww.android.feature.notes.NoteColors
+import de.deftk.openww.api.model.feature.notes.INote
+import de.deftk.openww.api.model.feature.notes.NoteColor
 import java.text.DateFormat
 
 object UIUtil {
@@ -29,6 +32,11 @@ object UIUtil {
     @ColorRes
     fun getBoardNotificationAccent(boardNotification: IBoardNotification): Int {
         return BoardNotificationColors.getByApiColorOrDefault(boardNotification.getColor()).androidColor
+    }
+
+    @ColorRes
+    fun getNoteAccent(note: INote): Int {
+        return NoteColors.getByApiColorOrDefault(note.getColor()).androidColor
     }
 
     fun getTaskDue(task: ITask): String {
