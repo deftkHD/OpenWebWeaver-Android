@@ -19,6 +19,7 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.databinding.FragmentLaunchBinding
 import de.deftk.openww.android.feature.LaunchMode
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
 class LaunchFragment : Fragment() {
@@ -57,8 +58,7 @@ class LaunchFragment : Fragment() {
                 }
             } else if (response is Response.Failure) {
                 Log.e("LaunchFragment", "Failed to obtain apiContext")
-                response.exception.printStackTrace()
-                //TODO handle error
+                Reporter.reportException(R.string.error_other, response.exception, requireContext())
                 requireActivity().finish()
             }
         })
@@ -109,8 +109,7 @@ class LaunchFragment : Fragment() {
             if (result is Response.Success) {
                 AuthHelper.rememberLogin(account.name, requireContext())
             } else if (result is Response.Failure) {
-                //TODO handle error
-                result.exception.printStackTrace()
+                Reporter.reportException(R.string.error_login_failed, result.exception, requireContext())
             }
         }
         userViewModel.loginAccount(account, token)

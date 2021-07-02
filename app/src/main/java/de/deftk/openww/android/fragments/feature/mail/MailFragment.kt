@@ -22,6 +22,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.MailFolderAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentMailBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MailboxViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 
@@ -59,13 +60,12 @@ class MailFragment: Fragment() {
         val adapter = de.deftk.openww.android.adapter.recycler.MailAdapter()
         binding.mailList.adapter = adapter
         binding.mailList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        mailboxViewModel.currentMails.observe(viewLifecycleOwner) { resource ->
-            if (resource is Response.Success) {
-                adapter.submitList(resource.value.map { it to mailboxViewModel.currentFolder.value!! })
-                binding.mailEmpty.isVisible = resource.value.isEmpty()
-            } else if (resource is Response.Failure) {
-                //TODO handle error
-                resource.exception.printStackTrace()
+        mailboxViewModel.currentMails.observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
+                adapter.submitList(response.value.map { it to mailboxViewModel.currentFolder.value!! })
+                binding.mailEmpty.isVisible = response.value.isEmpty()
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_get_emails_failed, response.exception, requireContext())
             }
             binding.progressMail.isVisible = false
             binding.mailSwipeRefresh.isRefreshing = false
@@ -91,8 +91,7 @@ class MailFragment: Fragment() {
                     binding.mailSwipeRefresh.isRefreshing = false
                 }
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_get_folders_failed, response.exception, requireContext())
                 toolbarSpinner.adapter = null
                 binding.progressMail.isVisible = false
                 binding.mailSwipeRefresh.isRefreshing = false
@@ -126,8 +125,7 @@ class MailFragment: Fragment() {
                 mailboxViewModel.resetPostResponse() // mark as handled
 
             if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
             }
         }
 

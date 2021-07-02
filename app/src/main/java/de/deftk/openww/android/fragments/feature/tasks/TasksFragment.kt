@@ -16,6 +16,7 @@ import de.deftk.openww.android.adapter.recycler.TasksAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentTasksBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.TasksViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 
@@ -33,13 +34,12 @@ class TasksFragment : Fragment() {
         val adapter = TasksAdapter()
         binding.tasksList.adapter = adapter
         binding.tasksList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { resource ->
-            if (resource is Response.Success) {
-                adapter.submitList(resource.value)
-                binding.tasksEmpty.isVisible = resource.value.isEmpty()
-            } else if (resource is Response.Failure) {
-                //TODO handle error
-                resource.exception.printStackTrace()
+        tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
+                adapter.submitList(response.value)
+                binding.tasksEmpty.isVisible = response.value.isEmpty()
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
             }
             binding.progressTasks.visibility = ProgressBar.INVISIBLE
             binding.tasksSwipeRefresh.isRefreshing = false
@@ -69,13 +69,12 @@ class TasksFragment : Fragment() {
             }
         }
 
-        tasksViewModel.postResponse.observe(viewLifecycleOwner) { resource ->
-            if (resource != null)
+        tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
                 tasksViewModel.resetPostResponse() // mark as handled
 
-            if (resource is Response.Failure) {
-                resource.exception.printStackTrace()
-                //TODO handle error
+            if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
 

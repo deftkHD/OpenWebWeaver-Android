@@ -35,6 +35,7 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
 
         // output
         const val DATA_FILE_URI = "data_file_uri"
+        const val DATA_ERROR_MESSAGE = "data_error_message"
 
         // io
         const val DATA_FILE_NAME = "data_file_name"
@@ -82,7 +83,7 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
             return Result.success(workDataOf(DATA_FILE_URI to fileUri.toString(), DATA_FILE_NAME to fileName))
         } catch (e: Exception) {
             e.printStackTrace()
-            return Result.failure()
+            return Result.failure(workDataOf(DATA_ERROR_MESSAGE to (e.localizedMessage ?: e.message ?: e.toString())))
         }
     }
 }

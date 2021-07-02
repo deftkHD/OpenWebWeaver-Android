@@ -13,6 +13,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.SystemNotificationAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentSystemNotificationsBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
 class SystemNotificationsFragment: Fragment() {
@@ -27,14 +28,13 @@ class SystemNotificationsFragment: Fragment() {
 
         val adapter = SystemNotificationAdapter()
         binding.systemNotificationList.adapter = adapter
-        userViewModel.systemNotificationsResponse.observe(viewLifecycleOwner) { resource ->
-            if (resource is Response.Success) {
-                adapter.submitList(resource.value)
-                binding.systemNotificationsEmpty.isVisible = resource.value.isEmpty()
-            } else if (resource is Response.Failure) {
+        userViewModel.systemNotificationsResponse.observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
+                adapter.submitList(response.value)
+                binding.systemNotificationsEmpty.isVisible = response.value.isEmpty()
+            } else if (response is Response.Failure) {
                 binding.systemNotificationsEmpty.isVisible = false
-                resource.exception.printStackTrace()
-                //TODO handle error
+                Reporter.reportException(R.string.error_get_system_notifications_failed, response.exception, requireContext())
             }
             binding.progressSystemNotifications.visibility = ProgressBar.INVISIBLE
             binding.systemNotificationsSwipeRefresh.isRefreshing = false

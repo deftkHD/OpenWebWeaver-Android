@@ -15,6 +15,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentWriteMailBinding
 import de.deftk.openww.android.feature.LaunchMode
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MailboxViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 
@@ -57,8 +58,7 @@ class WriteMailFragment : Fragment() {
                     requireActivity().finish()
                 }
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
             }
         }
 

@@ -23,6 +23,7 @@ import de.deftk.openww.android.feature.contacts.ContactDetail
 import de.deftk.openww.android.feature.contacts.ContactDetailType
 import de.deftk.openww.android.feature.contacts.GenderTranslation
 import de.deftk.openww.android.utils.ContactUtil
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ContactsViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.implementation.feature.contacts.Contact
@@ -158,8 +159,7 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
                 ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
                 navController.popBackStack()
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
             }
         }
 

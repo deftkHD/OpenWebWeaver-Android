@@ -73,7 +73,7 @@
     <string name="system_notifications_empty">Keine Systembenachrichtigungen</string>
     <string name="tasks_empty">Keine Aufgaben</string>
     <string name="delete">Löschen</string>
-    <string name="error">Fehler: %s</string>
+    <string name="error_other">Fehler: %s</string>
     <string name="new_notification">Mitteilung hinzufügen</string>
     <string name="title">Titel</string>
     <string name="text">Text</string>
@@ -111,7 +111,7 @@
     <string name="comments">Kommentare</string>
     <string name="show_comments">Kommentare anzeigen</string>
     <string name="no_comments">Keine Kommentare</string>
-    <string name="overview_request_failed">Erstellen der Übersicht fehlgeschlagen (%s)</string>
+    <string name="error_overview_request_failed">Erstellen der Übersicht fehlgeschlagen (%s)</string>
     <string name="unknown_reference_type">Unbekannter Sprungtyp \"%s\"</string>
     <string name="search">Suchen</string>
     <string name="general">Allgemein</string>
@@ -223,4 +223,27 @@
     <string name="add_note">Notiz hinzufügen</string>
     <string name="edit_note">Notiz bearbeiten</string>
     <string name="see_note">Notiz betrachten</string>
+    <string name="error_logout_failed">Abmelden fehlgeschlagen: %s</string>
+    <string name="error_login_failed">Anmeldung fehlgeschlagen: %s</string>
+    <string name="error_delete_failed">Löschen fehlgeschlagen: %s</string>
+    <string name="error_get_notifications_failed">Abfragen der Mitteilungen fehlgeschlagen: %s</string>
+    <string name="error_save_changes_failed">Speichern der Änderungen fehlgeschlagen: %s</string>
+    <string name="error_get_contacts_failed">Abfragen der Kontakte fehlgeschlagen: %s</string>
+    <string name="error_get_quotas_failed">Abfragen der Quoten fehlgeschlagen: %s</string>
+    <string name="error_get_files_failed">Abfragen der Dateien fehlgeschlagen: %s</string>
+    <string name="error_get_posts_failed">Abfragen der Beiträge fehlgeschlagen: %s</string>
+    <string name="error_get_emails_failed">Abfragen der Emails fehlgeschlagen: %s</string>
+    <string name="error_get_folders_failed">Abfragen der Ordner fehlgeschlagen: %s</string>
+    <string name="error_read_email_failed">Lesen der Email fehlgeschlagen: %s</string>
+    <string name="error_send_email_failed">Senden der Email fehlgeschlagen: %s</string>
+    <string name="error_get_members_failed">Abfragen der Mitglieder fehlgeschlagen: %s</string>
+    <string name="error_send_message_failed">Senden der Nachricht fehlgeschlagen: %s</string>
+    <string name="error_get_messages_failed">Abfragen der Nachrichten fehlgeschlagen: %s</string>
+    <string name="error_download_worker_failed">Download fehlgeschlagen: %s</string>
+    <string name="error_get_users_failed">Abfragen der Nutzer fehlgeschlagen: %s</string>
+    <string name="error_add_chat_failed">Erstellen des Chats fehlgeschlagen: %s</string>
+    <string name="error_remove_chat_failed">Entfernen des Chats fehlgeschlagen: %s</string>
+    <string name="error_get_notes_failed">Abfragen der Notizen fehlgeschlagen: %s</string>
+    <string name="error_get_system_notifications_failed">Abfragen der Systemnachrichten fehlgeschlagen: %s</string>
+    <string name="error_get_tasks_failed">Abfragen der Aufgaben fehlgeschlagen: %s</string>
 </resources>

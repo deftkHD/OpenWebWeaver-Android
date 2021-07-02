@@ -16,6 +16,7 @@ import de.deftk.openww.android.adapter.recycler.BoardNotificationAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentNotificationsBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.BoardViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 
@@ -34,11 +35,12 @@ class NotificationsFragment: Fragment() {
         val adapter = BoardNotificationAdapter()
         binding.notificationList.adapter = adapter
         binding.notificationList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { resource ->
-            if (resource is Response.Success) {
-                adapter.submitList(resource.value)
-                binding.notificationsEmpty.isVisible = resource.value.isEmpty()
-            } else if (resource is Response.Failure) {
+        boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
+                adapter.submitList(response.value)
+                binding.notificationsEmpty.isVisible = response.value.isEmpty()
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
                 binding.notificationsEmpty.isVisible = false
             }
             binding.progressNotifications.visibility = ProgressBar.INVISIBLE
@@ -69,13 +71,12 @@ class NotificationsFragment: Fragment() {
             }
         }
 
-        boardViewModel.postResponse.observe(viewLifecycleOwner) { resource ->
-            if (resource != null)
+        boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
                 boardViewModel.resetPostResponse() // mark as handled
 
-            if (resource is Response.Failure) {
-                resource.exception.printStackTrace()
-                //TODO handle error
+            if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
 

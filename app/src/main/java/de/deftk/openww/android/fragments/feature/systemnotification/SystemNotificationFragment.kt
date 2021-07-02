@@ -15,6 +15,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentSystemNotificationBinding
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.utils.UIUtil
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -35,9 +36,9 @@ class SystemNotificationFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        userViewModel.systemNotificationsResponse.observe(viewLifecycleOwner) { resource ->
-            if (resource is Response.Success) {
-                resource.value.firstOrNull { it.id == args.systemNotificationId }?.apply {
+        userViewModel.systemNotificationsResponse.observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
+                response.value.firstOrNull { it.id == args.systemNotificationId }?.apply {
                     systemNotification = this
 
                     binding.systemNotificationTitle.text = getString(UIUtil.getTranslatedSystemNotificationTitle(systemNotification))
@@ -48,9 +49,8 @@ class SystemNotificationFragment : Fragment() {
                     binding.systemNotificationMessage.movementMethod = LinkMovementMethod.getInstance()
                     binding.systemNotificationMessage.transformationMethod = CustomTabTransformationMethod(binding.systemNotificationMessage.autoLinkMask)
                 }
-            } else if (resource is Response.Failure) {
-                resource.exception.printStackTrace()
-                //TODO report error
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
             }
         }
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->

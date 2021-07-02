@@ -20,6 +20,7 @@ import de.deftk.openww.api.model.feature.tasks.ITask
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditTaskBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.TasksViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import java.text.DateFormat
@@ -59,9 +60,9 @@ class EditTaskFragment : Fragment() {
                 if (args.groupId != null && args.taskId != null) {
                     // edit existing
                     editMode = true
-                    tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { resource ->
-                        if (resource is Response.Success) {
-                            resource.value.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }?.apply {
+                    tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { response ->
+                        if (response is Response.Success) {
+                            response.value.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }?.apply {
                                 task = first
                                 operator = second
 
@@ -78,9 +79,8 @@ class EditTaskFragment : Fragment() {
                                 if (dueDate != null)
                                     binding.taskDue.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(dueDate!!))
                             }
-                        } else if (resource is Response.Failure) {
-                            resource.exception.printStackTrace()
-                            //TODO handle error
+                        } else if (response is Response.Failure) {
+                            Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
                         }
                     }
                 } else {
@@ -101,8 +101,7 @@ class EditTaskFragment : Fragment() {
                 ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
                 navController.popBackStack()
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
             }
         }
 

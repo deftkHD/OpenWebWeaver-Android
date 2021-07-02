@@ -21,6 +21,7 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentMessengerChatBinding
 import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
 import de.deftk.openww.android.utils.FileUtil
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MessengerViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.feature.FileUrl
@@ -62,8 +63,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
                     messengerViewModel.loadHistory(true, apiContext)
                 }
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_send_message_failed, response.exception, requireContext())
             }
         }
 
@@ -74,8 +74,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
                     adapter.submitList(messages)
                 binding.chatsEmpty.isVisible = messages.isEmpty()
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_get_messages_failed, response.exception, requireContext())
             }
             binding.progressChats.isVisible = false
             binding.chatsSwipeRefresh.isRefreshing = false
@@ -98,7 +97,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
         if (!tempDir.exists())
             tempDir.mkdir()
         val tempFile = File(tempDir, FileUtil.escapeFileName(url.name ?: name))
-        val workRequest = DownloadOpenWorker.createRequest(tempFile.absolutePath, url.url, url.name ?: name, url.size?.toLong() ?: error("No attachment size"))
+        val workRequest = DownloadOpenWorker.createRequest(tempFile.absolutePath, url.url, url.name ?: name, url.size ?: error("No attachment size"))
         workManager.enqueue(workRequest)
         workManager.getWorkInfoByIdLiveData(workRequest.id).observe(viewLifecycleOwner) { workInfo ->
             if (workInfo.state == WorkInfo.State.SUCCEEDED) {
@@ -118,7 +117,8 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
                 startActivity(Intent.createChooser(sendIntent, fileName).apply { putExtra(
                     Intent.EXTRA_INITIAL_INTENTS, arrayOf(viewIntent)) })
             } else if (workInfo.state == WorkInfo.State.FAILED) {
-                //TODO handle error
+                val errorMessage = workInfo.outputData.getString(DownloadOpenWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
+                Reporter.reportException(R.string.error_login_failed, errorMessage, requireContext())
             }
         }
     }

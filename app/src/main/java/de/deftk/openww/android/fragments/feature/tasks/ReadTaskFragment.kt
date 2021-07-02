@@ -18,6 +18,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadTaskBinding
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.TasksViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -42,9 +43,9 @@ class ReadTaskFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { resource ->
-            if (resource is Response.Success) {
-                resource.value.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }?.apply {
+        tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
+                response.value.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }?.apply {
                     task = first
                     scope = second
 
@@ -65,20 +66,18 @@ class ReadTaskFragment : Fragment() {
                         }
                     }
                 }
-            } else if (resource is Response.Failure) {
-                resource.exception.printStackTrace()
-                //TODO handle error
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
             }
         }
-        tasksViewModel.postResponse.observe(viewLifecycleOwner) { result ->
-            if (result != null)
+        tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
                 tasksViewModel.resetPostResponse() // mark as handled
 
-            if (result is Response.Success) {
+            if (response is Response.Success) {
                 navController.popBackStack()
-            } else if (result is Response.Failure) {
-                //TODO handle error
-                result.exception.printStackTrace()
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->

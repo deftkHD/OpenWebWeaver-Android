@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -19,6 +18,7 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentOverviewBinding
 import de.deftk.openww.android.feature.AppFeature
 import de.deftk.openww.android.feature.overview.AbstractOverviewElement
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
 class OverviewFragment: Fragment() {
@@ -62,20 +62,14 @@ class OverviewFragment: Fragment() {
                 navController.navigate(feature.fragmentId)
         }
 
-        userViewModel.overviewResponse.observe(viewLifecycleOwner) { resource ->
-            if (resource is Response.Success) {
-                binding.overviewList.adapter = OverviewAdapter(requireContext(), resource.value)
-                Log.i(LOG_TAG, "Initialized ${resource.value.size} overview elements")
+        userViewModel.overviewResponse.observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
+                binding.overviewList.adapter = OverviewAdapter(requireContext(), response.value)
+                Log.i(LOG_TAG, "Initialized ${response.value.size} overview elements")
                 binding.progressOverview.visibility = ProgressBar.GONE
                 binding.overviewSwipeRefresh.isRefreshing = false
-            } else if (resource is Response.Failure) {
-                //TODO handle error
-                resource.exception.printStackTrace()
-                Toast.makeText(
-                    context,
-                    getString(R.string.overview_request_failed).format(resource.exception.message ?: resource.exception),
-                    Toast.LENGTH_LONG
-                ).show()
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_overview_request_failed, response.exception, requireContext())
             }
         }
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->

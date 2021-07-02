@@ -16,6 +16,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadMailBinding
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.MailboxViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -45,8 +46,7 @@ class ReadMailFragment : Fragment() {
                 mailboxViewModel.resetReadPostResponse() // mark as handled
 
             if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_read_email_failed, response.exception, requireContext())
                 binding.progressReadMail.isVisible = false
             } else if (response is Response.Success) {
                 binding.progressReadMail.isVisible = false
@@ -71,29 +71,26 @@ class ReadMailFragment : Fragment() {
             if (response is Response.Success) {
                 navController.popBackStack()
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
             }
         }
 
-        mailboxViewModel.foldersResponse.observe(viewLifecycleOwner) { resource ->
-            if (resource is Response.Success) {
-                emailFolder = resource.value.first { it.id == args.folderId }
+        mailboxViewModel.foldersResponse.observe(viewLifecycleOwner) { folderResponse ->
+            if (folderResponse is Response.Success) {
+                emailFolder = folderResponse.value.first { it.id == args.folderId }
 
-                val response = mailboxViewModel.getCachedResponse(emailFolder)
-                if (response is Response.Success) {
-                    email = response.value.firstOrNull { it.id == args.mailId } ?: error("Referenced email not found")
+                val mailResponse = mailboxViewModel.getCachedResponse(emailFolder)
+                if (mailResponse is Response.Success) {
+                    email = mailResponse.value.firstOrNull { it.id == args.mailId } ?: error("Referenced email not found")
                     binding.progressReadMail.isVisible = true
                     userViewModel.apiContext.value?.apply {
                         mailboxViewModel.readEmail(email, emailFolder, this)
                     }
-                } else if (resource is Response.Failure) {
-                    //TODO handle error
-                    resource.exception.printStackTrace()
+                } else if (mailResponse is Response.Failure) {
+                    Reporter.reportException(R.string.error_get_emails_failed, mailResponse.exception, requireContext())
                 }
-            } else if (resource is Response.Failure) {
-                //TODO handle error
-                resource.exception.printStackTrace()
+            } else if (folderResponse is Response.Failure) {
+                Reporter.reportException(R.string.error_get_folders_failed, folderResponse.exception, requireContext())
             }
         }
 

@@ -15,9 +15,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
-import de.deftk.openww.android.auth.AuthHelper
-import de.deftk.openww.android.auth.WebWeaverAuthenticator
 import de.deftk.openww.android.databinding.FragmentTokenLoginBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
 
@@ -81,7 +80,7 @@ class TokenLoginFragment : Fragment() {
                         requireActivity().finish()
                         return@observe
                     }
-                    //TODO handle error message
+                    Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
                 }
                 binding.pgbLogin.isVisible = false
             }

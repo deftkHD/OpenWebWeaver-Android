@@ -15,6 +15,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.ForumPostAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentForumPostsBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ForumViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 
@@ -42,13 +43,12 @@ class ForumPostsFragment : Fragment() {
         val adapter = ForumPostAdapter(group)
         binding.forumList.adapter = adapter
         binding.forumList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        forumViewModel.getForumPosts(group).observe(viewLifecycleOwner) { resource ->
-            if (resource is Response.Success) {
-                adapter.submitList(resource.value)
-                binding.forumEmpty.isVisible = resource.value.isEmpty()
-            } else if (resource is Response.Failure) {
-                //TODO handle error
-                resource.exception.printStackTrace()
+        forumViewModel.getForumPosts(group).observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
+                adapter.submitList(response.value)
+                binding.forumEmpty.isVisible = response.value.isEmpty()
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
             }
             binding.progressForum.isVisible = false
             binding.forumSwipeRefresh.isRefreshing = false

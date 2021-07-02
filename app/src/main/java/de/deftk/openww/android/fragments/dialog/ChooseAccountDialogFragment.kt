@@ -11,7 +11,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.AccountAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
-import de.deftk.openww.android.auth.WebWeaverAuthenticator
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
 class ChooseAccountDialogFragment : DialogFragment() {
@@ -28,9 +28,8 @@ class ChooseAccountDialogFragment : DialogFragment() {
                     AuthHelper.rememberLogin(response.value.getUser().login, requireContext())
                     navController.navigate(ChooseAccountDialogFragmentDirections.actionChooseAccountDialogFragmentToOverviewFragment())
                 } else if (response is Response.Failure) {
-                    response.exception.printStackTrace()
+                    Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
                     actionPerformed = false
-                    //TODO handle error
                 }
             }
         }

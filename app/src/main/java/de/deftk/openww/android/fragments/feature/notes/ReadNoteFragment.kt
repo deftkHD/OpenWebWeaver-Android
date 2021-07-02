@@ -13,6 +13,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadNoteBinding
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.NotesViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -49,8 +50,7 @@ class ReadNoteFragment : Fragment() {
                 binding.noteText.movementMethod = LinkMovementMethod.getInstance()
                 binding.noteText.transformationMethod = CustomTabTransformationMethod(binding.noteText.autoLinkMask)
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_get_notes_failed, response.exception, requireContext())
             }
         }
 
@@ -58,8 +58,7 @@ class ReadNoteFragment : Fragment() {
             if (response != null)
                 notesViewModel.resetDeleteResponse()
             if (response is Response.Failure) {
-                response.exception.printStackTrace()
-                //TODO handle error
+                Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
 

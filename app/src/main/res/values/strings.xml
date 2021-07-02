@@ -73,7 +73,7 @@
     <string name="system_notifications_empty">No system notifications</string>
     <string name="tasks_empty">No tasks</string>
     <string name="delete">Delete</string>
-    <string name="error">Error: %s</string>
+    <string name="error_other">Error: %s</string>
     <string name="new_notification">New notification</string>
     <string name="title">Title</string>
     <string name="text">Text</string>
@@ -111,7 +111,7 @@
     <string name="comments">Comments</string>
     <string name="show_comments">Show comments</string>
     <string name="no_comments">No comments</string>
-    <string name="overview_request_failed">Failed to get overview information (%s)</string>
+    <string name="error_overview_request_failed">Failed to get overview information (%s)</string>
     <string name="unknown_reference_type">Unknown reference type \"%s\"</string>
     <string name="search">Search</string>
     <string name="general">General</string>
@@ -154,8 +154,6 @@
     <string name="notification_upload_content">Uploading file %s…</string>
     <string name="notification_download_title">Downloading</string>
     <string name="notification_download_content">Downloading file %s…</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="see_comment">See comment</string>
     <string name="password_login_link"><a href="www.www.com">Password login</a></string>
     <string name="email_sent">Email sent!</string>
@@ -228,5 +226,28 @@
     <string name="add_note">Add note</string>
     <string name="edit_note">Edit note</string>
     <string name="see_note">Read note</string>
+    <string name="error_logout_failed">Failed to log out: %s</string>
+    <string name="error_login_failed">Login failed: %s</string>
+    <string name="error_delete_failed">Failed to delete: %s</string>
+    <string name="error_get_notifications_failed">Failed to get notifications: %s</string>
+    <string name="error_save_changes_failed">Failed to save changes: %s</string>
+    <string name="error_get_contacts_failed">Failed to get contacts: %s</string>
+    <string name="error_get_quotas_failed">Failed to get quotas: %s</string>
+    <string name="error_get_files_failed">Failed to get files: %s</string>
+    <string name="error_get_posts_failed">Failed to get posts: %s</string>
+    <string name="error_get_emails_failed">Failed to get emails: %s</string>
+    <string name="error_get_folders_failed">Failed to get folders: %s</string>
+    <string name="error_read_email_failed">Failed to read email: %s</string>
+    <string name="error_send_email_failed">Failed to send email: %s</string>
+    <string name="error_get_members_failed">Failed to get members: %s</string>
+    <string name="error_send_message_failed">Failed to send message: %s</string>
+    <string name="error_get_messages_failed">Failed to get messages: %s</string>
+    <string name="error_download_worker_failed">Download failed: %s</string>
+    <string name="error_get_users_failed">Failed to get users: %s</string>
+    <string name="error_add_chat_failed">Failed to add chat: %s</string>
+    <string name="error_remove_chat_failed">Failed to remove chat: %s</string>
+    <string name="error_get_notes_failed">Failed to get notes: %s</string>
+    <string name="error_get_system_notifications_failed">Failed to get system notifications: %s</string>
+    <string name="error_get_tasks_failed">Failed to get tasks: %s</string>
 
 </resources>

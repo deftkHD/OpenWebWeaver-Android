@@ -25,6 +25,7 @@ import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.databinding.ActivityMainBinding
 import de.deftk.openww.android.feature.AppFeature
 import de.deftk.openww.android.feature.LaunchMode
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -103,8 +104,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
             if (response is Response.Success) {
                 navController.navigate(R.id.launchFragment)
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_logout_failed, response.exception, this)
             }
         }
 

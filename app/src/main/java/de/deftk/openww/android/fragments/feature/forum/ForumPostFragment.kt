@@ -21,6 +21,7 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentForumPostBinding
 import de.deftk.openww.android.feature.forum.ForumPostIcons
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.ForumViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -58,9 +59,9 @@ class ForumPostFragment : Fragment() {
         }
         this.group = group
 
-        forumViewModel.getForumPosts(group).observe(viewLifecycleOwner) { resource ->
-            if (resource is Response.Success) {
-                val post = forumViewModel.findPostOrComment(resource.value, args.parentPostIds?.toMutableList(), args.postId)
+        forumViewModel.getForumPosts(group).observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
+                val post = forumViewModel.findPostOrComment(response.value, args.parentPostIds?.toMutableList(), args.postId)
                 if (post != null) {
                     this.post = post
 
@@ -76,9 +77,8 @@ class ForumPostFragment : Fragment() {
                     binding.forumPostCommentRecyclerView.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
                     binding.forumPostCommentRecyclerView.adapter = ForumPostCommentRecyclerAdapter(post.getComments().sortedBy { it.created.date.time }, group, navController, args.parentPostIds ?: emptyArray(), args.postId)
                 }
-            } else if (resource is Response.Failure) {
-                //TODO handle error
-                resource.exception.printStackTrace()
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
             }
         }
 

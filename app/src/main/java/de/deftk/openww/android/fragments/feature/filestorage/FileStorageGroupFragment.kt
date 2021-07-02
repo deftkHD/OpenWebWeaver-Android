@@ -9,9 +9,11 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
+import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.FileStorageAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentFileStorageBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 
@@ -34,8 +36,7 @@ class FileStorageGroupFragment : Fragment() {
                 adapter.submitList(response.value.toList())
                 binding.fileEmpty.isVisible = response.value.isEmpty()
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
             }
             binding.progressFileStorage.isVisible = false
             binding.fileStorageSwipeRefresh.isRefreshing = false

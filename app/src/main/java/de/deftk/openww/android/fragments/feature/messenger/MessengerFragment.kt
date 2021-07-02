@@ -15,6 +15,7 @@ import de.deftk.openww.android.adapter.recycler.ChatAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentMessengerBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MessengerViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 
@@ -44,8 +45,7 @@ class MessengerFragment : Fragment() {
                 adapter.submitList(response.value)
                 binding.chatsEmpty.isVisible = response.value.isEmpty()
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_get_users_failed, response.exception, requireContext())
             }
             binding.progressChats.isVisible = false
             binding.chatsSwipeRefresh.isRefreshing = false
@@ -53,15 +53,13 @@ class MessengerFragment : Fragment() {
 
         messengerViewModel.addChatResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_add_chat_failed, response.exception, requireContext())
             }
         }
 
         messengerViewModel.removeChatResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_remove_chat_failed, response.exception, requireContext())
             }
         }
 

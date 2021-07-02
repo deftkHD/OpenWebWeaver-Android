@@ -18,6 +18,7 @@ import de.deftk.openww.android.adapter.recycler.MemberAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentMembersBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.GroupViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 
@@ -38,13 +39,12 @@ class MembersFragment : Fragment() {
         val adapter = MemberAdapter()
         binding.memberList.adapter = adapter
         binding.memberList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        groupViewModel.getGroupMembers(group).observe(viewLifecycleOwner) { resource ->
-            if (resource is Response.Success) {
-                adapter.submitList(resource.value)
-                binding.membersEmpty.isVisible = resource.value.isEmpty()
-            } else if (resource is Response.Failure) {
-                //TODO handle error
-                resource.exception.printStackTrace()
+        groupViewModel.getGroupMembers(group).observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
+                adapter.submitList(response.value)
+                binding.membersEmpty.isVisible = response.value.isEmpty()
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
             }
             binding.progressMembers.isVisible = false
             binding.membersSwipeRefresh.isRefreshing = false

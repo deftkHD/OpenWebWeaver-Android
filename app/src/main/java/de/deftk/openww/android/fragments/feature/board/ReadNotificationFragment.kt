@@ -16,6 +16,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadNotificationBinding
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.BoardViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -40,9 +41,9 @@ class ReadNotificationFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { resource ->
-            if (resource is Response.Success) {
-                resource.value.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }?.apply {
+        boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
+                response.value.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }?.apply {
                     notification = first
                     group = second
 
@@ -62,20 +63,18 @@ class ReadNotificationFragment : Fragment() {
                         }
                     }
                 }
-            } else if (resource is Response.Failure) {
-                resource.exception.printStackTrace()
-                //TODO handle error
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
             }
         }
-        boardViewModel.postResponse.observe(viewLifecycleOwner) { result ->
-            if (result != null)
+        boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
                 boardViewModel.resetPostResponse() // mark as handled
 
-            if (result is Response.Success) {
+            if (response is Response.Success) {
                 navController.popBackStack()
-            } else if (result is Response.Failure) {
-                //TODO handle error
-                result.exception.printStackTrace()
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->

@@ -16,6 +16,7 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditNoteBinding
 import de.deftk.openww.android.feature.notes.NoteColors
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.NotesViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.feature.notes.INote
@@ -66,8 +67,7 @@ class EditNoteFragment : Fragment() {
                 ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
                 navController.popBackStack()
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
             }
         }
 

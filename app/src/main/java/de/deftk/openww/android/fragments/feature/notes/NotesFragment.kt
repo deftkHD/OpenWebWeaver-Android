@@ -13,6 +13,7 @@ import de.deftk.openww.android.adapter.recycler.NoteAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentNotesBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.NotesViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Permission
@@ -38,8 +39,7 @@ class NotesFragment : Fragment() {
                 adapter.submitList(response.value)
                 binding.notesEmpty.isVisible = response.value.isEmpty()
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_get_notes_failed, response.exception, requireContext())
             }
             binding.progressNotes.isVisible = false
             binding.notesSwipeRefresh.isRefreshing = false

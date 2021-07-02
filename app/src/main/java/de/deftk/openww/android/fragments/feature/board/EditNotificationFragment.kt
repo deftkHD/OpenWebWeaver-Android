@@ -20,6 +20,7 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditNotificationBinding
 import de.deftk.openww.android.feature.board.BoardNotificationColors
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.BoardViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -55,9 +56,9 @@ class EditNotificationFragment : Fragment() {
                 if (args.groupId != null && args.notificationId != null) {
                     // edit existing
                     editMode = true
-                    boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { resource -> //FIXME observe inside observe is not good
-                        if (resource is Response.Success) {
-                            resource.value.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }?.apply {
+                    boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { response -> //FIXME observe inside observe is not good
+                        if (response is Response.Success) {
+                            response.value.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }?.apply {
                                 notification = first
                                 group = second
 
@@ -69,9 +70,8 @@ class EditNotificationFragment : Fragment() {
                                 binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
                                 binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
                             }
-                        } else if (resource is Response.Failure) {
-                            //TODO handle error
-                            resource.exception.printStackTrace()
+                        } else if (response is Response.Failure) {
+                            Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
                         }
                     }
                 } else {
@@ -92,8 +92,7 @@ class EditNotificationFragment : Fragment() {
                 ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
                 navController.popBackStack()
             } else if (response is Response.Failure) {
-                //TODO handle error
-                response.exception.printStackTrace()
+                Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
             }
         }
 

@@ -33,6 +33,7 @@ import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
 import de.deftk.openww.android.feature.filestorage.NetworkTransfer
 import de.deftk.openww.android.utils.FileUtil
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import java.io.File
@@ -74,8 +75,7 @@ class FilesFragment : Fragment(), FileClickHandler {
                 adapter.submitList(response.value.map { it.file })
                 binding.fileEmpty.isVisible = response.value.isEmpty()
             } else if (response is Response.Failure) {
-                response.exception.printStackTrace()
-                //TODO handle error
+                Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())
             }
             binding.progressFileStorage.isVisible = false
             binding.fileStorageSwipeRefresh.isRefreshing = false

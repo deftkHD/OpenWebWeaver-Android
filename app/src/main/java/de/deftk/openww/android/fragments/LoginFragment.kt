@@ -18,6 +18,7 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.auth.WebWeaverAuthenticator
 import de.deftk.openww.android.databinding.FragmentLoginBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
 class LoginFragment : Fragment() {
@@ -80,7 +81,7 @@ class LoginFragment : Fragment() {
                         requireActivity().finish()
                         return@observe
                     }
-                    //TODO handle error message
+                    Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
                 }
                 binding.pgbLogin.isVisible = false
             }

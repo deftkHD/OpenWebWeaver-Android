@@ -14,6 +14,7 @@ import de.deftk.openww.android.adapter.recycler.ContactAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentContactsBinding
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ContactsViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.IOperatingScope
@@ -42,8 +43,7 @@ class ContactsFragment : Fragment() {
                 adapter.submitList(response.value)
                 binding.contactsEmpty.isVisible = response.value.isEmpty()
             } else if (response is Response.Failure) {
-                response.exception.printStackTrace()
-                //TODO handle exception
+                Reporter.reportException(R.string.error_get_contacts_failed, response.exception, requireContext())
             }
             binding.progressContacts.isVisible = false
             binding.contactsSwipeRefresh.isRefreshing = false
