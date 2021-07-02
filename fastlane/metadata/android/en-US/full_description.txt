@@ -7,6 +7,15 @@ Read, edit and create tasks
 <b>Board notifications</b>
 Read, edit and create board notifications
 
+<b>Contacts</b>
+Read, edit and create contacts
+
+<b>Notes</b>
+Read, edit and create notes
+
+<b>Messenger</b>
+Send and receive messages
+
 <b>Mail service</b>
 Read and send emails
 

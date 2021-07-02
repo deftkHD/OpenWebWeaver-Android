@@ -1,0 +1,8 @@
+- Added messenger support
+- Added note support
+- Added contact support
+- Fixed drawer item behaviour
+- Fixed email folder dropdown crash
+- Fixed crash caused be unknown permissions
+- Make sure actionbar is always shown when needed
+- Show error messages
