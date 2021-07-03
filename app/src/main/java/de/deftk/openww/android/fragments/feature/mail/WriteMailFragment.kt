@@ -58,7 +58,7 @@ class WriteMailFragment : Fragment() {
                     requireActivity().finish()
                 }
             } else if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
+                Reporter.reportException(R.string.error_send_email_failed, response.exception, requireContext())
             }
         }
 

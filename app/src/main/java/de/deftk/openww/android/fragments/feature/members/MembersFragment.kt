@@ -27,6 +27,7 @@ class MembersFragment : Fragment() {
     private val args: MembersFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
     private val groupViewModel: GroupViewModel by activityViewModels()
+    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentMembersBinding
     private lateinit var group: IGroup
@@ -34,7 +35,13 @@ class MembersFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMembersBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        group = userViewModel.apiContext.value?.getUser()?.getGroups()?.firstOrNull { it.login == args.groupId } ?: error("Failed to find given group")
+        val foundGroup = userViewModel.apiContext.value?.getUser()?.getGroups()?.firstOrNull { it.login == args.groupId }
+        if (foundGroup == null) {
+            Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
+            navController.popBackStack()
+            return binding.root
+        }
+        group = foundGroup
 
         val adapter = MemberAdapter()
         binding.memberList.adapter = adapter
@@ -44,7 +51,7 @@ class MembersFragment : Fragment() {
                 adapter.submitList(response.value)
                 binding.membersEmpty.isVisible = response.value.isEmpty()
             } else if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
+                Reporter.reportException(R.string.error_get_members_failed, response.exception, requireContext())
             }
             binding.progressMembers.isVisible = false
             binding.membersSwipeRefresh.isRefreshing = false
@@ -60,7 +67,7 @@ class MembersFragment : Fragment() {
             if (apiContext != null) {
                 groupViewModel.loadMembers(group, false, apiContext)
             } else {
-                findNavController().popBackStack(R.id.membersGroupFragment, false)
+                navController.popBackStack(R.id.membersGroupFragment, false)
             }
         }
 

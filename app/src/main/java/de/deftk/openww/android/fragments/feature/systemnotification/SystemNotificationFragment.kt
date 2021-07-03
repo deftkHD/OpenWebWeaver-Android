@@ -25,6 +25,7 @@ class SystemNotificationFragment : Fragment() {
 
     private val args: SystemNotificationFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
+    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentSystemNotificationBinding
     private lateinit var systemNotification: ISystemNotification
@@ -38,24 +39,27 @@ class SystemNotificationFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         userViewModel.systemNotificationsResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
-                response.value.firstOrNull { it.id == args.systemNotificationId }?.apply {
-                    systemNotification = this
-
-                    binding.systemNotificationTitle.text = getString(UIUtil.getTranslatedSystemNotificationTitle(systemNotification))
-                    binding.systemNotificationAuthor.text = member.name
-                    binding.systemNotificationGroup.text = group.name
-                    binding.systemNotificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(date)
-                    binding.systemNotificationMessage.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(message))
-                    binding.systemNotificationMessage.movementMethod = LinkMovementMethod.getInstance()
-                    binding.systemNotificationMessage.transformationMethod = CustomTabTransformationMethod(binding.systemNotificationMessage.autoLinkMask)
+                val foundSystemNotification = response.value.firstOrNull { it.id == args.systemNotificationId }
+                if (foundSystemNotification == null) {
+                    Reporter.reportException(R.string.error_system_notification_not_found, args.systemNotificationId, requireContext())
+                    navController.popBackStack()
+                    return@observe
                 }
+                systemNotification = foundSystemNotification
+                binding.systemNotificationTitle.text = getString(UIUtil.getTranslatedSystemNotificationTitle(systemNotification))
+                binding.systemNotificationAuthor.text = systemNotification.member.name
+                binding.systemNotificationGroup.text = systemNotification.group.name
+                binding.systemNotificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(systemNotification.date)
+                binding.systemNotificationMessage.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(systemNotification.message))
+                binding.systemNotificationMessage.movementMethod = LinkMovementMethod.getInstance()
+                binding.systemNotificationMessage.transformationMethod = CustomTabTransformationMethod(binding.systemNotificationMessage.autoLinkMask)
             } else if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
+                Reporter.reportException(R.string.error_get_system_notifications_failed, response.exception, requireContext())
             }
         }
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext == null) {
-                findNavController().popBackStack(R.id.systemNotificationsFragment, false)
+                navController.popBackStack(R.id.systemNotificationsFragment, false)
             }
         }
     }

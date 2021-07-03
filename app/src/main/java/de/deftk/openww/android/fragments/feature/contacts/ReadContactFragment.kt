@@ -35,7 +35,13 @@ class ReadContactFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadContactBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        scope = userViewModel.apiContext.value?.findOperatingScope(args.scope) ?: error("Failed to find operating scope ${args.scope}")
+        val foundScope = userViewModel.apiContext.value?.findOperatingScope(args.scope)
+        if (foundScope == null) {
+            Reporter.reportException(R.string.error_scope_not_found, args.scope, requireContext())
+            navController.popBackStack()
+            return binding.root
+        }
+        scope = foundScope
 
         val adapter = ContactDetailAdapter(false, null)
         binding.contactDetailList.adapter = adapter
@@ -47,11 +53,15 @@ class ReadContactFragment : Fragment() {
                 if (queried != null) {
                     contact = queried
                 } else {
+                    Reporter.reportException(R.string.error_contact_not_found, args.contactId, requireContext())
                     navController.popBackStack()
+                    return@observe
                 }
                 adapter.submitList(ContactUtil.extractContactDetails(contact))
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_contacts_failed, response.exception, requireContext())
+                navController.popBackStack()
+                return@observe
             }
         }
 

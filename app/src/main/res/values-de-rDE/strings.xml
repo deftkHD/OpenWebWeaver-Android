@@ -246,5 +246,12 @@
     <string name="error_get_notes_failed">Abfragen der Notizen fehlgeschlagen: %s</string>
     <string name="error_get_system_notifications_failed">Abfragen der Systemnachrichten fehlgeschlagen: %s</string>
     <string name="error_get_tasks_failed">Abfragen der Aufgaben fehlgeschlagen: %s</string>
-    <string name="error_notification_not_found">Mitteilung %s konnte nicht gefunden werden</string>
+    <string name="error_notification_not_found">Mitteilung \"%s\" konnte nicht gefunden werden</string>
+    <string name="error_scope_not_found">Unbekannter Gültigkeitsbereich \"%s\"</string>
+    <string name="error_contact_not_found">Kontakt \"%s\" konnte nicht gefunden werden</string>
+    <string name="error_email_not_found">Email \"%s\" konnte nicht gefunden werden</string>
+    <string name="error_invalid_size">Ungültige Größe: %s</string>
+    <string name="error_note_not_found">Notiz \"%s\" konnte nicht gefunden werden</string>
+    <string name="error_system_notification_not_found">Systemnachricht \"%s\" konnte nicht gefunden werden</string>
+    <string name="error_task_not_found">Aufgabe \"%s\" konnte nicht gefunden werden</string>
 </resources>

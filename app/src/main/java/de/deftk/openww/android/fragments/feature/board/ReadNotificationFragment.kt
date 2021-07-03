@@ -65,6 +65,8 @@ class ReadNotificationFragment : Fragment() {
                 }
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
+                navController.popBackStack()
+                return@observe
             }
         }
         boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->

@@ -54,7 +54,8 @@ class ForumPostFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val group = userViewModel.apiContext.value?.getUser()?.getGroups()?.firstOrNull { it.login == args.groupId }
         if (group == null) {
-            Log.e(TAG, "Failed to find group")
+            Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
+            navController.popBackStack()
             return
         }
         this.group = group
@@ -78,7 +79,9 @@ class ForumPostFragment : Fragment() {
                     binding.forumPostCommentRecyclerView.adapter = ForumPostCommentRecyclerAdapter(post.getComments().sortedBy { it.created.date.time }, group, navController, args.parentPostIds ?: emptyArray(), args.postId)
                 }
             } else if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
+                Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
+                navController.popBackStack()
+                return@observe
             }
         }
 

@@ -81,7 +81,13 @@ class ReadMailFragment : Fragment() {
 
                 val mailResponse = mailboxViewModel.getCachedResponse(emailFolder)
                 if (mailResponse is Response.Success) {
-                    email = mailResponse.value.firstOrNull { it.id == args.mailId } ?: error("Referenced email not found")
+                    val foundEmail = mailResponse.value.firstOrNull { it.id == args.mailId }
+                    if (foundEmail == null) {
+                        Reporter.reportException(R.string.error_email_not_found, args.mailId.toString(), requireContext())
+                        navController.popBackStack()
+                        return@observe
+                    }
+                    email = foundEmail
                     binding.progressReadMail.isVisible = true
                     userViewModel.apiContext.value?.apply {
                         mailboxViewModel.readEmail(email, emailFolder, this)

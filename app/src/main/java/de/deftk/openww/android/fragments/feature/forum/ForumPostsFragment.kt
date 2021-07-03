@@ -26,6 +26,7 @@ class ForumPostsFragment : Fragment() {
     private val args: ForumPostsFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
     private val forumViewModel: ForumViewModel by activityViewModels()
+    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentForumPostsBinding
     private lateinit var group: IGroup
@@ -35,7 +36,8 @@ class ForumPostsFragment : Fragment() {
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         val group = userViewModel.apiContext.value?.getUser()?.getGroups()?.firstOrNull { it.login == args.groupId }
         if (group == null) {
-            findNavController().popBackStack(R.id.forumGroupFragment, false)
+            Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
+            navController.popBackStack(R.id.forumGroupFragment, false)
             return binding.root
         }
         this.group = group

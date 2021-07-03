@@ -56,11 +56,24 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                scope = apiContext.findOperatingScope(args.scope) ?: error("Failed to find operating scope ${args.scope}")
+                val foundScope = apiContext.findOperatingScope(args.scope)
+                if (foundScope == null) {
+                    Reporter.reportException(R.string.error_scope_not_found, args.scope, requireContext())
+                    navController.popBackStack()
+                    return@observe
+                }
+                scope = foundScope
                 if (args.contactId != null) {
                     // edit existing
                     editMode = true
-                    contact.value = contactViewModel.getContactsLiveData(scope).value?.valueOrNull()?.firstOrNull { it.id.toString() == args.contactId } ?: error("Failed to find contact ${args.contactId}")
+
+                    val foundContact = contactViewModel.getContactsLiveData(scope).value?.valueOrNull()?.firstOrNull { it.id.toString() == args.contactId }
+                    if (foundContact == null) {
+                        Reporter.reportException(R.string.error_contact_not_found, args.contactId!!, requireContext())
+                        navController.popBackStack()
+                        return@observe
+                    }
+                    contact.value = foundContact
                 } else {
                     // add new
                     editMode = false

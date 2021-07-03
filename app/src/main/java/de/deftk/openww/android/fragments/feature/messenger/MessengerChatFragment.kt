@@ -97,7 +97,11 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
         if (!tempDir.exists())
             tempDir.mkdir()
         val tempFile = File(tempDir, FileUtil.escapeFileName(url.name ?: name))
-        val workRequest = DownloadOpenWorker.createRequest(tempFile.absolutePath, url.url, url.name ?: name, url.size ?: error("No attachment size"))
+        if (url.size == null) {
+            Reporter.reportException(R.string.error_invalid_size, "null", requireContext())
+            return
+        }
+        val workRequest = DownloadOpenWorker.createRequest(tempFile.absolutePath, url.url, url.name ?: name, url.size!!)
         workManager.enqueue(workRequest)
         workManager.getWorkInfoByIdLiveData(workRequest.id).observe(viewLifecycleOwner) { workInfo ->
             if (workInfo.state == WorkInfo.State.SUCCEEDED) {
@@ -118,7 +122,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
                     Intent.EXTRA_INITIAL_INTENTS, arrayOf(viewIntent)) })
             } else if (workInfo.state == WorkInfo.State.FAILED) {
                 val errorMessage = workInfo.outputData.getString(DownloadOpenWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
-                Reporter.reportException(R.string.error_login_failed, errorMessage, requireContext())
+                Reporter.reportException(R.string.error_download_worker_failed, errorMessage, requireContext())
             }
         }
     }

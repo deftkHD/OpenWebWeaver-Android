@@ -38,7 +38,7 @@ class EditTaskFragment : Fragment() {
 
     private lateinit var binding: FragmentEditTaskBinding
     private lateinit var task: ITask
-    private lateinit var operator: IOperatingScope
+    private lateinit var scope: IOperatingScope
 
     private var editMode: Boolean = false
     private var startDate: Date? = null
@@ -60,29 +60,28 @@ class EditTaskFragment : Fragment() {
                 if (args.groupId != null && args.taskId != null) {
                     // edit existing
                     editMode = true
-                    tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { response ->
-                        if (response is Response.Success) {
-                            response.value.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }?.apply {
-                                task = first
-                                operator = second
 
-                                binding.taskTitle.setText(task.getTitle())
-                                binding.taskGroup.setSelection(effectiveGroups.indexOf(operator))
-                                binding.taskCompleted.isChecked = task.isCompleted()
-                                binding.taskText.setText(task.getDescription())
-
-                                startDate = task.getStartDate()
-                                if (startDate != null)
-                                    binding.taskStart.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(startDate!!))
-
-                                dueDate = task.getEndDate()
-                                if (dueDate != null)
-                                    binding.taskDue.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(dueDate!!))
-                            }
-                        } else if (response is Response.Failure) {
-                            Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
-                        }
+                    val foundTask = tasksViewModel.tasksResponse.value?.valueOrNull()?.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }
+                    if (foundTask == null) {
+                        Reporter.reportException(R.string.error_task_not_found, args.taskId!!, requireContext())
+                        navController.popBackStack()
+                        return@observe
                     }
+                    task = foundTask.first
+                    scope = foundTask.second
+
+                    binding.taskTitle.setText(task.getTitle())
+                    binding.taskGroup.setSelection(effectiveGroups.indexOf(scope))
+                    binding.taskCompleted.isChecked = task.isCompleted()
+                    binding.taskText.setText(task.getDescription())
+
+                    startDate = task.getStartDate()
+                    if (startDate != null)
+                        binding.taskStart.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(startDate!!))
+
+                    dueDate = task.getEndDate()
+                    if (dueDate != null)
+                        binding.taskDue.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(dueDate!!))
                 } else {
                     // add new
                     editMode = false
@@ -171,10 +170,10 @@ class EditTaskFragment : Fragment() {
             val description = binding.taskText.text.toString()
 
             if (editMode) {
-                tasksViewModel.editTask(task, title, description, completed, startDate, dueDate, operator, apiContext)
+                tasksViewModel.editTask(task, title, description, completed, startDate, dueDate, scope, apiContext)
             } else {
-                operator = apiContext.getUser().getGroups().firstOrNull { it.login == selectedGroup } ?: return false
-                tasksViewModel.addTask(title, description, completed, startDate, dueDate, operator, apiContext)
+                scope = apiContext.getUser().getGroups().firstOrNull { it.login == selectedGroup } ?: return false
+                tasksViewModel.addTask(title, description, completed, startDate, dueDate, scope, apiContext)
             }
             return true
         }

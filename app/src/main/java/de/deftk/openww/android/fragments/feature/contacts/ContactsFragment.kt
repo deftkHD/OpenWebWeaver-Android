@@ -33,7 +33,13 @@ class ContactsFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentContactsBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        scope = userViewModel.apiContext.value?.findOperatingScope(args.login) ?: error("Failed to find operating scope ${args.login}") //TODO update scope with apiContext observer & pop if scope == null
+        val foundScope = userViewModel.apiContext.value?.findOperatingScope(args.login) //TODO update scope with apiContext observer & pop if scope == null
+        if (foundScope == null) {
+            Reporter.reportException(R.string.error_scope_not_found, args.login, requireContext())
+            navController.popBackStack()
+            return binding.root
+        }
+        scope = foundScope
 
         val adapter = ContactAdapter(scope)
         binding.contactList.adapter = adapter

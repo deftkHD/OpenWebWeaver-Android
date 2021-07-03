@@ -249,6 +249,13 @@
     <string name="error_get_notes_failed">Failed to get notes: %s</string>
     <string name="error_get_system_notifications_failed">Failed to get system notifications: %s</string>
     <string name="error_get_tasks_failed">Failed to get tasks: %s</string>
-    <string name="error_notification_not_found">Failed to find notification %s</string>
+    <string name="error_notification_not_found">Failed to find notification \"%s\"</string>
+    <string name="error_scope_not_found">Failed to find scope \"%s\"</string>
+    <string name="error_contact_not_found">Failed to find contact \"%s\"</string>
+    <string name="error_email_not_found">Failed to find email \"%s\"</string>
+    <string name="error_invalid_size">Invalid size: %s</string>
+    <string name="error_note_not_found">Failed to find note \"%s\"</string>
+    <string name="error_system_notification_not_found">Failed to find system notification \"%s\"</string>
+    <string name="error_task_not_found">Failed to find task \"%s\"</string>
 
 </resources>

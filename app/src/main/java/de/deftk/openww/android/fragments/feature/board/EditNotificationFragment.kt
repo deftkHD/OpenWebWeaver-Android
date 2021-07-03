@@ -59,6 +59,7 @@ class EditNotificationFragment : Fragment() {
                     val notificationObj = boardViewModel.notificationsResponse.value?.valueOrNull()?.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }
                     if (notificationObj == null) {
                         Reporter.reportException(R.string.error_notification_not_found, args.notificationId!!, requireContext())
+                        navController.popBackStack()
                         return@observe
                     }
 

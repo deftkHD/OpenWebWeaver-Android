@@ -39,6 +39,7 @@ class ReadNoteFragment : Fragment() {
             if (response is Response.Success) {
                 val searched = response.value.firstOrNull { it.id == args.noteId }
                 if (searched == null) {
+                    Reporter.reportException(R.string.error_note_not_found, args.noteId, requireContext())
                     navController.popBackStack()
                     return@observe
                 }

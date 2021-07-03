@@ -45,25 +45,30 @@ class ReadTaskFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
-                response.value.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }?.apply {
-                    task = first
-                    scope = second
+                val foundTask = response.value.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }
+                if (foundTask == null) {
+                    Reporter.reportException(R.string.error_task_not_found, args.taskId, requireContext())
+                    navController.popBackStack()
+                    return@observe
+                }
 
-                    binding.taskTitle.text = task.getTitle()
-                    binding.taskAuthor.text = task.created.member.name
-                    binding.taskGroup.text = scope.name
-                    binding.taskCreated.text = String.format(getString(R.string.created_date), DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.created.date))
-                    binding.taskDue.text = String.format(getString(R.string.until_date), if (task.getEndDate() != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.getEndDate()!!) else getString(R.string.not_set))
-                    binding.taskDetail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.getDescription()))
-                    binding.taskDetail.movementMethod = LinkMovementMethod.getInstance()
-                    binding.taskDetail.transformationMethod = CustomTabTransformationMethod(binding.taskDetail.autoLinkMask)
+                task = foundTask.first
+                scope = foundTask.second
 
-                    if (scope.effectiveRights.contains(Permission.TASKS_ADMIN)) {
-                        binding.fabEditTask.isVisible = true
-                        binding.fabEditTask.setOnClickListener {
-                            val action = ReadTaskFragmentDirections.actionReadTaskFragmentToEditTaskFragment(task.id, scope.login, getString(R.string.edit_task))
-                            navController.navigate(action)
-                        }
+                binding.taskTitle.text = task.getTitle()
+                binding.taskAuthor.text = task.created.member.name
+                binding.taskGroup.text = scope.name
+                binding.taskCreated.text = String.format(getString(R.string.created_date), DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.created.date))
+                binding.taskDue.text = String.format(getString(R.string.until_date), if (task.getEndDate() != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.getEndDate()!!) else getString(R.string.not_set))
+                binding.taskDetail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.getDescription()))
+                binding.taskDetail.movementMethod = LinkMovementMethod.getInstance()
+                binding.taskDetail.transformationMethod = CustomTabTransformationMethod(binding.taskDetail.autoLinkMask)
+
+                if (scope.effectiveRights.contains(Permission.TASKS_ADMIN)) {
+                    binding.fabEditTask.isVisible = true
+                    binding.fabEditTask.setOnClickListener {
+                        val action = ReadTaskFragmentDirections.actionReadTaskFragmentToEditTaskFragment(task.id, scope.login, getString(R.string.edit_task))
+                        navController.navigate(action)
                     }
                 }
             } else if (response is Response.Failure) {
