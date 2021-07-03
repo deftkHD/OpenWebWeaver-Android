@@ -246,4 +246,5 @@
     <string name="error_get_notes_failed">Abfragen der Notizen fehlgeschlagen: %s</string>
     <string name="error_get_system_notifications_failed">Abfragen der Systemnachrichten fehlgeschlagen: %s</string>
     <string name="error_get_tasks_failed">Abfragen der Aufgaben fehlgeschlagen: %s</string>
+    <string name="error_notification_not_found">Mitteilung %s konnte nicht gefunden werden</string>
 </resources>

@@ -56,24 +56,22 @@ class EditNotificationFragment : Fragment() {
                 if (args.groupId != null && args.notificationId != null) {
                     // edit existing
                     editMode = true
-                    boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { response -> //FIXME observe inside observe is not good
-                        if (response is Response.Success) {
-                            response.value.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }?.apply {
-                                notification = first
-                                group = second
-
-                                binding.notificationTitle.setText(notification.getTitle())
-                                binding.notificationGroup.setSelection(effectiveGroups.indexOf(group))
-                                binding.notificationGroup.isEnabled = false
-                                binding.notificationAccent.setSelection(colors.indexOf(BoardNotificationColors.getByApiColor(notification.getColor() ?: BoardNotificationColor.BLUE)))
-                                binding.notificationText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.getText())))
-                                binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
-                                binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
-                            }
-                        } else if (response is Response.Failure) {
-                            Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
-                        }
+                    val notificationObj = boardViewModel.notificationsResponse.value?.valueOrNull()?.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }
+                    if (notificationObj == null) {
+                        Reporter.reportException(R.string.error_notification_not_found, args.notificationId!!, requireContext())
+                        return@observe
                     }
+
+                    notification = notificationObj.first
+                    group = notificationObj.second
+
+                    binding.notificationTitle.setText(notification.getTitle())
+                    binding.notificationGroup.setSelection(effectiveGroups.indexOf(group))
+                    binding.notificationGroup.isEnabled = false
+                    binding.notificationAccent.setSelection(colors.indexOf(BoardNotificationColors.getByApiColor(notification.getColor() ?: BoardNotificationColor.BLUE)))
+                    binding.notificationText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.getText())))
+                    binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
+                    binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
                 } else {
                     // add new
                     editMode = false

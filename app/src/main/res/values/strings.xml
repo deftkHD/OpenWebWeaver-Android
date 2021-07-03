@@ -249,5 +249,6 @@
     <string name="error_get_notes_failed">Failed to get notes: %s</string>
     <string name="error_get_system_notifications_failed">Failed to get system notifications: %s</string>
     <string name="error_get_tasks_failed">Failed to get tasks: %s</string>
+    <string name="error_notification_not_found">Failed to find notification %s</string>
 
 </resources>
