@@ -2,13 +2,11 @@ package de.deftk.openww.android.feature.filestorage
 
 import android.content.Context
 import androidx.core.content.FileProvider
-import androidx.work.OneTimeWorkRequest
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkerParameters
-import androidx.work.workDataOf
+import androidx.work.*
 import de.deftk.openww.android.R
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
-import de.deftk.openww.android.fragments.feature.filestorage.FilesFragment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.URL
 import kotlin.math.roundToInt
@@ -35,7 +33,6 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
 
         // output
         const val DATA_FILE_URI = "data_file_uri"
-        const val DATA_ERROR_MESSAGE = "data_error_message"
 
         // io
         const val DATA_FILE_NAME = "data_file_name"
@@ -55,35 +52,48 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
     }
 
     override suspend fun doWork(): Result {
-        val downloadUrl = inputData.getString(DATA_DOWNLOAD_URL) ?: return Result.failure()
-        val fileName = inputData.getString(DATA_FILE_NAME) ?: return Result.failure()
-        val destinationUri = inputData.getString(DATA_DESTINATION_URI) ?: return Result.failure()
+        val downloadUrl = inputData.getString(DATA_DOWNLOAD_URL) ?: return exceptionResult(IllegalArgumentException("No download url"))
+        val fileName = inputData.getString(DATA_FILE_NAME) ?: return exceptionResult(IllegalArgumentException("No file name"))
+        val destinationUri = inputData.getString(DATA_DESTINATION_URI) ?: return exceptionResult(IllegalArgumentException("No destination url"))
         val fileSize = inputData.getLong(DATA_FILE_SIZE, -1L)
         if (fileSize == -1L)
-            return Result.failure()
+            return exceptionResult(IllegalArgumentException("Invalid size"))
 
         setForeground(createForegroundInfo(fileName))
 
-        try {
-            val file = File(destinationUri)
-            val inputStream = URL(downloadUrl).openStream() ?: return Result.failure()
-            val outputStream = file.outputStream()
+        val file = File(destinationUri)
+        return withContext(Dispatchers.IO) {
+            try {
+                val inputStream = URL(downloadUrl).openStream() ?: return@withContext Result.failure()
+                val outputStream = file.outputStream()
 
-            var bytesCopied: Long = 0
-            val buffer = ByteArray(8192)
-            var bytes = inputStream.read(buffer)
-            while (bytes >= 0 && !isStopped) {
-                outputStream.write(buffer, 0, bytes)
-                bytesCopied += bytes
-                bytes = inputStream.read(buffer)
-                updateProgress(((bytesCopied.toFloat() / fileSize.toFloat()) * 100).roundToInt(), fileName)
+                var bytesCopied: Long = 0
+                val buffer = ByteArray(8192)
+                var bytes = inputStream.read(buffer)
+                while (bytes >= 0 && !isStopped) {
+                    outputStream.write(buffer, 0, bytes)
+                    bytesCopied += bytes
+                    bytes = inputStream.read(buffer)
+                    updateProgress(((bytesCopied.toFloat() / fileSize.toFloat()) * 100).roundToInt(), fileName)
+                }
+                inputStream.close()
+                if (isStopped) {
+                    try {
+                        file.delete()
+                    } catch (ignored: Exception) { }
+                    return@withContext exceptionResult(IllegalStateException("Stopped"))
+                }
+
+                val fileUri = FileProvider.getUriForFile(applicationContext, applicationContext.getString(R.string.file_provider_authority), file)
+                Result.success(workDataOf(DATA_FILE_URI to fileUri.toString(), DATA_FILE_NAME to fileName))
+            } catch (e: Exception) {
+                try {
+                    file.delete()
+                } catch (ignored: Exception) { }
+                updateProgress(-1, fileName)
+                e.printStackTrace()
+                Result.failure(workDataOf(DATA_ERROR_MESSAGE to (e.localizedMessage ?: e.message ?: e.toString())))
             }
-            inputStream.close()
-            val fileUri = FileProvider.getUriForFile(applicationContext, applicationContext.getString(R.string.file_provider_authority), file)
-            return Result.success(workDataOf(DATA_FILE_URI to fileUri.toString(), DATA_FILE_NAME to fileName))
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return Result.failure(workDataOf(DATA_ERROR_MESSAGE to (e.localizedMessage ?: e.message ?: e.toString())))
         }
     }
 }

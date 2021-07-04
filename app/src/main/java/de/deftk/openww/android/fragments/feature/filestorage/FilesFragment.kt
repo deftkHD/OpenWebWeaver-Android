@@ -47,11 +47,11 @@ class FilesFragment : Fragment(), FileClickHandler {
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(requireContext()) }
     private val workManager by lazy { WorkManager.getInstance(requireContext()) }
     private val navController by lazy { findNavController() }
-    private val adapter = FileAdapter(scope, this, args.folderId, args.path, fileStorageViewModel)
 
     private lateinit var downloadSaveLauncher: ActivityResultLauncher<Pair<Intent, IRemoteFile>>
     private lateinit var binding: FragmentFilesBinding
     private lateinit var scope: IOperatingScope
+    private lateinit var adapter: FileAdapter
 
     private var currentNetworkTransfers = emptyList<NetworkTransfer>()
 
@@ -66,6 +66,7 @@ class FilesFragment : Fragment(), FileClickHandler {
         }
         scope = argScope
 
+        adapter = FileAdapter(scope, this, args.folderId, args.path, fileStorageViewModel)
         binding.fileList.adapter = adapter
         binding.fileList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         binding.fileList.recycledViewPool.setMaxRecycledViews(0, 0) // this is just a workaround (otherwise preview images disappear while scrolling, see https://github.com/square/picasso/issues/845#issuecomment-280626688) FIXME seems like an issue with recycling
@@ -147,12 +148,13 @@ class FilesFragment : Fragment(), FileClickHandler {
                         fileStorageViewModel.hideNetworkTransfer(transfer)
                     }
                     WorkInfo.State.CANCELLED -> {
-                        //TODO delete file
+                        //TODO remove notification
                         progress = -1
                         fileStorageViewModel.hideNetworkTransfer(transfer)
                     }
                     WorkInfo.State.FAILED -> {
-                        //TODO delete file
+                        val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
+                        Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
                         progress = -1
                         fileStorageViewModel.hideNetworkTransfer(transfer)
                     }
@@ -173,12 +175,13 @@ class FilesFragment : Fragment(), FileClickHandler {
                         fileStorageViewModel.hideNetworkTransfer(transfer)
                     }
                     WorkInfo.State.CANCELLED -> {
-                        //TODO delete file
+                        //TODO remove notification
                         progress = -1
                         fileStorageViewModel.hideNetworkTransfer(transfer)
                     }
                     WorkInfo.State.FAILED -> {
-                        //TODO delete file
+                        val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
+                        Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
                         progress = -1
                         fileStorageViewModel.hideNetworkTransfer(transfer)
                     }

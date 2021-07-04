@@ -1,6 +1,5 @@
 package de.deftk.openww.android.fragments.feature.messenger
 
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -19,6 +18,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.ChatMessageAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentMessengerChatBinding
+import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
 import de.deftk.openww.android.utils.FileUtil
 import de.deftk.openww.android.utils.Reporter
@@ -109,7 +109,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
                 val fileName = workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_NAME)!!
                 FileUtil.showFileOpenIntent(fileName, fileUri, preferences, requireContext())
             } else if (workInfo.state == WorkInfo.State.FAILED) {
-                val errorMessage = workInfo.outputData.getString(DownloadOpenWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
+                val errorMessage = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
                 Reporter.reportException(R.string.error_download_worker_failed, errorMessage, requireContext())
             }
         }

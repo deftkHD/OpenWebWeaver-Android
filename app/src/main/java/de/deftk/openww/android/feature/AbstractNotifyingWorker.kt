@@ -21,6 +21,9 @@ abstract class AbstractNotifyingWorker(
 
     companion object {
         const val ARGUMENT_PROGRESS = "argument_progress"
+
+        // output
+        const val DATA_ERROR_MESSAGE = "data_error_message"
     }
 
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -59,6 +62,10 @@ abstract class AbstractNotifyingWorker(
             .setProgress(100, progress, false)
 
         return builder.build()
+    }
+
+    protected fun exceptionResult(ex: Exception): Result {
+        return Result.failure(workDataOf(DATA_ERROR_MESSAGE to (ex.localizedMessage ?: ex.message ?: ex.toString())))
     }
 
 }
