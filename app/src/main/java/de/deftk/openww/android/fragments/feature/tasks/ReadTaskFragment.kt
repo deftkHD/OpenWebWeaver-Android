@@ -71,6 +71,8 @@ class ReadTaskFragment : Fragment() {
                 }
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
+                navController.popBackStack()
+                return@observe
             }
         }
         tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->

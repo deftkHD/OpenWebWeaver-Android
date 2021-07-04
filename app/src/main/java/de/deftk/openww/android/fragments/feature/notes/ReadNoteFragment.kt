@@ -52,6 +52,8 @@ class ReadNoteFragment : Fragment() {
                 binding.noteText.transformationMethod = CustomTabTransformationMethod(binding.noteText.autoLinkMask)
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_notes_failed, response.exception, requireContext())
+                navController.popBackStack()
+                return@observe
             }
         }
 

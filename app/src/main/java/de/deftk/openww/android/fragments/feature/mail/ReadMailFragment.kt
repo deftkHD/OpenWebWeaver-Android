@@ -48,6 +48,8 @@ class ReadMailFragment : Fragment() {
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_read_email_failed, response.exception, requireContext())
                 binding.progressReadMail.isVisible = false
+                navController.popBackStack()
+                return@observe
             } else if (response is Response.Success) {
                 binding.progressReadMail.isVisible = false
                 response.value?.also { email ->
