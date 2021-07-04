@@ -2,10 +2,8 @@ package de.deftk.openww.android.fragments.feature.filestorage
 
 import android.content.Context
 import android.content.Intent
-import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
-import android.provider.DocumentsContract
 import android.view.*
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -49,6 +47,7 @@ class FilesFragment : Fragment(), FileClickHandler {
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(requireContext()) }
     private val workManager by lazy { WorkManager.getInstance(requireContext()) }
     private val navController by lazy { findNavController() }
+    private val adapter = FileAdapter(scope, this, args.folderId, args.path, fileStorageViewModel)
 
     private lateinit var downloadSaveLauncher: ActivityResultLauncher<Pair<Intent, IRemoteFile>>
     private lateinit var binding: FragmentFilesBinding
@@ -67,7 +66,6 @@ class FilesFragment : Fragment(), FileClickHandler {
         }
         scope = argScope
 
-        val adapter = FileAdapter(scope, this, args.folderId, args.path, fileStorageViewModel)
         binding.fileList.adapter = adapter
         binding.fileList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         binding.fileList.recycledViewPool.setMaxRecycledViews(0, 0) // this is just a workaround (otherwise preview images disappear while scrolling, see https://github.com/square/picasso/issues/845#issuecomment-280626688) FIXME seems like an issue with recycling
@@ -88,70 +86,13 @@ class FilesFragment : Fragment(), FileClickHandler {
                 if (i < transfers.size && !currentNetworkTransfers.contains(transfers[i])) {
                     // handle new transfer
                     val transfer = transfers[i]
-                    val liveData = workManager.getWorkInfoByIdLiveData(transfer.workerId)
-                    if (transfer is NetworkTransfer.DownloadOpen) {
-                        liveData.observe(viewLifecycleOwner) { workInfo ->
-                            val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
-                            var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
-                            when (workInfo.state) {
-                                WorkInfo.State.SUCCEEDED -> {
-                                    progress = 100
-                                    val fileUri = Uri.parse(workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_URI))
-                                    val fileName = workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_NAME)!!
-                                    FileUtil.showFileOpenIntent(fileName, fileUri, preferences, requireContext())
-                                    fileStorageViewModel.hideNetworkTransfer(transfer)
-                                }
-                                WorkInfo.State.CANCELLED -> {
-                                    //TODO delete file
-                                    progress = -1
-                                    fileStorageViewModel.hideNetworkTransfer(transfer)
-                                }
-                                WorkInfo.State.FAILED -> {
-                                    //TODO delete file
-                                    progress = -1
-                                    fileStorageViewModel.hideNetworkTransfer(transfer)
-                                }
-                                else -> { /* ignore */ }
-                            }
-                            transfer.progress = progress
-                            val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
-                            viewHolder.setProgress(progress)
-                        }
-                    } else if (transfer is NetworkTransfer.DownloadSave) {
-                        liveData.observe(viewLifecycleOwner) { workInfo ->
-                            val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
-                            var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
-                            when (workInfo.state) {
-                                WorkInfo.State.SUCCEEDED -> {
-                                    progress = 100
-                                    Toast.makeText(requireContext(), R.string.download_finished, Toast.LENGTH_LONG).show()
-                                    fileStorageViewModel.hideNetworkTransfer(transfer)
-                                }
-                                WorkInfo.State.CANCELLED -> {
-                                    //TODO delete file
-                                    progress = -1
-                                    fileStorageViewModel.hideNetworkTransfer(transfer)
-                                }
-                                WorkInfo.State.FAILED -> {
-                                    //TODO delete file
-                                    progress = -1
-                                    fileStorageViewModel.hideNetworkTransfer(transfer)
-                                }
-                                else -> { /* ignore */ }
-                            }
-                            transfer.progress = progress
-                            val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
-                            viewHolder.setProgress(progress)
-                        }
-                    }
+                    onNetworkTransferAdded(transfer)
                     continue
                 }
                 if (i < currentNetworkTransfers.size && !transfers.contains(currentNetworkTransfers[i])) {
-                    //TODO handle removed transfer
+                    // handle removed transfer
                     val transfer = currentNetworkTransfers[i]
-                    if (transfer is NetworkTransfer.Upload) {
-
-                    }
+                    onNetworkTransferRemoved(transfer)
                     continue
                 }
             }
@@ -189,6 +130,71 @@ class FilesFragment : Fragment(), FileClickHandler {
 
         registerForContextMenu(binding.fileList)
         return binding.root
+    }
+
+    private fun onNetworkTransferAdded(transfer: NetworkTransfer) {
+        val liveData = workManager.getWorkInfoByIdLiveData(transfer.workerId)
+        if (transfer is NetworkTransfer.DownloadOpen) {
+            liveData.observe(viewLifecycleOwner) { workInfo ->
+                val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
+                var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
+                when (workInfo.state) {
+                    WorkInfo.State.SUCCEEDED -> {
+                        progress = 100
+                        val fileUri = Uri.parse(workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_URI))
+                        val fileName = workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_NAME)!!
+                        FileUtil.showFileOpenIntent(fileName, fileUri, preferences, requireContext())
+                        fileStorageViewModel.hideNetworkTransfer(transfer)
+                    }
+                    WorkInfo.State.CANCELLED -> {
+                        //TODO delete file
+                        progress = -1
+                        fileStorageViewModel.hideNetworkTransfer(transfer)
+                    }
+                    WorkInfo.State.FAILED -> {
+                        //TODO delete file
+                        progress = -1
+                        fileStorageViewModel.hideNetworkTransfer(transfer)
+                    }
+                    else -> { /* ignore */ }
+                }
+                transfer.progress = progress
+                val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
+                viewHolder.setProgress(progress)
+            }
+        } else if (transfer is NetworkTransfer.DownloadSave) {
+            liveData.observe(viewLifecycleOwner) { workInfo ->
+                val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
+                var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
+                when (workInfo.state) {
+                    WorkInfo.State.SUCCEEDED -> {
+                        progress = 100
+                        Toast.makeText(requireContext(), R.string.download_finished, Toast.LENGTH_LONG).show()
+                        fileStorageViewModel.hideNetworkTransfer(transfer)
+                    }
+                    WorkInfo.State.CANCELLED -> {
+                        //TODO delete file
+                        progress = -1
+                        fileStorageViewModel.hideNetworkTransfer(transfer)
+                    }
+                    WorkInfo.State.FAILED -> {
+                        //TODO delete file
+                        progress = -1
+                        fileStorageViewModel.hideNetworkTransfer(transfer)
+                    }
+                    else -> { /* ignore */ }
+                }
+                transfer.progress = progress
+                val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
+                viewHolder.setProgress(progress)
+            }
+        }
+    }
+
+    private fun onNetworkTransferRemoved(transfer: NetworkTransfer) {
+        /*if (transfer is NetworkTransfer.Upload) {
+
+        }*/
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
