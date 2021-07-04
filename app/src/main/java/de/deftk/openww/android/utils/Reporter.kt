@@ -13,7 +13,7 @@ object Reporter {
     }
 
     fun reportException(@StringRes message: Int, exception: String, context: Context) {
-        Toast.makeText(context, context.getString(message).format(), Toast.LENGTH_LONG).show()
+        Toast.makeText(context, context.getString(message).format(exception), Toast.LENGTH_LONG).show()
     }
 
 }
