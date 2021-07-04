@@ -32,6 +32,11 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         scope.getFilePreviews(files, apiContext)
     }
 
+    suspend fun deleteFile(file: IRemoteFile, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
+        file.delete(scope.getRequestContext(apiContext))
+        file
+    }
+
     // extend LoNetApi to allow more efficient requests
 
     private fun UserApiRequest.addGetAllFileStorageQuotasRequest(user: IUser): List<Int> {

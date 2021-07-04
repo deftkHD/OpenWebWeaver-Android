@@ -21,7 +21,7 @@
             android:clipToPadding="false"
             android:dividerHeight="1dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/list_item_file" />
+            tools:listitem="@layout/list_item_file_storage" />
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

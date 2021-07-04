@@ -4,7 +4,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -13,14 +12,14 @@ import com.bumptech.glide.signature.ObjectKey
 import de.deftk.openww.android.R
 import de.deftk.openww.android.databinding.ListItemFileBinding
 import de.deftk.openww.android.fragments.feature.filestorage.FileClickHandler
-import de.deftk.openww.android.fragments.feature.filestorage.FilesFragmentDirections
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.FilePreviewUrl
-import de.deftk.openww.api.model.feature.filestorage.FileType
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 
 class FileAdapter(private val scope: IOperatingScope, private val clickHandler: FileClickHandler, private val folderId: String?, private val path: Array<String>?, private val fileStorageViewModel: FileStorageViewModel) : ListAdapter<IRemoteFile, RecyclerView.ViewHolder>(FileDiffCallback()) {
+
+    val selectedItems: List<FileViewHolder> = mutableListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val binding = ListItemFileBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -43,29 +42,40 @@ class FileAdapter(private val scope: IOperatingScope, private val clickHandler: 
         return super.getItem(position)
     }
 
+    fun toggleItemSelection(viewHolder: FileViewHolder, selected: Boolean? = null) {
+        val newState = selected ?: !(viewHolder.binding.selected ?: false)
+        viewHolder.binding.selected = newState
+        if (newState) {
+            (selectedItems as MutableList).add(viewHolder)
+        } else {
+            (selectedItems as MutableList).remove(viewHolder)
+        }
+    }
+
+    fun clearSelection() {
+        selectedItems.forEach { item ->
+            item.binding.selected = false
+        }
+        (selectedItems as MutableList).clear()
+    }
+
     class FileViewHolder(val binding: ListItemFileBinding, private val clickHandler: FileClickHandler) : RecyclerView.ViewHolder(binding.root) {
 
         init {
             binding.setClickListener { view ->
-                if (binding.file!!.type == FileType.FOLDER) {
-                    val path = if (binding.folderId != null) {
-                        if (binding.path != null)
-                            arrayOf(*binding.path!!, binding.folderId!!)
-                        else arrayOf(binding.folderId!!)
-                    } else null
-                    val action = FilesFragmentDirections.actionFilesFragmentSelf(binding.file!!.id, binding.scope!!.login, binding.file!!.name, path)
-                    view.findNavController().navigate(action)
-                } else if (binding.file!!.type == FileType.FILE) {
-                    clickHandler.onClick(view, this)
-                }
+                clickHandler.onClick(view, this)
+            }
+            binding.setMoreClickListener {
+                it.showContextMenu()
             }
             itemView.setOnLongClickListener {
-                itemView.showContextMenu()
+                clickHandler.onLongClick(it, this)
                 true
             }
         }
 
         fun bind(scope: IOperatingScope, file: IRemoteFile, folderId: String?, path: Array<String>?, progress: Int?, previewUrl: FilePreviewUrl?) {
+            binding.selected = false
             binding.scope = scope
             binding.file = file
             binding.folderId = folderId

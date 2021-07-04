@@ -282,5 +282,6 @@
     <string name="unknown">Unknown</string>
     <string name="file_receive_download_notification">Receive download notification</string>
     <string name="file_download_notification_list_description">Users:</string>
+    <string name="more">More</string>
 
 </resources>

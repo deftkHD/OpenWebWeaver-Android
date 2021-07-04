@@ -7,6 +7,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -42,6 +43,8 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
     private val userViewModel: UserViewModel by viewModels()
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
     private val launchMode by lazy { LaunchMode.getLaunchMode(intent) }
+
+    var actionMode: ActionMode? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -177,7 +180,11 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
             if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
             } else {
-                super.onBackPressed()
+                if (actionMode == null) {
+                    super.onBackPressed()
+                } else {
+                    actionMode!!.finish()
+                }
             }
         } else if (launchMode == LaunchMode.EMAIL) {
             finish()
