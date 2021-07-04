@@ -94,7 +94,7 @@ class ForumPostFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        if (group.effectiveRights.contains(Permission.FORUM_ADMIN)) {
+        if (group.effectiveRights.contains(Permission.FORUM_WRITE) || group.effectiveRights.contains(Permission.FORUM_ADMIN)) {
             //inflater.inflate(R.menu.forum_post_options_menu, menu)
         }
     }

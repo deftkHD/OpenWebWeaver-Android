@@ -54,7 +54,7 @@ class EditTaskFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                val effectiveGroups = apiContext.getUser().getGroups().filter { it.effectiveRights.contains(Permission.BOARD_ADMIN) }
+                val effectiveGroups = apiContext.getUser().getGroups().filter { it.effectiveRights.contains(Permission.TASKS_WRITE) || it.effectiveRights.contains(Permission.TASKS_ADMIN) }
                 binding.taskGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.login })
 
                 if (args.groupId != null && args.taskId != null) {

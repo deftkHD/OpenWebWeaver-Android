@@ -51,16 +51,15 @@ class TasksFragment : Fragment() {
             }
         }
 
+        binding.fabAddTask.setOnClickListener {
+            val action = TasksFragmentDirections.actionTasksFragmentToEditTaskFragment(null, null, getString(R.string.new_task))
+            navController.navigate(action)
+        }
+
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                if (apiContext.getUser().getGroups().any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }) {
-                    binding.fabAddTask.visibility = View.VISIBLE
-                    binding.fabAddTask.setOnClickListener {
-                        val action = TasksFragmentDirections.actionTasksFragmentToEditTaskFragment(null, null, getString(R.string.new_task))
-                        navController.navigate(action)
-                    }
-                }
                 tasksViewModel.loadTasks(apiContext)
+                binding.fabAddTask.isVisible = apiContext.getUser().getGroups().any { it.effectiveRights.contains(Permission.TASKS_WRITE) } || apiContext.getUser().getGroups().any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }
             } else {
                 binding.fabAddTask.isVisible = false
                 binding.tasksEmpty.isVisible = false
@@ -106,7 +105,7 @@ class TasksFragment : Fragment() {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val (_, group) = (binding.tasksList.adapter as TasksAdapter).getItem(menuInfo.position)
-            if (group.effectiveRights.contains(Permission.TASKS_ADMIN)) {
+            if (group.effectiveRights.contains(Permission.TASKS_WRITE) || group.effectiveRights.contains(Permission.TASKS_ADMIN)) {
                 requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
             }
         }

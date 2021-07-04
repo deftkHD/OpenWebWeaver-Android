@@ -79,7 +79,7 @@ class ReadContactFragment : Fragment() {
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                binding.fabEditContact.isVisible = scope.effectiveRights.contains(Permission.ADDRESSES_ADMIN)
+                binding.fabEditContact.isVisible = scope.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope.effectiveRights.contains(Permission.ADDRESSES_ADMIN)
             } else {
                 navController.popBackStack(R.id.contactsGroupFragment, false)
             }
@@ -90,7 +90,7 @@ class ReadContactFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        if (scope.effectiveRights.contains(Permission.BOARD_ADMIN))
+        if (scope.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope.effectiveRights.contains(Permission.ADDRESSES_ADMIN))
             inflater.inflate(R.menu.simple_edit_item_menu, menu)
     }
 

@@ -68,6 +68,7 @@ class ContactsFragment : Fragment() {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 contactsViewModel.loadContacts(scope, apiContext)
+                binding.fabAddContact.isVisible = scope.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope.effectiveRights.contains(Permission.ADDRESSES_ADMIN)
             } else {
                 navController.popBackStack(R.id.contactsGroupFragment, false)
             }
@@ -80,7 +81,7 @@ class ContactsFragment : Fragment() {
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
-            if (scope.effectiveRights.contains(Permission.ADDRESSES_ADMIN)) {
+            if (scope.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope.effectiveRights.contains(Permission.ADDRESSES_ADMIN)) {
                 requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
             }
         }

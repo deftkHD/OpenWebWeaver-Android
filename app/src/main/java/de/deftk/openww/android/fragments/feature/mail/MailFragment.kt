@@ -98,7 +98,8 @@ class MailFragment: Fragment() {
             }
         }
 
-        if (userViewModel.apiContext.value?.getUser()?.effectiveRights?.contains(Permission.MAILBOX_ADMIN) == true) {
+        //TODO not sure about this permissions
+        if (userViewModel.apiContext.value?.getUser()?.effectiveRights?.contains(Permission.MAILBOX_WRITE) == true || userViewModel.apiContext.value?.getUser()?.effectiveRights?.contains(Permission.MAILBOX_ADMIN) == true) {
             binding.fabMailAdd.visibility = View.VISIBLE
             binding.fabMailAdd.setOnClickListener {
                 navController.navigate(MailFragmentDirections.actionMailFragmentToWriteMailFragment())

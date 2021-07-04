@@ -87,7 +87,7 @@ class ReadNotificationFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        if (group.effectiveRights.contains(Permission.BOARD_ADMIN))
+        if (group.effectiveRights.contains(Permission.BOARD_WRITE) || group.effectiveRights.contains(Permission.BOARD_ADMIN))
             inflater.inflate(R.menu.simple_edit_item_menu, menu)
     }
 

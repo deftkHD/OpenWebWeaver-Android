@@ -49,6 +49,7 @@
         android:layout_alignParentBottom="true"
         android:layout_margin="16dp"
         android:contentDescription="@string/add_contact"
-        android:src="@drawable/ic_add_32" />
+        android:src="@drawable/ic_add_32"
+        android:visibility="gone" />
 
 </RelativeLayout>

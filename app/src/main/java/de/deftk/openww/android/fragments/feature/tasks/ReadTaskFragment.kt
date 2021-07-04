@@ -64,12 +64,10 @@ class ReadTaskFragment : Fragment() {
                 binding.taskDetail.movementMethod = LinkMovementMethod.getInstance()
                 binding.taskDetail.transformationMethod = CustomTabTransformationMethod(binding.taskDetail.autoLinkMask)
 
-                if (scope.effectiveRights.contains(Permission.TASKS_ADMIN)) {
-                    binding.fabEditTask.isVisible = true
-                    binding.fabEditTask.setOnClickListener {
-                        val action = ReadTaskFragmentDirections.actionReadTaskFragmentToEditTaskFragment(task.id, scope.login, getString(R.string.edit_task))
-                        navController.navigate(action)
-                    }
+                binding.fabEditTask.isVisible = scope.effectiveRights.contains(Permission.TASKS_WRITE) || scope.effectiveRights.contains(Permission.TASKS_ADMIN)
+                binding.fabEditTask.setOnClickListener {
+                    val action = ReadTaskFragmentDirections.actionReadTaskFragmentToEditTaskFragment(task.id, scope.login, getString(R.string.edit_task))
+                    navController.navigate(action)
                 }
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
@@ -93,7 +91,7 @@ class ReadTaskFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        if (scope.effectiveRights.contains(Permission.TASKS_ADMIN))
+        if (scope.effectiveRights.contains(Permission.TASKS_WRITE) || scope.effectiveRights.contains(Permission.TASKS_ADMIN))
             inflater.inflate(R.menu.simple_edit_item_menu, menu)
         inflater.inflate(R.menu.read_task_menu, menu)
     }

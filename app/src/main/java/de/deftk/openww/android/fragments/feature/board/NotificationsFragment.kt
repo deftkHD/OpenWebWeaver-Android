@@ -53,16 +53,15 @@ class NotificationsFragment: Fragment() {
             }
         }
 
+        binding.fabAddNotification.setOnClickListener {
+            val action = NotificationsFragmentDirections.actionNotificationsFragmentToEditNotificationFragment(null, null, getString(R.string.new_notification))
+            navController.navigate(action)
+        }
+
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                if (apiContext.getUser().getGroups().any { it.effectiveRights.contains(Permission.BOARD_ADMIN) }) {
-                    binding.fabAddNotification.isVisible = true
-                    binding.fabAddNotification.setOnClickListener {
-                        val action = NotificationsFragmentDirections.actionNotificationsFragmentToEditNotificationFragment(null, null, getString(R.string.new_notification))
-                        navController.navigate(action)
-                    }
-                }
                 boardViewModel.loadBoardNotifications(apiContext)
+                binding.fabAddNotification.isVisible = apiContext.getUser().getGroups().any { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) }
             } else {
                 binding.fabAddNotification.isVisible = false
                 binding.notificationsEmpty.isVisible = false
@@ -108,7 +107,7 @@ class NotificationsFragment: Fragment() {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val (_, group) = (binding.notificationList.adapter as BoardNotificationAdapter).getItem(menuInfo.position)
-            if (group.effectiveRights.contains(Permission.BOARD_ADMIN)) {
+            if (group.effectiveRights.contains(Permission.BOARD_WRITE) || group.effectiveRights.contains(Permission.BOARD_ADMIN)) {
                 requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
             }
         }

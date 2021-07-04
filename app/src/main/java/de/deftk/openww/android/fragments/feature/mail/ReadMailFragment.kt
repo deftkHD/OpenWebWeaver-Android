@@ -109,7 +109,7 @@ class ReadMailFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         userViewModel.apiContext.value?.also { apiContext ->
-            if (apiContext.getUser().effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
+            if (apiContext.getUser().effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.getUser().effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
                 inflater.inflate(R.menu.simple_mail_edit_item_menu, menu)
             }
         }
