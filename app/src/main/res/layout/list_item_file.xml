@@ -48,7 +48,7 @@
             app:filePreview="@{file}"
             tools:ignore="ContentDescription" />
 
-        <ProgressBar
+        <com.google.android.material.progressindicator.CircularProgressIndicator
             android:id="@+id/progress_file"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -56,12 +56,10 @@
             android:layout_alignParentTop="true"
             android:layout_marginTop="2dp"
             android:layout_marginEnd="8dp"
-            android:maxWidth="32dp"
-            android:maxHeight="32dp"
-            android:minWidth="32dp"
-            android:minHeight="32dp"
             android:progress="0"
             android:visibility="gone"
+            app:indicatorColor="@color/colorAccent"
+            app:indicatorSize="24dp"
             tools:progress="75"
             tools:visibility="visible" />
 

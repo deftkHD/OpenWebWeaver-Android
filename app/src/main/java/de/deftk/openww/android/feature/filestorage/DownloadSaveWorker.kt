@@ -78,7 +78,7 @@ class DownloadSaveWorker(context: Context, params: WorkerParameters) :
                 if (isStopped)
                     Result.failure()
 
-                Result.success()
+                Result.success() //TODO show permanent notification
             } catch (e: Exception) {
                 Result.failure()
             }

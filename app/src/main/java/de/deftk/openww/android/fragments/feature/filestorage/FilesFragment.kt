@@ -91,7 +91,7 @@ class FilesFragment : Fragment(), FileClickHandler {
                     val liveData = workManager.getWorkInfoByIdLiveData(transfer.workerId)
                     if (transfer is NetworkTransfer.DownloadOpen) {
                         liveData.observe(viewLifecycleOwner) { workInfo ->
-                            val index = adapter.currentList.indexOfFirst { it.id == transfer.id }
+                            val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id } //FIXME index wrong if scolled
                             var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
                             when (workInfo.state) {
                                 WorkInfo.State.SUCCEEDED -> {
@@ -126,11 +126,12 @@ class FilesFragment : Fragment(), FileClickHandler {
                                 else -> { /* ignore */ }
                             }
                             transfer.progress = progress
-                            adapter.notifyItemChanged(index)
+                            val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
+                            viewHolder.setProgress(progress)
                         }
                     } else if (transfer is NetworkTransfer.DownloadSave) {
                         liveData.observe(viewLifecycleOwner) { workInfo ->
-                            val index = adapter.currentList.indexOfFirst { it.id == transfer.id }
+                            val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
                             var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
                             when (workInfo.state) {
                                 WorkInfo.State.SUCCEEDED -> {
@@ -151,7 +152,8 @@ class FilesFragment : Fragment(), FileClickHandler {
                                 else -> { /* ignore */ }
                             }
                             transfer.progress = progress
-                            adapter.notifyItemChanged(index)
+                            val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
+                            viewHolder.setProgress(progress)
                         }
                     }
                     continue

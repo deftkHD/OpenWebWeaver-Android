@@ -1,6 +1,7 @@
 package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.navigation.findNavController
@@ -82,12 +83,15 @@ class FileAdapter(private val scope: IOperatingScope, private val clickHandler: 
             binding.executePendingBindings()
         }
 
-        private fun setProgress(progress: Int) {
+        fun setProgress(progress: Int) {
             if (progress < 1 || progress >= 100) {
                 binding.progressFile.isVisible = false
+                binding.fileImage.visibility = View.VISIBLE
             } else {
-                if (!binding.progressFile.isVisible)
+                if (!binding.progressFile.isVisible) {
                     binding.progressFile.isVisible = true
+                    binding.fileImage.visibility = View.INVISIBLE
+                }
                 binding.progressFile.progress = progress
             }
         }
