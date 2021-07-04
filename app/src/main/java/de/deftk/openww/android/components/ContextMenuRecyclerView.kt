@@ -17,13 +17,19 @@ class ContextMenuRecyclerView @JvmOverloads constructor(
     }
 
     override fun showContextMenuForChild(originalView: View): Boolean {
-        val position = getChildLayoutPosition(originalView)
+        val position = getChildLayoutPosition(getChildView(originalView))
         if (position >= 0) {
             val id = adapter!!.getItemId(position)
             contextMenuInfo = RecyclerViewContextMenuInfo(position, id)
             return super.showContextMenuForChild(originalView)
         }
         return false
+    }
+
+    private fun getChildView(originalView: View): View {
+        if (originalView.layoutParams is LayoutParams)
+            return originalView
+        return getChildView(originalView.parent as View)
     }
 
     data class RecyclerViewContextMenuInfo(val position: Int, val id: Long) : ContextMenu.ContextMenuInfo
