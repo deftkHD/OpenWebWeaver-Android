@@ -259,4 +259,23 @@
     <string name="system_notification_added_to_messenger">In Messenger aufgenommen</string>
     <string name="system_notification_new_poll">Neue Umfrage</string>
     <string name="system_notification_new_appointment">Neuer Termin</string>
+    <string name="edit_file">Datei bearbeiten</string>
+    <string name="error_file_not_found">Datei \"%s\" konnte nicht gefunden werden</string>
+    <string name="description">Beschreibung</string>
+    <string name="details">Details</string>
+    <string name="modified_date">Bearbeitet: %s</string>
+    <string name="file_permission_readable">Lesbar</string>
+    <string name="file_permission_writable">Schreibbar</string>
+    <string name="file_permission_effective_read">Effektives lesen</string>
+    <string name="file_permission_effective_create">Effektives erstellen</string>
+    <string name="file_permission_effective_modify">Effektives ändern</string>
+    <string name="file_permission_effective_delete">Effektives löschen</string>
+    <string name="shared">Geteilt</string>
+    <string name="mine">Meins</string>
+    <string name="sparse">Platzhalter</string>
+    <string name="size">Größe: %s</string>
+    <string name="children_count">Elemente: %s</string>
+    <string name="unknown">Unbekannt</string>
+    <string name="file_receive_download_notification">Downloadbenachrichtigung erhalten</string>
+    <string name="file_download_notification_list_description">Benutzer:</string>
 </resources>

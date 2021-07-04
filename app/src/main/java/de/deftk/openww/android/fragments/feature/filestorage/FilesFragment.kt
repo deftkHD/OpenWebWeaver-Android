@@ -201,6 +201,7 @@ class FilesFragment : Fragment(), FileClickHandler {
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
+        requireActivity().menuInflater.inflate(R.menu.filestorage_list_menu, menu)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val file = (binding.fileList.adapter as FileAdapter).getItem(menuInfo.position)
             if (file.effectiveRead() == true) {
@@ -213,6 +214,11 @@ class FilesFragment : Fragment(), FileClickHandler {
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.fileList.adapter as FileAdapter
         return when (item.itemId) {
+            R.id.filestorage_action_info -> {
+                val file = adapter.getItem(menuInfo.position)
+                navController.navigate(FilesFragmentDirections.actionFilesFragmentToReadFileFragment(args.operatorId, file.id, args.folderId, args.path))
+                true
+            }
             R.id.filestorage_action_download -> {
                 val file = adapter.getItem(menuInfo.position)
                 val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)

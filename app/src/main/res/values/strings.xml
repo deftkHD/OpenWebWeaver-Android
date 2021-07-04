@@ -262,5 +262,25 @@
     <string name="system_notification_added_to_messenger">Added to messenger</string>
     <string name="system_notification_new_poll">New poll</string>
     <string name="system_notification_new_appointment">New appointment</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="edit_file">Edit file</string>
+    <string name="error_file_not_found">Failed to find file \"%s\"</string>
+    <string name="description">Description</string>
+    <string name="details">Details</string>
+    <string name="modified_date">Modified: %s</string>
+    <string name="file_permission_readable">Readable</string>
+    <string name="file_permission_writable">Writable</string>
+    <string name="file_permission_effective_read">Effective read</string>
+    <string name="file_permission_effective_create">Effective create</string>
+    <string name="file_permission_effective_modify">Effective modify</string>
+    <string name="file_permission_effective_delete">Effective delete</string>
+    <string name="shared">Shared</string>
+    <string name="mine">Mine</string>
+    <string name="sparse">Sparse</string>
+    <string name="size">Size: %s</string>
+    <string name="children_count">Children: %s</string>
+    <string name="unknown">Unknown</string>
+    <string name="file_receive_download_notification">Receive download notification</string>
+    <string name="file_download_notification_list_description">Users:</string>
 
 </resources>

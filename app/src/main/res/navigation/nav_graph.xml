@@ -202,6 +202,9 @@
             android:defaultValue="@null"
             app:argType="string[]"
             app:nullable="true" />
+        <action
+            android:id="@+id/action_filesFragment_to_readFileFragment"
+            app:destination="@id/readFileFragment" />
     </fragment>
     <fragment
         android:id="@+id/forumPostFragment"
@@ -486,5 +489,25 @@
         <argument
             android:name="noteId"
             app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/readFileFragment"
+        android:name="de.deftk.openww.android.fragments.feature.filestorage.ReadFileFragment"
+        android:label="@string/details"
+        tools:layout="@layout/fragment_read_file">
+        <argument
+            android:name="scope"
+            app:argType="string" />
+        <argument
+            android:name="fileId"
+            app:argType="string" />
+        <argument
+            android:name="folderId"
+            app:argType="string"
+            app:nullable="true" />
+        <argument
+            android:name="path"
+            app:argType="string[]"
+            app:nullable="true" />
     </fragment>
 </navigation>
