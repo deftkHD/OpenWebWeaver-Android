@@ -32,11 +32,11 @@
     <string name="created_date">Created: %s</string>
     <string name="not_set">&lt;not set&gt;</string>
     <string name="tasks_done">Done: %d / %d</string>
-    <string name="system_notification_type_file_download">File downloaded</string>
-    <string name="system_notification_type_file_upload">File uploaded</string>
-    <string name="system_notification_type_new_trust">New trusted device</string>
-    <string name="system_notification_type_new_task">New task</string>
-    <string name="system_notification_type_new_notification">New notification</string>
+    <string name="system_notification_file_download">File downloaded</string>
+    <string name="system_notification_file_upload">File uploaded</string>
+    <string name="system_notification_new_trust">New trusted device</string>
+    <string name="system_notification_new_task">New task</string>
+    <string name="system_notification_new_notification">New notification</string>
     <string name="system_notification_type_unknown">Unknown type</string>
     <string name="logout">Logout</string>
     <string name="settings">Settings</string>
@@ -257,5 +257,10 @@
     <string name="error_note_not_found">Failed to find note \"%s\"</string>
     <string name="error_system_notification_not_found">Failed to find system notification \"%s\"</string>
     <string name="error_task_not_found">Failed to find task \"%s\"</string>
+    <string name="system_notification_request_password_reset_code">Request password reset code</string>
+    <string name="system_notification_password_changed">Password changed</string>
+    <string name="system_notification_added_to_messenger">Added to messenger</string>
+    <string name="system_notification_new_poll">New poll</string>
+    <string name="system_notification_new_appointment">New appointment</string>
 
 </resources>

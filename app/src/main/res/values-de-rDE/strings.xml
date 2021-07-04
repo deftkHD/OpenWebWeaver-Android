@@ -32,11 +32,11 @@
     <string name="created_date">Erstellt: %s</string>
     <string name="not_set">&lt;keine Angabe&gt;</string>
     <string name="tasks_done">Erledigt: %d / %d</string>
-    <string name="system_notification_type_file_download">Datei heruntergeladen</string>
-    <string name="system_notification_type_file_upload">Datei hochgeladen</string>
-    <string name="system_notification_type_new_trust">Neues vertrauenswürdiges Gerät</string>
-    <string name="system_notification_type_new_task">Neue Aufgabe</string>
-    <string name="system_notification_type_new_notification">Neue Mitteilung</string>
+    <string name="system_notification_file_download">Datei heruntergeladen</string>
+    <string name="system_notification_file_upload">Datei hochgeladen</string>
+    <string name="system_notification_new_trust">Neues vertrauenswürdiges Gerät</string>
+    <string name="system_notification_new_task">Neue Aufgabe</string>
+    <string name="system_notification_new_notification">Neue Mitteilung</string>
     <string name="system_notification_type_unknown">Unbekannter Typ</string>
     <string name="logout">Abmelden</string>
     <string name="settings">Einstellungen</string>
@@ -254,4 +254,9 @@
     <string name="error_note_not_found">Notiz \"%s\" konnte nicht gefunden werden</string>
     <string name="error_system_notification_not_found">Systemnachricht \"%s\" konnte nicht gefunden werden</string>
     <string name="error_task_not_found">Aufgabe \"%s\" konnte nicht gefunden werden</string>
+    <string name="system_notification_request_password_reset_code">Zurücksetzen des Passworts angefragt</string>
+    <string name="system_notification_password_changed">Passwort zurückgesetzt</string>
+    <string name="system_notification_added_to_messenger">In Messenger aufgenommen</string>
+    <string name="system_notification_new_poll">Neue Umfrage</string>
+    <string name="system_notification_new_appointment">Neuer Termin</string>
 </resources>
