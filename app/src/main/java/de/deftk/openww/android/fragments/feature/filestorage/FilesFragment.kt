@@ -91,26 +91,14 @@ class FilesFragment : Fragment(), FileClickHandler {
                     val liveData = workManager.getWorkInfoByIdLiveData(transfer.workerId)
                     if (transfer is NetworkTransfer.DownloadOpen) {
                         liveData.observe(viewLifecycleOwner) { workInfo ->
-                            val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id } //FIXME index wrong if scolled
+                            val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
                             var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
                             when (workInfo.state) {
                                 WorkInfo.State.SUCCEEDED -> {
                                     progress = 100
                                     val fileUri = Uri.parse(workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_URI))
                                     val fileName = workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_NAME)!!
-
-                                    val mime = FileUtil.getMimeType(fileName)
-                                    val sendIntent = Intent(Intent.ACTION_SEND)
-                                    sendIntent.type = mime
-                                    sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                    sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    sendIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
-                                    sendIntent.putExtra(Intent.EXTRA_SUBJECT, FileUtil.normalizeFileName(fileName, preferences))
-                                    val viewIntent = Intent(Intent.ACTION_VIEW)
-                                    viewIntent.setDataAndType(fileUri, mime)
-                                    viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                    startActivity(Intent.createChooser(sendIntent, fileName).apply { putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(viewIntent)) })
-
+                                    FileUtil.showFileOpenIntent(fileName, fileUri, preferences, requireContext())
                                     fileStorageViewModel.hideNetworkTransfer(transfer)
                                 }
                                 WorkInfo.State.CANCELLED -> {
@@ -231,21 +219,6 @@ class FilesFragment : Fragment(), FileClickHandler {
             }
             else -> super.onContextItemSelected(item)
         }
-    }
-
-    private fun uriToFileName(uri: Uri): String {
-        var cursor: Cursor? = null
-        var filename = "unknown.bin"
-        try {
-            cursor = requireActivity().contentResolver.query(uri, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)
-
-            if (cursor?.moveToFirst() == true) {
-                filename = cursor.getString(cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME))
-            }
-        } finally {
-            cursor?.close()
-        }
-        return filename
     }
 
     override fun onClick(view: View, viewHolder: FileAdapter.FileViewHolder) {

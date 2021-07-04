@@ -107,19 +107,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
             if (workInfo.state == WorkInfo.State.SUCCEEDED) {
                 val fileUri = Uri.parse(workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_URI))
                 val fileName = workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_NAME)!!
-
-                val mime = FileUtil.getMimeType(fileName)
-                val sendIntent = Intent(Intent.ACTION_SEND)
-                sendIntent.type = mime
-                sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                sendIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
-                sendIntent.putExtra(Intent.EXTRA_SUBJECT, FileUtil.normalizeFileName(fileName, preferences))
-                val viewIntent = Intent(Intent.ACTION_VIEW)
-                viewIntent.setDataAndType(fileUri, mime)
-                viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                startActivity(Intent.createChooser(sendIntent, fileName).apply { putExtra(
-                    Intent.EXTRA_INITIAL_INTENTS, arrayOf(viewIntent)) })
+                FileUtil.showFileOpenIntent(fileName, fileUri, preferences, requireContext())
             } else if (workInfo.state == WorkInfo.State.FAILED) {
                 val errorMessage = workInfo.outputData.getString(DownloadOpenWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
                 Reporter.reportException(R.string.error_download_worker_failed, errorMessage, requireContext())
