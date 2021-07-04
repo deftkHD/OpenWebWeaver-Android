@@ -48,6 +48,7 @@ class FilesFragment : Fragment(), FileClickHandler {
     private val fileStorageViewModel: FileStorageViewModel by activityViewModels()
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(requireContext()) }
     private val workManager by lazy { WorkManager.getInstance(requireContext()) }
+    private val navController by lazy { findNavController() }
 
     private lateinit var downloadSaveLauncher: ActivityResultLauncher<Pair<Intent, IRemoteFile>>
     private lateinit var binding: FragmentFilesBinding
@@ -60,7 +61,8 @@ class FilesFragment : Fragment(), FileClickHandler {
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         val argScope = userViewModel.apiContext.value?.findOperatingScope(args.operatorId)
         if (argScope == null) {
-            findNavController().popBackStack(R.id.fileStorageGroupFragment, false)
+            Reporter.reportException(R.string.error_scope_not_found, args.operatorId, requireContext())
+            navController.popBackStack(R.id.fileStorageGroupFragment, false)
             return binding.root
         }
         scope = argScope
@@ -107,16 +109,19 @@ class FilesFragment : Fragment(), FileClickHandler {
                                     val viewIntent = Intent(Intent.ACTION_VIEW)
                                     viewIntent.setDataAndType(fileUri, mime)
                                     viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                    startActivity(Intent.createChooser(sendIntent, fileName).apply { putExtra(
-                                        Intent.EXTRA_INITIAL_INTENTS, arrayOf(viewIntent)) })
+                                    startActivity(Intent.createChooser(sendIntent, fileName).apply { putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(viewIntent)) })
+
+                                    fileStorageViewModel.hideNetworkTransfer(transfer)
                                 }
                                 WorkInfo.State.CANCELLED -> {
                                     //TODO delete file
                                     progress = -1
+                                    fileStorageViewModel.hideNetworkTransfer(transfer)
                                 }
                                 WorkInfo.State.FAILED -> {
                                     //TODO delete file
                                     progress = -1
+                                    fileStorageViewModel.hideNetworkTransfer(transfer)
                                 }
                                 else -> { /* ignore */ }
                             }
@@ -131,14 +136,17 @@ class FilesFragment : Fragment(), FileClickHandler {
                                 WorkInfo.State.SUCCEEDED -> {
                                     progress = 100
                                     Toast.makeText(requireContext(), R.string.download_finished, Toast.LENGTH_LONG).show()
+                                    fileStorageViewModel.hideNetworkTransfer(transfer)
                                 }
                                 WorkInfo.State.CANCELLED -> {
                                     //TODO delete file
                                     progress = -1
+                                    fileStorageViewModel.hideNetworkTransfer(transfer)
                                 }
                                 WorkInfo.State.FAILED -> {
                                     //TODO delete file
                                     progress = -1
+                                    fileStorageViewModel.hideNetworkTransfer(transfer)
                                 }
                                 else -> { /* ignore */ }
                             }
@@ -150,7 +158,7 @@ class FilesFragment : Fragment(), FileClickHandler {
                 }
                 if (i < currentNetworkTransfers.size && !transfers.contains(currentNetworkTransfers[i])) {
                     //TODO handle removed transfer
-                    val transfer = transfers[i]
+                    val transfer = currentNetworkTransfers[i]
                     if (transfer is NetworkTransfer.Upload) {
 
                     }
@@ -171,14 +179,14 @@ class FilesFragment : Fragment(), FileClickHandler {
             if (apiContext != null) {
                 val newScope = userViewModel.apiContext.value?.findOperatingScope(args.operatorId)
                 if (newScope == null) {
-                    findNavController().popBackStack(R.id.fileStorageGroupFragment, false)
+                    navController.popBackStack(R.id.fileStorageGroupFragment, false)
                     return@observe
                 } else {
                     this.scope = newScope
                     fileStorageViewModel.loadFiles(newScope, args.folderId, args.path?.toList(), apiContext)
                 }
             } else {
-                findNavController().popBackStack(R.id.fileStorageGroupFragment, false)
+                navController.popBackStack(R.id.fileStorageGroupFragment, false)
             }
         }
 
