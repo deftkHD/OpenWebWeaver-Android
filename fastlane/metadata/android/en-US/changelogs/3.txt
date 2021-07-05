@@ -1,0 +1,5 @@
+- Bug fixes
+- More translations
+- Provide user feedback on errors
+- Added file detail fragment
+- Batch delete files

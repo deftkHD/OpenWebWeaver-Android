@@ -17,7 +17,7 @@ Read, edit and create notes
 Send and receive messages
 
 <b>Mail service</b>
-Read and send emails
+Send and receive emails
 
 <b>File storage</b>
 Download files from file storage
