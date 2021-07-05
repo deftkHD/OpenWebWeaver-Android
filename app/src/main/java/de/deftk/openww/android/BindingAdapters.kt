@@ -203,17 +203,17 @@ object BindingAdapters {
     fun setContactName(view: TextView, contact: IContact) {
         val name = StringBuilder()
 
-        if (contact.getNickName() != null) {
-            name.append(contact.getNickName())
-        } else if (contact.getFullName() != null) {
-            name.append(contact.getFullName())
+        if (contact.nickName != null) {
+            name.append(contact.nickName)
+        } else if (contact.fullName != null) {
+            name.append(contact.fullName)
         } else {
-            if (contact.getFirstName() != null)
-                name.append(contact.getFirstName()).append(" ")
-            if (contact.getMiddleName() != null)
-                name.append(contact.getMiddleName()).append(" ")
-            if (contact.getLastName() != null)
-                name.append(contact.getLastName())
+            if (contact.firstName != null)
+                name.append(contact.firstName).append(" ")
+            if (contact.middleName != null)
+                name.append(contact.middleName).append(" ")
+            if (contact.lastName != null)
+                name.append(contact.lastName)
         }
 
         view.text = name.toString().trim()
@@ -222,14 +222,14 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter("contactDescription")
     fun setContactDescription(view: TextView, contact: IContact) {
-        val text = contact.getEmailAddress()
-            ?: contact.getEmailAddress2()
-            ?: contact.getEmailAddress3()
-            ?: contact.getHomePhone()
-            ?: contact.getMobilePhone()
-            ?: contact.getBusinessPhone()
-            ?: contact.getHomeFax()
-            ?: contact.getBusinessFax()
+        val text = contact.emailAddress
+            ?: contact.email2Address
+            ?: contact.email3Address
+            ?: contact.homePhone
+            ?: contact.mobilePhone
+            ?: contact.businessPhone
+            ?: contact.homeFax
+            ?: contact.businessFax
         if (text != null) {
             view.text = text
             view.isVisible = true
