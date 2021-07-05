@@ -262,7 +262,6 @@
     <string name="system_notification_added_to_messenger">Added to messenger</string>
     <string name="system_notification_new_poll">New poll</string>
     <string name="system_notification_new_appointment">New appointment</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="edit_file">Edit file</string>
     <string name="error_file_not_found">Failed to find file \"%s\"</string>
     <string name="description">Description</string>

@@ -76,7 +76,7 @@ class MembersFragment : Fragment() {
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         requireActivity().menuInflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
         val searchView = searchItem.actionView as SearchView
@@ -92,7 +92,7 @@ class MembersFragment : Fragment() {
             }
         })
         super.onCreateOptionsMenu(menu, inflater)
-    }
+    }*/
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)

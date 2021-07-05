@@ -80,7 +80,7 @@ class ForumPostsFragment : Fragment() {
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
         val searchView = searchItem.actionView as SearchView
@@ -95,6 +95,6 @@ class ForumPostsFragment : Fragment() {
                 return false
             }
         })
-    }
+    }*/
 
 }

@@ -139,7 +139,7 @@ class MailFragment: Fragment() {
         menu.clear()
 
         // search menu
-        inflater.inflate(R.menu.list_filter_menu, menu)
+        /*inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
         val searchView = searchItem.actionView as SearchView
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -152,7 +152,7 @@ class MailFragment: Fragment() {
                 //TODO search
                 return false
             }
-        })
+        })*/
 
         // utility menu
         inflater.inflate(R.menu.mail_list_menu, menu)

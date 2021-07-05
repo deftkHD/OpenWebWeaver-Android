@@ -61,7 +61,7 @@ class SystemNotificationsFragment: Fragment() {
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
@@ -78,6 +78,6 @@ class SystemNotificationsFragment: Fragment() {
             }
         })
         super.onCreateOptionsMenu(menu, inflater)
-    }
+    }*/
 
 }
