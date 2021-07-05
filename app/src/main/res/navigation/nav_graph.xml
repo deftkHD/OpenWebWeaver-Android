@@ -377,6 +377,12 @@
         <action
             android:id="@+id/action_launchFragment_to_writeMailFragment"
             app:destination="@id/writeMailFragment" />
+        <action
+            android:id="@+id/action_launchFragment_to_betaDisclaimerFragment"
+            app:destination="@id/betaDisclaimerFragment" />
+        <action
+            android:id="@+id/action_launchFragment_to_privacyDialogFragment"
+            app:destination="@id/privacyDialogFragment" />
     </fragment>
     <fragment
         android:id="@+id/chatsFragment"
@@ -510,4 +516,20 @@
             app:argType="string[]"
             app:nullable="true" />
     </fragment>
+    <dialog
+        android:id="@+id/betaDisclaimerFragment"
+        android:name="de.deftk.openww.android.fragments.dialog.BetaDisclaimerFragment"
+        android:label="BetaDisclaimerFragment" >
+        <action
+            android:id="@+id/action_betaDisclaimerFragment_to_launchFragment"
+            app:destination="@id/launchFragment" />
+    </dialog>
+    <dialog
+        android:id="@+id/privacyDialogFragment"
+        android:name="de.deftk.openww.android.fragments.dialog.PrivacyDialogFragment"
+        android:label="PrivacyDialogFragment" >
+        <action
+            android:id="@+id/action_privacyDialogFragment_to_launchFragment"
+            app:destination="@id/launchFragment" />
+    </dialog>
 </navigation>

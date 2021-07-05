@@ -13,12 +13,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import de.deftk.openww.android.BuildConfig
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.databinding.FragmentLaunchBinding
 import de.deftk.openww.android.feature.LaunchMode
+import de.deftk.openww.android.fragments.dialog.BetaDisclaimerFragment
+import de.deftk.openww.android.fragments.dialog.PrivacyDialogFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
@@ -26,6 +29,7 @@ class LaunchFragment : Fragment() {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val navController by lazy { findNavController() }
+    private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(requireContext()) }
 
     private lateinit var binding: FragmentLaunchBinding
     private lateinit var authState: AuthHelper.AuthState
@@ -74,6 +78,16 @@ class LaunchFragment : Fragment() {
             return
         }
 
+        if (!preferences.getBoolean(BetaDisclaimerFragment.BETA_DISCLAIMER_SHOWN_KEY, false)) {
+            navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToBetaDisclaimerFragment())
+            return
+        }
+
+        if (!preferences.getBoolean(PrivacyDialogFragment.PRIVACY_STATEMENT_SHOWN_KEY, false)) {
+            navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToPrivacyDialogFragment())
+            return
+        }
+
         authState = AuthHelper.estimateAuthState(requireContext())
         if (userViewModel.apiContext.value == null) {
             when (authState) {
@@ -84,7 +98,7 @@ class LaunchFragment : Fragment() {
                 AuthHelper.AuthState.MULTIPLE -> {
                     val prioritized = AuthHelper.getRememberedLogin(requireContext())
                     if (prioritized == null) {
-                        navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToChooseAccountDialogFragment())
+                        navController.navigate(R.id.chooseAccountDialogFragment)
                     } else {
                         val accounts = AuthHelper.findAccounts(prioritized, requireContext())
                         login(accounts[0])
