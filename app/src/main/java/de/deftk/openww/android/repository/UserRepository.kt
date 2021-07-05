@@ -8,6 +8,8 @@ import de.deftk.openww.api.request.UserApiRequest
 import de.deftk.openww.api.response.ResponseUtil
 import de.deftk.openww.android.feature.AppFeature
 import de.deftk.openww.android.feature.overview.AbstractOverviewElement
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class UserRepository @Inject constructor() : AbstractRepository() {
@@ -50,8 +52,10 @@ class UserRepository @Inject constructor() : AbstractRepository() {
             }
         }
         val response = request.fireRequest().toJson()
-        idMap.forEach { (feature, ids) ->
-            elements.add(feature.overviewBuilder!!.createElementFromResponse(ids.map { it to ResponseUtil.getSubResponseResult(response, it) }.toMap(), apiContext))
+        withContext(Dispatchers.Default) {
+            idMap.forEach { (feature, ids) ->
+                elements.add(feature.overviewBuilder!!.createElementFromResponse(ids.map { it to ResponseUtil.getSubResponseResult(response, it) }.toMap(), apiContext))
+            }
         }
         elements
     }
