@@ -57,7 +57,7 @@ class NotesFragment : Fragment() {
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                binding.fabAddNote.isVisible = apiContext.getUser().effectiveRights.contains(Permission.NOTES_WRITE) || apiContext.getUser().effectiveRights.contains(Permission.NOTES_ADMIN)
+                binding.fabAddNote.isVisible = apiContext.user.effectiveRights.contains(Permission.NOTES_WRITE) || apiContext.user.effectiveRights.contains(Permission.NOTES_ADMIN)
 
                 notesViewModel.loadNotes(apiContext)
             } else {
@@ -72,7 +72,7 @@ class NotesFragment : Fragment() {
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
-            val user = userViewModel.apiContext.value?.getUser() ?: return
+            val user = userViewModel.apiContext.value?.user ?: return
             if (user.effectiveRights.contains(Permission.NOTES_WRITE) || user.effectiveRights.contains(Permission.NOTES_ADMIN)) {
                 requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
             }

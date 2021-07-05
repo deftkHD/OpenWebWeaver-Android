@@ -34,7 +34,7 @@ class ForumPostsFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentForumPostsBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        val group = userViewModel.apiContext.value?.getUser()?.getGroups()?.firstOrNull { it.login == args.groupId }
+        val group = userViewModel.apiContext.value?.user?.getGroups()?.firstOrNull { it.login == args.groupId }
         if (group == null) {
             Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
             navController.popBackStack(R.id.forumGroupFragment, false)
@@ -64,7 +64,7 @@ class ForumPostsFragment : Fragment() {
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                val newGroup = userViewModel.apiContext.value?.getUser()?.getGroups()?.firstOrNull { it.login == args.groupId }
+                val newGroup = userViewModel.apiContext.value?.user?.getGroups()?.firstOrNull { it.login == args.groupId }
                 if (newGroup != null) {
                     forumViewModel.loadForumPosts(group, null, apiContext)
                 } else {

@@ -35,7 +35,7 @@ class MembersFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMembersBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        val foundGroup = userViewModel.apiContext.value?.getUser()?.getGroups()?.firstOrNull { it.login == args.groupId }
+        val foundGroup = userViewModel.apiContext.value?.user?.getGroups()?.firstOrNull { it.login == args.groupId }
         if (foundGroup == null) {
             Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
             navController.popBackStack()
@@ -98,7 +98,7 @@ class MembersFragment : Fragment() {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val member = (binding.memberList.adapter as MemberAdapter).getItem(menuInfo.position)
-            if (member.login != userViewModel.apiContext.value?.getUser()?.login) {
+            if (member.login != userViewModel.apiContext.value?.user?.login) {
                 requireActivity().menuInflater.inflate(R.menu.member_action_menu, menu)
             }
         }

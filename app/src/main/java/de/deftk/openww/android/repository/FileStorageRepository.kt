@@ -17,7 +17,7 @@ import javax.inject.Inject
 class FileStorageRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun getAllFileStorageQuotas(apiContext: ApiContext) = apiCall {
-        apiContext.getUser().getAllFileStorageQuotas(apiContext).toList().sortedWith(compareBy ({ it.first !is IUser }, { it.first.name })).toMap()
+        apiContext.user.getAllFileStorageQuotas(apiContext).toList().sortedWith(compareBy ({ it.first !is IUser }, { it.first.name })).toMap()
     }
 
     suspend fun getFiles(provider: IRemoteFileProvider, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
@@ -49,9 +49,9 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         return ids
     }
 
-    private fun IUser.getAllFileStorageQuotas(apiContext: ApiContext): Map<IOperatingScope, Quota> {
+    private suspend fun IUser.getAllFileStorageQuotas(apiContext: ApiContext): Map<IOperatingScope, Quota> {
         val request = UserApiRequest(getRequestContext(apiContext))
-        val requestIds = request.addGetAllFileStorageQuotasRequest(apiContext.getUser())
+        val requestIds = request.addGetAllFileStorageQuotasRequest(apiContext.user)
         val response = request.fireRequest().toJson().jsonArray
         val quotas = mutableMapOf<IOperatingScope, Quota>()
         val responses = response.filter { requestIds.contains(it.jsonObject["id"]!!.jsonPrimitive.int) }.map { it.jsonObject }
@@ -67,13 +67,13 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         return quotas
     }
 
-    private fun IOperatingScope.getFilePreviews(files: List<IRemoteFile>, apiContext: ApiContext): Map<String, FilePreviewUrl?> {
+    private suspend fun IOperatingScope.getFilePreviews(files: List<IRemoteFile>, apiContext: ApiContext): Map<String, FilePreviewUrl?> {
         val request = OperatingScopeApiRequest(getRequestContext(apiContext))
 
         val requestIds = mutableListOf<Int>()
         val idMap = mutableMapOf<Int, String>()
         files.forEach { file ->
-            if (file.hasPreview() == true) {
+            if (file.preview == true) {
                 val req = request.addGetPreviewDownloadUrlRequest(file.id)
                 check(req.size == 2)
                 requestIds.addAll(req)

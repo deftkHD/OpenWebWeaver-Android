@@ -35,16 +35,16 @@ object UIUtil {
 
     @ColorRes
     fun getBoardNotificationAccent(boardNotification: IBoardNotification): Int {
-        return BoardNotificationColors.getByApiColorOrDefault(boardNotification.getColor()).androidColor
+        return BoardNotificationColors.getByApiColorOrDefault(boardNotification.color).androidColor
     }
 
     @ColorRes
     fun getNoteAccent(note: INote): Int {
-        return NoteColors.getByApiColorOrDefault(note.getColor()).androidColor
+        return NoteColors.getByApiColorOrDefault(note.color).androidColor
     }
 
     fun getTaskDue(task: ITask): String {
-        val date = task.getEndDate()
+        val date = task.dueDate
         if (date != null)
             return DateFormat.getDateInstance().format(date)
         return ""

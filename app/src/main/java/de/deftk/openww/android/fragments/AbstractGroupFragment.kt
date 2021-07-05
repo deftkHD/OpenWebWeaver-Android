@@ -56,9 +56,9 @@ abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener 
     }
 
     protected fun updateGroups(apiContext: ApiContext) {
-        var scopes: MutableList<IOperatingScope> = apiContext.getUser().getGroups().filter { scopePredicate(it) }.toMutableList()
-        if (scopePredicate(apiContext.getUser()))
-            scopes.add(0, apiContext.getUser())
+        var scopes: MutableList<IOperatingScope> = apiContext.user.getGroups().filter { scopePredicate(it) }.toMutableList()
+        if (scopePredicate(apiContext.user))
+            scopes.add(0, apiContext.user)
         scopes = scopes.sortedWith(compareBy ({ it !is IUser }, { it.name })).toMutableList()
         adapter.submitList(scopes)
         binding.groupsEmpty.isVisible = scopes.isEmpty()

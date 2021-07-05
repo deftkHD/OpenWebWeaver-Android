@@ -59,7 +59,7 @@ class TasksFragment : Fragment() {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 tasksViewModel.loadTasks(apiContext)
-                binding.fabAddTask.isVisible = apiContext.getUser().getGroups().any { it.effectiveRights.contains(Permission.TASKS_WRITE) } || apiContext.getUser().getGroups().any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }
+                binding.fabAddTask.isVisible = apiContext.user.getGroups().any { it.effectiveRights.contains(Permission.TASKS_WRITE) } || apiContext.user.getGroups().any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }
             } else {
                 binding.fabAddTask.isVisible = false
                 binding.tasksEmpty.isVisible = false

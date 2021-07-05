@@ -217,7 +217,7 @@ class FilesFragment : Fragment(), FileClickHandler, ActionMode.Callback {
         requireActivity().menuInflater.inflate(R.menu.filestorage_list_menu, menu)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val file = (binding.fileList.adapter as FileAdapter).getItem(menuInfo.position)
-            if (file.effectiveRead() == true) {
+            if (file.effectiveRead == true) {
                 requireActivity().menuInflater.inflate(R.menu.filestorage_read_list_menu, menu)
             }
         }
@@ -257,7 +257,7 @@ class FilesFragment : Fragment(), FileClickHandler, ActionMode.Callback {
     }
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-        val canDelete = adapter.selectedItems.all { it.binding.file!!.effectiveDelete() == true }
+        val canDelete = adapter.selectedItems.all { it.binding.file!!.effectiveDelete == true }
         menu.findItem(R.id.filestorage_action_delete).isEnabled = canDelete //TODO should be visible if disabled
         return true
     }

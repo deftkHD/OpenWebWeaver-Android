@@ -8,23 +8,23 @@ import javax.inject.Inject
 class MessengerRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun addChat(login: String, apiContext: ApiContext) = apiCall {
-        apiContext.getUser().addChat(login, apiContext.getUser().getRequestContext(apiContext))
+        apiContext.user.addChat(login, apiContext.user.getRequestContext(apiContext))
     }
 
     suspend fun removeChat(login: String, apiContext: ApiContext) = apiCall {
-        apiContext.getUser().removeChat(login, apiContext.getUser().getRequestContext(apiContext))
+        apiContext.user.removeChat(login, apiContext.user.getRequestContext(apiContext))
     }
 
     suspend fun getChats(apiContext: ApiContext) = apiCall {
-        apiContext.getUser().getUsers(onlineOnly = false, context = apiContext.getUser().getRequestContext(apiContext))
+        apiContext.user.getUsers(onlineOnly = false, context = apiContext.user.getRequestContext(apiContext))
     }
 
     suspend fun getHistory(apiContext: ApiContext) = apiCall {
-        apiContext.getUser().getHistory(exportSessionFile = true, context = apiContext.getUser().getRequestContext(apiContext))
+        apiContext.user.getHistory(exportSessionFile = true, context = apiContext.user.getRequestContext(apiContext))
     }
 
     suspend fun sendMessage(login: String, sessionFile: ISessionFile?, text: String?, apiContext: ApiContext) = apiCall {
-        apiContext.getUser().sendQuickMessage(login, sessionFile, text, apiContext.getUser().getRequestContext(apiContext))
+        apiContext.user.sendQuickMessage(login, sessionFile, text, apiContext.user.getRequestContext(apiContext))
     }
 
 }

@@ -58,7 +58,7 @@ class TokenLoginFragment : Fragment() {
                 if (response is Response.Success) {
                     if (authenticatorResponse != null) {
                         val bundle = Bundle()
-                        bundle.putString(AccountManager.KEY_ACCOUNT_NAME, response.value.getUser().login)
+                        bundle.putString(AccountManager.KEY_ACCOUNT_NAME, response.value.user.login)
                         bundle.putString(AccountManager.KEY_ACCOUNT_TYPE, getString(R.string.account_type))
                         authenticatorResponse.onResult(bundle)
                         requireActivity().finish()

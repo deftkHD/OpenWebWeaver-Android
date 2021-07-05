@@ -19,7 +19,7 @@ class ChatMessageAdapter(private val userViewModel: UserViewModel, private val d
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val message = getItem(position)
-        val alignRight = message.from.login == userViewModel.apiContext.value?.getUser()?.login
+        val alignRight = message.from.login == userViewModel.apiContext.value?.user?.login
         (holder as ChatMessageViewHolder).bind(message, alignRight)
     }
 

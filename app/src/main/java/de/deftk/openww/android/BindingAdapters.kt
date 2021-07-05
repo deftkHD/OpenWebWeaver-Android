@@ -44,7 +44,7 @@ object BindingAdapters {
     @BindingAdapter("fileSize")
     fun fileSize(view: TextView, file: IRemoteFile) {
         if (file.type == FileType.FILE) {
-            view.text = Formatter.formatFileSize(view.context, file.getSize())
+            view.text = Formatter.formatFileSize(view.context, file.size)
         } else if (file.type == FileType.FOLDER) {
             view.text = view.context.getString(R.string.directory)
         }
@@ -81,12 +81,12 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter("mailAuthor")
     fun mailAuthor(view: TextView, email: IEmail) {
-        var author = email.getFrom()?.joinToString(", ") { it.name }
+        var author = email.from?.joinToString(", ") { it.name }
         if (author == null) {
             val context = view.context
             author = if (context is MainActivity) {
                 val userViewModel by context.viewModels<UserViewModel>()
-                userViewModel.apiContext.value?.getUser()?.name ?: "UNKNOWN"
+                userViewModel.apiContext.value?.user?.name ?: "UNKNOWN"
             } else {
                 "UNKNOWN"
             }
@@ -145,7 +145,7 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter("strikeThroughTask")
     fun strikeThrough(view: TextView, task: ITask) {
-        if (task.getEndDate() != null && Date().compareTo(task.getEndDate()) > -1) {
+        if (task.dueDate != null && Date().compareTo(task.dueDate) > -1) {
             view.paintFlags = view.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
         } else {
             view.paintFlags = view.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
@@ -155,13 +155,13 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter("taskDueDate")
     fun taskDueDate(view: TextView, task: ITask) {
-        view.text = if (task.getEndDate() != null) UIUtil.getTaskDue(task) else view.context.getString(R.string.not_set)
+        view.text = if (task.dueDate != null) UIUtil.getTaskDue(task) else view.context.getString(R.string.not_set)
     }
 
     @JvmStatic
     @BindingAdapter("taskCompleted")
     fun taskCompleted(view: ImageView, task: ITask) {
-        view.setBackgroundResource(if (task.isCompleted()) R.drawable.ic_check_green_32 else 0)
+        view.setBackgroundResource(if (task.completed) R.drawable.ic_check_green_32 else 0)
     }
 
     @JvmStatic

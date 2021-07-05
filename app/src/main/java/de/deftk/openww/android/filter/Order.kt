@@ -37,49 +37,49 @@ sealed class TaskOrder(@StringRes nameRes: Int) : ScopedOrder<ITask, IOperatingS
 
     object ByTitleAsc : TaskOrder(0) {
         override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
-            return items.sortedBy { it.first.getTitle() }
+            return items.sortedBy { it.first.title }
         }
     }
 
     object ByTitleDesc : TaskOrder(0) {
         override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
-            return items.sortedByDescending { it.first.getTitle() }
+            return items.sortedByDescending { it.first.title }
         }
     }
 
     object ByStartDateAsc : TaskOrder(0) {
         override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
-            return items.sortedBy { it.first.getStartDate()?.time ?: -1 }
+            return items.sortedBy { it.first.startDate?.time ?: -1 }
         }
     }
 
     object ByStartDateDesc : TaskOrder(0) {
         override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
-            return items.sortedByDescending { it.first.getStartDate()?.time ?: -1 }
+            return items.sortedByDescending { it.first.startDate?.time ?: -1 }
         }
     }
 
     object ByDueDateAsc : TaskOrder(0) {
         override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
-            return items.sortedBy { it.first.getEndDate()?.time ?: -1 }
+            return items.sortedBy { it.first.dueDate?.time ?: -1 }
         }
     }
 
     object ByDueDateDesc : TaskOrder(0) {
         override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
-            return items.sortedByDescending { it.first.getEndDate()?.time ?: -1 }
+            return items.sortedByDescending { it.first.dueDate?.time ?: -1 }
         }
     }
 
     object ByCompletedAsc : TaskOrder(0) {
         override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
-            return items.sortedBy { it.first.isCompleted() }
+            return items.sortedBy { it.first.completed }
         }
     }
 
     object ByCompletedDesc : TaskOrder(0) {
         override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
-            return items.sortedByDescending { it.first.isCompleted() }
+            return items.sortedByDescending { it.first.completed }
         }
     }
 

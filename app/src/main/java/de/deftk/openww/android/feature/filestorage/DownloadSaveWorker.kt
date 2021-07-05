@@ -39,7 +39,7 @@ class DownloadSaveWorker(context: Context, params: WorkerParameters) :
                         DATA_DESTINATION_URI to destinationUrl,
                         DATA_DOWNLOAD_URL to downloadUrl,
                         DATA_FILE_NAME to file.name,
-                        DATA_FILE_SIZE to file.getSize()
+                        DATA_FILE_SIZE to file.size
                     )
                 )
                 .build()

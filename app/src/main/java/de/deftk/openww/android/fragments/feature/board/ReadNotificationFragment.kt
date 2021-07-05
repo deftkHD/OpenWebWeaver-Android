@@ -47,11 +47,11 @@ class ReadNotificationFragment : Fragment() {
                     notification = first
                     group = second
 
-                    binding.notificationTitle.text = notification.getTitle()
+                    binding.notificationTitle.text = notification.title
                     binding.notificationAuthor.text = notification.created.member.name
                     binding.notificationGroup.text = group.name
                     binding.notificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.created.date)
-                    binding.notificationText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.getText()))
+                    binding.notificationText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text))
                     binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
                     binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
 

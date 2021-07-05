@@ -14,7 +14,9 @@ import de.deftk.openww.api.auth.Credentials
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 import de.deftk.openww.api.request.handler.AutoLoginRequestHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -52,7 +54,7 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
             if (response is Response.Success) {
                 setupApiContext(response.value.first, Credentials.fromToken(username, response.value.second))
             }
-            _loginToken.value = response.smartMap { it.first.getUser().login to it.second }
+            _loginToken.value = response.smartMap { it.first.user.login to it.second }
             _loginResponse.value = response.smartMap { it.first }
         }
     }
@@ -115,13 +117,15 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
     }
 
     private fun setupApiContext(apiContext: ApiContext, credentials: Credentials) {
-        apiContext.setRequestHandler(AutoLoginRequestHandler(object : AutoLoginRequestHandler.LoginHandler<ApiContext> {
-            override fun getCredentials(): Credentials = credentials
+        apiContext.requestHandler = AutoLoginRequestHandler(object : AutoLoginRequestHandler.LoginHandler<ApiContext> {
+            override suspend fun getCredentials(): Credentials = credentials
 
-            override fun onLogin(context: ApiContext) {
-                //FIXME has to be run on main thread
+            override suspend fun onLogin(context: ApiContext) {
+                withContext(Dispatchers.Main) {
+                    _loginResponse.value = Response.Success(context)
+                }
             }
-        }, ApiContext::class.java))
+        }, ApiContext::class.java)
     }
 
     fun loadOverview(apiContext: ApiContext) {

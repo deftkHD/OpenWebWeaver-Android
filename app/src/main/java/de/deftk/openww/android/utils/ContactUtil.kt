@@ -150,7 +150,7 @@ object ContactUtil {
             details.getStringDetailValue(UID),
             details.getStringDetailValue(WEBSITE),
             src.created,
-            src.getModified()
+            src.modified
         )
     }
 

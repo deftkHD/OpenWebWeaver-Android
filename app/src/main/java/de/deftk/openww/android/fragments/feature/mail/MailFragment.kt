@@ -6,7 +6,6 @@ import android.text.InputType
 import android.view.*
 import android.widget.AdapterView
 import android.widget.EditText
-import android.widget.SearchView
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -16,8 +15,6 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
-import de.deftk.openww.api.implementation.feature.mailbox.EmailFolder
-import de.deftk.openww.api.model.Permission
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.MailFolderAdapter
 import de.deftk.openww.android.api.Response
@@ -25,6 +22,8 @@ import de.deftk.openww.android.databinding.FragmentMailBinding
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MailboxViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.implementation.feature.mailbox.EmailFolder
+import de.deftk.openww.api.model.Permission
 
 class MailFragment: Fragment() {
 
@@ -99,7 +98,7 @@ class MailFragment: Fragment() {
         }
 
         //TODO not sure about this permissions
-        if (userViewModel.apiContext.value?.getUser()?.effectiveRights?.contains(Permission.MAILBOX_WRITE) == true || userViewModel.apiContext.value?.getUser()?.effectiveRights?.contains(Permission.MAILBOX_ADMIN) == true) {
+        if (userViewModel.apiContext.value?.user?.effectiveRights?.contains(Permission.MAILBOX_WRITE) == true || userViewModel.apiContext.value?.user?.effectiveRights?.contains(Permission.MAILBOX_ADMIN) == true) {
             binding.fabMailAdd.visibility = View.VISIBLE
             binding.fabMailAdd.setOnClickListener {
                 navController.navigate(MailFragmentDirections.actionMailFragmentToWriteMailFragment())

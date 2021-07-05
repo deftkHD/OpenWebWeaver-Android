@@ -55,12 +55,12 @@ class ReadTaskFragment : Fragment() {
                 task = foundTask.first
                 scope = foundTask.second
 
-                binding.taskTitle.text = task.getTitle()
+                binding.taskTitle.text = task.title
                 binding.taskAuthor.text = task.created.member.name
                 binding.taskGroup.text = scope.name
                 binding.taskCreated.text = String.format(getString(R.string.created_date), DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.created.date))
-                binding.taskDue.text = String.format(getString(R.string.until_date), if (task.getEndDate() != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.getEndDate()!!) else getString(R.string.not_set))
-                binding.taskDetail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.getDescription()))
+                binding.taskDue.text = String.format(getString(R.string.until_date), if (task.dueDate != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.dueDate!!) else getString(R.string.not_set))
+                binding.taskDetail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description))
                 binding.taskDetail.movementMethod = LinkMovementMethod.getInstance()
                 binding.taskDetail.transformationMethod = CustomTabTransformationMethod(binding.taskDetail.autoLinkMask)
 
@@ -103,13 +103,13 @@ class ReadTaskFragment : Fragment() {
             R.id.menu_item_import_in_calendar -> {
                 val intent = Intent(Intent.ACTION_INSERT)
                 intent.data = CalendarContract.Events.CONTENT_URI
-                intent.putExtra(CalendarContract.Events.TITLE, task.getTitle())
-                if (task.getStartDate() != null)
-                    intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, task.getStartDate()!!.time)
-                if (task.getEndDate() != null)
-                    intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, task.getEndDate()!!.time)
-                if (task.getDescription() != null)
-                    intent.putExtra(CalendarContract.Events.DESCRIPTION, task.getDescription())
+                intent.putExtra(CalendarContract.Events.TITLE, task.title)
+                if (task.startDate != null)
+                    intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, task.startDate!!.time)
+                if (task.dueDate != null)
+                    intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, task.dueDate!!.time)
+                if (task.description != null)
+                    intent.putExtra(CalendarContract.Events.DESCRIPTION, task.description)
                 startActivity(intent)
                 true
             }

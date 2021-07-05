@@ -47,7 +47,7 @@ class EditNotificationFragment : Fragment() {
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                val effectiveGroups = apiContext.getUser().getGroups().filter { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) }
+                val effectiveGroups = apiContext.user.getGroups().filter { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) }
                 binding.notificationGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.login })
 
                 val colors = BoardNotificationColors.values()
@@ -66,11 +66,11 @@ class EditNotificationFragment : Fragment() {
                     notification = notificationObj.first
                     group = notificationObj.second
 
-                    binding.notificationTitle.setText(notification.getTitle())
+                    binding.notificationTitle.setText(notification.title)
                     binding.notificationGroup.setSelection(effectiveGroups.indexOf(group))
                     binding.notificationGroup.isEnabled = false
-                    binding.notificationAccent.setSelection(colors.indexOf(BoardNotificationColors.getByApiColor(notification.getColor() ?: BoardNotificationColor.BLUE)))
-                    binding.notificationText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.getText())))
+                    binding.notificationAccent.setSelection(colors.indexOf(BoardNotificationColors.getByApiColor(notification.color ?: BoardNotificationColor.BLUE)))
+                    binding.notificationText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text)))
                     binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
                     binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
                 } else {
@@ -116,7 +116,7 @@ class EditNotificationFragment : Fragment() {
             if (editMode) {
                 boardViewModel.editBoardNotification(notification, title, text, color, null, group, apiContext)
             } else {
-                group = apiContext.getUser().getGroups().firstOrNull { it.login == selectedGroup } ?: return false
+                group = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup } ?: return false
                 boardViewModel.addBoardNotification(title, text, color, null, group, apiContext)
             }
             return true

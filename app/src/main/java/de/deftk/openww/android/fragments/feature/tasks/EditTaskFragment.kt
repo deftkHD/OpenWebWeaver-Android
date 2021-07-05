@@ -54,7 +54,7 @@ class EditTaskFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                val effectiveGroups = apiContext.getUser().getGroups().filter { it.effectiveRights.contains(Permission.TASKS_WRITE) || it.effectiveRights.contains(Permission.TASKS_ADMIN) }
+                val effectiveGroups = apiContext.user.getGroups().filter { it.effectiveRights.contains(Permission.TASKS_WRITE) || it.effectiveRights.contains(Permission.TASKS_ADMIN) }
                 binding.taskGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.login })
 
                 if (args.groupId != null && args.taskId != null) {
@@ -70,16 +70,16 @@ class EditTaskFragment : Fragment() {
                     task = foundTask.first
                     scope = foundTask.second
 
-                    binding.taskTitle.setText(task.getTitle())
+                    binding.taskTitle.setText(task.title)
                     binding.taskGroup.setSelection(effectiveGroups.indexOf(scope))
-                    binding.taskCompleted.isChecked = task.isCompleted()
-                    binding.taskText.setText(task.getDescription())
+                    binding.taskCompleted.isChecked = task.completed
+                    binding.taskText.setText(task.description)
 
-                    startDate = task.getStartDate()
+                    startDate = task.startDate
                     if (startDate != null)
                         binding.taskStart.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(startDate!!))
 
-                    dueDate = task.getEndDate()
+                    dueDate = task.dueDate
                     if (dueDate != null)
                         binding.taskDue.setText(SimpleDateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(dueDate!!))
                 } else {
@@ -172,7 +172,7 @@ class EditTaskFragment : Fragment() {
             if (editMode) {
                 tasksViewModel.editTask(task, title, description, completed, startDate, dueDate, scope, apiContext)
             } else {
-                scope = apiContext.getUser().getGroups().firstOrNull { it.login == selectedGroup } ?: return false
+                scope = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup } ?: return false
                 tasksViewModel.addTask(title, description, completed, startDate, dueDate, scope, apiContext)
             }
             return true

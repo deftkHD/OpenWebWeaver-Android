@@ -32,23 +32,23 @@ class UserRepository @Inject constructor() : AbstractRepository() {
     }
 
     suspend fun logout(apiContext: ApiContext) = apiCall {
-        apiContext.getUser().logout(apiContext.getUser().getRequestContext(apiContext))
+        apiContext.user.logout(apiContext.user.getRequestContext(apiContext))
     }
 
     suspend fun logoutDestroyToken(token: String, apiContext: ApiContext) = apiCall {
-        apiContext.getUser().logoutDestroyToken(
+        apiContext.user.logoutDestroyToken(
             token,
-            apiContext.getUser().getRequestContext(apiContext)
+            apiContext.user.getRequestContext(apiContext)
         )
     }
 
     suspend fun getOverviewElements(apiContext: ApiContext) = apiCall {
         val elements = mutableListOf<AbstractOverviewElement>()
-        val request = UserApiRequest(apiContext.getUser().getRequestContext(apiContext))
+        val request = UserApiRequest(apiContext.user.getRequestContext(apiContext))
         val idMap = mutableMapOf<AppFeature, List<Int>>()
         AppFeature.values().forEach { feature ->
             if (feature.overviewBuilder != null) {
-                idMap[feature] = feature.overviewBuilder.appendRequests(request, apiContext.getUser())
+                idMap[feature] = feature.overviewBuilder.appendRequests(request, apiContext.user)
             }
         }
         val response = request.fireRequest().toJson()
@@ -61,11 +61,11 @@ class UserRepository @Inject constructor() : AbstractRepository() {
     }
 
     suspend fun getSystemNotifications(apiContext: ApiContext) = apiCall {
-        apiContext.getUser().getSystemNotifications(apiContext.getUser().getRequestContext(apiContext)).sortedByDescending { it.date.time }
+        apiContext.user.getSystemNotifications(apiContext.user.getRequestContext(apiContext)).sortedByDescending { it.date.time }
     }
 
     suspend fun deleteSystemNotification(systemNotification: ISystemNotification, apiContext: ApiContext) = apiCall {
-        systemNotification.delete(apiContext.getUser().getRequestContext(apiContext))
+        systemNotification.delete(apiContext.user.getRequestContext(apiContext))
     }
 
 

@@ -21,10 +21,10 @@ class FileStorage {
 
     fun getScopes(apiContext: ApiContext): List<IOperatingScope> {
         val scopes = mutableListOf<IOperatingScope>()
-        if (Feature.FILES.isAvailable(apiContext.getUser().effectiveRights)) {
-            scopes.add(apiContext.getUser())
+        if (Feature.FILES.isAvailable(apiContext.user.effectiveRights)) {
+            scopes.add(apiContext.user)
         }
-        scopes.addAll(apiContext.getUser().getGroups().filter { Feature.FILES.isAvailable(it.effectiveRights) })
+        scopes.addAll(apiContext.user.getGroups().filter { Feature.FILES.isAvailable(it.effectiveRights) })
         return scopes
     }
 

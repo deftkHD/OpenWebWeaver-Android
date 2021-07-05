@@ -73,12 +73,12 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
                         navController.popBackStack()
                         return@observe
                     }
-                    contact.value = foundContact
+                    contact.value = foundContact!!
                 } else {
                     // add new
                     editMode = false
                     val modification = Modification(RemoteScope("", "", -1, false, null), Date())
-                    contact.value = Contact(-1, modified = modification, created = modification)
+                    contact.value = Contact(-1, _modified = modification, created = modification)
                 }
 
             } else {

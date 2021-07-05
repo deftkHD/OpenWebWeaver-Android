@@ -52,7 +52,7 @@ class ForumPostFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val group = userViewModel.apiContext.value?.getUser()?.getGroups()?.firstOrNull { it.login == args.groupId }
+        val group = userViewModel.apiContext.value?.user?.getGroups()?.firstOrNull { it.login == args.groupId }
         if (group == null) {
             Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
             navController.popBackStack()

@@ -50,11 +50,11 @@ class EditNoteFragment : Fragment() {
                     }
                     note = foundNote
 
-                    binding.noteTitle.setText(note.getTitle())
-                    binding.noteText.setText(note.getText())
+                    binding.noteTitle.setText(note.title)
+                    binding.noteText.setText(note.text)
                     binding.noteText.movementMethod = LinkMovementMethod.getInstance()
                     binding.noteText.transformationMethod = CustomTabTransformationMethod(binding.noteText.autoLinkMask)
-                    binding.noteColor.setSelection(note.getColor()?.ordinal ?: 0)
+                    binding.noteColor.setSelection(note.color?.ordinal ?: 0)
 
                     editMode = true
                 } else {

@@ -15,6 +15,7 @@ import de.deftk.openww.android.activities.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class WebWeaverAuthenticator(private val context: Context): AbstractAccountAuthenticator(context) {
 
@@ -26,14 +27,16 @@ class WebWeaverAuthenticator(private val context: Context): AbstractAccountAuthe
         val accountManager = AccountManager.get(context)
         val token = accountManager.getPassword(account)
         val apiContext = try {
-            WebWeaverClient.login(Credentials.fromToken(account.name, token))
+            runBlocking {
+                WebWeaverClient.login(Credentials.fromToken(account.name, token))
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to unregister account online")
             e.printStackTrace()
             null
         }
         CoroutineScope(Dispatchers.IO).launch {
-            apiContext?.getUser()?.logoutDestroyToken(token, apiContext.getUser().getRequestContext(apiContext))
+            apiContext?.user?.logoutDestroyToken(token, apiContext.user.getRequestContext(apiContext))
 
             val bundle = Bundle()
             bundle.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, true)

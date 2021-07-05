@@ -35,7 +35,7 @@ enum class AppFeature(
                     }
                 }
             }
-            return TasksOverview(tasks.count { it.isCompleted() }, tasks.size)
+            return TasksOverview(tasks.count { it.completed }, tasks.size)
         }
     }),
     FEATURE_MAIL(Feature.MAILBOX, R.id.mailFragment, MailOverview::class.java, object: OverviewBuilder {
@@ -85,7 +85,7 @@ enum class AppFeature(
         }
 
         override fun createElementFromResponse(response: Map<Int, JsonObject>, apiContext: ApiContext): AbstractOverviewElement {
-            return GroupsOverview(apiContext.getUser().getGroups().size)
+            return GroupsOverview(apiContext.user.getGroups().size)
         }
     }),
     FEATURE_SYSTEM_NOTIFICATIONS(Feature.MESSAGES, R.id.systemNotificationsFragment, SystemNotificationsOverview::class.java, object : OverviewBuilder {

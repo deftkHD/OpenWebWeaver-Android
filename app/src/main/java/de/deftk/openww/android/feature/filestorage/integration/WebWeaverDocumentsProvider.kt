@@ -115,7 +115,7 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
             }
             Patterns.EMAIL_ADDRESS.matcher(documentId).matches() -> {
                 // webweaver account
-                if (apiContext?.getUser()?.login != documentId) {
+                if (apiContext?.user?.login != documentId) {
                     val callbackUri = buildCallbackUri(documentId)
                     return getLoadingCursor(projection).apply {
                         setNotificationUri(context().contentResolver, callbackUri)
@@ -212,7 +212,7 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
                 val storageManager = context().getSystemService(StorageManager::class.java)
                 return storageManager.openProxyFileDescriptor(
                     ParcelFileDescriptor.parseMode(mode),
-                    FileDescriptorReadCallback(signal) { (provider.provider as IRemoteFile).getDownloadUrl(provider.scope.getRequestContext(apiContext())) },
+                    FileDescriptorReadCallback(signal) { runBlocking { (provider.provider as IRemoteFile).getDownloadUrl(provider.scope.getRequestContext(apiContext())) } },
                     handler
                 )
             } else {
@@ -254,12 +254,12 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
 
         val provider = getCachedProvider(documentId)
         val file = provider?.provider as? RemoteFile?
-        if (provider != null && file?.hasPreview() == true) {
+        if (provider != null && file?.preview == true) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val storageManager = context().getSystemService(StorageManager::class.java)
                 val pfd = storageManager.openProxyFileDescriptor(
                     ParcelFileDescriptor.MODE_READ_ONLY,
-                    FileDescriptorReadCallback(signal) { file.getPreviewUrl(provider.scope.getRequestContext(apiContext())) },
+                    FileDescriptorReadCallback(signal) { runBlocking { file.getPreviewUrl(provider.scope.getRequestContext(apiContext())) } },
                     handler
                 )
                 return AssetFileDescriptor(pfd, 0, AssetFileDescriptor.UNKNOWN_LENGTH)
@@ -448,17 +448,17 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
      */
     private fun includeFile(cursor: MatrixCursor, file: IRemoteFile, scope: IOperatingScope) {
         var flags = 0
-        if (file.effectiveModify() == true) {
+        if (file.effectiveModify == true) {
             flags = if (file.type == FileType.FOLDER) {
                 flags or Document.FLAG_DIR_SUPPORTS_CREATE
             } else {
                 flags or Document.FLAG_SUPPORTS_WRITE
             }
         }
-        if (file.effectiveDelete() == true) {
+        if (file.effectiveDelete == true) {
             flags = flags or Document.FLAG_SUPPORTS_DELETE
         }
-        if (file.hasPreview() == true && shouldShowThumbnail()) {
+        if (file.preview == true && shouldShowThumbnail()) {
             //FIXME some images cause weird behaviour of document chooser activity (documents don't show up anymore, ...)
             // this is probably related to some other stuff (?)
             flags = flags or Document.FLAG_SUPPORTS_THUMBNAIL
@@ -467,13 +467,13 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
         with(cursor.newRow()) {
             add(Document.COLUMN_DOCUMENT_ID, buildDocumentId(scope.name, file.id))
             add(Document.COLUMN_DISPLAY_NAME, file.name)
-            add(Document.COLUMN_SIZE, file.getSize())
+            add(Document.COLUMN_SIZE, file.size)
             if (file.type == FileType.FILE) {
                 add(Document.COLUMN_MIME_TYPE, FileUtil.getMimeType(file.name))
             } else {
                 add(Document.COLUMN_MIME_TYPE, Document.MIME_TYPE_DIR)
             }
-            add(Document.COLUMN_LAST_MODIFIED, file.getModified().date.time)
+            add(Document.COLUMN_LAST_MODIFIED, file.modified.date.time)
             add(Document.COLUMN_FLAGS, flags)
             add(Document.COLUMN_ICON, R.drawable.ic_launcher_foreground)
         }
@@ -554,7 +554,7 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
     }
 
     private fun findOperatingScope(name: String, apiContext: ApiContext): OperatingScope? {
-        return apiContext.getUser().getGroups().firstOrNull { it.name == name } ?: if (name == apiContext.getUser().name) apiContext.getUser() else null
+        return apiContext.user.getGroups().firstOrNull { it.name == name } ?: if (name == apiContext.user.name) apiContext.user else null
     }
 
     private suspend fun login(login: String) {
@@ -568,13 +568,13 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
     }
 
     private fun setupApiContext(apiContext: ApiContext, credentials: Credentials) {
-        apiContext.setRequestHandler(AutoLoginRequestHandler(object : AutoLoginRequestHandler.LoginHandler<ApiContext> {
-            override fun getCredentials(): Credentials = credentials
+        apiContext.requestHandler = AutoLoginRequestHandler(object : AutoLoginRequestHandler.LoginHandler<ApiContext> {
+            override suspend fun getCredentials(): Credentials = credentials
 
-            override fun onLogin(context: ApiContext) {
+            override suspend fun onLogin(context: ApiContext) {
                 this@WebWeaverDocumentsProvider.apiContext = context
             }
-        }, ApiContext::class.java))
+        }, ApiContext::class.java)
     }
 
     class LooperThread : HandlerThread("WebWeaverDocumentsProviderHandlerThread")

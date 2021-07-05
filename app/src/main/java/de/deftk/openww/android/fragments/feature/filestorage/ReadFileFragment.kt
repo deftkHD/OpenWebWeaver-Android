@@ -61,32 +61,32 @@ class ReadFileFragment : Fragment() {
                 binding.fileName.text = file.file.name
                 binding.fileCreatedAuthor.text = file.file.created.member.name
                 binding.fileCreatedDate.text = getString(R.string.created_date).format(TextUtils.parseShortDate(file.file.created.date))
-                binding.fileModifiedAuthor.text = file.file.getModified().member.name
-                binding.fileModifiedAuthor.isVisible = file.file.created.member != file.file.getModified().member
-                binding.fileModifiedDate.text = getString(R.string.modified_date).format(TextUtils.parseShortDate(file.file.getModified().date))
-                binding.fileModifiedDate.isVisible = file.file.created.date != file.file.getModified().date
+                binding.fileModifiedAuthor.text = file.file.modified.member.name
+                binding.fileModifiedAuthor.isVisible = file.file.created.member != file.file.modified.member
+                binding.fileModifiedDate.text = getString(R.string.modified_date).format(TextUtils.parseShortDate(file.file.modified.date))
+                binding.fileModifiedDate.isVisible = file.file.created.date != file.file.modified.date
 
                 when (file.file.type) {
-                    FileType.FILE -> binding.fileSize.text = getString(R.string.size).format(Formatter.formatFileSize(requireContext(), file.file.getSize()))
+                    FileType.FILE -> binding.fileSize.text = getString(R.string.size).format(Formatter.formatFileSize(requireContext(), file.file.size))
                     FileType.FOLDER -> binding.fileSize.text = getString(R.string.children_count).format(file.children.value?.valueOrNull()?.size?.toString() ?: getString(R.string.unknown))
                 }
-                binding.fileIsMine.isChecked = file.file.isMine() == true
-                binding.fileIsShared.isChecked = file.file.isShared() == true
-                binding.fileIsSparse.isChecked = file.file.isSparseFile() == true
+                binding.fileIsMine.isChecked = file.file.mine == true
+                binding.fileIsShared.isChecked = file.file.shared == true
+                binding.fileIsSparse.isChecked = file.file.sparse == true
 
-                binding.filePermissionReadable.isChecked = file.file.isReadable() == true
-                binding.filePermissionWritable.isChecked = file.file.isWritable() == true
-                binding.filePermissionEffectiveRead.isChecked = file.file.effectiveRead() == true
-                binding.filePermissionEffectiveCreate.isChecked = file.file.effectiveCreate() == true
-                binding.filePermissionEffectiveModify.isChecked = file.file.effectiveModify() == true
-                binding.filePermissionEffectiveDelete.isChecked = file.file.effectiveDelete() == true
+                binding.filePermissionReadable.isChecked = file.file.readable == true
+                binding.filePermissionWritable.isChecked = file.file.writable == true
+                binding.filePermissionEffectiveRead.isChecked = file.file.effectiveRead == true
+                binding.filePermissionEffectiveCreate.isChecked = file.file.effectiveCreate == true
+                binding.filePermissionEffectiveModify.isChecked = file.file.effectiveModify == true
+                binding.filePermissionEffectiveDelete.isChecked = file.file.effectiveDelete == true
 
-                binding.fileNotifications.isVisible = file.file.getDownloadNotification() != null
-                binding.fileSelfDownloadNotification.isChecked = file.file.getDownloadNotification()?.me == true
-                binding.fileDownloadNotificationListDescription.isVisible = file.file.getDownloadNotification()?.users?.isNotEmpty() == true
-                binding.fileDownloadNotificationList.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, file.file.getDownloadNotification()?.users?.map { it.alias ?: it.name } ?: emptyList())
+                binding.fileNotifications.isVisible = file.file.downloadNotification != null
+                binding.fileSelfDownloadNotification.isChecked = file.file.downloadNotification?.me == true
+                binding.fileDownloadNotificationListDescription.isVisible = file.file.downloadNotification?.users?.isNotEmpty() == true
+                binding.fileDownloadNotificationList.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, file.file.downloadNotification?.users?.map { it.alias ?: it.name } ?: emptyList())
 
-                binding.fileDescription.text = file.file.getDescription() ?: ""
+                binding.fileDescription.text = file.file.description ?: ""
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())
                 navController.popBackStack()

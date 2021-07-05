@@ -61,7 +61,7 @@ class NotificationsFragment: Fragment() {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 boardViewModel.loadBoardNotifications(apiContext)
-                binding.fabAddNotification.isVisible = apiContext.getUser().getGroups().any { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) }
+                binding.fabAddNotification.isVisible = apiContext.user.getGroups().any { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) }
             } else {
                 binding.fabAddNotification.isVisible = false
                 binding.notificationsEmpty.isVisible = false

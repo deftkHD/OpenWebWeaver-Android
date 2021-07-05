@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
                 R.id.drawer_item_open_website -> openWebsite()
                 R.id.drawer_item_add_account -> addAccount()
                 R.id.drawer_item_switch_account -> switchAccount()
-                R.id.drawer_item_logout -> userViewModel.logout(userViewModel.apiContext.value!!.getUser().login, this)
+                R.id.drawer_item_logout -> userViewModel.logout(userViewModel.apiContext.value!!.user.login, this)
                 else -> return@setNavigationItemSelectedListener false
             }
             item.isChecked = false
@@ -86,11 +86,11 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
             binding.navView.menu.findItem(R.id.drawer_item_switch_account).isVisible = AuthHelper.findAccounts(null, this).size > 1
 
             if (apiContext != null && launchMode == LaunchMode.DEFAULT) {
-                AuthHelper.rememberLogin(apiContext.getUser().login, this)
+                AuthHelper.rememberLogin(apiContext.user.login, this)
 
                 binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
-                binding.navView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = apiContext.getUser().getFullName()
-                binding.navView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = apiContext.getUser().login
+                binding.navView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = apiContext.user.fullName
+                binding.navView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = apiContext.user.login
 
                 // show or hide feature items
                 val enabledFeatures = getEnabledFeatures(apiContext)
@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
     private fun openWebsite() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val user = userViewModel.apiContext.value?.getUser() ?: return@launch
+                val user = userViewModel.apiContext.value?.user ?: return@launch
                 val uri = Uri.parse(user.getAutoLoginUrl(context = user.getRequestContext(userViewModel.apiContext.value!!)))
                 if (preferences.getBoolean("open_link_external", false)) {
                     val intent = Intent(Intent.ACTION_VIEW)
@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
 
     private fun getEnabledFeatures(apiContext: ApiContext): List<Feature> {
         val features = mutableListOf<Feature>()
-        val user = apiContext.getUser()
+        val user = apiContext.user
         user.effectiveRights.forEach { permission ->
             Feature.getAvailableFeatures(permission).filter { !features.contains(it) }.forEach { features.add(it) }
         }

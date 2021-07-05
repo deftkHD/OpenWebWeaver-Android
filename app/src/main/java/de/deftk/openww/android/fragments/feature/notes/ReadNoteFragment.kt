@@ -45,9 +45,9 @@ class ReadNoteFragment : Fragment() {
                 }
                 note = searched
 
-                binding.noteTitle.text = note.getTitle()
+                binding.noteTitle.text = note.title
                 binding.noteDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(note.created.date)
-                binding.noteText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(note.getText()))
+                binding.noteText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(note.text))
                 binding.noteText.movementMethod = LinkMovementMethod.getInstance()
                 binding.noteText.transformationMethod = CustomTabTransformationMethod(binding.noteText.autoLinkMask)
             } else if (response is Response.Failure) {
@@ -71,7 +71,7 @@ class ReadNoteFragment : Fragment() {
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                binding.fabEditNote.isVisible = apiContext.getUser().effectiveRights.contains(Permission.NOTES_WRITE) || apiContext.getUser().effectiveRights.contains(Permission.NOTES_ADMIN)
+                binding.fabEditNote.isVisible = apiContext.user.effectiveRights.contains(Permission.NOTES_WRITE) || apiContext.user.effectiveRights.contains(Permission.NOTES_ADMIN)
             } else {
                 navController.popBackStack(R.id.notesFragment, false)
             }
@@ -82,7 +82,7 @@ class ReadNoteFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        val user = userViewModel.apiContext.value?.getUser() ?: return
+        val user = userViewModel.apiContext.value?.user ?: return
         if (user.effectiveRights.contains(Permission.NOTES_WRITE) || user.effectiveRights.contains(Permission.NOTES_ADMIN))
             inflater.inflate(R.menu.simple_edit_item_menu, menu)
     }

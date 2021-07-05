@@ -53,11 +53,11 @@ class ReadMailFragment : Fragment() {
             } else if (response is Response.Success) {
                 binding.progressReadMail.isVisible = false
                 response.value?.also { email ->
-                    binding.mailSubject.text = email.getSubject()
-                    binding.mailAuthor.text = (email.getFrom() ?: emptyList()).firstOrNull()?.name ?: ""
-                    binding.mailAuthorAddress.text = (email.getFrom() ?: emptyList()).firstOrNull()?.address ?: ""
-                    binding.mailDate.text = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.DEFAULT).format(email.getDate())
-                    val text = email.getText() ?: email.getPlainBody()
+                    binding.mailSubject.text = email.subject
+                    binding.mailAuthor.text = (email.from ?: emptyList()).firstOrNull()?.name ?: ""
+                    binding.mailAuthorAddress.text = (email.from ?: emptyList()).firstOrNull()?.address ?: ""
+                    binding.mailDate.text = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.DEFAULT).format(email.date)
+                    val text = email.text ?: email.plainBody
                     binding.mailMessage.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(text)))
                     binding.mailMessage.movementMethod = LinkMovementMethod.getInstance()
                     binding.mailMessage.transformationMethod = CustomTabTransformationMethod(binding.mailMessage.autoLinkMask)
@@ -111,7 +111,7 @@ class ReadMailFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         userViewModel.apiContext.value?.also { apiContext ->
-            if (apiContext.getUser().effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.getUser().effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
+            if (apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
                 inflater.inflate(R.menu.simple_mail_edit_item_menu, menu)
             }
         }

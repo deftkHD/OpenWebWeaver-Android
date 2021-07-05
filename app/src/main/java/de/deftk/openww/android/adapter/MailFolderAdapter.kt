@@ -21,7 +21,7 @@ class MailFolderAdapter(context: Context, val elements: List<IEmailFolder>) : Ar
                 folder.isTrash -> R.string.mail_folder_trash
                 else -> null
             }
-            return if (resource != null) context.getString(resource) else folder.getName()
+            return if (resource != null) context.getString(resource) else folder.name
         }
 
         fun getFolderIcon(folder: IEmailFolder): Int {
