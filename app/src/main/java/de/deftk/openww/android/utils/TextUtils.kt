@@ -134,7 +134,6 @@ object TextUtils {
             when (type) {
                 InternalReferenceType.FILE_STORAGE -> {
                     //TODO file revisions
-                    TODO("update")
                     /*val intent = Intent(widget.context, StartActivity::class.java)
                     intent.putExtra(StartActivity.EXTRA_FOCUS_FEATURE, Feature.FILES)
                     val args = Bundle()

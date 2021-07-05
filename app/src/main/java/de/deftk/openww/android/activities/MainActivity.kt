@@ -112,9 +112,6 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
                 Reporter.reportException(R.string.error_logout_failed, response.exception, this)
             }
         }
-
-        //TODO beta disclaimer
-        //TODO privacy disclaimer
     }
 
     private fun openWebsite() {

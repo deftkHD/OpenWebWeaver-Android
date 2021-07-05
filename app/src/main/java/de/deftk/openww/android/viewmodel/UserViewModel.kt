@@ -6,14 +6,14 @@ import android.content.Context
 import android.os.Build
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.deftk.openww.api.auth.Credentials
-import de.deftk.openww.api.implementation.ApiContext
-import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
-import de.deftk.openww.api.request.handler.AutoLoginRequestHandler
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.feature.overview.AbstractOverviewElement
 import de.deftk.openww.android.repository.UserRepository
+import de.deftk.openww.api.auth.Credentials
+import de.deftk.openww.api.implementation.ApiContext
+import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
+import de.deftk.openww.api.request.handler.AutoLoginRequestHandler
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -120,7 +120,6 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
 
             override fun onLogin(context: ApiContext) {
                 //FIXME has to be run on main thread
-                _loginResponse.value = Response.Success(context)
             }
         }, ApiContext::class.java))
     }
