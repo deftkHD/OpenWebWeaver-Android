@@ -9,6 +9,7 @@ import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.request.UserApiRequest
 import de.deftk.openww.android.R
 import de.deftk.openww.android.feature.overview.*
+import de.deftk.openww.api.implementation.ApiContext
 import kotlinx.serialization.json.*
 
 enum class AppFeature(
@@ -23,7 +24,7 @@ enum class AppFeature(
             return request.addGetAllTasksRequest(user)
         }
 
-        override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
+        override fun createElementFromResponse(response: Map<Int, JsonObject>, apiContext: ApiContext): AbstractOverviewElement {
             val tasks = mutableListOf<Task>()
             response.values.withIndex().forEach { (index, subResponse) ->
                 if (index % 2 == 1) {
@@ -42,7 +43,7 @@ enum class AppFeature(
             return request.addGetEmailStateRequest()
         }
 
-        override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
+        override fun createElementFromResponse(response: Map<Int, JsonObject>, apiContext: ApiContext): AbstractOverviewElement {
             val subResponse = response.values.toList()[1]
             val quota = WebWeaverClient.json.decodeFromJsonElement<Quota>(subResponse["quota"]!!)
             val unread = subResponse["unread_messages"]!!.jsonPrimitive.int
@@ -54,7 +55,7 @@ enum class AppFeature(
             return request.addGetFileStorageStateRequest()
         }
 
-        override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
+        override fun createElementFromResponse(response: Map<Int, JsonObject>, apiContext: ApiContext): AbstractOverviewElement {
             val subResponse = response.values.toList()[1]
             val quota = WebWeaverClient.json.decodeFromJsonElement<Quota>(subResponse["quota"]!!)
             return FileStorageOverview(quota)
@@ -65,7 +66,7 @@ enum class AppFeature(
             return request.addGetAllBoardNotificationsRequest(user)
         }
 
-        override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
+        override fun createElementFromResponse(response: Map<Int, JsonObject>, apiContext: ApiContext): AbstractOverviewElement {
             var count = 0
             response.values.withIndex().forEach { (index, subResponse) ->
                 if (index % 2 == 1) {
@@ -78,13 +79,21 @@ enum class AppFeature(
         }
     }),
     FEATURE_FORUM(Feature.FORUM, R.id.forumGroupFragment),
-    FEATURE_MEMBERS(Feature.MEMBERS, R.id.membersGroupFragment),
+    FEATURE_MEMBERS(Feature.MEMBERS, R.id.membersGroupFragment, GroupsOverview::class.java, object : OverviewBuilder {
+        override fun appendRequests(request: UserApiRequest, user: IUser): List<Int> {
+            return emptyList() // not needed
+        }
+
+        override fun createElementFromResponse(response: Map<Int, JsonObject>, apiContext: ApiContext): AbstractOverviewElement {
+            return GroupsOverview(apiContext.getUser().getGroups().size)
+        }
+    }),
     FEATURE_SYSTEM_NOTIFICATIONS(Feature.MESSAGES, R.id.systemNotificationsFragment, SystemNotificationsOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest, user: IUser): List<Int> {
             return request.addGetSystemNotificationsRequest()
         }
 
-        override fun createElementFromResponse(response: Map<Int, JsonObject>): AbstractOverviewElement {
+        override fun createElementFromResponse(response: Map<Int, JsonObject>, apiContext: ApiContext): AbstractOverviewElement {
             val subResponse = response.values.toList()[1]
             val systemNotifications = mutableListOf<SystemNotification>()
             subResponse["messages"]!!.jsonArray.forEach { messageResponse ->

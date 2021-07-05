@@ -279,4 +279,6 @@
     <string name="file_receive_download_notification">Downloadbenachrichtigung erhalten</string>
     <string name="file_download_notification_list_description">Benutzer:</string>
     <string name="more">Mehr</string>
+    <string name="institution">Institution</string>
+    <string name="group_count">%d Gruppen</string>
 </resources>

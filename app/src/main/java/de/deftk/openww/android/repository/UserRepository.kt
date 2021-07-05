@@ -51,7 +51,7 @@ class UserRepository @Inject constructor() : AbstractRepository() {
         }
         val response = request.fireRequest().toJson()
         idMap.forEach { (feature, ids) ->
-            elements.add(feature.overviewBuilder!!.createElementFromResponse(ids.map { it to ResponseUtil.getSubResponseResult(response, it) }.toMap()))
+            elements.add(feature.overviewBuilder!!.createElementFromResponse(ids.map { it to ResponseUtil.getSubResponseResult(response, it) }.toMap(), apiContext))
         }
         elements
     }
