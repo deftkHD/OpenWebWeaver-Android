@@ -25,7 +25,6 @@ class ChooseAccountDialogFragment : DialogFragment() {
         userViewModel.loginResponse.observe(this) { response ->
             if (actionPerformed) {
                 if (response is Response.Success) {
-                    AuthHelper.rememberLogin(response.value.getUser().login, requireContext())
                     navController.navigate(ChooseAccountDialogFragmentDirections.actionChooseAccountDialogFragmentToOverviewFragment())
                 } else if (response is Response.Failure) {
                     Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
