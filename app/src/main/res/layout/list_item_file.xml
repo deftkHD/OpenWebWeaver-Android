@@ -5,11 +5,7 @@
     <data>
 
         <variable
-            name="clickListener"
-            type="android.view.View.OnClickListener" />
-
-        <variable
-            name="moreClickListener"
+            name="menuClickListener"
             type="android.view.View.OnClickListener" />
 
         <variable
@@ -93,7 +89,7 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
             android:contentDescription="@string/more"
-            android:onClick="@{moreClickListener}"
+            android:onClick="@{menuClickListener}"
             android:src="@drawable/ic_more_vert_24" />
 
         <TextView

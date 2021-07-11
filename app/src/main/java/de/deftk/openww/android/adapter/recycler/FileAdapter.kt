@@ -45,7 +45,7 @@ class FileAdapter(
         private var selected: Boolean = false
 
         init {
-            binding.setMoreClickListener {
+            binding.setMenuClickListener {
                 it.showContextMenu()
             }
         }
