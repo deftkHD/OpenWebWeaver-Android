@@ -9,6 +9,7 @@ Unofficial WebWeaver® app for Android
 
 ## Download
 <a href="https://github.com/deftkHD/OpenWebWeaver-Android/releases/latest"><img src="https://raw.githubusercontent.com/andOTP/andOTP/master/assets/badges/get-it-on-github.png" height="75"></a>
+<a href="https://f-droid.org/packages/de.deftk.openww.android/"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="75">
 
 ## Screenshots
 <a href="https://github.com/deftkHD/OpenWebWeaver-Android/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png"><img src="./fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Profile" width="30%"/></a>
