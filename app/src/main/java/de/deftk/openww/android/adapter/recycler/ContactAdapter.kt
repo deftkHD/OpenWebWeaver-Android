@@ -2,41 +2,41 @@ package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import de.deftk.openww.android.databinding.ListItemContactBinding
-import de.deftk.openww.android.fragments.feature.contacts.ContactsFragmentDirections
+import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.contacts.IContact
 
-class ContactAdapter(val scope: IOperatingScope) : ListAdapter<IContact, RecyclerView.ViewHolder>(ContactDiffCallback()) {
+class ContactAdapter(val scope: IOperatingScope, clickListener: ActionModeClickListener<ContactViewHolder>) : ActionModeAdapter<IContact, ContactAdapter.ContactViewHolder>(ContactDiffCallback(), clickListener) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
         val binding = ListItemContactBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ContactViewHolder(binding)
+        return ContactViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ContactViewHolder, position: Int) {
         val contact = getItem(position)
-        (holder as ContactViewHolder).bind(scope, contact)
+        holder.bind(scope, contact)
     }
 
-    public override fun getItem(position: Int): IContact {
-        return super.getItem(position)
-    }
+    class ContactViewHolder(val binding: ListItemContactBinding, clickListener: ActionModeClickListener<ActionModeViewHolder>) : ActionModeViewHolder(binding.root, clickListener) {
 
-    class ContactViewHolder(val binding: ListItemContactBinding) : RecyclerView.ViewHolder(binding.root) {
+        private var selected: Boolean = false
 
         init {
-            binding.setClickListener {
-                itemView.findNavController().navigate(ContactsFragmentDirections.actionContactsFragmentToReadContactFragment(binding.scope!!.login, binding.contact!!.id.toString()))
-            }
-            itemView.setOnLongClickListener {
+            binding.setMenuClickListener {
                 itemView.showContextMenu()
-                true
             }
+        }
+
+        override fun isSelected(): Boolean {
+            return selected
+        }
+
+        override fun setSelected(selected: Boolean) {
+            this.selected = selected
+            binding.selected = selected
         }
 
         fun bind(scope: IOperatingScope, contact: IContact) {

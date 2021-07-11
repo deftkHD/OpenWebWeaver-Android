@@ -18,8 +18,11 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
     private val _editResponse = MutableLiveData<Response<IContact>?>()
     val editResponse: LiveData<Response<IContact>?> = _editResponse
 
-    private val _deleteResponse = MutableLiveData<Response<Unit>?>()
-    val deleteResponse: LiveData<Response<Unit>?> = _deleteResponse
+    private val _deleteResponse = MutableLiveData<Response<Pair<IContact, IOperatingScope>>?>()
+    val deleteResponse: LiveData<Response<Pair<IContact, IOperatingScope>>?> = _deleteResponse
+
+    private val _batchDeleteResponse = MutableLiveData<List<Response<Pair<IContact, IOperatingScope>>>?>()
+    val batchDeleteResponse: LiveData<List<Response<Pair<IContact, IOperatingScope>>>?> = _batchDeleteResponse
 
     fun getContactsLiveData(scope: IOperatingScope): LiveData<Response<List<IContact>>> {
         return _contactsResponses.getOrPut(scope) { MutableLiveData() }
@@ -78,5 +81,26 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
         _deleteResponse.value = null
     }
 
+    fun batchDelete(contacts: List<Pair<IOperatingScope, IContact>>, apiContext: ApiContext) {
+        viewModelScope.launch {
+            val responses = contacts.map { contactsRepository.deleteContact(it.second, it.first, apiContext) }
+            responses.forEach { response ->
+                if (response is Response.Success) {
+                    val liveData = _contactsResponses[response.value.second]
+                    if (liveData?.value is Response.Success) {
+                        val currentContacts = (liveData.value!! as Response.Success).value.toMutableList()
+                        currentContacts.remove(response.value.first)
+                        liveData.value = Response.Success(currentContacts)
+                    }
+
+                }
+            }
+            _batchDeleteResponse.value = responses
+        }
+    }
+
+    fun resetBatchDeleteResponse() {
+        _batchDeleteResponse.value = null
+    }
 
 }

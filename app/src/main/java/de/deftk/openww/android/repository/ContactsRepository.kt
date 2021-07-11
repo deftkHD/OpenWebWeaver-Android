@@ -67,6 +67,7 @@ class ContactsRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun deleteContact(contact: IContact, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
         contact.delete(scope.getRequestContext(apiContext))
+        contact to scope
     }
 
 }

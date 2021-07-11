@@ -3,24 +3,27 @@ package de.deftk.openww.android.fragments.feature.contacts
 import android.os.Bundle
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
+import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.ContactAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentContactsBinding
+import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ContactsViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.Permission
+import de.deftk.openww.api.model.feature.contacts.IContact
 
-class ContactsFragment : Fragment() {
+class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactViewHolder>(R.menu.contacts_actionmode_menu) {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val contactsViewModel: ContactsViewModel by activityViewModels()
@@ -41,7 +44,6 @@ class ContactsFragment : Fragment() {
         }
         scope = foundScope
 
-        val adapter = ContactAdapter(scope)
         binding.contactList.adapter = adapter
         binding.contactList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         contactsViewModel.getContactsLiveData(scope).observe(viewLifecycleOwner) { response ->
@@ -53,6 +55,19 @@ class ContactsFragment : Fragment() {
             }
             binding.progressContacts.isVisible = false
             binding.contactsSwipeRefresh.isRefreshing = false
+        }
+
+        contactsViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                contactsViewModel.resetBatchDeleteResponse()
+
+            val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
+            if (failure.isNotEmpty()) {
+                Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
+                binding.progressContacts.isVisible = false
+            } else {
+                actionMode?.finish()
+            }
         }
 
         binding.contactsSwipeRefresh.setOnRefreshListener {
@@ -76,6 +91,33 @@ class ContactsFragment : Fragment() {
 
         registerForContextMenu(binding.contactList)
         return binding.root
+    }
+
+    override fun createAdapter(): ActionModeAdapter<IContact, ContactAdapter.ContactViewHolder> {
+        return ContactAdapter(scope, this)
+    }
+
+    override fun onItemClick(view: View, viewHolder: ContactAdapter.ContactViewHolder) {
+        navController.navigate(ContactsFragmentDirections.actionContactsFragmentToReadContactFragment(viewHolder.binding.scope!!.login, viewHolder.binding.contact!!.id.toString()))
+    }
+
+    override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
+        val canModify = adapter.selectedItems.all { it.binding.scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || it.binding.scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN) }
+        menu.findItem(R.id.contacts_action_delete).isEnabled = canModify
+        return true
+    }
+
+    override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.contacts_action_delete -> {
+                userViewModel.apiContext.value?.also { apiContext ->
+                    contactsViewModel.batchDelete(adapter.selectedItems.map { it.binding.scope!! to it.binding.contact!! }, apiContext)
+                    binding.progressContacts.isVisible = true
+                }
+            }
+            else -> return false
+        }
+        return true
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
