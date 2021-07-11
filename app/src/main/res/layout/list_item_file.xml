@@ -38,9 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@{selected ? @color/colorAccent : @android:color/transparent}"
-        android:onClick="@{clickListener}"
         android:padding="16dp">
-
 
         <ImageView
             android:id="@+id/file_image"

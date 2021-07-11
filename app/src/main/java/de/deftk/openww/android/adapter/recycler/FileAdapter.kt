@@ -5,30 +5,32 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.signature.ObjectKey
 import de.deftk.openww.android.R
 import de.deftk.openww.android.databinding.ListItemFileBinding
-import de.deftk.openww.android.fragments.feature.filestorage.FileClickHandler
+import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.FilePreviewUrl
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 
-class FileAdapter(private val scope: IOperatingScope, private val clickHandler: FileClickHandler, private val folderId: String?, private val path: Array<String>?, private val fileStorageViewModel: FileStorageViewModel) : ListAdapter<IRemoteFile, RecyclerView.ViewHolder>(FileDiffCallback()) {
+class FileAdapter(
+    private val scope: IOperatingScope,
+    clickListener: ActionModeClickListener<FileViewHolder>,
+    private val folderId: String?,
+    private val path: Array<String>?,
+    private val fileStorageViewModel: FileStorageViewModel
+) : ActionModeAdapter<IRemoteFile, FileAdapter.FileViewHolder>(FileDiffCallback(), clickListener) {
 
-    val selectedItems: List<FileViewHolder> = mutableListOf()
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
         val binding = ListItemFileBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return FileViewHolder(binding, clickHandler)
+        return FileViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: FileViewHolder, position: Int) {
         val file = getItem(position)
-        (holder as FileViewHolder).bind(
+        holder.bind(
             scope,
             file,
             folderId,
@@ -38,40 +40,23 @@ class FileAdapter(private val scope: IOperatingScope, private val clickHandler: 
         )
     }
 
-    public override fun getItem(position: Int): IRemoteFile {
-        return super.getItem(position)
-    }
+    class FileViewHolder(val binding: ListItemFileBinding, clickListener: ActionModeClickListener<ActionModeViewHolder>) : ActionModeViewHolder(binding.root, clickListener) {
 
-    fun toggleItemSelection(viewHolder: FileViewHolder, selected: Boolean? = null) {
-        val newState = selected ?: !(viewHolder.binding.selected ?: false)
-        viewHolder.binding.selected = newState
-        if (newState) {
-            (selectedItems as MutableList).add(viewHolder)
-        } else {
-            (selectedItems as MutableList).remove(viewHolder)
-        }
-    }
-
-    fun clearSelection() {
-        selectedItems.forEach { item ->
-            item.binding.selected = false
-        }
-        (selectedItems as MutableList).clear()
-    }
-
-    class FileViewHolder(val binding: ListItemFileBinding, private val clickHandler: FileClickHandler) : RecyclerView.ViewHolder(binding.root) {
+        private var selected: Boolean = false
 
         init {
-            binding.setClickListener { view ->
-                clickHandler.onClick(view, this)
-            }
             binding.setMoreClickListener {
                 it.showContextMenu()
             }
-            itemView.setOnLongClickListener {
-                clickHandler.onLongClick(it, this)
-                true
-            }
+        }
+
+        override fun isSelected(): Boolean {
+            return selected
+        }
+
+        override fun setSelected(selected: Boolean) {
+            this.selected = selected
+            binding.selected = selected
         }
 
         fun bind(scope: IOperatingScope, file: IRemoteFile, folderId: String?, path: Array<String>?, progress: Int?, previewUrl: FilePreviewUrl?) {

@@ -12,7 +12,6 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -21,7 +20,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.MainActivity
+import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.FileAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
@@ -29,6 +28,7 @@ import de.deftk.openww.android.databinding.FragmentFilesBinding
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
 import de.deftk.openww.android.feature.filestorage.NetworkTransfer
+import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.FileUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
@@ -39,7 +39,7 @@ import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import java.io.File
 import kotlin.math.max
 
-class FilesFragment : Fragment(), FileClickHandler, ActionMode.Callback {
+class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder>(R.menu.filestorage_actionmode_menu) {
 
     //TODO cancel ongoing network transfers on account switch
 
@@ -53,10 +53,8 @@ class FilesFragment : Fragment(), FileClickHandler, ActionMode.Callback {
     private lateinit var downloadSaveLauncher: ActivityResultLauncher<Pair<Intent, IRemoteFile>>
     private lateinit var binding: FragmentFilesBinding
     private lateinit var scope: IOperatingScope
-    private lateinit var adapter: FileAdapter
 
     private var currentNetworkTransfers = emptyList<NetworkTransfer>()
-    private var actionMode: ActionMode? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFilesBinding.inflate(inflater, container, false)
@@ -69,7 +67,6 @@ class FilesFragment : Fragment(), FileClickHandler, ActionMode.Callback {
         }
         scope = argScope
 
-        adapter = FileAdapter(scope, this, args.folderId, args.path, fileStorageViewModel)
         binding.fileList.adapter = adapter
         binding.fileList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         binding.fileList.recycledViewPool.setMaxRecycledViews(0, 0) // this is just a workaround (otherwise preview images disappear while scrolling, see https://github.com/square/picasso/issues/845#issuecomment-280626688) FIXME seems like an issue with recycling
@@ -147,6 +144,10 @@ class FilesFragment : Fragment(), FileClickHandler, ActionMode.Callback {
 
         registerForContextMenu(binding.fileList)
         return binding.root
+    }
+
+    override fun createAdapter(): ActionModeAdapter<IRemoteFile, FileAdapter.FileViewHolder> {
+        return FileAdapter(scope, this, args.folderId, args.path, fileStorageViewModel)
     }
 
     private fun onNetworkTransferAdded(transfer: NetworkTransfer) {
@@ -252,13 +253,6 @@ class FilesFragment : Fragment(), FileClickHandler, ActionMode.Callback {
         }
     }
 
-    override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-        actionMode = mode
-        (requireActivity() as MainActivity).actionMode = actionMode
-        requireActivity().menuInflater.inflate(R.menu.filestorage_actionmode_menu, menu)
-        return true
-    }
-
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
         val canDelete = adapter.selectedItems.all { it.binding.file!!.effectiveDelete == true }
         menu.findItem(R.id.filestorage_action_delete).isEnabled = canDelete //TODO should be visible if disabled
@@ -278,40 +272,17 @@ class FilesFragment : Fragment(), FileClickHandler, ActionMode.Callback {
         return true
     }
 
-    override fun onDestroyActionMode(mode: ActionMode) {
-        adapter.clearSelection()
-        (requireActivity() as MainActivity).actionMode = null
-        actionMode = null
-    }
-
-    override fun onClick(view: View, viewHolder: FileAdapter.FileViewHolder) {
-        if (actionMode == null) {
-            if (viewHolder.binding.file!!.type == FileType.FOLDER) {
-                val path = if (viewHolder.binding.folderId != null) {
-                    if (viewHolder.binding.path != null)
-                        arrayOf(*viewHolder.binding.path!!, viewHolder.binding.folderId!!)
-                    else arrayOf(viewHolder.binding.folderId!!)
-                } else null
-                val action = FilesFragmentDirections.actionFilesFragmentSelf(viewHolder.binding.file!!.id, viewHolder.binding.scope!!.login, viewHolder.binding.file!!.name, path)
-                navController.navigate(action)
-            } else if (viewHolder.binding.file!!.type == FileType.FILE) {
-                openFile(viewHolder.binding.file!!)
-            }
-        } else {
-            adapter.toggleItemSelection(viewHolder)
-            if (adapter.selectedItems.isNotEmpty()) {
-                actionMode?.invalidate()
-            } else {
-                actionMode?.finish()
-            }
-        }
-    }
-
-    override fun onLongClick(view: View, viewHolder: FileAdapter.FileViewHolder) {
-        if (actionMode == null) {
-            actionMode = (requireActivity() as AppCompatActivity).startSupportActionMode(this)
-            adapter.toggleItemSelection(viewHolder)
-            actionMode?.invalidate()
+    override fun onItemClick(view: View, viewHolder: FileAdapter.FileViewHolder) {
+        if (viewHolder.binding.file!!.type == FileType.FOLDER) {
+            val path = if (viewHolder.binding.folderId != null) {
+                if (viewHolder.binding.path != null)
+                    arrayOf(*viewHolder.binding.path!!, viewHolder.binding.folderId!!)
+                else arrayOf(viewHolder.binding.folderId!!)
+            } else null
+            val action = FilesFragmentDirections.actionFilesFragmentSelf(viewHolder.binding.file!!.id, viewHolder.binding.scope!!.login, viewHolder.binding.file!!.name, path)
+            navController.navigate(action)
+        } else if (viewHolder.binding.file!!.type == FileType.FILE) {
+            openFile(viewHolder.binding.file!!)
         }
     }
 
@@ -341,9 +312,4 @@ class SaveFileContract : ActivityResultContract<Pair<Intent, IRemoteFile>, Pair<
     override fun parseResult(resultCode: Int, intent: Intent?): Pair<ActivityResult, IRemoteFile> {
         return Pair(ActivityResult(resultCode, intent), file)
     }
-}
-
-interface FileClickHandler {
-    fun onClick(view: View, viewHolder: FileAdapter.FileViewHolder)
-    fun onLongClick(view: View, viewHolder: FileAdapter.FileViewHolder)
 }
