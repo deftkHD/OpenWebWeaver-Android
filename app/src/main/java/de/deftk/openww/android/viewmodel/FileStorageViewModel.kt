@@ -24,8 +24,8 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
 
     private val _files = mutableMapOf<IOperatingScope, MutableLiveData<Response<List<FileCacheElement>>>>()
 
-    private val _batchDeleteResponse = MutableLiveData<List<Response<IRemoteFile>>>()
-    val batchDeleteResponse: LiveData<List<Response<IRemoteFile>>> = _batchDeleteResponse
+    private val _batchDeleteResponse = MutableLiveData<List<Response<IRemoteFile>>?>()
+    val batchDeleteResponse: LiveData<List<Response<IRemoteFile>>?> = _batchDeleteResponse
 
     private val _networkTransfers = MutableLiveData<List<NetworkTransfer>>()
     val networkTransfers: LiveData<List<NetworkTransfer>> = _networkTransfers
@@ -226,6 +226,10 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
             }
             _batchDeleteResponse.value = responses
         }
+    }
+
+    fun resetBatchDeleteResponse() {
+        _batchDeleteResponse.value = null
     }
 
 }

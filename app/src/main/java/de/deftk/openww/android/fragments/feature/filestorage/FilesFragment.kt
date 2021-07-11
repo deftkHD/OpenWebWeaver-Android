@@ -104,7 +104,10 @@ class FilesFragment : Fragment(), FileClickHandler, ActionMode.Callback {
         }
 
         fileStorageViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
-            val failure = response.filterIsInstance<Response.Failure>()
+            if (response != null)
+                fileStorageViewModel.resetBatchDeleteResponse()
+
+            val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
                 binding.progressFileStorage.isVisible = false
