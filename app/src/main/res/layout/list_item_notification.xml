@@ -18,6 +18,11 @@
         <variable
             name="group"
             type="de.deftk.openww.api.model.IGroup" />
+
+        <variable
+            name="selected"
+            type="Boolean" />
+
     </data>
 
 
@@ -25,7 +30,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="@{clickListener}"
+        android:background="@{selected ? @color/colorAccent : @android:color/transparent}"
         android:padding="16dp">
 
         <TextView

@@ -31,6 +31,7 @@ class BoardRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun deleteBoardNotification(notification: IBoardNotification, group: IGroup, apiContext: ApiContext) = apiCall {
         notification.delete(BoardType.ALL, group.getRequestContext(apiContext))
+        notification to group
     }
 
 }

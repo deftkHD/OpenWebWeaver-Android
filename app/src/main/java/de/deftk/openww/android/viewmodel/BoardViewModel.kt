@@ -2,13 +2,13 @@ package de.deftk.openww.android.viewmodel
 
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.repository.BoardRepository
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.feature.board.BoardNotificationColor
 import de.deftk.openww.api.model.feature.board.BoardType
 import de.deftk.openww.api.model.feature.board.IBoardNotification
-import de.deftk.openww.android.api.Response
-import de.deftk.openww.android.repository.BoardRepository
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
@@ -21,6 +21,9 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
 
     private val _postResponse = MutableLiveData<Response<IBoardNotification?>?>()
     val postResponse: LiveData<Response<IBoardNotification?>?> = _postResponse
+
+    private val _batchDeleteResponse = MutableLiveData<List<Response<Pair<IBoardNotification, IGroup>>>?>()
+    val batchDeleteResponse: LiveData<List<Response<Pair<IBoardNotification, IGroup>>>?> = _batchDeleteResponse
 
     fun setSearchText(query: String?) {
         savedStateHandle["query"] = query
@@ -87,6 +90,27 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
 
     fun resetPostResponse() {
         _postResponse.value = null
+    }
+
+    fun batchDelete(selectedItems: List<Pair<IGroup, IBoardNotification>>, apiContext: ApiContext) {
+        viewModelScope.launch {
+            val responses = selectedItems.map { boardRepository.deleteBoardNotification(it.second, it.first, apiContext) }
+            val notifications = notificationsResponse.value?.valueOrNull()
+            if (notifications != null) {
+                val currentNotifications = notifications.toMutableList()
+                responses.forEach { response ->
+                    if (response is Response.Success) {
+                        currentNotifications.remove(response.value)
+                    }
+                }
+                _notificationsResponse.value = Response.Success(currentNotifications)
+            }
+            _batchDeleteResponse.value = responses
+        }
+    }
+
+    fun resetBatchDeleteResponse() {
+        _batchDeleteResponse.value = null
     }
 
 }
