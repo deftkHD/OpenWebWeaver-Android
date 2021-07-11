@@ -6,6 +6,7 @@ import android.content.Context
 import android.os.Build
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.deftk.openww.android.adapter.recycler.SystemNotificationAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.feature.overview.AbstractOverviewElement
@@ -37,6 +38,12 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
 
     private val _systemNotificationsResponse = MutableLiveData<Response<List<ISystemNotification>>>()
     val systemNotificationsResponse: LiveData<Response<List<ISystemNotification>>> = _systemNotificationsResponse
+
+    private val _systemNotificationDeleteResponse = MutableLiveData<Response<ISystemNotification>?>()
+    val systemNotificationDeleteResponse: LiveData<Response<ISystemNotification>?> = _systemNotificationDeleteResponse
+
+    private val _systemNotificationBatchDeleteResponse = MutableLiveData<List<Response<ISystemNotification>>?>()
+    val systemNotificationBatchDeleteResponse: LiveData<List<Response<ISystemNotification>>?> = _systemNotificationBatchDeleteResponse
 
     fun loginPassword(username: String, password: String) {
         viewModelScope.launch {
@@ -142,17 +149,41 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
         }
     }
 
-    fun deleteSystemNotification(systemNotification: ISystemNotification, apiContext: ApiContext): LiveData<Response<Unit>> {
-        return liveData {
+    fun deleteSystemNotification(systemNotification: ISystemNotification, apiContext: ApiContext) {
+        viewModelScope.launch {
             val response = userRepository.deleteSystemNotification(systemNotification, apiContext)
             if (_systemNotificationsResponse.value is Response.Success && response is Response.Success) {
                 val systemNotifications = (_systemNotificationsResponse.value as Response.Success<List<ISystemNotification>>).value.toMutableList()
                 systemNotifications.remove(systemNotification)
                 _systemNotificationsResponse.value = Response.Success(systemNotifications)
             }
-            //TODO add _postResponse livedata
-            emit(response)
+            _systemNotificationDeleteResponse.value = response
         }
+    }
+
+    fun batchDeleteSystemNotifications(systemNotifications: List<ISystemNotification>, apiContext: ApiContext) {
+        viewModelScope.launch {
+            val responses = systemNotifications.map { userRepository.deleteSystemNotification(it, apiContext) }
+            val notifications = systemNotificationsResponse.value?.valueOrNull()
+            if (notifications != null) {
+                val currentNotifications = notifications.toMutableList()
+                responses.forEach { response ->
+                    if (response is Response.Success) {
+                        currentNotifications.remove(response.value)
+                    }
+                }
+                _systemNotificationsResponse.value = Response.Success(currentNotifications)
+            }
+            _systemNotificationBatchDeleteResponse.value = responses
+        }
+    }
+
+    fun resetDeleteResponse() {
+        _systemNotificationDeleteResponse.value = null
+    }
+
+    fun resetBatchDeleteResponse() {
+        _systemNotificationBatchDeleteResponse.value = null
     }
 
 }

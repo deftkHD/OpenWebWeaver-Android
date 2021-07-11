@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.recyclerview.widget.RecyclerView
+        <de.deftk.openww.android.components.ContextMenuRecyclerView
             android:id="@+id/system_notification_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

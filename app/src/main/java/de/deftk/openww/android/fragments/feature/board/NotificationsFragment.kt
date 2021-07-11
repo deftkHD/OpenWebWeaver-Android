@@ -125,7 +125,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
     }
 
     override fun onItemClick(view: View, viewHolder: BoardNotificationAdapter.BoardNotificationViewHolder) {
-        view.findNavController().navigate(NotificationsFragmentDirections.actionNotificationsFragmentToReadNotificationFragment(viewHolder.binding.notification!!.id, viewHolder.binding.group!!.login))
+        navController.navigate(NotificationsFragmentDirections.actionNotificationsFragmentToReadNotificationFragment(viewHolder.binding.notification!!.id, viewHolder.binding.group!!.login))
     }
 
     /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

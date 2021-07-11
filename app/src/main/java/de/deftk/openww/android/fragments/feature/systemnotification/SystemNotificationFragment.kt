@@ -2,9 +2,7 @@ package de.deftk.openww.android.fragments.feature.systemnotification
 
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -33,6 +31,7 @@ class SystemNotificationFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSystemNotificationBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        setHasOptionsMenu(true)
         return binding.root
     }
 
@@ -57,11 +56,36 @@ class SystemNotificationFragment : Fragment() {
                 Reporter.reportException(R.string.error_get_system_notifications_failed, response.exception, requireContext())
             }
         }
+        userViewModel.systemNotificationDeleteResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                userViewModel.resetDeleteResponse() // mark as handled
+
+            if (response is Response.Success) {
+                navController.popBackStack()
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
+            }
+        }
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext == null) {
                 navController.popBackStack(R.id.systemNotificationsFragment, false)
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.delete_menu_item, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_item_delete -> {
+                val apiContext = userViewModel.apiContext.value ?: return false
+                userViewModel.deleteSystemNotification(systemNotification, apiContext)
+            }
+            else -> return false
+        }
+        return true
     }
 
 }

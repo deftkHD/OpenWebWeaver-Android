@@ -2,34 +2,42 @@ package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
-import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 import de.deftk.openww.android.databinding.ListItemSystemNotificationBinding
-import de.deftk.openww.android.fragments.feature.systemnotification.SystemNotificationsFragmentDirections
+import de.deftk.openww.android.fragments.ActionModeClickListener
+import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 
-class SystemNotificationAdapter: ListAdapter<ISystemNotification, RecyclerView.ViewHolder>(SystemNotificationDiffCallback()) {
+class SystemNotificationAdapter(clickListener: ActionModeClickListener<SystemNotificationViewHolder>): ActionModeAdapter<ISystemNotification, SystemNotificationAdapter.SystemNotificationViewHolder>(SystemNotificationDiffCallback(), clickListener) {
 
     //TODO highlight unread
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SystemNotificationViewHolder {
         val binding = ListItemSystemNotificationBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return SystemNotificationViewHolder(binding)
+        return SystemNotificationViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: SystemNotificationViewHolder, position: Int) {
         val notification = getItem(position)
-        (holder as SystemNotificationViewHolder).bind(notification)
+        holder.bind(notification)
     }
 
-    class SystemNotificationViewHolder(private val binding: ListItemSystemNotificationBinding) : RecyclerView.ViewHolder(binding.root) {
+    class SystemNotificationViewHolder(val binding: ListItemSystemNotificationBinding, clickListener: ActionModeClickListener<ActionModeViewHolder>) : ActionModeViewHolder(binding.root, clickListener) {
+
+        private var selected: Boolean = false
 
         init {
-            binding.setClickListener { view ->
-                view.findNavController().navigate(SystemNotificationsFragmentDirections.actionSystemNotificationsFragmentToSystemNotificationFragment(binding.notification!!.id))
+            binding.setMenuClickListener {
+                itemView.showContextMenu()
             }
+        }
+
+        override fun isSelected(): Boolean {
+            return selected
+        }
+
+        override fun setSelected(selected: Boolean) {
+            this.selected = selected
+            binding.selected = selected
         }
 
         fun bind(notification: ISystemNotification) {

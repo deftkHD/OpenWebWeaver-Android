@@ -66,6 +66,7 @@ class UserRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun deleteSystemNotification(systemNotification: ISystemNotification, apiContext: ApiContext) = apiCall {
         systemNotification.delete(apiContext.user.getRequestContext(apiContext))
+        systemNotification
     }
 
 
