@@ -8,7 +8,7 @@
         <import type="de.deftk.openww.android.utils.UIUtil" />
 
         <variable
-            name="clickListener"
+            name="menuClickListener"
             type="android.view.View.OnClickListener" />
 
         <variable
@@ -39,13 +39,23 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
+            android:layout_toStartOf="@id/more_button"
             android:ellipsize="end"
             android:maxLines="1"
             android:text="@{notification.title}"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             tools:text="Notification Title" />
+
+        <ImageView
+            android:id="@+id/more_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:contentDescription="@string/more"
+            android:onClick="@{menuClickListener}"
+            android:src="@drawable/ic_more_vert_24" />
 
         <TextView
             android:id="@+id/notification_author"

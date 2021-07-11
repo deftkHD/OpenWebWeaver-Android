@@ -24,6 +24,12 @@ class BoardNotificationAdapter(clickListener: ActionModeClickListener<BoardNotif
 
         private var selected: Boolean = false
 
+        init {
+            binding.setMenuClickListener {
+                itemView.showContextMenu()
+            }
+        }
+
         override fun isSelected(): Boolean {
             return selected
         }
