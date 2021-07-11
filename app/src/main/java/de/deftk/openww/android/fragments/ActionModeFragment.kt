@@ -6,6 +6,7 @@ import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.fragment.app.Fragment
+import de.deftk.openww.android.R
 import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 
@@ -21,6 +22,11 @@ abstract class ActionModeFragment<T, VH : ActionModeAdapter.ActionModeViewHolder
         actionMode = mode
         (requireActivity() as? MainActivity?)?.actionMode = actionMode
         requireActivity().menuInflater.inflate(actionModeMenuResource, menu)
+        return true
+    }
+
+    override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
+        mode.title = getString(R.string.selected_count).format(adapter.selectedItems.size)
         return true
     }
 

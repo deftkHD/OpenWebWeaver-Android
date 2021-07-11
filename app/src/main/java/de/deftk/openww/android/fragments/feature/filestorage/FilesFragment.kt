@@ -256,7 +256,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
         val canDelete = adapter.selectedItems.all { it.binding.file!!.effectiveDelete == true }
         menu.findItem(R.id.filestorage_action_delete).isEnabled = canDelete //TODO should be visible if disabled
-        return true
+        return super.onPrepareActionMode(mode, menu)
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {

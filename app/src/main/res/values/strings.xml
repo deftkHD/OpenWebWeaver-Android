@@ -284,5 +284,6 @@
     <string name="more">More</string>
     <string name="institution">Institution</string>
     <string name="group_count">%d groups</string>
+    <string name="selected_count">%d selected</string>
 
 </resources>

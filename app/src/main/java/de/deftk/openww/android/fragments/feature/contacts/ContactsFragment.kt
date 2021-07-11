@@ -104,7 +104,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
         val canModify = adapter.selectedItems.all { it.binding.scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || it.binding.scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN) }
         menu.findItem(R.id.contacts_action_delete).isEnabled = canModify
-        return true
+        return super.onPrepareActionMode(mode, menu)
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {

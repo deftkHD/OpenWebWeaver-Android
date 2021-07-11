@@ -108,7 +108,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
         val canModify = adapter.selectedItems.all { it.binding.group!!.effectiveRights.contains(Permission.BOARD_WRITE) || it.binding.group!!.effectiveRights.contains(Permission.BOARD_ADMIN) }
         menu.findItem(R.id.board_action_delete).isEnabled = canModify
-        return true
+        return super.onPrepareActionMode(mode, menu)
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
