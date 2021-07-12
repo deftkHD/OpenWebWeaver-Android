@@ -2,40 +2,40 @@ package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import de.deftk.openww.android.databinding.ListItemScopeBinding
-import de.deftk.openww.android.fragments.feature.messenger.MessengerFragmentDirections
+import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.IScope
 
-class ChatAdapter: ListAdapter<IScope, RecyclerView.ViewHolder>(ChatDiffCallback()) {
+class ChatAdapter(clickListener: ActionModeClickListener<ChatViewHolder>): ActionModeAdapter<IScope, ChatAdapter.ChatViewHolder>(ChatDiffCallback(), clickListener) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
         val binding = ListItemScopeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ChatViewHolder(binding)
+        return ChatViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
         val scope = getItem(position)
-        (holder as ChatViewHolder).bind(scope)
+        holder.bind(scope)
     }
 
-    public override fun getItem(position: Int): IScope {
-        return super.getItem(position)
-    }
+    class ChatViewHolder(val binding: ListItemScopeBinding, clickListener: ActionModeClickListener<ActionModeViewHolder>) : ActionModeAdapter.ActionModeViewHolder(binding.root, clickListener) {
 
-    class ChatViewHolder(val binding: ListItemScopeBinding) : RecyclerView.ViewHolder(binding.root) {
+        private var selected = false
 
         init {
-            binding.setClickListener {
-                itemView.findNavController().navigate(MessengerFragmentDirections.actionChatsFragmentToMessengerChatFragment(binding.scope!!.login, binding.scope!!.name))
-            }
-            itemView.setOnLongClickListener {
+            binding.setMenuClickListener {
                 itemView.showContextMenu()
-                true
             }
+        }
+
+        override fun isSelected(): Boolean {
+            return selected
+        }
+
+        override fun setSelected(selected: Boolean) {
+            this.selected = selected
+            binding.selected = selected
         }
 
         fun bind(scope: IScope) {

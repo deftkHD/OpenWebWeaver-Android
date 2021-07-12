@@ -2,6 +2,7 @@ package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -28,6 +29,7 @@ class OperatingScopeAdapter(private val clickListener: IOperatingScopeClickListe
     class OperatingScopeViewHolder(val binding: ListItemScopeBinding) : RecyclerView.ViewHolder(binding.root) {
 
         init {
+            binding.moreButton.isVisible = false
             itemView.setOnLongClickListener {
                 itemView.showContextMenu()
                 true
@@ -36,7 +38,7 @@ class OperatingScopeAdapter(private val clickListener: IOperatingScopeClickListe
 
         fun bind(scope: IOperatingScope, clickListener: IOperatingScopeClickListener) {
             binding.scope = scope
-            binding.setClickListener {
+            itemView.setOnClickListener {
                 clickListener.onOperatingScopeClicked(scope)
             }
             binding.executePendingBindings()

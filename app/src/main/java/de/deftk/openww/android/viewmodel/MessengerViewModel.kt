@@ -5,6 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.repository.MessengerRepository
 import de.deftk.openww.api.implementation.ApiContext
+import de.deftk.openww.api.model.IScope
 import de.deftk.openww.api.model.RemoteScope
 import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
 import de.deftk.openww.api.model.feature.messenger.IQuickMessage
@@ -28,6 +29,9 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
 
     private val _sendMessageResponse = MutableLiveData<Response<IQuickMessage>>()
     val sendMessageResponse: LiveData<Response<IQuickMessage>> = _sendMessageResponse
+
+    private val _batchDeleteResponse = MutableLiveData<List<Response<IScope>>?>()
+    val batchDeleteResponse: LiveData<List<Response<IScope>>?> = _batchDeleteResponse
 
     fun getChatLiveData(with: String): LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>  {
         return _messagesResponse.getOrPut(with) { MutableLiveData() }
@@ -77,6 +81,27 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
             messengerRepository.clearChat(user)
             _messagesResponse.getOrPut(user) { MutableLiveData() }.value = Response.Success(Pair(emptyList(), false))
         }
+    }
+
+    fun batchDelete(selectedTasks: List<IScope>, apiContext: ApiContext) {
+        viewModelScope.launch {
+            val responses = selectedTasks.map { messengerRepository.removeChat(it.login, apiContext) }
+            _batchDeleteResponse.value = responses
+            val tasks = usersResponse.value?.valueOrNull()
+            if (tasks != null) {
+                val currentTasks = tasks.toMutableList()
+                responses.forEach { response ->
+                    if (response is Response.Success) {
+                        currentTasks.remove(response.value)
+                    }
+                }
+                _usersResponse.value = Response.Success(currentTasks)
+            }
+        }
+    }
+
+    fun resetBatchDeleteResponse() {
+        _batchDeleteResponse.value = null
     }
 
 }

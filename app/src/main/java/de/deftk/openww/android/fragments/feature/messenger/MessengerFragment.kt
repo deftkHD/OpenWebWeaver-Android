@@ -6,23 +6,28 @@ import android.text.InputType
 import android.view.*
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
+import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.ChatAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentMessengerBinding
+import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MessengerViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.IScope
 
-class MessengerFragment : Fragment() {
+class MessengerFragment : ActionModeFragment<IScope, ChatAdapter.ChatViewHolder>(R.menu.chat_actionmode_menu) {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val messengerViewModel: MessengerViewModel by activityViewModels()
+    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentMessengerBinding
 
@@ -30,7 +35,6 @@ class MessengerFragment : Fragment() {
         binding = FragmentMessengerBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
 
-        val adapter = ChatAdapter()
         binding.chatList.adapter = adapter
         binding.chatList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
@@ -60,6 +64,19 @@ class MessengerFragment : Fragment() {
         messengerViewModel.removeChatResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_remove_chat_failed, response.exception, requireContext())
+            }
+        }
+
+        messengerViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                messengerViewModel.resetBatchDeleteResponse()
+
+            val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
+            if (failure.isNotEmpty()) {
+                Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
+                binding.progressChats.isVisible = false
+            } else {
+                actionMode?.finish()
             }
         }
 
@@ -96,6 +113,26 @@ class MessengerFragment : Fragment() {
 
         registerForContextMenu(binding.chatList)
         return binding.root
+    }
+
+    override fun createAdapter(): ActionModeAdapter<IScope, ChatAdapter.ChatViewHolder> {
+        return ChatAdapter(this)
+    }
+
+    override fun onItemClick(view: View, viewHolder: ChatAdapter.ChatViewHolder) {
+        navController.navigate(MessengerFragmentDirections.actionChatsFragmentToMessengerChatFragment(viewHolder.binding.scope!!.login, viewHolder.binding.scope!!.name))
+    }
+
+    override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.chat_action_delete -> {
+                userViewModel.apiContext.value?.also { apiContext ->
+                    messengerViewModel.batchDelete(adapter.selectedItems.map { it.binding.scope!! }, apiContext)
+                }
+            }
+            else -> return false
+        }
+        return true
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {

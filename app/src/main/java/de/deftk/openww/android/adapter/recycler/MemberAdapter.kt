@@ -30,14 +30,16 @@ class MemberAdapter: ListAdapter<IScope, RecyclerView.ViewHolder>(MemberDiffCall
     class MemberViewHolder(val binding: ListItemScopeBinding) : RecyclerView.ViewHolder(binding.root) {
 
         init {
-            binding.setClickListener {
+            binding.setMenuClickListener {
+                itemView.showContextMenu()
+            }
+            itemView.setOnClickListener {
                 if (binding.scope is IGroup) {
                     itemView.findNavController().navigate(MembersGroupsFragmentDirections.actionMembersGroupFragmentToMembersFragment(binding.scope!!.login, binding.scope!!.name))
                 } else {
                     itemView.showContextMenu()
                 }
             }
-
             itemView.setOnLongClickListener {
                 itemView.showContextMenu()
                 true

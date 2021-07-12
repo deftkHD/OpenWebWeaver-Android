@@ -4,12 +4,16 @@
     <data>
 
         <variable
-            name="clickListener"
+            name="menuClickListener"
             type="android.view.View.OnClickListener" />
 
         <variable
             name="scope"
             type="de.deftk.openww.api.model.IScope" />
+
+        <variable
+            name="selected"
+            type="Boolean" />
 
     </data>
 
@@ -17,7 +21,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="@{clickListener}"
+        android:background="@{selected ? @color/colorAccent : @android:color/transparent}"
         android:padding="16dp">
 
         <ImageView
@@ -37,6 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_marginStart="5dp"
+            android:layout_toStartOf="@id/more_button"
             android:layout_toEndOf="@+id/member_image"
             android:ellipsize="end"
             android:maxLines="1"
@@ -44,6 +49,16 @@
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             tools:text="Member name" />
+
+        <ImageView
+            android:id="@+id/more_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:contentDescription="@string/more"
+            android:onClick="@{menuClickListener}"
+            android:src="@drawable/ic_more_vert_24" />
 
         <TextView
             android:id="@+id/member_online_status"
