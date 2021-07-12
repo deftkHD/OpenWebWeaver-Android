@@ -33,6 +33,8 @@ class ReadMailFragment : Fragment() {
     private lateinit var email: IEmail
     private lateinit var emailFolder: IEmailFolder
 
+    private var deleted = false
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadMailBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
@@ -44,6 +46,8 @@ class ReadMailFragment : Fragment() {
         mailboxViewModel.emailReadPostResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 mailboxViewModel.resetReadPostResponse() // mark as handled
+            if (deleted)
+                return@observe
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_read_email_failed, response.exception, requireContext())
@@ -71,6 +75,7 @@ class ReadMailFragment : Fragment() {
                 mailboxViewModel.resetPostResponse() // mark as handled
 
             if (response is Response.Success) {
+                deleted = true
                 navController.popBackStack()
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())

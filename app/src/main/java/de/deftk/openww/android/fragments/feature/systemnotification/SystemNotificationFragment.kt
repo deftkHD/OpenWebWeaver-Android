@@ -28,6 +28,8 @@ class SystemNotificationFragment : Fragment() {
     private lateinit var binding: FragmentSystemNotificationBinding
     private lateinit var systemNotification: ISystemNotification
 
+    private var deleted = false
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSystemNotificationBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
@@ -37,6 +39,9 @@ class SystemNotificationFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         userViewModel.systemNotificationsResponse.observe(viewLifecycleOwner) { response ->
+            if (deleted)
+                return@observe
+
             if (response is Response.Success) {
                 val foundSystemNotification = response.value.firstOrNull { it.id == args.systemNotificationId }
                 if (foundSystemNotification == null) {
@@ -61,6 +66,7 @@ class SystemNotificationFragment : Fragment() {
                 userViewModel.resetDeleteResponse() // mark as handled
 
             if (response is Response.Success) {
+                deleted = true
                 navController.popBackStack()
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())

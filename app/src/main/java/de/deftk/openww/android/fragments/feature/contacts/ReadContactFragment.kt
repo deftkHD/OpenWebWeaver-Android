@@ -32,6 +32,8 @@ class ReadContactFragment : Fragment() {
     private lateinit var contact: IContact
     private lateinit var scope: IOperatingScope
 
+    private var deleted = false
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadContactBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
@@ -48,6 +50,9 @@ class ReadContactFragment : Fragment() {
         binding.contactDetailList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
         contactsViewModel.getContactsLiveData(scope).observe(viewLifecycleOwner) { response ->
+            if (deleted)
+                return@observe
+
             if (response is Response.Success) {
                 val queried = response.value.firstOrNull { it.id.toString() == args.contactId }
                 if (queried != null) {
@@ -68,7 +73,11 @@ class ReadContactFragment : Fragment() {
         contactsViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 contactsViewModel.resetDeleteResponse()
-            if (response is Response.Failure) {
+
+            if (response is Response.Success) {
+                deleted = true
+                navController.popBackStack()
+            } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }

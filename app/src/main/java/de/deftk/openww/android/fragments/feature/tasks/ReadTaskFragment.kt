@@ -35,6 +35,8 @@ class ReadTaskFragment : Fragment() {
     private lateinit var task: ITask
     private lateinit var scope: IOperatingScope
 
+    private var deleted = false
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadTaskBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
@@ -44,6 +46,9 @@ class ReadTaskFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { response ->
+            if (deleted)
+                return@observe
+
             if (response is Response.Success) {
                 val foundTask = response.value.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }
                 if (foundTask == null) {
@@ -80,6 +85,7 @@ class ReadTaskFragment : Fragment() {
                 tasksViewModel.resetPostResponse() // mark as handled
 
             if (response is Response.Success) {
+                deleted = true
                 navController.popBackStack()
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
