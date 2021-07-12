@@ -35,4 +35,8 @@ class MessengerRepository @Inject constructor(private val quickMessageDao: Quick
         apiContext.user.sendQuickMessage(login, sessionFile, text, apiContext.user.getRequestContext(apiContext))
     }
 
+    suspend fun clearChat(login: String) {
+        quickMessageDao.deleteMessages(quickMessageDao.getHistoryWith(login))
+    }
+
 }

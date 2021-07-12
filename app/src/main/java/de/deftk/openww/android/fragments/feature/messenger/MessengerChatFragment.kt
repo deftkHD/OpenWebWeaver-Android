@@ -2,9 +2,7 @@ package de.deftk.openww.android.fragments.feature.messenger
 
 import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -88,6 +86,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
             }
         }
 
+        setHasOptionsMenu(true)
         return binding.root
     }
 
@@ -113,6 +112,20 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
                 Reporter.reportException(R.string.error_download_worker_failed, errorMessage, requireContext())
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.messenger_chat_options_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.delete_saved_chat -> {
+                messengerViewModel.clearChat(args.user)
+            }
+            else -> return false
+        }
+        return true
     }
 }
 

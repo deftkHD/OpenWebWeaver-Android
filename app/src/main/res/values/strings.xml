@@ -285,5 +285,6 @@
     <string name="institution">Institution</string>
     <string name="group_count">%d groups</string>
     <string name="selected_count">%d selected</string>
+    <string name="delete_saved_chat">Delete locally saved messages</string>
 
 </resources>
