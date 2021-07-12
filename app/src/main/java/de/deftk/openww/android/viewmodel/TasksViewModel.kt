@@ -2,11 +2,12 @@ package de.deftk.openww.android.viewmodel
 
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.deftk.openww.api.implementation.ApiContext
-import de.deftk.openww.api.model.IOperatingScope
-import de.deftk.openww.api.model.feature.tasks.ITask
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.repository.TasksRepository
+import de.deftk.openww.api.implementation.ApiContext
+import de.deftk.openww.api.model.IGroup
+import de.deftk.openww.api.model.IOperatingScope
+import de.deftk.openww.api.model.feature.tasks.ITask
 import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
@@ -19,6 +20,9 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
 
     private val _postResponse = MutableLiveData<Response<ITask?>?>()
     val postResponse: LiveData<Response<ITask?>?> = _postResponse
+
+    private val _batchDeleteResponse = MutableLiveData<List<Response<Pair<ITask, IOperatingScope>>>?>()
+    val batchDeleteResponse: LiveData<List<Response<Pair<ITask, IOperatingScope>>>?> = _batchDeleteResponse
 
     fun loadTasks(apiContext: ApiContext) {
         viewModelScope.launch {
@@ -66,15 +70,36 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
             val response = tasksRepository.deleteTask(task, operator, apiContext)
             _postResponse.value = Response.Success(task)
             if (response is Response.Success && _tasksResponse.value is Response.Success) {
-                val notifications = (_tasksResponse.value as Response.Success<List<Pair<ITask, IOperatingScope>>>).value.toMutableList()
-                notifications.remove(Pair(task, operator))
-                _tasksResponse.value = Response.Success(notifications)
+                val tasks = (_tasksResponse.value as Response.Success<List<Pair<ITask, IOperatingScope>>>).value.toMutableList()
+                tasks.remove(Pair(task, operator))
+                _tasksResponse.value = Response.Success(tasks)
             }
         }
     }
 
     fun resetPostResponse() {
         _postResponse.value = null
+    }
+
+    fun batchDelete(tasks: List<Pair<ITask, IOperatingScope>>, apiContext: ApiContext) {
+        viewModelScope.launch {
+            val responses = tasks.map { tasksRepository.deleteTask(it.first, it.second, apiContext) }
+            _batchDeleteResponse.value = responses
+            val tasks = tasksResponse.value?.valueOrNull()
+            if (tasks != null) {
+                val currentTasks = tasks.toMutableList()
+                responses.forEach { response ->
+                    if (response is Response.Success) {
+                        currentTasks.remove(response.value)
+                    }
+                }
+                _tasksResponse.value = Response.Success(currentTasks)
+            }
+        }
+    }
+
+    fun resetBatchDeleteResponse() {
+        _batchDeleteResponse.value = null
     }
 
 }

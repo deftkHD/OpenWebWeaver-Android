@@ -3,24 +3,27 @@ package de.deftk.openww.android.fragments.feature.tasks
 import android.os.Bundle
 import android.view.*
 import android.widget.ProgressBar
-import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
-import de.deftk.openww.api.model.Permission
 import de.deftk.openww.android.R
+import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.TasksAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentTasksBinding
+import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.TasksViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.IOperatingScope
+import de.deftk.openww.api.model.Permission
+import de.deftk.openww.api.model.feature.tasks.ITask
 
-class TasksFragment : Fragment() {
+class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdapter.TaskViewHolder>(R.menu.tasks_actionmode_menu) {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val tasksViewModel: TasksViewModel by activityViewModels()
@@ -31,7 +34,6 @@ class TasksFragment : Fragment() {
         binding = FragmentTasksBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
 
-        val adapter = TasksAdapter()
         binding.tasksList.adapter = adapter
         binding.tasksList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { response ->
@@ -68,6 +70,19 @@ class TasksFragment : Fragment() {
             }
         }
 
+        tasksViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                tasksViewModel.resetBatchDeleteResponse()
+
+            val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
+            if (failure.isNotEmpty()) {
+                Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
+                binding.progressTasks.isVisible = false
+            } else {
+                actionMode?.finish()
+            }
+        }
+
         tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 tasksViewModel.resetPostResponse() // mark as handled
@@ -80,6 +95,10 @@ class TasksFragment : Fragment() {
         setHasOptionsMenu(true)
         registerForContextMenu(binding.tasksList)
         return binding.root
+    }
+
+    override fun createAdapter(): ActionModeAdapter<Pair<ITask, IOperatingScope>, TasksAdapter.TaskViewHolder> {
+        return TasksAdapter(this)
     }
 
     /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -100,6 +119,23 @@ class TasksFragment : Fragment() {
         })
         super.onCreateOptionsMenu(menu, inflater)
     }*/
+
+    override fun onItemClick(view: View, viewHolder: TasksAdapter.TaskViewHolder) {
+        navController.navigate(TasksFragmentDirections.actionTasksFragmentToReadTaskFragment(viewHolder.binding.task!!.id, viewHolder.binding.scope!!.login))
+    }
+
+    override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.tasks_action_delete -> {
+                userViewModel.apiContext.value?.also { apiContext ->
+                    tasksViewModel.batchDelete(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
+                    binding.progressTasks.isVisible = true
+                }
+            }
+            else -> return false
+        }
+        return true
+    }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)

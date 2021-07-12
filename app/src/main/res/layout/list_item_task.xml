@@ -6,7 +6,7 @@
         <import type="de.deftk.openww.android.utils.UIUtil" />
 
         <variable
-            name="clickListener"
+            name="menuClickListener"
             type="android.view.View.OnClickListener" />
 
         <variable
@@ -17,13 +17,17 @@
             name="scope"
             type="de.deftk.openww.api.model.IOperatingScope" />
 
+        <variable
+            name="selected"
+            type="Boolean" />
+
     </data>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="@{clickListener}"
+        android:background="@{selected ? @color/colorAccent : @android:color/transparent}"
         android:padding="16dp">
 
         <ImageView
@@ -44,6 +48,7 @@
             android:layout_alignParentTop="true"
             android:layout_marginStart="42dp"
             android:layout_marginTop="5dp"
+            android:layout_toStartOf="@id/more_button"
             android:ellipsize="end"
             android:maxLines="1"
             android:text="@{task.title}"
@@ -51,6 +56,16 @@
             android:textSize="20sp"
             app:strikeThroughTask="@{task}"
             tools:text="Title" />
+
+        <ImageView
+            android:id="@+id/more_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:contentDescription="@string/more"
+            android:onClick="@{menuClickListener}"
+            android:src="@drawable/ic_more_vert_24" />
 
         <TextView
             android:id="@+id/task_author"

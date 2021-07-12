@@ -2,41 +2,41 @@ package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import de.deftk.openww.android.databinding.ListItemTaskBinding
-import de.deftk.openww.android.fragments.feature.tasks.TasksFragmentDirections
+import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.tasks.ITask
 
-class TasksAdapter : ListAdapter<Pair<ITask, IOperatingScope>, RecyclerView.ViewHolder>(TaskDiffCallback()) {
+class TasksAdapter(clickListener: ActionModeClickListener<TaskViewHolder>) : ActionModeAdapter<Pair<ITask, IOperatingScope>, TasksAdapter.TaskViewHolder>(TaskDiffCallback(), clickListener) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val binding = ListItemTaskBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return TaskViewHolder(binding)
+        return TaskViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val (task, scope) = getItem(position)
-        (holder as TaskViewHolder).bind(task, scope)
+        holder.bind(task, scope)
     }
 
-    public override fun getItem(position: Int): Pair<ITask, IOperatingScope> {
-        return super.getItem(position)
-    }
+    class TaskViewHolder(val binding: ListItemTaskBinding, clickListener: ActionModeClickListener<ActionModeViewHolder>) : ActionModeViewHolder(binding.root, clickListener) {
 
-    class TaskViewHolder(val binding: ListItemTaskBinding) : RecyclerView.ViewHolder(binding.root) {
+        private var selected = false
 
         init {
-            binding.setClickListener { view ->
-                view.findNavController().navigate(TasksFragmentDirections.actionTasksFragmentToReadTaskFragment(binding.task!!.id, binding.scope!!.login))
-            }
-            itemView.setOnLongClickListener {
+            binding.setMenuClickListener {
                 itemView.showContextMenu()
-                true
             }
+        }
+
+        override fun isSelected(): Boolean {
+            return selected
+        }
+
+        override fun setSelected(selected: Boolean) {
+            this.selected = selected
+            binding.selected = selected
         }
 
         fun bind(task: ITask, scope: IOperatingScope) {

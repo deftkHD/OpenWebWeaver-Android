@@ -37,6 +37,7 @@ class TasksRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun deleteTask(task: ITask, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
         task.delete(scope.getRequestContext(apiContext))
+        task to scope
     }
 
 }
