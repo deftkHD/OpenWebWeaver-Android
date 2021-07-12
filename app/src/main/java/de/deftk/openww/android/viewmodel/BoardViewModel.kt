@@ -45,13 +45,13 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
                 group,
                 apiContext
             )
+            _postResponse.value = response
             if (_notificationsResponse.value is Response.Success && response is Response.Success) {
                 // inject new notification into stored livedata
                 val notifications = (_notificationsResponse.value as Response.Success<List<Pair<IBoardNotification, IGroup>>>).value.toMutableList()
                 notifications.add(response.value to group)
                 _notificationsResponse.value = Response.Success(notifications)
             }
-            _postResponse.value = response
         }
     }
 
@@ -66,25 +66,25 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
                 BoardType.ALL,
                 group.getRequestContext(apiContext)
             )
+            _postResponse.value = response.smartMap { notification }
             if (response is Response.Success) {
                 // no need to update items in list because the instance will be the same
 
                 // trigger observers
                 _notificationsResponse.value = _notificationsResponse.value
             }
-            _postResponse.value = response.smartMap { notification }
         }
     }
 
     fun deleteBoardNotification(notification: IBoardNotification, group: IGroup, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = boardRepository.deleteBoardNotification(notification, group, apiContext)
+            _postResponse.value = Response.Success(notification)
             if (response is Response.Success && _notificationsResponse.value is Response.Success) {
                 val notifications = (_notificationsResponse.value as Response.Success<List<Pair<IBoardNotification, IGroup>>>).value.toMutableList()
                 notifications.remove(Pair(notification, group))
                 _notificationsResponse.value = Response.Success(notifications)
             }
-            _postResponse.value = Response.Success(notification)
         }
     }
 
@@ -95,6 +95,7 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
     fun batchDelete(selectedItems: List<Pair<IGroup, IBoardNotification>>, apiContext: ApiContext) {
         viewModelScope.launch {
             val responses = selectedItems.map { boardRepository.deleteBoardNotification(it.second, it.first, apiContext) }
+            _batchDeleteResponse.value = responses
             val notifications = notificationsResponse.value?.valueOrNull()
             if (notifications != null) {
                 val currentNotifications = notifications.toMutableList()
@@ -105,7 +106,6 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
                 }
                 _notificationsResponse.value = Response.Success(currentNotifications)
             }
-            _batchDeleteResponse.value = responses
         }
     }
 

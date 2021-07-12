@@ -37,39 +37,39 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
     fun addContact(contact: IContact, scope: IOperatingScope, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = contactsRepository.addContact(contact, scope, apiContext)
+            _editResponse.value = response
             val contactsResponse = getContactsLiveData(scope).value
             if (response is Response.Success && contactsResponse is Response.Success) {
                 val contacts = contactsResponse.value.toMutableList()
                 contacts.add(response.value)
                 (getContactsLiveData(scope) as MutableLiveData).value = Response.Success(contacts)
             }
-            _editResponse.value = response
         }
     }
 
     fun editContact(contact: IContact, scope: IOperatingScope, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = contactsRepository.editContact(contact, scope, apiContext)
+            _editResponse.value = response
             val contactsResponse = getContactsLiveData(scope).value
             if (response is Response.Success && contactsResponse is Response.Success) {
                 val contacts = contactsResponse.value.toMutableList()
                 contacts[contacts.indexOfFirst { it.id == contact.id }] = contact
                 (getContactsLiveData(scope) as MutableLiveData).value = Response.Success(contacts)
             }
-            _editResponse.value = response
         }
     }
 
     fun deleteContact(contact: IContact, scope: IOperatingScope, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = contactsRepository.deleteContact(contact, scope, apiContext)
+            _deleteResponse.value = response
             val contactsResponse = getContactsLiveData(scope).value
             if (response is Response.Success && contactsResponse is Response.Success) {
                 val contacts = contactsResponse.value.toMutableList()
                 contacts.remove(contact)
                 (getContactsLiveData(scope) as MutableLiveData).value = Response.Success(contacts)
             }
-            _deleteResponse.value = response
         }
     }
 
@@ -84,6 +84,7 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
     fun batchDelete(contacts: List<Pair<IOperatingScope, IContact>>, apiContext: ApiContext) {
         viewModelScope.launch {
             val responses = contacts.map { contactsRepository.deleteContact(it.second, it.first, apiContext) }
+            _batchDeleteResponse.value = responses
             responses.forEach { response ->
                 if (response is Response.Success) {
                     val liveData = _contactsResponses[response.value.second]
@@ -95,7 +96,6 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
 
                 }
             }
-            _batchDeleteResponse.value = responses
         }
     }
 

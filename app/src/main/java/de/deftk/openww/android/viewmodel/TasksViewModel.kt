@@ -29,13 +29,13 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
     fun addTask(title: String, description: String?, completed: Boolean?, startDate: Date?, dueDate: Date?, scope: IOperatingScope, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = tasksRepository.addTask(title, completed, description, dueDate?.time, startDate?.time, scope, apiContext)
+            _postResponse.value = response
             if (_tasksResponse.value is Response.Success && response is Response.Success) {
                 // inject new task into stored livedata
                 val tasks = (_tasksResponse.value as Response.Success<List<Pair<ITask, IOperatingScope>>>).value.toMutableList()
                 tasks.add(response.value to scope)
                 _tasksResponse.value = Response.Success(tasks)
             }
-            _postResponse.value = response
         }
     }
 
@@ -51,25 +51,25 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
                 operator,
                 apiContext
             )
+            _postResponse.value = response.smartMap { task }
             if (response is Response.Success) {
                 // no need to update items in list because the instance will be the same
 
                 // trigger observers
                 _tasksResponse.value = _tasksResponse.value
             }
-            _postResponse.value = response.smartMap { task }
         }
     }
 
     fun deleteTask(task: ITask, operator: IOperatingScope, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = tasksRepository.deleteTask(task, operator, apiContext)
+            _postResponse.value = Response.Success(task)
             if (response is Response.Success && _tasksResponse.value is Response.Success) {
                 val notifications = (_tasksResponse.value as Response.Success<List<Pair<ITask, IOperatingScope>>>).value.toMutableList()
                 notifications.remove(Pair(task, operator))
                 _tasksResponse.value = Response.Success(notifications)
             }
-            _postResponse.value = Response.Success(task)
         }
     }
 

@@ -31,39 +31,40 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
     fun addNote(title: String, text: String, color: NoteColor?, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = notesRepository.addNote(text, title, color, apiContext)
+            _editResponse.value = response
             val notesResponse = notesResponse.value
             if (response is Response.Success && notesResponse is Response.Success) {
                 val notes = notesResponse.value.toMutableList()
                 notes.add(response.value)
                 _notesResponse.value = Response.Success(notes)
             }
-            _editResponse.value = response
+
         }
     }
 
     fun editNote(note: INote, title: String, text: String, color: NoteColor, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = notesRepository.editNote(note, text, title, color, apiContext)
+            _editResponse.value = response
             val notesResponse = notesResponse.value
             if (response is Response.Success && notesResponse is Response.Success) {
                 val notes = notesResponse.value.toMutableList()
                 notes[notes.indexOfFirst { it.id == note.id }] = response.value
                 _notesResponse.value = Response.Success(notes)
             }
-            _editResponse.value = response
         }
     }
 
     fun deleteNote(note: INote, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = notesRepository.deleteNote(note, apiContext)
+            _deleteResponse.value = response
             val notesResponse = notesResponse.value
             if (response is Response.Success && notesResponse is Response.Success) {
                 val notes = notesResponse.value.toMutableList()
                 notes.remove(note)
                 _notesResponse.value = Response.Success(notes)
             }
-            _deleteResponse.value = response
         }
     }
 

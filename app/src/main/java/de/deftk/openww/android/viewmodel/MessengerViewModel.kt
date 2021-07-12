@@ -47,20 +47,20 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
     fun addChat(user: String, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = messengerRepository.addChat(user, apiContext)
+            _addChatResponse.value = response
             if (response is Response.Success && _usersResponse.value is Response.Success) {
                 _usersResponse.value = _usersResponse.value?.smartMap { value -> value.toMutableList().apply { add(response.value) } }
             }
-            _addChatResponse.value = response
         }
     }
 
     fun removeChat(user: String, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = messengerRepository.removeChat(user, apiContext)
+            _removeChatResponse.value = response
             if (response is Response.Success && _usersResponse.value is Response.Success) {
                 _usersResponse.value = _usersResponse.value?.smartMap { value -> value.toMutableList().apply { remove(response.value) } }
             }
-            _removeChatResponse.value = response
         }
     }
 

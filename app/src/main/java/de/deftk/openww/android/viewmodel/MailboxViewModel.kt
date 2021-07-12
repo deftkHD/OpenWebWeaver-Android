@@ -54,11 +54,11 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
     fun addFolder(name: String, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.addFolder(name, apiContext)
+            _folderPostResponse.value = response
             if (_foldersResponse.value is Response.Success && response is Response.Success) {
                 // reload folders because of request not returning any data
                 loadFolders(apiContext)
             }
-            _folderPostResponse.value = response
         }
     }
 
@@ -104,6 +104,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
     fun moveEmail(email: IEmail, folder: IEmailFolder, destination: IEmailFolder, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.moveEmail(email, folder, destination, apiContext)
+            _emailPostResponse.value = response
             if (response is Response.Success) {
                 val storedSrc = getCachedResponse(folder)
                 val storedDst = getCachedResponse(destination)
@@ -126,7 +127,6 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
                     }
                 }
             }
-            _emailPostResponse.value = response
         }
     }
 
@@ -148,6 +148,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
 
     private suspend fun shredEmail(email: IEmail, folder: IEmailFolder, apiContext: ApiContext) {
         val response = mailboxRepository.deleteEmail(email, folder, apiContext)
+        _emailPostResponse.value = response
         if (response is Response.Success) {
             val stored = getCachedResponse(folder)
             if (stored is Response.Success) {
@@ -160,7 +161,6 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
                 }
             }
         }
-        _emailPostResponse.value = response
     }
 
     fun resetPostResponse() {

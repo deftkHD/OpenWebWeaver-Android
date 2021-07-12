@@ -6,7 +6,6 @@ import android.content.Context
 import android.os.Build
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.deftk.openww.android.adapter.recycler.SystemNotificationAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.feature.overview.AbstractOverviewElement
@@ -152,18 +151,19 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
     fun deleteSystemNotification(systemNotification: ISystemNotification, apiContext: ApiContext) {
         viewModelScope.launch {
             val response = userRepository.deleteSystemNotification(systemNotification, apiContext)
+            _systemNotificationDeleteResponse.value = response
             if (_systemNotificationsResponse.value is Response.Success && response is Response.Success) {
                 val systemNotifications = (_systemNotificationsResponse.value as Response.Success<List<ISystemNotification>>).value.toMutableList()
                 systemNotifications.remove(systemNotification)
                 _systemNotificationsResponse.value = Response.Success(systemNotifications)
             }
-            _systemNotificationDeleteResponse.value = response
         }
     }
 
     fun batchDeleteSystemNotifications(systemNotifications: List<ISystemNotification>, apiContext: ApiContext) {
         viewModelScope.launch {
             val responses = systemNotifications.map { userRepository.deleteSystemNotification(it, apiContext) }
+            _systemNotificationBatchDeleteResponse.value = responses
             val notifications = systemNotificationsResponse.value?.valueOrNull()
             if (notifications != null) {
                 val currentNotifications = notifications.toMutableList()
@@ -174,7 +174,6 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
                 }
                 _systemNotificationsResponse.value = Response.Success(currentNotifications)
             }
-            _systemNotificationBatchDeleteResponse.value = responses
         }
     }
 
