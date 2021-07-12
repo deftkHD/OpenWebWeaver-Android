@@ -22,6 +22,7 @@ class NotesRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun deleteNote(note: INote, apiContext: ApiContext) = apiCall {
         note.delete(apiContext.user.getRequestContext(apiContext))
+        note
     }
 
 }

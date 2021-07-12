@@ -8,12 +8,16 @@
         <import type="de.deftk.openww.android.utils.UIUtil" />
 
         <variable
-            name="clickListener"
+            name="menuClickListener"
             type="android.view.View.OnClickListener" />
 
         <variable
             name="note"
             type="de.deftk.openww.api.model.feature.notes.INote" />
+
+        <variable
+            name="selected"
+            type="Boolean" />
 
     </data>
 
@@ -22,7 +26,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:onClick="@{clickListener}"
+        android:background="@{selected ? @color/colorAccent : @android:color/transparent}"
         android:padding="16dp">
 
         <TextView
@@ -31,13 +35,23 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
+            android:layout_toStartOf="@id/more_button"
             android:ellipsize="end"
             android:maxLines="1"
             android:text="@{note.title}"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             tools:text="Note title" />
+
+        <ImageView
+            android:id="@+id/more_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:contentDescription="@string/more"
+            android:onClick="@{menuClickListener}"
+            android:src="@drawable/ic_more_vert_24" />
 
         <TextView
             android:id="@+id/note_preview"

@@ -19,8 +19,11 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
     private val _editResponse = MutableLiveData<Response<INote>?>()
     val editResponse: LiveData<Response<INote>?> = _editResponse
 
-    private val _deleteResponse = MutableLiveData<Response<Unit>?>()
-    val deleteResponse: LiveData<Response<Unit>?> = _deleteResponse
+    private val _deleteResponse = MutableLiveData<Response<INote>?>()
+    val deleteResponse: LiveData<Response<INote>?> = _deleteResponse
+
+    private val _batchDeleteResponse = MutableLiveData<List<Response<INote>>?>()
+    val batchDeleteResponse: LiveData<List<Response<INote>>?> = _batchDeleteResponse
 
     fun loadNotes(apiContext: ApiContext) {
         viewModelScope.launch {
@@ -74,6 +77,27 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
 
     fun resetDeleteResponse() {
         _deleteResponse.value = null
+    }
+
+    fun batchDelete(selectedTasks: List<INote>, apiContext: ApiContext) {
+        viewModelScope.launch {
+            val responses = selectedTasks.map { notesRepository.deleteNote(it, apiContext) }
+            _batchDeleteResponse.value = responses
+            val tasks = notesResponse.value?.valueOrNull()
+            if (tasks != null) {
+                val currentTasks = tasks.toMutableList()
+                responses.forEach { response ->
+                    if (response is Response.Success) {
+                        currentTasks.remove(response.value)
+                    }
+                }
+                _notesResponse.value = Response.Success(currentTasks)
+            }
+        }
+    }
+
+    fun resetBatchDeleteResponse() {
+        _batchDeleteResponse.value = null
     }
 
 

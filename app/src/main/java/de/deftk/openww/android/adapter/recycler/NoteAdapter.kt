@@ -2,40 +2,40 @@ package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import de.deftk.openww.android.databinding.ListItemNoteBinding
-import de.deftk.openww.android.fragments.feature.notes.NotesFragmentDirections
+import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.feature.notes.INote
 
-class NoteAdapter : ListAdapter<INote, RecyclerView.ViewHolder>(NoteDiffCallback()) {
+class NoteAdapter(clickListener: ActionModeClickListener<NoteViewHolder>) : ActionModeAdapter<INote, NoteAdapter.NoteViewHolder>(NoteDiffCallback(), clickListener) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
         val binding = ListItemNoteBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return NoteViewHolder(binding)
+        return NoteViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         val note = getItem(position)
-        (holder as NoteViewHolder).bind(note)
+        holder.bind(note)
     }
 
-    public override fun getItem(position: Int): INote {
-        return super.getItem(position)
-    }
+    class NoteViewHolder(val binding: ListItemNoteBinding, clickListener: ActionModeClickListener<ActionModeAdapter.ActionModeViewHolder>) : ActionModeAdapter.ActionModeViewHolder(binding.root, clickListener) {
 
-    class NoteViewHolder(val binding: ListItemNoteBinding) : RecyclerView.ViewHolder(binding.root) {
+        private var selected = false
 
         init {
-            binding.setClickListener {
-                itemView.findNavController().navigate(NotesFragmentDirections.actionNotesFragmentToReadNoteFragment(binding.note!!.id))
-            }
-            itemView.setOnLongClickListener {
+            binding.setMenuClickListener {
                 itemView.showContextMenu()
-                true
             }
+        }
+
+        override fun isSelected(): Boolean {
+            return selected
+        }
+
+        override fun setSelected(selected: Boolean) {
+            this.selected = selected
+            binding.selected = selected
         }
 
         fun bind(note: INote) {

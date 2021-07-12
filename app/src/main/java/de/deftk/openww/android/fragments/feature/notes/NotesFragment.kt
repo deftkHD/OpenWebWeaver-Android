@@ -2,23 +2,26 @@ package de.deftk.openww.android.fragments.feature.notes
 
 import android.os.Bundle
 import android.view.*
-import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
+import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.NoteAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentNotesBinding
+import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.NotesViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Permission
+import de.deftk.openww.api.model.feature.notes.INote
 
-class NotesFragment : Fragment() {
+class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.menu.notes_actionmode_menu) {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val notesViewModel: NotesViewModel by activityViewModels()
@@ -30,7 +33,6 @@ class NotesFragment : Fragment() {
         binding = FragmentNotesBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
 
-        val adapter = NoteAdapter()
         binding.notesList.adapter = adapter
         binding.notesList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
@@ -43,6 +45,28 @@ class NotesFragment : Fragment() {
             }
             binding.progressNotes.isVisible = false
             binding.notesSwipeRefresh.isRefreshing = false
+        }
+
+        notesViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                notesViewModel.resetBatchDeleteResponse()
+
+            val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
+            if (failure.isNotEmpty()) {
+                Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
+                binding.progressNotes.isVisible = false
+            } else {
+                actionMode?.finish()
+            }
+        }
+
+        notesViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                notesViewModel.resetDeleteResponse() // mark as handled
+
+            if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
+            }
         }
 
         binding.notesSwipeRefresh.setOnRefreshListener {
@@ -67,6 +91,27 @@ class NotesFragment : Fragment() {
 
         registerForContextMenu(binding.notesList)
         return binding.root
+    }
+
+    override fun createAdapter(): ActionModeAdapter<INote, NoteAdapter.NoteViewHolder> {
+        return NoteAdapter(this)
+    }
+
+    override fun onItemClick(view: View, viewHolder: NoteAdapter.NoteViewHolder) {
+        navController.navigate(NotesFragmentDirections.actionNotesFragmentToReadNoteFragment(viewHolder.binding.note!!.id))
+    }
+
+    override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.notes_action_delete -> {
+                userViewModel.apiContext.value?.also { apiContext ->
+                    notesViewModel.batchDelete(adapter.selectedItems.map { it.binding.note!! }, apiContext)
+                    binding.progressNotes.isVisible = true
+                }
+            }
+            else -> return false
+        }
+        return true
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {

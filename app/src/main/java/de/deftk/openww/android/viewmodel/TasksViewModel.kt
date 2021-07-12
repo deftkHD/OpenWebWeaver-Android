@@ -5,7 +5,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.repository.TasksRepository
 import de.deftk.openww.api.implementation.ApiContext
-import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.tasks.ITask
 import kotlinx.coroutines.launch
@@ -81,9 +80,9 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
         _postResponse.value = null
     }
 
-    fun batchDelete(tasks: List<Pair<ITask, IOperatingScope>>, apiContext: ApiContext) {
+    fun batchDelete(selectedTasks: List<Pair<ITask, IOperatingScope>>, apiContext: ApiContext) {
         viewModelScope.launch {
-            val responses = tasks.map { tasksRepository.deleteTask(it.first, it.second, apiContext) }
+            val responses = selectedTasks.map { tasksRepository.deleteTask(it.first, it.second, apiContext) }
             _batchDeleteResponse.value = responses
             val tasks = tasksResponse.value?.valueOrNull()
             if (tasks != null) {
