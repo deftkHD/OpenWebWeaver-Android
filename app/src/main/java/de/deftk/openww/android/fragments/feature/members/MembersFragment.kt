@@ -4,7 +4,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
-import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -12,7 +11,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
-import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.MemberAdapter
 import de.deftk.openww.android.api.Response
@@ -21,6 +19,7 @@ import de.deftk.openww.android.databinding.FragmentMembersBinding
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.GroupViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.IGroup
 
 class MembersFragment : Fragment() {
 

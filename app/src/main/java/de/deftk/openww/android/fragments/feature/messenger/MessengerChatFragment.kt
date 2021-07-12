@@ -46,7 +46,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
 
         binding.chatsSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
-                messengerViewModel.loadHistory(false, apiContext)
+                messengerViewModel.loadHistory(args.user, false, apiContext)
             }
         }
 
@@ -60,16 +60,16 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
             if (response is Response.Success) {
                 binding.txtMessage.text = null
                 userViewModel.apiContext.value?.also { apiContext ->
-                    messengerViewModel.loadHistory(true, apiContext)
+                    messengerViewModel.loadHistory(args.user, true, apiContext)
                 }
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_send_message_failed, response.exception, requireContext())
             }
         }
 
-        messengerViewModel.messagesResponse.observe(viewLifecycleOwner) { response ->
+        messengerViewModel.getChatLiveData(args.user).observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
-                val messages = response.value.first.filter { it.to.login == args.user || it.from.login == args.user }
+                val messages = response.value.first
                 if ((adapter.itemCount != messages.size && response.value.second) || !response.value.second)
                     adapter.submitList(messages)
                 binding.chatsEmpty.isVisible = messages.isEmpty()
@@ -82,7 +82,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                messengerViewModel.loadHistory(false, apiContext)
+                messengerViewModel.loadHistory(args.user, false, apiContext)
             } else {
                 findNavController().popBackStack(R.id.chatsFragment, false)
             }

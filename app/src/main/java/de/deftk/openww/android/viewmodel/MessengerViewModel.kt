@@ -14,13 +14,11 @@ import javax.inject.Inject
 @HiltViewModel
 class MessengerViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val messengerRepository: MessengerRepository) : ViewModel() {
 
-    //TODO potential use of room to save old messages
-
     private val _usersResponse: MutableLiveData<Response<List<RemoteScope>>?> = MutableLiveData()
     val usersResponse: LiveData<Response<List<RemoteScope>>?> = _usersResponse
 
-    private val _messagesResponse = MutableLiveData<Response<Pair<List<IQuickMessage>, Boolean>>>()
-    val messagesResponse: LiveData<Response<Pair<List<IQuickMessage>, Boolean>>> = _messagesResponse
+    private val _messagesResponse = mutableMapOf<String, MutableLiveData<Response<Pair<List<IQuickMessage>, Boolean>>>>()
+    val messagesResponse: Map<String, LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>> = _messagesResponse
 
     private val _addChatResponse = MutableLiveData<Response<RemoteScope>>()
     val addChatResponse: LiveData<Response<RemoteScope>> = _addChatResponse
@@ -31,6 +29,10 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
     private val _sendMessageResponse = MutableLiveData<Response<IQuickMessage>>()
     val sendMessageResponse: LiveData<Response<IQuickMessage>> = _sendMessageResponse
 
+    fun getChatLiveData(with: String): LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>  {
+        return _messagesResponse.getOrPut(with) { MutableLiveData() }
+    }
+
     fun loadChats(apiContext: ApiContext) {
         viewModelScope.launch {
             val response = messengerRepository.getChats(apiContext)
@@ -38,9 +40,9 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
         }
     }
 
-    fun loadHistory(silent: Boolean, apiContext: ApiContext) {
+    fun loadHistory(with: String, silent: Boolean, apiContext: ApiContext) {
         viewModelScope.launch {
-            _messagesResponse.value = messengerRepository.getHistory(apiContext).smartMap { it to silent }
+            _messagesResponse.getOrPut(with) { MutableLiveData() }.value = messengerRepository.getHistory(with, apiContext).smartMap { it to silent }
         }
     }
 
