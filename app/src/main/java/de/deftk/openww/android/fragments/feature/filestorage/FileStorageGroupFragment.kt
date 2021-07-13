@@ -71,14 +71,14 @@ class FileStorageGroupFragment : Fragment() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchView.clearFocus()
-                return false
+                return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 val filter = FileStorageQuotaFilter()
                 filter.smartSearchCriteria.value = newText
                 fileStorageViewModel.quotaFilter.value = filter
-                return false
+                return true
             }
         })
         super.onCreateOptionsMenu(menu, inflater)

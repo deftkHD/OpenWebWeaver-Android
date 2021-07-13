@@ -25,8 +25,6 @@ import de.deftk.openww.api.model.feature.forum.IForumPost
 
 class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.ForumPostViewHolder>(R.menu.forum_actionmode_menu) {
 
-    //TODO context menu
-
     private val args: ForumPostsFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
     private val forumViewModel: ForumViewModel by activityViewModels()

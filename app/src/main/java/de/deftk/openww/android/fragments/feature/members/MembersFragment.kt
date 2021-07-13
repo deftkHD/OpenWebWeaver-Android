@@ -86,14 +86,14 @@ class MembersFragment : Fragment() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchView.clearFocus()
-                return false
+                return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 val filter = ScopeFilter()
                 filter.smartSearchCriteria.value = newText
                 groupViewModel.filter.value = filter
-                return false
+                return true
             }
         })
         super.onCreateOptionsMenu(menu, inflater)

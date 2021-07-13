@@ -138,14 +138,14 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchView.clearFocus()
-                return false
+                return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 val filter = BoardNotificationFilter()
                 filter.smartSearchCriteria.value = newText
                 boardViewModel.filter.value = filter
-                return false
+                return true
             }
         })
         super.onCreateOptionsMenu(menu, inflater)

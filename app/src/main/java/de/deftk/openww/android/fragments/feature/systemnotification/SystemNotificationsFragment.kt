@@ -124,14 +124,14 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchView.clearFocus()
-                return false
+                return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 val filter = SystemNotificationFilter(requireContext())
                 filter.smartSearchCriteria.value = newText
                 userViewModel.systemNotificationFilter.value = filter
-                return false
+                return true
             }
         })
         super.onCreateOptionsMenu(menu, inflater)

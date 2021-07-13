@@ -112,14 +112,14 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchView.clearFocus()
-                return false
+                return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 val filter = TaskFilter()
                 filter.smartSearchCriteria.value = newText
                 tasksViewModel.filter.value = filter
-                return false
+                return true
             }
         })
         super.onCreateOptionsMenu(menu, inflater)
