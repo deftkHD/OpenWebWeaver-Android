@@ -17,7 +17,7 @@ import javax.inject.Inject
 class FileStorageRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun getAllFileStorageQuotas(apiContext: ApiContext) = apiCall {
-        apiContext.user.getAllFileStorageQuotas(apiContext).toList().sortedWith(compareBy ({ it.first !is IUser }, { it.first.name })).toMap()
+        apiContext.user.getAllFileStorageQuotas(apiContext)
     }
 
     suspend fun getFiles(provider: IRemoteFileProvider, scope: IOperatingScope, apiContext: ApiContext) = apiCall {

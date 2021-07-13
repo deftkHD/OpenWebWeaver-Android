@@ -3,6 +3,7 @@ package de.deftk.openww.android.viewmodel
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.filter.ScopeFilter
 import de.deftk.openww.android.repository.MessengerRepository
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IScope
@@ -15,8 +16,21 @@ import javax.inject.Inject
 @HiltViewModel
 class MessengerViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val messengerRepository: MessengerRepository) : ViewModel() {
 
-    private val _usersResponse: MutableLiveData<Response<List<RemoteScope>>?> = MutableLiveData()
-    val usersResponse: LiveData<Response<List<RemoteScope>>?> = _usersResponse
+    private val _usersResponse: MutableLiveData<Response<List<RemoteScope>>> = MutableLiveData()
+    val allUsersResponse: LiveData<Response<List<RemoteScope>>> = _usersResponse
+
+    val userFilter = MutableLiveData(ScopeFilter())
+    val filteredUsersResponse: LiveData<Response<List<RemoteScope>>>
+        get() = userFilter.switchMap { filter ->
+            when (filter) {
+                null -> allUsersResponse
+                else -> allUsersResponse.switchMap { response ->
+                    val filtered = MutableLiveData<Response<List<RemoteScope>>>()
+                    filtered.value = response.smartMap { filter.apply(it) as List<RemoteScope> }
+                    filtered
+                }
+            }
+        }
 
     private val _messagesResponse = mutableMapOf<String, MutableLiveData<Response<Pair<List<IQuickMessage>, Boolean>>>>()
     val messagesResponse: Map<String, LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>> = _messagesResponse
@@ -87,7 +101,7 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
         viewModelScope.launch {
             val responses = selectedTasks.map { messengerRepository.removeChat(it.login, apiContext) }
             _batchDeleteResponse.value = responses
-            val tasks = usersResponse.value?.valueOrNull()
+            val tasks = allUsersResponse.value?.valueOrNull()
             if (tasks != null) {
                 val currentTasks = tasks.toMutableList()
                 responses.forEach { response ->

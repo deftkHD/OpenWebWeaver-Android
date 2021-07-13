@@ -1,9 +1,8 @@
 package de.deftk.openww.android.fragments.feature.filestorage
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -13,6 +12,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.FileStorageAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentFileStorageBinding
+import de.deftk.openww.android.filter.FileStorageQuotaFilter
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -31,7 +31,7 @@ class FileStorageGroupFragment : Fragment() {
         val adapter = FileStorageAdapter()
         binding.fileList.adapter = adapter
         binding.fileList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        fileStorageViewModel.quotasResponse.observe(viewLifecycleOwner) { response ->
+        fileStorageViewModel.filteredQuotasResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value.toList())
                 binding.fileEmpty.isVisible = response.value.isEmpty()
@@ -58,7 +58,31 @@ class FileStorageGroupFragment : Fragment() {
             }
         }
 
+        setHasOptionsMenu(true)
         return binding.root
     }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.list_filter_menu, menu)
+        val searchItem = menu.findItem(R.id.filter_item_search)
+        val searchView = searchItem.actionView as SearchView
+        searchView.setQuery(fileStorageViewModel.quotaFilter.value?.smartSearchCriteria?.value, false) // restore recent search
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchView.clearFocus()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val filter = FileStorageQuotaFilter()
+                filter.smartSearchCriteria.value = newText
+                fileStorageViewModel.quotaFilter.value = filter
+                return false
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
 
 }

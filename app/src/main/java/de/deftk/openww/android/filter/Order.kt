@@ -4,6 +4,8 @@ import androidx.annotation.StringRes
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.IScope
+import de.deftk.openww.api.model.IUser
+import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.model.feature.board.IBoardNotification
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 import de.deftk.openww.api.model.feature.tasks.ITask
@@ -31,6 +33,40 @@ sealed class ScopedOrder<T, K : IScope>(@StringRes nameRes: Int): Order<Pair<T, 
     class ByScopeNameDesc<T, K : IScope> : ScopedOrder<T, K>(0) {
         override fun sort(items: List<Pair<T, K>>): List<Pair<T, K>> {
             return items.sortedByDescending { it.second.name }
+        }
+    }
+
+}
+
+sealed class ScopeOrder(@StringRes nameRes: Int): Order<IScope>(nameRes) {
+
+    object ByScopeNameAsc : ScopeOrder(0) {
+        override fun sort(items: List<IScope>): List<IScope> {
+            return items.sortedBy { it.name }
+        }
+    }
+
+    object ByScopeNameDesc : ScopeOrder(0) {
+        override fun sort(items: List<IScope>): List<IScope> {
+            return items.sortedByDescending { it.name }
+        }
+    }
+
+    object ByScopeTypeAsc : ScopeOrder(0) {
+        override fun sort(items: List<IScope>): List<IScope> {
+            return items.sortedBy { it.type }
+        }
+    }
+
+    object ByScopeTypeDesc : ScopeOrder(0) {
+        override fun sort(items: List<IScope>): List<IScope> {
+            return items.sortedByDescending { it.type }
+        }
+    }
+
+    object ByOperatorDefault : ScopeOrder(0) {
+        override fun sort(items: List<IScope>): List<IScope> {
+            return items.sortedWith(compareBy ({ it !is IUser }, { it.name }))
         }
     }
 
@@ -151,6 +187,16 @@ sealed class SystemNotificationOrder(@StringRes nameRes: Int): Order<ISystemNoti
     object ByDateDesc : SystemNotificationOrder(0) {
         override fun sort(items: List<ISystemNotification>): List<ISystemNotification> {
             return items.sortedByDescending { it.date.time }
+        }
+    }
+
+}
+
+sealed class QuotaOrder(@StringRes nameRes: Int): Order<Pair<IOperatingScope, Quota>>(nameRes) {
+
+    object ByOperatorDefault : QuotaOrder(0) {
+        override fun sort(items: List<Pair<IOperatingScope, Quota>>): List<Pair<IOperatingScope, Quota>> {
+            return items.sortedWith(compareBy ({ it.first !is IUser }, { it.first.name }))
         }
     }
 

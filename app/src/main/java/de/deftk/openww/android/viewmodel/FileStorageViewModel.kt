@@ -12,6 +12,7 @@ import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
 import de.deftk.openww.android.feature.filestorage.DownloadSaveWorker
 import de.deftk.openww.android.feature.filestorage.FileCacheElement
 import de.deftk.openww.android.feature.filestorage.NetworkTransfer
+import de.deftk.openww.android.filter.FileStorageQuotaFilter
 import de.deftk.openww.android.repository.FileStorageRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,7 +21,20 @@ import javax.inject.Inject
 class FileStorageViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val fileStorageRepository: FileStorageRepository) : ViewModel() {
 
     private val _quotas = MutableLiveData<Response<Map<IOperatingScope, Quota>>>()
-    val quotasResponse: LiveData<Response<Map<IOperatingScope, Quota>>> = _quotas
+    val allQuotasResponse: LiveData<Response<Map<IOperatingScope, Quota>>> = _quotas
+
+    val quotaFilter = MutableLiveData(FileStorageQuotaFilter())
+    val filteredQuotasResponse: LiveData<Response<Map<IOperatingScope, Quota>>>
+        get() = quotaFilter.switchMap { filter ->
+            when (filter) {
+                null -> allQuotasResponse
+                else -> allQuotasResponse.switchMap { response ->
+                    val filtered = MutableLiveData<Response<Map<IOperatingScope, Quota>>>()
+                    filtered.value = response.smartMap { filter.apply(it.toList()).toMap() }
+                    filtered
+                }
+            }
+        }
 
     private val _files = mutableMapOf<IOperatingScope, MutableLiveData<Response<List<FileCacheElement>>>>()
 
