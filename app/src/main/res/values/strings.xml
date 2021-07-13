@@ -288,5 +288,6 @@
     <string name="delete_saved_chat">Delete locally saved messages</string>
     <string name="error_move_failed">Failed to move objects: %s</string>
     <string name="move_to">Move to</string>
+    <string name="move">Move</string>
 
 </resources>

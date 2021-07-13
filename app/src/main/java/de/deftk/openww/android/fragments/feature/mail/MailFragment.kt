@@ -19,6 +19,7 @@ import de.deftk.openww.android.adapter.MailFolderAdapter
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.MailAdapter
 import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentMailBinding
 import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.Reporter
@@ -29,8 +30,6 @@ import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 
 class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.MailViewHolder>(R.menu.mail_actionmode_menu) {
-
-    //TODO context menu
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val mailboxViewModel: MailboxViewModel by activityViewModels()
@@ -175,8 +174,8 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.mail_action_move -> {
-                val folders = mailboxViewModel.foldersResponse.value?.valueOrNull()?.filter { it != mailboxViewModel.currentFolder.value } ?: emptyList()
-                val dialog = AlertDialog.Builder(requireContext())
+                val folders = mailboxViewModel.foldersResponse.value?.valueOrNull()?.filter { it.id != mailboxViewModel.currentFolder.value?.id } ?: emptyList()
+                AlertDialog.Builder(requireContext())
                     .setTitle(R.string.move_to)
                     .setIcon(R.drawable.ic_move_to_inbox_24)
                     .setNegativeButton(R.string.cancel) { dialog, _ ->
@@ -188,7 +187,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                         }
                     }
                     .create()
-                dialog.show()
+                    .show()
             }
             R.id.mail_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
@@ -248,6 +247,47 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             builder.show()
             return true
         } else return super.onOptionsItemSelected(item)
+    }
+
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        userViewModel.apiContext.value?.also { apiContext ->
+            if (apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
+                requireActivity().menuInflater.inflate(R.menu.mail_context_menu, menu)
+            }
+        }
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
+        val adapter = binding.mailList.adapter as MailAdapter
+        when (item.itemId) {
+            R.id.mail_action_move -> {
+                val mailItem = adapter.getItem(menuInfo.position)
+                val folders = mailboxViewModel.foldersResponse.value?.valueOrNull()?.filter { it.id != mailItem.second.id } ?: emptyList()
+                AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.move_to)
+                    .setIcon(R.drawable.ic_move_to_inbox_24)
+                    .setNegativeButton(R.string.cancel) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .setAdapter(MailFolderAdapter(requireContext(), folders)) { _, which ->
+                        userViewModel.apiContext.value?.also { apiContext ->
+                            mailboxViewModel.moveEmail(mailItem.first, mailItem.second, folders[which], apiContext)
+                        }
+                    }
+                    .create()
+                    .show()
+            }
+            R.id.mail_action_delete -> {
+                val mailItem = adapter.getItem(menuInfo.position)
+                userViewModel.apiContext.value?.also { apiContext ->
+                    mailboxViewModel.deleteEmail(mailItem.first, mailItem.second, true, apiContext)
+                }
+            }
+            else -> return false
+        }
+        return true
     }
 
     override fun onResume() {
