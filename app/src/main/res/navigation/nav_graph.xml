@@ -97,11 +97,6 @@
         <action
             android:id="@+id/action_mailFragment_to_writeMailFragment"
             app:destination="@id/writeMailFragment" />
-        <argument
-            android:name="folderId"
-            android:defaultValue="@null"
-            app:argType="string"
-            app:nullable="true" />
     </fragment>
     <fragment
         android:id="@+id/membersGroupFragment"

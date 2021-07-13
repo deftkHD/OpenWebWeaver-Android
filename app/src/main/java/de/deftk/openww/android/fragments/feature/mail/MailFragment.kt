@@ -12,9 +12,7 @@ import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.MailFolderAdapter
@@ -26,7 +24,6 @@ import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MailboxViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
-import de.deftk.openww.api.implementation.feature.mailbox.EmailFolder
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
@@ -35,7 +32,6 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
     //TODO context menu
 
-    private val args: MailFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
     private val mailboxViewModel: MailboxViewModel by activityViewModels()
     private val navController: NavController by lazy { findNavController() }
@@ -51,7 +47,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         toolbarSpinner.isVisible = true
         toolbarSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val folder = toolbarSpinner.getItemAtPosition(position) as EmailFolder
+                val folder = toolbarSpinner.getItemAtPosition(position) as IEmailFolder
                 if (folder.id != mailboxViewModel.currentFolder.value?.id) {
                     userViewModel.apiContext.value?.also { apiContext ->
                         mailboxViewModel.selectFolder(folder, apiContext)
@@ -110,12 +106,8 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
         mailboxViewModel.foldersResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
-                val newAdapter = MailFolderAdapter(requireContext(), response.value)
-                if ((toolbarSpinner.adapter as? MailFolderAdapter?)?.elements != newAdapter.elements) {
-                    toolbarSpinner.adapter = newAdapter
-                    userViewModel.apiContext.value?.also { apiContext ->
-                        mailboxViewModel.selectFolder(response.value.firstOrNull { it.id == args.folderId } ?: response.value.first { it.isInbox }, apiContext)
-                    }
+                if ((toolbarSpinner.adapter as? MailFolderAdapter?)?.elements != response.value) {
+                    toolbarSpinner.adapter = MailFolderAdapter(requireContext(), response.value)
                 } else {
                     binding.progressMail.isVisible = false
                     binding.mailSwipeRefresh.isRefreshing = false
@@ -128,20 +120,27 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             }
         }
 
-        //TODO not sure about this permissions
-        if (userViewModel.apiContext.value?.user?.effectiveRights?.contains(Permission.MAILBOX_WRITE) == true || userViewModel.apiContext.value?.user?.effectiveRights?.contains(Permission.MAILBOX_ADMIN) == true) {
-            binding.fabMailAdd.visibility = View.VISIBLE
-            binding.fabMailAdd.setOnClickListener {
-                navController.navigate(MailFragmentDirections.actionMailFragmentToWriteMailFragment())
-                toolbarSpinner.isVisible = false
-                toolbarSpinner.adapter = null
+        mailboxViewModel.currentFolder.observe(viewLifecycleOwner) { folder ->
+            val adapter = (toolbarSpinner.adapter as? MailFolderAdapter?)
+            val index = adapter?.elements?.indexOf(folder) ?: -1
+            if (index != -1) {
+                toolbarSpinner.setSelection(index)
             }
+        }
+
+        binding.fabMailAdd.setOnClickListener {
+            navController.navigate(MailFragmentDirections.actionMailFragmentToWriteMailFragment())
+            toolbarSpinner.isVisible = false
+            toolbarSpinner.adapter = null
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 mailboxViewModel.cleanCache()
                 mailboxViewModel.loadFolders(apiContext)
+
+                //TODO not sure about this permissions
+                binding.fabMailAdd.isVisible = apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)
             } else {
                 binding.fabMailAdd.isVisible = false
                 binding.mailEmpty.isVisible = false
@@ -170,7 +169,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
     }
 
     override fun onItemClick(view: View, viewHolder: MailAdapter.MailViewHolder) {
-        view.findNavController().navigate(MailFragmentDirections.actionMailFragmentToReadMailFragment(viewHolder.binding.folder!!.id, viewHolder.binding.email!!.id))
+        navController.navigate(MailFragmentDirections.actionMailFragmentToReadMailFragment(viewHolder.binding.folder!!.id, viewHolder.binding.email!!.id))
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
@@ -259,11 +258,6 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
     override fun onStop() {
         toolbarSpinner.isVisible = false
         super.onStop()
-    }
-
-    override fun onDestroy() {
-        toolbarSpinner.adapter = null
-        super.onDestroy()
     }
 
 }

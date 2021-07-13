@@ -1,5 +1,6 @@
 package de.deftk.openww.android.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
@@ -50,8 +51,10 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
             _foldersResponse.value = response
             if (response is Response.Success) {
                 val currentFolder = currentFolder.value
-                if (currentFolder == null || !response.value.contains(currentFolder) || !emailResponses.containsKey(currentFolder)) {
+                if (currentFolder == null || !response.value.contains(currentFolder)) {
                     selectFolder(response.value.first { it.isInbox }, apiContext)
+                } else {
+                    selectFolder(currentFolder, apiContext)
                 }
             }
         }
