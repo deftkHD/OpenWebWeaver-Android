@@ -1,8 +1,10 @@
 package de.deftk.openww.android.filter
 
 import androidx.annotation.StringRes
+import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.IScope
+import de.deftk.openww.api.model.feature.board.IBoardNotification
 import de.deftk.openww.api.model.feature.tasks.ITask
 
 sealed class Order<T>(@StringRes val nameRes: Int) {
@@ -92,6 +94,34 @@ sealed class TaskOrder(@StringRes nameRes: Int) : ScopedOrder<ITask, IOperatingS
     object ByGivenDesc : TaskOrder(0) {
         override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
             return items.sortedByDescending { it.first.startDate?.time ?: it.first.created.date.time }
+        }
+    }
+
+}
+
+sealed class BoardNotificationOrder(@StringRes nameRes: Int) : ScopedOrder<IBoardNotification, IGroup>(nameRes) {
+
+    object ByTitleAsc : BoardNotificationOrder(0) {
+        override fun sort(items: List<Pair<IBoardNotification, IGroup>>): List<Pair<IBoardNotification, IGroup>> {
+            return items.sortedBy { it.first.title }
+        }
+    }
+
+    object ByTitleDesc : BoardNotificationOrder(0) {
+        override fun sort(items: List<Pair<IBoardNotification, IGroup>>): List<Pair<IBoardNotification, IGroup>> {
+            return items.sortedByDescending { it.first.title }
+        }
+    }
+
+    object ByCreatedAsc : BoardNotificationOrder(0) {
+        override fun sort(items: List<Pair<IBoardNotification, IGroup>>): List<Pair<IBoardNotification, IGroup>> {
+            return items.sortedBy { it.first.created.date.time }
+        }
+    }
+
+    object ByCreatedDesc : BoardNotificationOrder(0) {
+        override fun sort(items: List<Pair<IBoardNotification, IGroup>>): List<Pair<IBoardNotification, IGroup>> {
+            return items.sortedByDescending { it.first.created.date.time }
         }
     }
 

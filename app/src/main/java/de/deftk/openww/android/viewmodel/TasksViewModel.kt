@@ -18,7 +18,7 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
     private val _tasksResponse = MutableLiveData<Response<List<Pair<ITask, IOperatingScope>>>>()
     val allTasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>> = _tasksResponse
 
-    var filter = MutableLiveData<TaskFilter?>(TaskFilter())
+    val filter = MutableLiveData(TaskFilter())
 
     val filteredTasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>>
         get() = filter.switchMap { filter ->

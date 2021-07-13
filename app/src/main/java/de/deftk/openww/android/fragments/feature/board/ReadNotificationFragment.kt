@@ -43,7 +43,7 @@ class ReadNotificationFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { response ->
+        boardViewModel.allNotificationsResponse.observe(viewLifecycleOwner) { response ->
             if (deleted)
                 return@observe
 

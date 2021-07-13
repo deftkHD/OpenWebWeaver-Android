@@ -3,11 +3,11 @@ package de.deftk.openww.android.fragments.feature.board
 import android.os.Bundle
 import android.view.*
 import android.widget.ProgressBar
+import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
@@ -16,6 +16,7 @@ import de.deftk.openww.android.adapter.recycler.BoardNotificationAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentNotificationsBinding
+import de.deftk.openww.android.filter.BoardNotificationFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.BoardViewModel
@@ -39,7 +40,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
 
         binding.notificationList.adapter = adapter
         binding.notificationList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        boardViewModel.notificationsResponse.observe(viewLifecycleOwner) { response ->
+        boardViewModel.filteredNotificationResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value)
                 binding.notificationsEmpty.isVisible = response.value.isEmpty()
@@ -128,11 +129,12 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
         navController.navigate(NotificationsFragmentDirections.actionNotificationsFragmentToReadNotificationFragment(viewHolder.binding.notification!!.id, viewHolder.binding.group!!.login))
     }
 
-    /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
         val searchView = searchItem.actionView as SearchView
+        searchView.setQuery(boardViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchView.clearFocus()
@@ -140,12 +142,14 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                boardViewModel.setSearchText(newText)
+                val filter = BoardNotificationFilter()
+                filter.smartSearchCriteria.value = newText
+                boardViewModel.filter.value = filter
                 return false
             }
         })
         super.onCreateOptionsMenu(menu, inflater)
-    }*/
+    }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)

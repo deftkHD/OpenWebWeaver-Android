@@ -10,7 +10,7 @@ import javax.inject.Inject
 class TasksRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun getTasks(apiContext: ApiContext): Response<List<Pair<ITask, IOperatingScope>>> = apiCall {
-        apiContext.user.getAllTasks(apiContext).sortedByDescending { it.first.startDate?.time ?: it.first.created.date.time }
+        apiContext.user.getAllTasks(apiContext)
     }
 
     suspend fun addTask(title: String, completed: Boolean? = null, description: String? = null, dueDate: Long? = null, startDate: Long? = null, scope: IOperatingScope, apiContext: ApiContext) = apiCall {

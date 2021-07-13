@@ -12,7 +12,7 @@ import javax.inject.Inject
 class BoardRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun getBoardNotifications(apiContext: ApiContext) = apiCall {
-        apiContext.user.getAllBoardNotifications(apiContext).sortedByDescending { it.first.created.date.time }
+        apiContext.user.getAllBoardNotifications(apiContext)
     }
 
     suspend fun addBoardNotification(title: String, text: String, color: BoardNotificationColor?, killDate: Date?, group: IGroup, apiContext: ApiContext) = apiCall {

@@ -3,6 +3,7 @@ package de.deftk.openww.android.viewmodel
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.filter.BoardNotificationFilter
 import de.deftk.openww.android.repository.BoardRepository
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IGroup
@@ -17,17 +18,27 @@ import javax.inject.Inject
 class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val boardRepository: BoardRepository): ViewModel() {
 
     private val _notificationsResponse = MutableLiveData<Response<List<Pair<IBoardNotification, IGroup>>>>()
-    val notificationsResponse: LiveData<Response<List<Pair<IBoardNotification, IGroup>>>> = _notificationsResponse
+    val allNotificationsResponse: LiveData<Response<List<Pair<IBoardNotification, IGroup>>>> = _notificationsResponse
+
+    val filter = MutableLiveData(BoardNotificationFilter())
+
+    val filteredNotificationResponse: LiveData<Response<List<Pair<IBoardNotification, IGroup>>>>
+        get() = filter.switchMap { filter ->
+            when (filter) {
+                null -> allNotificationsResponse
+                else -> allNotificationsResponse.switchMap { response ->
+                    val filtered = MutableLiveData<Response<List<Pair<IBoardNotification, IGroup>>>>()
+                    filtered.value = response.smartMap { filter.apply(it) }
+                    filtered
+                }
+            }
+        }
 
     private val _postResponse = MutableLiveData<Response<IBoardNotification?>?>()
     val postResponse: LiveData<Response<IBoardNotification?>?> = _postResponse
 
     private val _batchDeleteResponse = MutableLiveData<List<Response<Pair<IBoardNotification, IGroup>>>?>()
     val batchDeleteResponse: LiveData<List<Response<Pair<IBoardNotification, IGroup>>>?> = _batchDeleteResponse
-
-    fun setSearchText(query: String?) {
-        savedStateHandle["query"] = query
-    }
 
     fun loadBoardNotifications(apiContext: ApiContext) {
         viewModelScope.launch {
@@ -96,7 +107,7 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
         viewModelScope.launch {
             val responses = selectedItems.map { boardRepository.deleteBoardNotification(it.second, it.first, apiContext) }
             _batchDeleteResponse.value = responses
-            val notifications = notificationsResponse.value?.valueOrNull()
+            val notifications = allNotificationsResponse.value?.valueOrNull()
             if (notifications != null) {
                 val currentNotifications = notifications.toMutableList()
                 responses.forEach { response ->
