@@ -11,6 +11,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.BoardNotificationAdapter
 import de.deftk.openww.android.api.Response
@@ -18,6 +19,7 @@ import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentNotificationsBinding
 import de.deftk.openww.android.filter.BoardNotificationFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
+import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.BoardViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -25,17 +27,19 @@ import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.board.IBoardNotification
 
-class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>, BoardNotificationAdapter.BoardNotificationViewHolder>(R.menu.board_actionmode_menu) {
+class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>, BoardNotificationAdapter.BoardNotificationViewHolder>(R.menu.board_actionmode_menu), ISearchProvider {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val boardViewModel: BoardViewModel by activityViewModels()
     private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentNotificationsBinding
+    private lateinit var searchView: SearchView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentNotificationsBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        (requireActivity() as? MainActivity?)?.searchProvider = this
         context ?: return binding.root
 
         binding.notificationList.adapter = adapter
@@ -133,7 +137,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
         menu.clear()
         inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
-        val searchView = searchItem.actionView as SearchView
+        searchView = searchItem.actionView as SearchView
         searchView.setQuery(boardViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -149,6 +153,16 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
             }
         })
         super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onSearchBackPressed(): Boolean {
+        return if (searchView.isIconified) {
+            false
+        } else {
+            searchView.isIconified = true
+            searchView.setQuery(null, true)
+            true
+        }
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
@@ -179,6 +193,11 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
             }
             else -> false
         }
+    }
+
+    override fun onDestroy() {
+        (requireActivity() as? MainActivity?)?.searchProvider = null
+        super.onDestroy()
     }
 
 }

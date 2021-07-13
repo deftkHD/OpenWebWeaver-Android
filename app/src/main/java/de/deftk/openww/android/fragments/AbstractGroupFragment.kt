@@ -12,17 +12,20 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.adapter.recycler.OperatingScopeAdapter
 import de.deftk.openww.android.databinding.FragmentGroupsBinding
 import de.deftk.openww.android.filter.ScopeFilter
 import de.deftk.openww.android.filter.ScopeOrder
+import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IOperatingScope
 
-abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener {
+abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener, ISearchProvider {
 
     protected lateinit var binding: FragmentGroupsBinding
+    private lateinit var searchView: SearchView
 
     protected val userViewModel: UserViewModel by activityViewModels()
     protected val navController by lazy { findNavController() }
@@ -35,6 +38,7 @@ abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentGroupsBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        (requireActivity() as? MainActivity?)?.searchProvider = this
         binding.groupList.adapter = adapter
         binding.groupList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
@@ -74,7 +78,7 @@ abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener 
         menu.clear()
         inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
-        val searchView = searchItem.actionView as SearchView
+        searchView = searchItem.actionView as SearchView
         searchView.setQuery(filter.smartSearchCriteria.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -93,6 +97,16 @@ abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener 
             }
         })
         super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onSearchBackPressed(): Boolean {
+        return if (searchView.isIconified) {
+            false
+        } else {
+            searchView.isIconified = true
+            searchView.setQuery(null, true)
+            true
+        }
     }
 
 }

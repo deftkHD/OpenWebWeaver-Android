@@ -26,6 +26,7 @@ import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.databinding.ActivityMainBinding
 import de.deftk.openww.android.feature.AppFeature
 import de.deftk.openww.android.feature.LaunchMode
+import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +46,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
     private val launchMode by lazy { LaunchMode.getLaunchMode(intent) }
 
     var actionMode: ActionMode? = null
+    var searchProvider: ISearchProvider? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -179,10 +181,12 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
             if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
                 binding.drawerLayout.closeDrawer(GravityCompat.START)
             } else {
-                if (actionMode == null) {
-                    super.onBackPressed()
-                } else {
+                if (actionMode != null) {
                     actionMode!!.finish()
+                } else {
+                    if (searchProvider?.onSearchBackPressed() != true) {
+                        super.onBackPressed()
+                    }
                 }
             }
         } else if (launchMode == LaunchMode.EMAIL) {

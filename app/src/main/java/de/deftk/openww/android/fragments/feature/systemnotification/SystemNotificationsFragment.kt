@@ -11,6 +11,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.SystemNotificationAdapter
 import de.deftk.openww.android.api.Response
@@ -18,20 +19,23 @@ import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentSystemNotificationsBinding
 import de.deftk.openww.android.filter.SystemNotificationFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
+import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 
-class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, SystemNotificationAdapter.SystemNotificationViewHolder>(R.menu.system_notification_actionmode_menu) {
+class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, SystemNotificationAdapter.SystemNotificationViewHolder>(R.menu.system_notification_actionmode_menu), ISearchProvider {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentSystemNotificationsBinding
+    private lateinit var searchView: SearchView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSystemNotificationsBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        (requireActivity() as? MainActivity?)?.searchProvider = this
         context ?: return binding.root
 
         binding.systemNotificationList.adapter = adapter
@@ -119,7 +123,7 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
         menu.clear()
         inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
-        val searchView = searchItem.actionView as SearchView
+        searchView = searchItem.actionView as SearchView
         searchView.setQuery(userViewModel.systemNotificationFilter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -135,6 +139,16 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
             }
         })
         super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onSearchBackPressed(): Boolean {
+        return if (searchView.isIconified) {
+            false
+        } else {
+            searchView.isIconified = true
+            searchView.setQuery(null, true)
+            true
+        }
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
@@ -153,6 +167,11 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
             else -> return false
         }
         return true
+    }
+
+    override fun onDestroy() {
+        (requireActivity() as? MainActivity?)?.searchProvider = null
+        super.onDestroy()
     }
 
 }
