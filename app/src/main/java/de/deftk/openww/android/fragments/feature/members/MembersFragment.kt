@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -16,6 +17,7 @@ import de.deftk.openww.android.adapter.recycler.MemberAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentMembersBinding
+import de.deftk.openww.android.filter.ScopeFilter
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.GroupViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -45,7 +47,7 @@ class MembersFragment : Fragment() {
         val adapter = MemberAdapter()
         binding.memberList.adapter = adapter
         binding.memberList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        groupViewModel.getGroupMembers(group).observe(viewLifecycleOwner) { response ->
+        groupViewModel.getFilteredGroupMembers(group).observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value)
                 binding.membersEmpty.isVisible = response.value.isEmpty()
@@ -75,10 +77,12 @@ class MembersFragment : Fragment() {
         return binding.root
     }
 
-    /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        requireActivity().menuInflater.inflate(R.menu.list_filter_menu, menu)
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
         val searchView = searchItem.actionView as SearchView
+        searchView.setQuery(groupViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchView.clearFocus()
@@ -86,12 +90,14 @@ class MembersFragment : Fragment() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                //TODO search
+                val filter = ScopeFilter()
+                filter.smartSearchCriteria.value = newText
+                groupViewModel.filter.value = filter
                 return false
             }
         })
         super.onCreateOptionsMenu(menu, inflater)
-    }*/
+    }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
