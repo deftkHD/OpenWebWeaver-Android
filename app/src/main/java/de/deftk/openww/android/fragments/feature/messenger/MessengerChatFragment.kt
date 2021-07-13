@@ -3,6 +3,7 @@ package de.deftk.openww.android.fragments.feature.messenger
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -13,12 +14,15 @@ import androidx.preference.PreferenceManager
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.adapter.recycler.ChatMessageAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentMessengerChatBinding
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
+import de.deftk.openww.android.filter.MessageFilter
 import de.deftk.openww.android.utils.FileUtil
+import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MessengerViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -26,7 +30,7 @@ import de.deftk.openww.api.model.feature.FileUrl
 import java.io.File
 
 
-class MessengerChatFragment : Fragment(), AttachmentDownloader {
+class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val messengerViewModel: MessengerViewModel by activityViewModels()
@@ -34,10 +38,12 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(requireContext()) }
 
     private lateinit var binding: FragmentMessengerChatBinding
+    private lateinit var searchView: SearchView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMessengerChatBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        (requireActivity() as? MainActivity?)?.searchProvider = this
 
         val adapter = ChatMessageAdapter(userViewModel, this)
         binding.chatList.adapter = adapter
@@ -65,7 +71,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
             }
         }
 
-        messengerViewModel.getChatLiveData(args.user).observe(viewLifecycleOwner) { response ->
+        messengerViewModel.getFilteredMessagesResponse(args.user).observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 val messages = response.value.first
                 if ((adapter.itemCount != messages.size && response.value.second) || !response.value.second)
@@ -115,7 +121,36 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
         inflater.inflate(R.menu.messenger_chat_options_menu, menu)
+        inflater.inflate(R.menu.list_filter_menu, menu)
+        val searchItem = menu.findItem(R.id.filter_item_search)
+        searchView = searchItem.actionView as SearchView
+        searchView.setQuery(messengerViewModel.messageFilter.value?.smartSearchCriteria?.value, false) // restore recent search
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchView.clearFocus()
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val filter = MessageFilter()
+                filter.smartSearchCriteria.value = newText
+                messengerViewModel.messageFilter.value = filter
+                return true
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onSearchBackPressed(): Boolean {
+        return if (searchView.isIconified) {
+            false
+        } else {
+            searchView.isIconified = true
+            searchView.setQuery(null, true)
+            true
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -127,6 +162,12 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader {
         }
         return true
     }
+
+    override fun onDestroy() {
+        (requireActivity() as? MainActivity?)?.searchProvider = null
+        super.onDestroy()
+    }
+
 }
 
 interface AttachmentDownloader {

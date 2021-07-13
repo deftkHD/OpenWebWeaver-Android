@@ -7,6 +7,7 @@ import de.deftk.openww.api.model.IScope
 import de.deftk.openww.api.model.IUser
 import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.model.feature.board.IBoardNotification
+import de.deftk.openww.api.model.feature.messenger.IQuickMessage
 import de.deftk.openww.api.model.feature.notes.INote
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 import de.deftk.openww.api.model.feature.tasks.ITask
@@ -214,6 +215,22 @@ sealed class NoteOrder(@StringRes nameRes: Int): Order<INote>(nameRes) {
     object ByDateCreatedDesc : NoteOrder(0) {
         override fun sort(items: List<INote>): List<INote> {
             return items.sortedByDescending { it.created.date.time }
+        }
+    }
+
+}
+
+sealed class MessageOrder(@StringRes nameRes: Int): Order<IQuickMessage>(nameRes) {
+
+    object ByDateCreatedAsc : MessageOrder(0) {
+        override fun sort(items: List<IQuickMessage>): List<IQuickMessage> {
+            return items.sortedBy { it.date.time }
+        }
+    }
+
+    object ByDateCreatedDesc : MessageOrder(0) {
+        override fun sort(items: List<IQuickMessage>): List<IQuickMessage> {
+            return items.sortedByDescending { it.date.time }
         }
     }
 

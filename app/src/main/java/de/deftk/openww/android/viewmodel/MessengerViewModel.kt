@@ -3,6 +3,7 @@ package de.deftk.openww.android.viewmodel
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.filter.MessageFilter
 import de.deftk.openww.android.filter.ScopeFilter
 import de.deftk.openww.android.repository.MessengerRepository
 import de.deftk.openww.api.implementation.ApiContext
@@ -33,7 +34,10 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
         }
 
     private val _messagesResponse = mutableMapOf<String, MutableLiveData<Response<Pair<List<IQuickMessage>, Boolean>>>>()
-    val messagesResponse: Map<String, LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>> = _messagesResponse
+    //private val allMessagesResponses: Map<String, LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>> = _messagesResponse
+
+    val messageFilter = MutableLiveData(MessageFilter())
+    private val filteredMessageResponses = mutableMapOf<String, LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>>()
 
     private val _addChatResponse = MutableLiveData<Response<RemoteScope>>()
     val addChatResponse: LiveData<Response<RemoteScope>> = _addChatResponse
@@ -47,8 +51,23 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
     private val _batchDeleteResponse = MutableLiveData<List<Response<IScope>>?>()
     val batchDeleteResponse: LiveData<List<Response<IScope>>?> = _batchDeleteResponse
 
-    fun getChatLiveData(with: String): LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>  {
+    fun getAllMessagesResponse(with: String): LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>  {
         return _messagesResponse.getOrPut(with) { MutableLiveData() }
+    }
+
+    fun getFilteredMessagesResponse(with: String): LiveData<Response<Pair<List<IQuickMessage>, Boolean>>> {
+        return filteredMessageResponses.getOrPut(with) {
+            messageFilter.switchMap { filter ->
+                when (filter) {
+                    null -> getAllMessagesResponse(with)
+                    else -> getAllMessagesResponse(with).switchMap { response ->
+                        val filtered = MutableLiveData<Response<Pair<List<IQuickMessage>, Boolean>>>()
+                        filtered.value = response.smartMap { filter.apply(it.first) to it.second }
+                        filtered
+                    }
+                }
+            }
+        }
     }
 
     fun loadChats(apiContext: ApiContext) {
