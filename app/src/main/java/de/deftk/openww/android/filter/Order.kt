@@ -5,6 +5,7 @@ import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.IScope
 import de.deftk.openww.api.model.feature.board.IBoardNotification
+import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 import de.deftk.openww.api.model.feature.tasks.ITask
 
 sealed class Order<T>(@StringRes val nameRes: Int) {
@@ -122,6 +123,34 @@ sealed class BoardNotificationOrder(@StringRes nameRes: Int) : ScopedOrder<IBoar
     object ByCreatedDesc : BoardNotificationOrder(0) {
         override fun sort(items: List<Pair<IBoardNotification, IGroup>>): List<Pair<IBoardNotification, IGroup>> {
             return items.sortedByDescending { it.first.created.date.time }
+        }
+    }
+
+}
+
+sealed class SystemNotificationOrder(@StringRes nameRes: Int): Order<ISystemNotification>(nameRes) {
+
+    object ByTypeAsc : SystemNotificationOrder(0) {
+        override fun sort(items: List<ISystemNotification>): List<ISystemNotification> {
+            return items.sortedBy { it.messageType }
+        }
+    }
+
+    object ByTypeDesc : SystemNotificationOrder(0) {
+        override fun sort(items: List<ISystemNotification>): List<ISystemNotification> {
+            return items.sortedByDescending { it.messageType }
+        }
+    }
+
+    object ByDateAsc : SystemNotificationOrder(0) {
+        override fun sort(items: List<ISystemNotification>): List<ISystemNotification> {
+            return items.sortedBy { it.date.time }
+        }
+    }
+
+    object ByDateDesc : SystemNotificationOrder(0) {
+        override fun sort(items: List<ISystemNotification>): List<ISystemNotification> {
+            return items.sortedByDescending { it.date.time }
         }
     }
 

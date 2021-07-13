@@ -30,7 +30,12 @@ object UIUtil {
 
     @StringRes
     fun getTranslatedSystemNotificationTitle(systemNotification: ISystemNotification): Int {
-        return systemNotificationTranslationMap[systemNotification.messageType] ?: R.string.system_notification_type_unknown
+        return getTranslatedSystemNotificationTitle(systemNotification.messageType)
+    }
+
+    @StringRes
+    fun getTranslatedSystemNotificationTitle(systemNotificationType: SystemNotificationType): Int {
+        return systemNotificationTranslationMap[systemNotificationType] ?: R.string.system_notification_type_unknown
     }
 
     @ColorRes

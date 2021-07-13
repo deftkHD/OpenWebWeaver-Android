@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.feature.overview.AbstractOverviewElement
+import de.deftk.openww.android.filter.SystemNotificationFilter
 import de.deftk.openww.android.repository.UserRepository
 import de.deftk.openww.api.auth.Credentials
 import de.deftk.openww.api.implementation.ApiContext
@@ -36,7 +37,21 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
     val overviewResponse: LiveData<Response<List<AbstractOverviewElement>>> = _overviewResponse
 
     private val _systemNotificationsResponse = MutableLiveData<Response<List<ISystemNotification>>>()
-    val systemNotificationsResponse: LiveData<Response<List<ISystemNotification>>> = _systemNotificationsResponse
+    val allSystemNotificationsResponse: LiveData<Response<List<ISystemNotification>>> = _systemNotificationsResponse
+
+    val systemNotificationFilter = MutableLiveData<SystemNotificationFilter>()
+
+    val filteredSystemNotificationResponse: LiveData<Response<List<ISystemNotification>>>
+        get() = systemNotificationFilter.switchMap { filter ->
+            when (filter) {
+                null -> allSystemNotificationsResponse
+                else -> allSystemNotificationsResponse.switchMap { response ->
+                    val filtered = MutableLiveData<Response<List<ISystemNotification>>>()
+                    filtered.value = response.smartMap { filter.apply(it) }
+                    filtered
+                }
+            }
+        }
 
     private val _systemNotificationDeleteResponse = MutableLiveData<Response<ISystemNotification>?>()
     val systemNotificationDeleteResponse: LiveData<Response<ISystemNotification>?> = _systemNotificationDeleteResponse
@@ -164,7 +179,7 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
         viewModelScope.launch {
             val responses = systemNotifications.map { userRepository.deleteSystemNotification(it, apiContext) }
             _systemNotificationBatchDeleteResponse.value = responses
-            val notifications = systemNotificationsResponse.value?.valueOrNull()
+            val notifications = allSystemNotificationsResponse.value?.valueOrNull()
             if (notifications != null) {
                 val currentNotifications = notifications.toMutableList()
                 responses.forEach { response ->

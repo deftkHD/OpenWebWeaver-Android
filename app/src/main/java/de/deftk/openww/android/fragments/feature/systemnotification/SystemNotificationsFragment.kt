@@ -3,6 +3,7 @@ package de.deftk.openww.android.fragments.feature.systemnotification
 import android.os.Bundle
 import android.view.*
 import android.widget.ProgressBar
+import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
@@ -15,6 +16,7 @@ import de.deftk.openww.android.adapter.recycler.SystemNotificationAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentSystemNotificationsBinding
+import de.deftk.openww.android.filter.SystemNotificationFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -33,7 +35,7 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
         context ?: return binding.root
 
         binding.systemNotificationList.adapter = adapter
-        userViewModel.systemNotificationsResponse.observe(viewLifecycleOwner) { response ->
+        userViewModel.filteredSystemNotificationResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value)
                 binding.systemNotificationsEmpty.isVisible = response.value.isEmpty()
@@ -84,6 +86,9 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
             }
         }
 
+        if (userViewModel.systemNotificationFilter.value == null) {
+            userViewModel.systemNotificationFilter.value = SystemNotificationFilter(requireContext())
+        }
         setHasOptionsMenu(true)
         registerForContextMenu(binding.systemNotificationList)
         return binding.root
@@ -110,11 +115,12 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
         return true
     }
 
-    /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
         val searchView = searchItem.actionView as SearchView
+        searchView.setQuery(userViewModel.systemNotificationFilter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchView.clearFocus()
@@ -122,12 +128,14 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                //TODO apply filter
+                val filter = SystemNotificationFilter(requireContext())
+                filter.smartSearchCriteria.value = newText
+                userViewModel.systemNotificationFilter.value = filter
                 return false
             }
         })
         super.onCreateOptionsMenu(menu, inflater)
-    }*/
+    }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         requireActivity().menuInflater.inflate(R.menu.delete_menu_item, menu)

@@ -38,7 +38,7 @@ class SystemNotificationFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        userViewModel.systemNotificationsResponse.observe(viewLifecycleOwner) { response ->
+        userViewModel.allSystemNotificationsResponse.observe(viewLifecycleOwner) { response ->
             if (deleted)
                 return@observe
 
