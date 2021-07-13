@@ -1,6 +1,7 @@
 package de.deftk.openww.android.filter
 
 import androidx.annotation.StringRes
+import de.deftk.openww.android.feature.filestorage.FileCacheElement
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.IScope
@@ -199,6 +200,16 @@ sealed class QuotaOrder(@StringRes nameRes: Int): Order<Pair<IOperatingScope, Qu
     object ByOperatorDefault : QuotaOrder(0) {
         override fun sort(items: List<Pair<IOperatingScope, Quota>>): List<Pair<IOperatingScope, Quota>> {
             return items.sortedWith(compareBy ({ it.first !is IUser }, { it.first.name }))
+        }
+    }
+
+}
+
+sealed class FileOrder(@StringRes nameRes: Int): Order<Pair<FileCacheElement, IOperatingScope>>(nameRes) {
+
+    object Default : FileOrder(0) {
+        override fun sort(items: List<Pair<FileCacheElement, IOperatingScope>>): List<Pair<FileCacheElement, IOperatingScope>> {
+            return items.sortedWith(compareBy( { -it.first.file.type.ordinal }, { it.first.file.name }))
         }
     }
 

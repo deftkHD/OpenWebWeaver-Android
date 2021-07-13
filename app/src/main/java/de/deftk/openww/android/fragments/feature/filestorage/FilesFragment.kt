@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.widget.SearchView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -20,6 +21,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.FileAdapter
 import de.deftk.openww.android.api.Response
@@ -28,8 +30,10 @@ import de.deftk.openww.android.databinding.FragmentFilesBinding
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
 import de.deftk.openww.android.feature.filestorage.NetworkTransfer
+import de.deftk.openww.android.filter.FileStorageFileFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.FileUtil
+import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -39,7 +43,7 @@ import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import java.io.File
 import kotlin.math.max
 
-class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder>(R.menu.filestorage_actionmode_menu) {
+class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder>(R.menu.filestorage_actionmode_menu), ISearchProvider {
 
     //TODO cancel ongoing network transfers on account switch
 
@@ -53,12 +57,14 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     private lateinit var downloadSaveLauncher: ActivityResultLauncher<Pair<Intent, IRemoteFile>>
     private lateinit var binding: FragmentFilesBinding
     private lateinit var scope: IOperatingScope
+    private lateinit var searchView: SearchView
 
     private var currentNetworkTransfers = emptyList<NetworkTransfer>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFilesBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        (requireActivity() as? MainActivity?)?.searchProvider = this
         val argScope = userViewModel.apiContext.value?.findOperatingScope(args.operatorId)
         if (argScope == null) {
             Reporter.reportException(R.string.error_scope_not_found, args.operatorId, requireContext())
@@ -71,7 +77,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         binding.fileList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         binding.fileList.recycledViewPool.setMaxRecycledViews(0, 0) // this is just a workaround (otherwise preview images disappear while scrolling, see https://github.com/square/picasso/issues/845#issuecomment-280626688) FIXME seems like an issue with recycling
 
-        fileStorageViewModel.getProviderLiveData(scope, args.folderId, args.path?.toList()).observe(viewLifecycleOwner) { response ->
+        fileStorageViewModel.getFilteredProviderLiveData(scope, args.folderId, args.path?.toList()).observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value.map { it.file })
                 binding.fileEmpty.isVisible = response.value.isEmpty()
@@ -142,6 +148,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             }
         }
 
+        setHasOptionsMenu(true)
         registerForContextMenu(binding.fileList)
         return binding.root
     }
@@ -215,6 +222,38 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         /*if (transfer is NetworkTransfer.Upload) {
 
         }*/
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.list_filter_menu, menu)
+        val searchItem = menu.findItem(R.id.filter_item_search)
+        searchView = searchItem.actionView as SearchView
+        searchView.setQuery(fileStorageViewModel.fileFilter.value?.smartSearchCriteria?.value, false) // restore recent search
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchView.clearFocus()
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val filter = FileStorageFileFilter()
+                filter.smartSearchCriteria.value = newText
+                fileStorageViewModel.fileFilter.value = filter
+                return true
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onSearchBackPressed(): Boolean {
+        return if (searchView.isIconified) {
+            false
+        } else {
+            searchView.isIconified = true
+            searchView.setQuery(null, true)
+            true
+        }
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
@@ -296,6 +335,11 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 fileStorageViewModel.startOpenDownload(workManager, apiContext, file, scope, tempFile.absolutePath)
             }
         }
+    }
+
+    override fun onDestroy() {
+        (requireActivity() as? MainActivity?)?.searchProvider = null
+        super.onDestroy()
     }
 
 }

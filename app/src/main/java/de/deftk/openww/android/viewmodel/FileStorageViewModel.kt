@@ -12,6 +12,7 @@ import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
 import de.deftk.openww.android.feature.filestorage.DownloadSaveWorker
 import de.deftk.openww.android.feature.filestorage.FileCacheElement
 import de.deftk.openww.android.feature.filestorage.NetworkTransfer
+import de.deftk.openww.android.filter.FileStorageFileFilter
 import de.deftk.openww.android.filter.FileStorageQuotaFilter
 import de.deftk.openww.android.repository.FileStorageRepository
 import kotlinx.coroutines.launch
@@ -37,6 +38,9 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
 
     private val _files = mutableMapOf<IOperatingScope, MutableLiveData<Response<List<FileCacheElement>>>>()
+
+    val fileFilter = MutableLiveData(FileStorageFileFilter())
+    private val filteredFiles = mutableMapOf<IOperatingScope, LiveData<Response<List<FileCacheElement>>>>()
 
     private val _batchDeleteResponse = MutableLiveData<List<Response<IRemoteFile>>?>()
     val batchDeleteResponse: LiveData<List<Response<IRemoteFile>>?> = _batchDeleteResponse
@@ -82,7 +86,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
     }
 
-    fun getProviderLiveData(scope: IOperatingScope, folderId: String?, path: List<String>?): LiveData<Response<List<FileCacheElement>>> {
+    fun getAllProviderLiveData(scope: IOperatingScope, folderId: String?, path: List<String>?): LiveData<Response<List<FileCacheElement>>> {
         return if (folderId == null) {
             _files.getOrPut(scope) { MutableLiveData() }
         } else {
@@ -96,7 +100,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         return findLiveData(rootFiles, path, id)
     }
 
-    private fun findLiveData(rootFiles: MutableLiveData<Response<List<FileCacheElement>>>, path: List<String>?, id: String): FileCacheElement? {
+    private fun findLiveData(rootFiles: LiveData<Response<List<FileCacheElement>>>, path: List<String>?, id: String): FileCacheElement? {
         val pathSteps = path?.toMutableList()
         var files = rootFiles
 
@@ -115,6 +119,31 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
                 }
             }
         }
+    }
+
+    fun getFilteredProviderLiveData(scope: IOperatingScope, folderId: String?, path: List<String>?): LiveData<Response<List<FileCacheElement>>> {
+        return if (folderId == null) {
+            filteredFiles.getOrPut(scope) {
+                fileFilter.switchMap { filter ->
+                    when (filter) {
+                        null -> getAllProviderLiveData(scope, folderId, path)
+                        else -> getAllProviderLiveData(scope, folderId, path).switchMap { response ->
+                            val filtered = MutableLiveData<Response<List<FileCacheElement>>>()
+                            filtered.value = response.smartMap { orig -> filter.apply(orig.map { it to scope }).map { it.first } }
+                            filtered
+                        }
+                    }
+                }
+            }
+        } else {
+            val cacheElement = getFilteredLiveDataFromCache(scope, folderId, path)!!
+            cacheElement.children
+        }
+    }
+
+    fun getFilteredLiveDataFromCache(scope: IOperatingScope, id: String, path: List<String>?): FileCacheElement? {
+        val rootFiles = filteredFiles[scope] ?: return null
+        return findLiveData(rootFiles, path, id)
     }
 
     // hopefully this never breaks
@@ -227,7 +256,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
     fun batchDelete(files: List<IRemoteFile>, parentId: String?, path: List<String>?, scope: IOperatingScope, apiContext: ApiContext) {
         viewModelScope.launch {
             val responses = files.map { fileStorageRepository.deleteFile(it, scope, apiContext) }
-            val filesLiveData = getProviderLiveData(scope, parentId, path) as MutableLiveData
+            val filesLiveData = getAllProviderLiveData(scope, parentId, path) as MutableLiveData
             val filesResponse = filesLiveData.value?.valueOrNull()
             if (filesResponse != null) {
                 val currentFiles = filesResponse.toMutableList()

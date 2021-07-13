@@ -11,7 +11,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
-import de.deftk.openww.android.adapter.recycler.MemberAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadFileBinding
 import de.deftk.openww.android.feature.filestorage.FileCacheElement
@@ -21,7 +20,6 @@ import de.deftk.openww.android.viewmodel.FileStorageViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.filestorage.FileType
-import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import java.util.*
 
 class ReadFileFragment : Fragment() {
@@ -48,7 +46,7 @@ class ReadFileFragment : Fragment() {
         }
         scope = foundScope
 
-        fileStorageViewModel.getProviderLiveData(scope, args.folderId, args.path?.toList()).observe(viewLifecycleOwner) { response ->
+        fileStorageViewModel.getAllProviderLiveData(scope, args.folderId, args.path?.toList()).observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 val foundFile = response.value.firstOrNull { it.file.id == args.fileId }
                 if (foundFile == null) {

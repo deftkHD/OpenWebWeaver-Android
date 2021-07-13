@@ -21,7 +21,7 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
     }
 
     suspend fun getFiles(provider: IRemoteFileProvider, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
-        provider.getFiles(context = scope.getRequestContext(apiContext)).sortedWith(compareBy( { -it.type.ordinal }, { it.name }))
+        provider.getFiles(context = scope.getRequestContext(apiContext))
     }
 
     suspend fun getFileDownloadUrl(file: IRemoteFile, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
