@@ -100,8 +100,8 @@
                     android:text="@string/no_comments"
                     tools:text="No comments" />
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/forum_post_comment_recycler_view"
+                <de.deftk.openww.android.components.ContextMenuRecyclerView
+                    android:id="@+id/forum_post_comment_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/forum_post_comment_text"

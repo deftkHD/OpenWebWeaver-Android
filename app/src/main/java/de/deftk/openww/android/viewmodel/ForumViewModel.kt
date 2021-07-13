@@ -2,21 +2,24 @@ package de.deftk.openww.android.viewmodel
 
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.repository.ForumRepository
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.feature.forum.IForumPost
-import de.deftk.openww.android.api.Response
-import de.deftk.openww.android.repository.ForumRepository
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val forumRepository: ForumRepository) : ViewModel() {
 
-    private val memberResponses = mutableMapOf<IGroup, MutableLiveData<Response<List<IForumPost>>>>()
+    private val postsResponses = mutableMapOf<IGroup, MutableLiveData<Response<List<IForumPost>>>>()
+
+    private val _deleteResponse = MutableLiveData<Response<IForumPost>?>()
+    val deleteResponse: LiveData<Response<IForumPost>?> = _deleteResponse
 
     fun getForumPosts(group: IGroup): LiveData<Response<List<IForumPost>>> {
-        return memberResponses.getOrPut(group) { MutableLiveData() }
+        return postsResponses.getOrPut(group) { MutableLiveData() }
     }
 
     fun loadForumPosts(group: IGroup, parentId: String? = null, apiContext: ApiContext) {
@@ -25,24 +28,37 @@ class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStat
         }
     }
 
-    fun findPostOrComment(rootPosts: List<IForumPost>, path: MutableList<String>?, id: String): IForumPost? {
-        var posts = rootPosts
+    fun filterRootPosts(allPosts: List<IForumPost>): List<IForumPost> {
+        return allPosts.filter { it.parentId == "0" }
+    }
 
-        while (true) {
-            if (path == null || path.isEmpty()) {
-                return posts.firstOrNull { it.id == id }
-            } else {
-                val root = posts.firstOrNull { it.id == path[0] }
-                if (root != null) {
-                    path.removeFirst()
-                    posts = root.getComments()
-                    // repeat loop
-                } else {
-                    // path segment not found
-                    return null
-                }
+    fun getComments(group: IGroup, postId: String): List<IForumPost> {
+        return postsResponses[group]?.value?.valueOrNull()?.filter { it.parentId == postId } ?: emptyList()
+    }
+
+    fun deletePost(post: IForumPost, parent: IForumPost?, group: IGroup, apiContext: ApiContext) {
+        viewModelScope.launch {
+            val response = forumRepository.deletePost(post, group, apiContext)
+            _deleteResponse.value = response
+            if (response is Response.Success) {
+                parent?.getComments()?.toMutableList()?.remove(post)
+                val liveData = (getForumPosts(group) as MutableLiveData)
+                liveData.value = liveData.value?.smartMap { list -> list.toMutableList().apply { this.remove(post) } }
             }
         }
+    }
+
+    fun resetDeleteResponse() {
+        _deleteResponse.value = null
+    }
+
+    fun getParentPost(rootPosts: List<IForumPost>, path: MutableList<String>): IForumPost? {
+        val id = path.lastOrNull() ?: return null
+        return findPostOrComment(rootPosts, id)
+    }
+
+    fun findPostOrComment(rootPosts: List<IForumPost>, id: String): IForumPost? {
+        return rootPosts.firstOrNull { it.id == id }
     }
 
 }

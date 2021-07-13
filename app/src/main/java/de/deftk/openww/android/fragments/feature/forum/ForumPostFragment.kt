@@ -2,7 +2,6 @@ package de.deftk.openww.android.fragments.feature.forum
 
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
-import android.util.Log
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -12,12 +11,10 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
-import de.deftk.openww.api.model.IGroup
-import de.deftk.openww.api.model.Permission
-import de.deftk.openww.api.model.feature.forum.IForumPost
 import de.deftk.openww.android.R
-import de.deftk.openww.android.adapter.recycler.ForumPostCommentRecyclerAdapter
+import de.deftk.openww.android.adapter.recycler.ForumPostCommentAdapter
 import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentForumPostBinding
 import de.deftk.openww.android.feature.forum.ForumPostIcons
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
@@ -25,15 +22,12 @@ import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.ForumViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.IGroup
+import de.deftk.openww.api.model.Permission
+import de.deftk.openww.api.model.feature.forum.IForumPost
 import java.text.DateFormat
 
 class ForumPostFragment : Fragment() {
-
-    //TODO options menu
-
-    companion object {
-        private val TAG = ForumPostFragment::class.java.simpleName
-    }
 
     private val args: ForumPostFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
@@ -44,10 +38,14 @@ class ForumPostFragment : Fragment() {
     private lateinit var group: IGroup
     private lateinit var post: IForumPost
 
+    private var parent: IForumPost? = null
+    private var deleted = false
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentForumPostBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         setHasOptionsMenu(true)
+        registerForContextMenu(binding.forumPostCommentList)
         return binding.root
     }
 
@@ -61,10 +59,15 @@ class ForumPostFragment : Fragment() {
         this.group = group
 
         forumViewModel.getForumPosts(group).observe(viewLifecycleOwner) { response ->
+            if (deleted)
+                return@observe
+
             if (response is Response.Success) {
-                val post = forumViewModel.findPostOrComment(response.value, args.parentPostIds?.toMutableList(), args.postId)
+                parent = forumViewModel.getParentPost(response.value, (args.parentPostIds ?: emptyArray()).toMutableList())
+                val post = forumViewModel.findPostOrComment(response.value, args.postId)
                 if (post != null) {
                     this.post = post
+                    val comments = forumViewModel.getComments(group, post.id)
 
                     binding.forumPostImage.setImageResource(ForumPostIcons.getByTypeOrDefault(post.icon).resource)
                     binding.forumPostTitle.text = post.title
@@ -74,14 +77,44 @@ class ForumPostFragment : Fragment() {
                     binding.forumPostText.movementMethod = LinkMovementMethod.getInstance()
                     binding.forumPostText.transformationMethod = CustomTabTransformationMethod(binding.forumPostText.autoLinkMask)
 
-                    binding.forumPostNoComments.isVisible = post.getComments().isEmpty()
-                    binding.forumPostCommentRecyclerView.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-                    binding.forumPostCommentRecyclerView.adapter = ForumPostCommentRecyclerAdapter(post.getComments().sortedBy { it.created.date.time }, group, navController, args.parentPostIds ?: emptyArray(), args.postId)
+                    binding.forumPostNoComments.isVisible = comments.isEmpty()
+                    binding.forumPostCommentList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+
+                    val adapter = ForumPostCommentAdapter(group, arrayOf(*args.parentPostIds ?: emptyArray(), args.postId), forumViewModel)
+                    binding.forumPostCommentList.adapter = adapter
+                    adapter.submitList(comments.sortedBy { it.created.date.time })
+
+                } else {
+                    Reporter.reportException(R.string.error_post_not_found, args.postId, requireContext())
+                    navController.popBackStack()
+                    return@observe
                 }
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
                 navController.popBackStack()
                 return@observe
+            }
+        }
+
+        forumViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                forumViewModel.resetDeleteResponse() // mark as handled
+
+            if (response is Response.Success) {
+                if (response.value == post) {
+                    // self deleted
+                    deleted = true
+                    navController.popBackStack()
+                } else {
+                    // comment deleted
+                    val comments = forumViewModel.getComments(group, post.id)
+                    binding.forumPostNoComments.isVisible = comments.isEmpty()
+                    binding.forumPostCommentList.isVisible = comments.isNotEmpty()
+                    (binding.forumPostCommentList.adapter as ForumPostCommentAdapter).submitList(comments)
+                }
+
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
 
@@ -94,19 +127,44 @@ class ForumPostFragment : Fragment() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
         if (group.effectiveRights.contains(Permission.FORUM_WRITE) || group.effectiveRights.contains(Permission.FORUM_ADMIN)) {
-            //inflater.inflate(R.menu.forum_post_options_menu, menu)
+            inflater.inflate(R.menu.forum_post_options_menu, menu)
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+        when (item.itemId) {
             R.id.menu_item_delete -> {
-                //TODO implement
-                true
+                userViewModel.apiContext.value?.also { apiContext ->
+                    forumViewModel.deletePost(post, parent, group, apiContext)
+                }
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> return super.onOptionsItemSelected(item)
         }
+        return true
+    }
+
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        if (group.effectiveRights.contains(Permission.FORUM_WRITE) || group.effectiveRights.contains(Permission.FORUM_ADMIN)) {
+            requireActivity().menuInflater.inflate(R.menu.forum_post_options_menu, menu)
+        }
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
+        val adapter = binding.forumPostCommentList.adapter as ForumPostCommentAdapter
+        when (item.itemId) {
+            R.id.menu_item_delete -> {
+                val comment = adapter.getItem(menuInfo.position)
+                userViewModel.apiContext.value?.also { apiContext ->
+                    forumViewModel.deletePost(comment, post, group, apiContext)
+                }
+            }
+            else -> super.onContextItemSelected(item)
+        }
+        return true
     }
 
 }

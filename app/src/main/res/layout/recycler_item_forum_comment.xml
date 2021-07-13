@@ -1,72 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/forum_comment_header"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_below="@id/toolbar"
-    android:layout_alignParentStart="true"
-    android:padding="16dp">
+<layout>
 
-    <ImageView
-        android:id="@+id/forum_comment_image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="3dp"
-        android:src="@drawable/ic_help_24"
-        tools:ignore="ContentDescription" />
+    <data>
 
-    <TextView
-        android:id="@+id/forum_comment_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginStart="5dp"
-        android:layout_toEndOf="@+id/forum_comment_image"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="20sp"
-        tools:text="Comment title" />
+        <import type="de.deftk.openww.android.utils.TextUtils" />
 
-    <TextView
-        android:id="@+id/forum_comment_author"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/forum_comment_title"
-        android:layout_marginStart="5dp"
-        android:layout_toEndOf="@+id/forum_comment_image"
-        tools:text="abc.exampleuser" />
+        <variable
+            name="menuClickListener"
+            type="android.view.View.OnClickListener" />
 
-    <TextView
-        android:id="@+id/forum_comment_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/forum_comment_title"
-        android:layout_alignParentEnd="true"
-        tools:text="1.1.2020 12:00" />
+        <variable
+            name="showMoreClickListener"
+            type="android.view.View.OnClickListener" />
 
-    <TextView
-        android:id="@+id/forum_comment_text"
+        <variable
+            name="post"
+            type="de.deftk.openww.api.model.feature.forum.IForumPost" />
+
+        <variable
+            name="group"
+            type="de.deftk.openww.api.model.IGroup" />
+
+        <variable
+            name="hasChildren"
+            type="Boolean" />
+
+    </data>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/forum_comment_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/forum_comment_date"
-        android:layout_toEndOf="@id/forum_comment_image"
-        android:autoLink="web|email"
-        android:padding="5dp"
-        android:textColor="?android:attr/textColorPrimary"
-        tools:text="Comment text" />
+        android:padding="16dp">
 
-    <TextView
-        android:id="@+id/forum_comment_show_comments"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/forum_comment_text"
-        android:layout_toEndOf="@id/forum_comment_image"
-        android:paddingStart="5dp"
-        android:paddingEnd="5dp"
-        android:text="@string/show_comments"
-        android:textColor="?android:attr/textColorLink"
-        tools:text="Show more" />
+        <ImageView
+            android:id="@+id/forum_comment_image"
+            forumPostIcon="@{post}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="3dp"
+            tools:ignore="ContentDescription" />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/forum_comment_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="5dp"
+            android:layout_toStartOf="@id/more_button"
+            android:layout_toEndOf="@+id/forum_comment_image"
+            android:text="@{post.title}"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="20sp"
+            tools:text="Comment title" />
+
+        <ImageView
+            android:id="@+id/more_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:contentDescription="@string/more"
+            android:onClick="@{menuClickListener}"
+            android:src="@drawable/ic_more_vert_24" />
+
+        <TextView
+            android:id="@+id/forum_comment_author"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/forum_comment_title"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/forum_comment_image"
+            android:text="@{post.created.member.name}"
+            tools:text="abc.exampleuser" />
+
+        <TextView
+            android:id="@+id/forum_comment_date"
+            dateText="@{post.created.date}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/forum_comment_title"
+            android:layout_alignParentEnd="true"
+            tools:text="1.1.2020 12:00" />
+
+        <TextView
+            android:id="@+id/forum_comment_text"
+            formattedText="@{post.text}"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/forum_comment_date"
+            android:layout_toEndOf="@id/forum_comment_image"
+            android:autoLink="web|email"
+            android:padding="5dp"
+            android:textColor="?android:attr/textColorPrimary"
+            tools:text="Comment text" />
+
+        <TextView
+            android:id="@+id/forum_comment_show_comments"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/forum_comment_text"
+            android:layout_toEndOf="@id/forum_comment_image"
+            android:isVisible="@{hasChildren}"
+            android:onClick="@{showMoreClickListener}"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:text="@string/show_comments"
+            android:textColor="?android:attr/textColorLink" />
+
+    </RelativeLayout>
+
+</layout>

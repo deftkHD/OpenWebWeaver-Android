@@ -289,5 +289,6 @@
     <string name="error_move_failed">Failed to move objects: %s</string>
     <string name="move_to">Move to</string>
     <string name="move">Move</string>
+    <string name="error_post_not_found">Failed to find post \"%s\"</string>
 
 </resources>

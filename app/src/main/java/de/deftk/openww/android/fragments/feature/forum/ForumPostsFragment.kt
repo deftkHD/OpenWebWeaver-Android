@@ -1,8 +1,9 @@
 package de.deftk.openww.android.fragments.feature.forum
 
 import android.os.Bundle
-import android.view.*
-import android.widget.SearchView
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -10,7 +11,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
-import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.ForumPostAdapter
 import de.deftk.openww.android.api.Response
@@ -18,6 +18,7 @@ import de.deftk.openww.android.databinding.FragmentForumPostsBinding
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ForumViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.IGroup
 
 class ForumPostsFragment : Fragment() {
 
@@ -48,8 +49,9 @@ class ForumPostsFragment : Fragment() {
         binding.forumList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         forumViewModel.getForumPosts(group).observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
-                adapter.submitList(response.value)
-                binding.forumEmpty.isVisible = response.value.isEmpty()
+                val posts = forumViewModel.filterRootPosts(response.value)
+                adapter.submitList(posts)
+                binding.forumEmpty.isVisible = posts.isEmpty()
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
             }
@@ -69,7 +71,7 @@ class ForumPostsFragment : Fragment() {
                 if (newGroup != null) {
                     forumViewModel.loadForumPosts(group, null, apiContext)
                 } else {
-                    findNavController().popBackStack(R.id.forumGroupFragment, false)
+                    navController.popBackStack(R.id.forumGroupFragment, false)
                 }
             } else {
                 binding.forumEmpty.isVisible = false

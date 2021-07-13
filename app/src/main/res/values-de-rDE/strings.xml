@@ -286,4 +286,5 @@
     <string name="error_move_failed">Verschieben fehlgeschlagen: %s</string>
     <string name="move_to">Verschieben nach</string>
     <string name="move">Verschieben</string>
+    <string name="error_post_not_found">Post \"%s\" konnte nicht gefunden werden</string>
 </resources>

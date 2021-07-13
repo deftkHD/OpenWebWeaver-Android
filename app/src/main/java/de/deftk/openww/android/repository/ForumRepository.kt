@@ -25,4 +25,9 @@ class ForumRepository @Inject constructor() : AbstractRepository() {
         )
     }
 
+    suspend fun deletePost(post: IForumPost, group: IGroup, apiContext: ApiContext) = apiCall {
+        post.delete(group.getRequestContext(apiContext))
+        post
+    }
+
 }
