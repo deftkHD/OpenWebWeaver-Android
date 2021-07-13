@@ -112,7 +112,6 @@ class ForumPostFragment : Fragment() {
                     binding.forumPostCommentList.isVisible = comments.isNotEmpty()
                     (binding.forumPostCommentList.adapter as ForumPostCommentAdapter).submitList(comments)
                 }
-
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }

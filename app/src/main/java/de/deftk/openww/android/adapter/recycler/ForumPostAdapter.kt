@@ -2,34 +2,41 @@ package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
-import de.deftk.openww.android.R
 import de.deftk.openww.android.databinding.ListItemForumPostBinding
-import de.deftk.openww.android.fragments.feature.forum.ForumPostsFragmentDirections
+import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.feature.forum.IForumPost
 
-class ForumPostAdapter(private val group: IGroup): ListAdapter<IForumPost, RecyclerView.ViewHolder>(ForumPostDiffCallback()) {
+class ForumPostAdapter(private val group: IGroup, clickListener: ActionModeClickListener<ForumPostViewHolder>): ActionModeAdapter<IForumPost, ForumPostAdapter.ForumPostViewHolder>(ForumPostDiffCallback(), clickListener) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ForumPostViewHolder {
         val binding = ListItemForumPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ForumPostViewHolder(binding)
+        return ForumPostViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ForumPostViewHolder, position: Int) {
         val post = getItem(position)
-        (holder as ForumPostViewHolder).bind(post, group, null)
+        holder.bind(post, group, null)
     }
 
-    class ForumPostViewHolder(val binding: ListItemForumPostBinding) : RecyclerView.ViewHolder(binding.root) {
+    class ForumPostViewHolder(val binding: ListItemForumPostBinding, clickListener: ActionModeClickListener<ActionModeViewHolder>) : ActionModeViewHolder(binding.root, clickListener) {
+
+        private var selected = false
 
         init {
-            binding.setClickListener { view ->
-                view.findNavController().navigate(ForumPostsFragmentDirections.actionForumPostsFragmentToForumPostFragment(binding.group!!.login, binding.post!!.id, null, view.context.getString(R.string.see_post)))
+            binding.setMenuClickListener {
+                itemView.showContextMenu()
             }
+        }
+
+        override fun isSelected(): Boolean {
+            return selected
+        }
+
+        override fun setSelected(selected: Boolean) {
+            this.selected = selected
+            binding.selected = selected
         }
 
         fun bind(post: IForumPost, group: IGroup, parentIds: Array<String>?) {

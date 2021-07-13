@@ -18,6 +18,9 @@ class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStat
     private val _deleteResponse = MutableLiveData<Response<IForumPost>?>()
     val deleteResponse: LiveData<Response<IForumPost>?> = _deleteResponse
 
+    private val _batchDeleteResponse = MutableLiveData<List<Response<IForumPost>>?>()
+    val batchDeleteResponse: LiveData<List<Response<IForumPost>>?> = _batchDeleteResponse
+
     fun getForumPosts(group: IGroup): LiveData<Response<List<IForumPost>>> {
         return postsResponses.getOrPut(group) { MutableLiveData() }
     }
@@ -43,9 +46,21 @@ class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStat
             if (response is Response.Success) {
                 parent?.getComments()?.toMutableList()?.remove(post)
                 val liveData = (getForumPosts(group) as MutableLiveData)
-                liveData.value = liveData.value?.smartMap { list -> list.toMutableList().apply { this.remove(post) } }
+                val posts = liveData.value?.valueOrNull()?.toMutableList()
+                if (posts != null) {
+                    deletePostRecursiveLocally(posts, post)
+                    liveData.value = Response.Success(posts)
+                }
             }
         }
+    }
+
+    private fun deletePostRecursiveLocally(posts: MutableList<IForumPost>, post: IForumPost) {
+        val children = posts.filter { it.parentId == post.id }
+        children.forEach { child ->
+            deletePostRecursiveLocally(posts, child)
+        }
+        posts.remove(post)
     }
 
     fun resetDeleteResponse() {
@@ -59,6 +74,27 @@ class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStat
 
     fun findPostOrComment(rootPosts: List<IForumPost>, id: String): IForumPost? {
         return rootPosts.firstOrNull { it.id == id }
+    }
+
+    fun batchDelete(selectedPosts: List<IForumPost>, group: IGroup, apiContext: ApiContext) {
+        viewModelScope.launch {
+            val responses = selectedPosts.map { forumRepository.deletePost(it, group, apiContext) }
+            _batchDeleteResponse.value = responses
+            responses.forEach { response ->
+                if (response is Response.Success) {
+                    val liveData = postsResponses[group]
+                    if (liveData?.value is Response.Success) {
+                        val posts = (liveData.value!! as Response.Success).value.toMutableList()
+                        deletePostRecursiveLocally(posts, response.value)
+                        liveData.value = Response.Success(posts)
+                    }
+                }
+            }
+        }
+    }
+
+    fun resetBatchDeleteResponse() {
+        _batchDeleteResponse.value = null
     }
 
 }
