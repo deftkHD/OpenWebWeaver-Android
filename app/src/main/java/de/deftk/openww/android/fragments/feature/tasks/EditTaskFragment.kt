@@ -61,7 +61,7 @@ class EditTaskFragment : Fragment() {
                     // edit existing
                     editMode = true
 
-                    val foundTask = tasksViewModel.tasksResponse.value?.valueOrNull()?.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }
+                    val foundTask = tasksViewModel.allTasksResponse.value?.valueOrNull()?.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }
                     if (foundTask == null) {
                         Reporter.reportException(R.string.error_task_not_found, args.taskId!!, requireContext())
                         navController.popBackStack()

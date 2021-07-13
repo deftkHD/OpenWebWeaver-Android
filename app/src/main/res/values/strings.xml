@@ -290,5 +290,7 @@
     <string name="move_to">Move to</string>
     <string name="move">Move</string>
     <string name="error_post_not_found">Failed to find post \"%s\"</string>
+    <string name="type">Type</string>
+    <string name="smart_search">Smart search</string>
 
 </resources>

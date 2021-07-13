@@ -287,4 +287,6 @@
     <string name="move_to">Verschieben nach</string>
     <string name="move">Verschieben</string>
     <string name="error_post_not_found">Post \"%s\" konnte nicht gefunden werden</string>
+    <string name="type">Typ</string>
+    <string name="smart_search">Smarte Suche</string>
 </resources>

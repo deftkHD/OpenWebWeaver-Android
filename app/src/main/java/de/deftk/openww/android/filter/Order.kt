@@ -83,4 +83,16 @@ sealed class TaskOrder(@StringRes nameRes: Int) : ScopedOrder<ITask, IOperatingS
         }
     }
 
+    object ByGivenAsc : TaskOrder(0) {
+        override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
+            return items.sortedBy { it.first.startDate?.time ?: it.first.created.date.time }
+        }
+    }
+
+    object ByGivenDesc : TaskOrder(0) {
+        override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
+            return items.sortedByDescending { it.first.startDate?.time ?: it.first.created.date.time }
+        }
+    }
+
 }

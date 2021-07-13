@@ -12,7 +12,7 @@ abstract class Filter<T>(var order: Order<T> = Order.None()) {
 
     fun <K> addCriteria(@StringRes nameRes: Int, value: K?, matcher: (T, K?) -> Boolean): Criteria<T, K?> {
         val criteria = object : Criteria<T, K?>(nameRes, value) {
-            override fun matches(element: T): Boolean {
+            override fun matches(element: T, value: K?): Boolean {
                 return matcher(element, value)
             }
         }
@@ -21,7 +21,7 @@ abstract class Filter<T>(var order: Order<T> = Order.None()) {
     }
 
     abstract inner class Criteria<T, K>(@StringRes val nameRes: Int, var value: K?) {
-        abstract fun matches(element: T): Boolean
+        abstract fun matches(element: T, value: K? = this.value): Boolean
     }
 
 }

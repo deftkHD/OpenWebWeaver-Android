@@ -3,6 +3,7 @@ package de.deftk.openww.android.fragments.feature.tasks
 import android.os.Bundle
 import android.view.*
 import android.widget.ProgressBar
+import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
@@ -15,6 +16,7 @@ import de.deftk.openww.android.adapter.recycler.TasksAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentTasksBinding
+import de.deftk.openww.android.filter.TaskFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.TasksViewModel
@@ -36,7 +38,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
 
         binding.tasksList.adapter = adapter
         binding.tasksList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { response ->
+        tasksViewModel.filteredTasksResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value)
                 binding.tasksEmpty.isVisible = response.value.isEmpty()
@@ -101,11 +103,12 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         return TasksAdapter(this)
     }
 
-    /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
         val searchView = searchItem.actionView as SearchView
+        searchView.setQuery(tasksViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchView.clearFocus()
@@ -113,12 +116,14 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                //TODO search
+                val filter = TaskFilter()
+                filter.smartSearchCriteria.value = newText
+                tasksViewModel.filter.value = filter
                 return false
             }
         })
         super.onCreateOptionsMenu(menu, inflater)
-    }*/
+    }
 
     override fun onItemClick(view: View, viewHolder: TasksAdapter.TaskViewHolder) {
         navController.navigate(TasksFragmentDirections.actionTasksFragmentToReadTaskFragment(viewHolder.binding.task!!.id, viewHolder.binding.scope!!.login))

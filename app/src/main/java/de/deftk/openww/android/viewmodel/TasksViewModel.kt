@@ -3,6 +3,7 @@ package de.deftk.openww.android.viewmodel
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.filter.TaskFilter
 import de.deftk.openww.android.repository.TasksRepository
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IOperatingScope
@@ -15,7 +16,21 @@ import javax.inject.Inject
 class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val tasksRepository: TasksRepository): ViewModel() {
 
     private val _tasksResponse = MutableLiveData<Response<List<Pair<ITask, IOperatingScope>>>>()
-    val tasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>> = _tasksResponse
+    val allTasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>> = _tasksResponse
+
+    var filter = MutableLiveData<TaskFilter?>(TaskFilter())
+
+    val filteredTasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>>
+        get() = filter.switchMap { filter ->
+            when (filter) {
+                null -> allTasksResponse
+                else -> allTasksResponse.switchMap { response ->
+                    val filtered = MutableLiveData<Response<List<Pair<ITask, IOperatingScope>>>>()
+                    filtered.value = response.smartMap { filter.apply(it) }
+                    filtered
+                }
+            }
+        }
 
     private val _postResponse = MutableLiveData<Response<ITask?>?>()
     val postResponse: LiveData<Response<ITask?>?> = _postResponse
@@ -84,7 +99,7 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
         viewModelScope.launch {
             val responses = selectedTasks.map { tasksRepository.deleteTask(it.first, it.second, apiContext) }
             _batchDeleteResponse.value = responses
-            val tasks = tasksResponse.value?.valueOrNull()
+            val tasks = _tasksResponse.value?.valueOrNull()
             if (tasks != null) {
                 val currentTasks = tasks.toMutableList()
                 responses.forEach { response ->

@@ -45,7 +45,7 @@ class ReadTaskFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        tasksViewModel.tasksResponse.observe(viewLifecycleOwner) { response ->
+        tasksViewModel.allTasksResponse.observe(viewLifecycleOwner) { response ->
             if (deleted)
                 return@observe
 
