@@ -286,5 +286,7 @@
     <string name="group_count">%d groups</string>
     <string name="selected_count">%d selected</string>
     <string name="delete_saved_chat">Delete locally saved messages</string>
+    <string name="error_move_failed">Failed to move objects: %s</string>
+    <string name="move_to">Move to</string>
 
 </resources>

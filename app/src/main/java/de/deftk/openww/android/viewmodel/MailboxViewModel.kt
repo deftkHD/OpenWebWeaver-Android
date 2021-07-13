@@ -2,12 +2,12 @@ package de.deftk.openww.android.viewmodel
 
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.deftk.openww.api.implementation.ApiContext
-import de.deftk.openww.api.model.feature.mailbox.IEmail
-import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.repository.MailboxRepository
+import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
+import de.deftk.openww.api.model.feature.mailbox.IEmail
+import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 import de.deftk.openww.api.model.feature.mailbox.ReferenceMode
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -37,6 +37,12 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
 
     private val _emailSendResponse = MutableLiveData<Response<Unit>>()
     val emailSendResponse: LiveData<Response<Unit>> = _emailSendResponse
+
+    private val _batchMoveResponse = MutableLiveData<List<Response<IEmail>>?>()
+    val batchMoveResponse: LiveData<List<Response<IEmail>>?> = _batchMoveResponse
+
+    private val _batchDeleteResponse = MutableLiveData<List<Response<IEmail>>?>()
+    val batchDeleteResponse: LiveData<List<Response<IEmail>>?> = _batchDeleteResponse
 
     fun loadFolders(apiContext: ApiContext) {
         viewModelScope.launch {
@@ -169,6 +175,63 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
 
     fun resetReadPostResponse() {
         _emailReadPostResponse.value = null
+    }
+
+    fun batchDelete(selectedEmails: List<IEmail>, folder: IEmailFolder, apiContext: ApiContext) {
+        val trash = foldersResponse.value?.valueOrNull()?.firstOrNull { it.isTrash }
+        if (folder.isTrash || trash == null) {
+            viewModelScope.launch {
+                val responses = selectedEmails.map { mailboxRepository.deleteEmail(it, folder, apiContext) }
+                _batchDeleteResponse.value = responses
+                val stored = getCachedResponse(folder)
+                if (stored is Response.Success) {
+                    val newResponse = Response.Success(stored.value.toMutableList().apply {
+                        this.removeAll(responses.mapNotNull { it.valueOrNull() })
+                    })
+                    emailResponses[folder]!!.value = newResponse
+                    if (currentFolder.value == folder) {
+                        _currentMails.value = newResponse
+                    }
+                }
+            }
+        } else {
+            batchMove(selectedEmails, folder, trash, apiContext)
+        }
+    }
+
+    fun resetBatchDeleteResponse() {
+        _batchDeleteResponse.value = null
+    }
+
+    fun batchMove(selectedEmails: List<IEmail>, from: IEmailFolder, to: IEmailFolder, apiContext: ApiContext) {
+        viewModelScope.launch {
+            val responses = selectedEmails.map { mailboxRepository.moveEmail(it, from, to, apiContext) }
+            _batchMoveResponse.value = responses
+            val storedSrc = getCachedResponse(from)
+            val storedDst = getCachedResponse(to)
+            if (storedSrc is Response.Success) {
+                val newResponse = Response.Success(storedSrc.value.toMutableList().apply {
+                    this.removeAll(responses.mapNotNull { it.valueOrNull() })
+                })
+                emailResponses[from]!!.value = newResponse
+                if (currentFolder.value == from) {
+                    _currentMails.value = newResponse
+                }
+            }
+            if (storedDst is Response.Success) {
+                val newResponse = Response.Success(storedDst.value.toMutableList().apply {
+                    this.addAll(0, responses.mapNotNull { it.valueOrNull() })
+                })
+                emailResponses[to]!!.value = newResponse
+                if (currentFolder.value == to) {
+                    _currentMails.value = newResponse
+                }
+            }
+        }
+    }
+
+    fun resetBatchMoveResponse() {
+        _batchMoveResponse.value = null
     }
 
 }

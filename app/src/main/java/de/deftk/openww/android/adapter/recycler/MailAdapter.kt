@@ -2,41 +2,41 @@ package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import de.deftk.openww.android.databinding.ListItemMailBinding
-import de.deftk.openww.android.fragments.feature.mail.MailFragmentDirections
+import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 
-class MailAdapter : ListAdapter<Pair<IEmail, IEmailFolder>, RecyclerView.ViewHolder>(EmailDiffCallback()) {
+class MailAdapter(clickListener: ActionModeClickListener<MailViewHolder>) : ActionModeAdapter<Pair<IEmail, IEmailFolder>, MailAdapter.MailViewHolder>(EmailDiffCallback(), clickListener) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MailViewHolder {
         val binding = ListItemMailBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return EmailViewHolder(binding)
+        return MailViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: MailViewHolder, position: Int) {
         val (email, folder) = getItem(position)
-        (holder as EmailViewHolder).bind(email, folder)
+        holder.bind(email, folder)
     }
 
-    public override fun getItem(position: Int): Pair<IEmail, IEmailFolder> {
-        return super.getItem(position)
-    }
+    class MailViewHolder(val binding: ListItemMailBinding, clickListener: ActionModeClickListener<ActionModeViewHolder>) : ActionModeAdapter.ActionModeViewHolder(binding.root, clickListener) {
 
-    class EmailViewHolder(val binding: ListItemMailBinding) : RecyclerView.ViewHolder(binding.root) {
+        private var selected = false
 
         init {
-            binding.setClickListener { view ->
-                view.findNavController().navigate(MailFragmentDirections.actionMailFragmentToReadMailFragment(binding.folder!!.id, binding.email!!.id))
-            }
-            itemView.setOnLongClickListener {
+            binding.setMenuClickListener {
                 itemView.showContextMenu()
-                true
             }
+        }
+
+        override fun isSelected(): Boolean {
+            return selected
+        }
+
+        override fun setSelected(selected: Boolean) {
+            this.selected = selected
+            binding.selected = selected
         }
 
         fun bind(email: IEmail, folder: IEmailFolder) {

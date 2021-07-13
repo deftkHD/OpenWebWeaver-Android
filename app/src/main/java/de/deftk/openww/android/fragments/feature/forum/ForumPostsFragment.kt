@@ -22,6 +22,7 @@ import de.deftk.openww.android.viewmodel.UserViewModel
 class ForumPostsFragment : Fragment() {
 
     //TODO context menu
+    //TODO action mode
 
     private val args: ForumPostsFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()

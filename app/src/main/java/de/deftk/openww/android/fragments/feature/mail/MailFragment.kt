@@ -8,24 +8,30 @@ import android.widget.AdapterView
 import android.widget.EditText
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavController
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.MailFolderAdapter
+import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
+import de.deftk.openww.android.adapter.recycler.MailAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentMailBinding
+import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MailboxViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.implementation.feature.mailbox.EmailFolder
 import de.deftk.openww.api.model.Permission
+import de.deftk.openww.api.model.feature.mailbox.IEmail
+import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 
-class MailFragment: Fragment() {
+class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.MailViewHolder>(R.menu.mail_actionmode_menu) {
 
     //TODO context menu
 
@@ -56,7 +62,6 @@ class MailFragment: Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        val adapter = de.deftk.openww.android.adapter.recycler.MailAdapter()
         binding.mailList.adapter = adapter
         binding.mailList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         mailboxViewModel.currentMails.observe(viewLifecycleOwner) { response ->
@@ -74,6 +79,32 @@ class MailFragment: Fragment() {
             userViewModel.apiContext.value?.also { apiContext ->
                 mailboxViewModel.cleanCache()
                 mailboxViewModel.loadFolders(apiContext)
+            }
+        }
+
+        mailboxViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                mailboxViewModel.resetBatchDeleteResponse()
+
+            val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
+            if (failure.isNotEmpty()) {
+                Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
+                binding.progressMail.isVisible = false
+            } else {
+                actionMode?.finish()
+            }
+        }
+
+        mailboxViewModel.batchMoveResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                mailboxViewModel.resetBatchMoveResponse()
+
+            val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
+            if (failure.isNotEmpty()) {
+                Reporter.reportException(R.string.error_move_failed, failure.first().exception, requireContext())
+                binding.progressMail.isVisible = false
+            } else {
+                actionMode?.finish()
             }
         }
 
@@ -132,6 +163,43 @@ class MailFragment: Fragment() {
         setHasOptionsMenu(true)
         registerForContextMenu(binding.mailList)
         return binding.root
+    }
+
+    override fun createAdapter(): ActionModeAdapter<Pair<IEmail, IEmailFolder>, MailAdapter.MailViewHolder> {
+        return MailAdapter(this)
+    }
+
+    override fun onItemClick(view: View, viewHolder: MailAdapter.MailViewHolder) {
+        view.findNavController().navigate(MailFragmentDirections.actionMailFragmentToReadMailFragment(viewHolder.binding.folder!!.id, viewHolder.binding.email!!.id))
+    }
+
+    override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.mail_action_move -> {
+                val folders = mailboxViewModel.foldersResponse.value?.valueOrNull()?.filter { it != mailboxViewModel.currentFolder.value } ?: emptyList()
+                val dialog = AlertDialog.Builder(requireContext())
+                    .setTitle(R.string.move_to)
+                    .setIcon(R.drawable.ic_move_to_inbox_24)
+                    .setNegativeButton(R.string.cancel) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .setAdapter(MailFolderAdapter(requireContext(), folders)) { _, which ->
+                        userViewModel.apiContext.value?.also { apiContext ->
+                            mailboxViewModel.batchMove(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, folders[which], apiContext)
+                        }
+                    }
+                    .create()
+                dialog.show()
+            }
+            R.id.mail_action_delete -> {
+                userViewModel.apiContext.value?.also { apiContext ->
+                    mailboxViewModel.batchDelete(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, apiContext)
+                    binding.progressMail.isVisible = true
+                }
+            }
+            else -> return false
+        }
+        return true
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
