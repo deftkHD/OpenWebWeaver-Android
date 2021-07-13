@@ -2,6 +2,7 @@ package de.deftk.openww.android.fragments.feature.notes
 
 import android.os.Bundle
 import android.view.*
+import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
@@ -14,6 +15,7 @@ import de.deftk.openww.android.adapter.recycler.NoteAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentNotesBinding
+import de.deftk.openww.android.filter.NoteFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.NotesViewModel
@@ -36,7 +38,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
         binding.notesList.adapter = adapter
         binding.notesList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
-        notesViewModel.notesResponse.observe(viewLifecycleOwner) { response ->
+        notesViewModel.filteredNotesResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value)
                 binding.notesEmpty.isVisible = response.value.isEmpty()
@@ -89,6 +91,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
             }
         }
 
+        setHasOptionsMenu(true)
         registerForContextMenu(binding.notesList)
         return binding.root
     }
@@ -112,6 +115,28 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
             else -> return false
         }
         return true
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.list_filter_menu, menu)
+        val searchItem = menu.findItem(R.id.filter_item_search)
+        val searchView = searchItem.actionView as SearchView
+        searchView.setQuery(notesViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchView.clearFocus()
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val filter = NoteFilter()
+                filter.smartSearchCriteria.value = newText
+                notesViewModel.filter.value = filter
+                return false
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {

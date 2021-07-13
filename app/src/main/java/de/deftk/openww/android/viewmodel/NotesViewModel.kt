@@ -3,6 +3,7 @@ package de.deftk.openww.android.viewmodel
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.filter.NoteFilter
 import de.deftk.openww.android.repository.NotesRepository
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.feature.notes.INote
@@ -14,7 +15,20 @@ import javax.inject.Inject
 class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val notesRepository: NotesRepository) : ViewModel() {
 
     private val _notesResponse = MutableLiveData<Response<List<INote>>>()
-    val notesResponse: LiveData<Response<List<INote>>> = _notesResponse
+    val allNotesResponse: LiveData<Response<List<INote>>> = _notesResponse
+
+    val filter = MutableLiveData(NoteFilter())
+    val filteredNotesResponse: LiveData<Response<List<INote>>>
+        get() = filter.switchMap { filter ->
+            when (filter) {
+                null -> allNotesResponse
+                else -> allNotesResponse.switchMap { response ->
+                    val filtered = MutableLiveData<Response<List<INote>>>()
+                    filtered.value = response.smartMap { filter.apply(it) }
+                    filtered
+                }
+            }
+        }
 
     private val _editResponse = MutableLiveData<Response<INote>?>()
     val editResponse: LiveData<Response<INote>?> = _editResponse
@@ -35,7 +49,7 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
         viewModelScope.launch {
             val response = notesRepository.addNote(text, title, color, apiContext)
             _editResponse.value = response
-            val notesResponse = notesResponse.value
+            val notesResponse = allNotesResponse.value
             if (response is Response.Success && notesResponse is Response.Success) {
                 val notes = notesResponse.value.toMutableList()
                 notes.add(response.value)
@@ -49,7 +63,7 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
         viewModelScope.launch {
             val response = notesRepository.editNote(note, text, title, color, apiContext)
             _editResponse.value = response
-            val notesResponse = notesResponse.value
+            val notesResponse = allNotesResponse.value
             if (response is Response.Success && notesResponse is Response.Success) {
                 val notes = notesResponse.value.toMutableList()
                 notes[notes.indexOfFirst { it.id == note.id }] = response.value
@@ -62,7 +76,7 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
         viewModelScope.launch {
             val response = notesRepository.deleteNote(note, apiContext)
             _deleteResponse.value = response
-            val notesResponse = notesResponse.value
+            val notesResponse = allNotesResponse.value
             if (response is Response.Success && notesResponse is Response.Success) {
                 val notes = notesResponse.value.toMutableList()
                 notes.remove(note)
@@ -83,7 +97,7 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
         viewModelScope.launch {
             val responses = selectedTasks.map { notesRepository.deleteNote(it, apiContext) }
             _batchDeleteResponse.value = responses
-            val tasks = notesResponse.value?.valueOrNull()
+            val tasks = allNotesResponse.value?.valueOrNull()
             if (tasks != null) {
                 val currentTasks = tasks.toMutableList()
                 responses.forEach { response ->

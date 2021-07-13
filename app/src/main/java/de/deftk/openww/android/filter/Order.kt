@@ -7,6 +7,7 @@ import de.deftk.openww.api.model.IScope
 import de.deftk.openww.api.model.IUser
 import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.model.feature.board.IBoardNotification
+import de.deftk.openww.api.model.feature.notes.INote
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 import de.deftk.openww.api.model.feature.tasks.ITask
 
@@ -197,6 +198,22 @@ sealed class QuotaOrder(@StringRes nameRes: Int): Order<Pair<IOperatingScope, Qu
     object ByOperatorDefault : QuotaOrder(0) {
         override fun sort(items: List<Pair<IOperatingScope, Quota>>): List<Pair<IOperatingScope, Quota>> {
             return items.sortedWith(compareBy ({ it.first !is IUser }, { it.first.name }))
+        }
+    }
+
+}
+
+sealed class NoteOrder(@StringRes nameRes: Int): Order<INote>(nameRes) {
+
+    object ByDateCreatedAsc : NoteOrder(0) {
+        override fun sort(items: List<INote>): List<INote> {
+            return items.sortedBy { it.created.date.time }
+        }
+    }
+
+    object ByDateCreatedDesc : NoteOrder(0) {
+        override fun sort(items: List<INote>): List<INote> {
+            return items.sortedByDescending { it.created.date.time }
         }
     }
 

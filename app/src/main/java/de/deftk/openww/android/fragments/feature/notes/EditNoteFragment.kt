@@ -42,7 +42,7 @@ class EditNoteFragment : Fragment() {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (args.noteId != null) {
-                    val foundNote = notesViewModel.notesResponse.value?.valueOrNull()?.firstOrNull { it.id == args.noteId }
+                    val foundNote = notesViewModel.allNotesResponse.value?.valueOrNull()?.firstOrNull { it.id == args.noteId }
                     if (foundNote == null) {
                         Reporter.reportException(R.string.error_note_not_found, args.noteId!!, requireContext())
                         navController.popBackStack()

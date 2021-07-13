@@ -37,7 +37,7 @@ class ReadNoteFragment : Fragment() {
         binding = FragmentReadNoteBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
 
-        notesViewModel.notesResponse.observe(viewLifecycleOwner) { response ->
+        notesViewModel.allNotesResponse.observe(viewLifecycleOwner) { response ->
             if (deleted)
                 return@observe
 
