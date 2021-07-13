@@ -3,7 +3,7 @@ package de.deftk.openww.android.filter
 import de.deftk.openww.android.R
 import de.deftk.openww.api.model.feature.messenger.IQuickMessage
 
-class MessageFilter : Filter<IQuickMessage>(MessageOrder.ByDateCreatedDesc) {
+class MessageFilter : Filter<IQuickMessage>(MessageOrder.ByDateCreatedAsc) {
 
     private val user1ScopeDelegate = ScopeFilter()
     private val user2ScopeDelegate = ScopeFilter()

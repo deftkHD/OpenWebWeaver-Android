@@ -40,7 +40,7 @@ class MessengerRepository @Inject constructor(private val quickMessageDao: Quick
             }
         }
 
-        onlineMessages.sortedBy { it.date.time }
+        onlineMessages
     }
 
     suspend fun sendMessage(login: String, sessionFile: ISessionFile?, text: String?, apiContext: ApiContext) = apiCall {
