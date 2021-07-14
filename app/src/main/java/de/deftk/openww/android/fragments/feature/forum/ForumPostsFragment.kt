@@ -2,6 +2,7 @@ package de.deftk.openww.android.fragments.feature.forum
 
 import android.os.Bundle
 import android.view.*
+import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
@@ -10,12 +11,15 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.ForumPostAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentForumPostsBinding
+import de.deftk.openww.android.filter.ForumPostFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
+import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ForumViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -23,7 +27,7 @@ import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.forum.IForumPost
 
-class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.ForumPostViewHolder>(R.menu.forum_actionmode_menu) {
+class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.ForumPostViewHolder>(R.menu.forum_actionmode_menu), ISearchProvider {
 
     private val args: ForumPostsFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
@@ -32,10 +36,12 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
 
     private lateinit var binding: FragmentForumPostsBinding
     private lateinit var group: IGroup
+    private lateinit var searchView: SearchView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentForumPostsBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        (requireActivity() as? MainActivity?)?.searchProvider = this
         val group = userViewModel.apiContext.value?.user?.getGroups()?.firstOrNull { it.login == args.groupId }
         if (group == null) {
             Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
@@ -46,7 +52,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
 
         binding.forumList.adapter = adapter
         binding.forumList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        forumViewModel.getForumPosts(group).observe(viewLifecycleOwner) { response ->
+        forumViewModel.getFilteredForumPosts(group).observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 val posts = forumViewModel.filterRootPosts(response.value)
                 adapter.submitList(posts)
@@ -101,6 +107,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
             }
         }
 
+        setHasOptionsMenu(true)
         registerForContextMenu(binding.forumList)
         return binding.root
     }
@@ -147,21 +154,41 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         return true
     }
 
-    /*override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
         inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
-        val searchView = searchItem.actionView as SearchView
+        searchView = searchItem.actionView as SearchView
+        searchView.setQuery(forumViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchView.clearFocus()
-                return false
+                return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                //TODO search
-                return false
+                val filter = ForumPostFilter()
+                filter.smartSearchCriteria.value = newText
+                forumViewModel.filter.value = filter
+                return true
             }
         })
-    }*/
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onSearchBackPressed(): Boolean {
+        return if (searchView.isIconified) {
+            false
+        } else {
+            searchView.isIconified = true
+            searchView.setQuery(null, true)
+            true
+        }
+    }
+
+    override fun onDestroy() {
+        (requireActivity() as? MainActivity?)?.searchProvider = null
+        super.onDestroy()
+    }
 
 }

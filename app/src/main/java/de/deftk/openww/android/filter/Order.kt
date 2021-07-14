@@ -10,6 +10,7 @@ import de.deftk.openww.api.model.IUser
 import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.model.feature.board.IBoardNotification
 import de.deftk.openww.api.model.feature.contacts.IContact
+import de.deftk.openww.api.model.feature.forum.IForumPost
 import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.messenger.IQuickMessage
 import de.deftk.openww.api.model.feature.notes.INote
@@ -277,6 +278,22 @@ sealed class ContactOrder(@StringRes nameRes: Int): Order<IContact>(nameRes) {
     object ByNameDesc : ContactOrder(0) {
         override fun sort(items: List<IContact>): List<IContact> {
             return items.sortedByDescending { ContactUtil.getContactName(it) }
+        }
+    }
+
+}
+
+sealed class ForumPostOrder(@StringRes nameRes: Int): Order<IForumPost>(nameRes) {
+
+    object ByDateAsc : ForumPostOrder(0) {
+        override fun sort(items: List<IForumPost>): List<IForumPost> {
+            return items.sortedBy { it.created.date.time }
+        }
+    }
+
+    object ByDateDesc : ForumPostOrder(0) {
+        override fun sort(items: List<IForumPost>): List<IForumPost> {
+            return items.sortedByDescending { it.created.date.time }
         }
     }
 

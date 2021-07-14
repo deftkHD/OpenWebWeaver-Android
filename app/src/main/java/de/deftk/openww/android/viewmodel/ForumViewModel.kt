@@ -3,6 +3,7 @@ package de.deftk.openww.android.viewmodel
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.filter.ForumPostFilter
 import de.deftk.openww.android.repository.ForumRepository
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IGroup
@@ -15,19 +16,37 @@ class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStat
 
     private val postsResponses = mutableMapOf<IGroup, MutableLiveData<Response<List<IForumPost>>>>()
 
+    val filter = MutableLiveData(ForumPostFilter())
+    private val filteredPostResponses = mutableMapOf<IGroup, LiveData<Response<List<IForumPost>>>>()
+
     private val _deleteResponse = MutableLiveData<Response<IForumPost>?>()
     val deleteResponse: LiveData<Response<IForumPost>?> = _deleteResponse
 
     private val _batchDeleteResponse = MutableLiveData<List<Response<IForumPost>>?>()
     val batchDeleteResponse: LiveData<List<Response<IForumPost>>?> = _batchDeleteResponse
 
-    fun getForumPosts(group: IGroup): LiveData<Response<List<IForumPost>>> {
+    fun getAllForumPosts(group: IGroup): LiveData<Response<List<IForumPost>>> {
         return postsResponses.getOrPut(group) { MutableLiveData() }
+    }
+
+    fun getFilteredForumPosts(group: IGroup): LiveData<Response<List<IForumPost>>> {
+        return filteredPostResponses.getOrPut(group) {
+            filter.switchMap { filter ->
+                when (filter) {
+                    null -> getAllForumPosts(group)
+                    else -> getAllForumPosts(group).switchMap { response ->
+                        val filtered = MutableLiveData<Response<List<IForumPost>>>()
+                        filtered.value = response.smartMap { filter.apply(it) }
+                        filtered
+                    }
+                }
+            }
+        }
     }
 
     fun loadForumPosts(group: IGroup, parentId: String? = null, apiContext: ApiContext) {
         viewModelScope.launch {
-            (getForumPosts(group) as MutableLiveData).value = forumRepository.getPosts(group, parentId, apiContext)
+            (getAllForumPosts(group) as MutableLiveData).value = forumRepository.getPosts(group, parentId, apiContext)
         }
     }
 
@@ -45,7 +64,7 @@ class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStat
             _deleteResponse.value = response
             if (response is Response.Success) {
                 parent?.getComments()?.toMutableList()?.remove(post)
-                val liveData = (getForumPosts(group) as MutableLiveData)
+                val liveData = (getAllForumPosts(group) as MutableLiveData)
                 val posts = liveData.value?.valueOrNull()?.toMutableList()
                 if (posts != null) {
                     deletePostRecursiveLocally(posts, post)

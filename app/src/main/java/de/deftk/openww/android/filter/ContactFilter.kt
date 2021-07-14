@@ -4,7 +4,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.utils.ContactUtil
 import de.deftk.openww.api.model.feature.contacts.IContact
 
-class ContactFilter : Filter<IContact>() {
+class ContactFilter : Filter<IContact>(ContactOrder.ByNameAsc) {
 
     val nameCriteria = addCriteria<String>(R.string.name, null) { element, value ->
         value ?: return@addCriteria true

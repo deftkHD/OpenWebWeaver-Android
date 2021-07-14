@@ -58,7 +58,7 @@ class ForumPostFragment : Fragment() {
         }
         this.group = group
 
-        forumViewModel.getForumPosts(group).observe(viewLifecycleOwner) { response ->
+        forumViewModel.getAllForumPosts(group).observe(viewLifecycleOwner) { response ->
             if (deleted)
                 return@observe
 
