@@ -2,6 +2,7 @@ package de.deftk.openww.android.fragments.feature.contacts
 
 import android.os.Bundle
 import android.view.*
+import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
@@ -10,12 +11,15 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.ContactAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentContactsBinding
+import de.deftk.openww.android.filter.ContactFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
+import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ContactsViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -23,7 +27,7 @@ import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.contacts.IContact
 
-class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactViewHolder>(R.menu.contacts_actionmode_menu) {
+class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactViewHolder>(R.menu.contacts_actionmode_menu), ISearchProvider {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val contactsViewModel: ContactsViewModel by activityViewModels()
@@ -32,10 +36,12 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
 
     private lateinit var binding: FragmentContactsBinding
     private lateinit var scope: IOperatingScope
+    private lateinit var searchView: SearchView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentContactsBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        (requireActivity() as? MainActivity?)?.searchProvider = this
         val foundScope = userViewModel.apiContext.value?.findOperatingScope(args.login) //TODO update scope with apiContext observer & pop if scope == null
         if (foundScope == null) {
             Reporter.reportException(R.string.error_scope_not_found, args.login, requireContext())
@@ -46,7 +52,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
 
         binding.contactList.adapter = adapter
         binding.contactList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        contactsViewModel.getContactsLiveData(scope).observe(viewLifecycleOwner) { response ->
+        contactsViewModel.getFilteredContactsLiveData(scope).observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value)
                 binding.contactsEmpty.isVisible = response.value.isEmpty()
@@ -89,6 +95,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
             }
         }
 
+        setHasOptionsMenu(true)
         registerForContextMenu(binding.contactList)
         return binding.root
     }
@@ -120,6 +127,38 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
         return true
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        menu.clear()
+        inflater.inflate(R.menu.list_filter_menu, menu)
+        val searchItem = menu.findItem(R.id.filter_item_search)
+        searchView = searchItem.actionView as SearchView
+        searchView.setQuery(contactsViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchView.clearFocus()
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                val filter = ContactFilter()
+                filter.smartSearchCriteria.value = newText
+                contactsViewModel.filter.value = filter
+                return true
+            }
+        })
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onSearchBackPressed(): Boolean {
+        return if (searchView.isIconified) {
+            false
+        } else {
+            searchView.isIconified = true
+            searchView.setQuery(null, true)
+            true
+        }
+    }
+
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
@@ -147,6 +186,11 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
             }
             else -> false
         }
+    }
+
+    override fun onDestroy() {
+        (requireActivity() as? MainActivity?)?.searchProvider = null
+        super.onDestroy()
     }
 
 }

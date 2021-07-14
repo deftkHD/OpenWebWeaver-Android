@@ -49,7 +49,7 @@ class ReadContactFragment : Fragment() {
         binding.contactDetailList.adapter = adapter
         binding.contactDetailList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
-        contactsViewModel.getContactsLiveData(scope).observe(viewLifecycleOwner) { response ->
+        contactsViewModel.getFilteredContactsLiveData(scope).observe(viewLifecycleOwner) { response ->
             if (deleted)
                 return@observe
 

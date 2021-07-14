@@ -3,6 +3,7 @@ package de.deftk.openww.android.viewmodel
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.filter.ContactFilter
 import de.deftk.openww.android.repository.ContactsRepository
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IOperatingScope
@@ -15,6 +16,9 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
 
     private val _contactsResponses = mutableMapOf<IOperatingScope, MutableLiveData<Response<List<IContact>>>>()
 
+    val filter = MutableLiveData(ContactFilter())
+    private val filteredContactsResponses = mutableMapOf<IOperatingScope, LiveData<Response<List<IContact>>>>()
+
     private val _editResponse = MutableLiveData<Response<IContact>?>()
     val editResponse: LiveData<Response<IContact>?> = _editResponse
 
@@ -24,8 +28,23 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
     private val _batchDeleteResponse = MutableLiveData<List<Response<Pair<IContact, IOperatingScope>>>?>()
     val batchDeleteResponse: LiveData<List<Response<Pair<IContact, IOperatingScope>>>?> = _batchDeleteResponse
 
-    fun getContactsLiveData(scope: IOperatingScope): LiveData<Response<List<IContact>>> {
+    fun getAllContactsLiveData(scope: IOperatingScope): LiveData<Response<List<IContact>>> {
         return _contactsResponses.getOrPut(scope) { MutableLiveData() }
+    }
+
+    fun getFilteredContactsLiveData(scope: IOperatingScope): LiveData<Response<List<IContact>>> {
+        return filteredContactsResponses.getOrPut(scope) {
+            filter.switchMap { filter ->
+                when (filter) {
+                    null -> getAllContactsLiveData(scope)
+                    else -> getAllContactsLiveData(scope).switchMap { response ->
+                        val filtered = MutableLiveData<Response<List<IContact>>>()
+                        filtered.value = response.smartMap { filter.apply(it) }
+                        filtered
+                    }
+                }
+            }
+        }
     }
 
     fun loadContacts(scope: IOperatingScope, apiContext: ApiContext) {
@@ -38,11 +57,11 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
         viewModelScope.launch {
             val response = contactsRepository.addContact(contact, scope, apiContext)
             _editResponse.value = response
-            val contactsResponse = getContactsLiveData(scope).value
+            val contactsResponse = getAllContactsLiveData(scope).value
             if (response is Response.Success && contactsResponse is Response.Success) {
                 val contacts = contactsResponse.value.toMutableList()
                 contacts.add(response.value)
-                (getContactsLiveData(scope) as MutableLiveData).value = Response.Success(contacts)
+                (getAllContactsLiveData(scope) as MutableLiveData).value = Response.Success(contacts)
             }
         }
     }
@@ -51,11 +70,11 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
         viewModelScope.launch {
             val response = contactsRepository.editContact(contact, scope, apiContext)
             _editResponse.value = response
-            val contactsResponse = getContactsLiveData(scope).value
+            val contactsResponse = getAllContactsLiveData(scope).value
             if (response is Response.Success && contactsResponse is Response.Success) {
                 val contacts = contactsResponse.value.toMutableList()
                 contacts[contacts.indexOfFirst { it.id == contact.id }] = contact
-                (getContactsLiveData(scope) as MutableLiveData).value = Response.Success(contacts)
+                (getAllContactsLiveData(scope) as MutableLiveData).value = Response.Success(contacts)
             }
         }
     }
@@ -64,11 +83,11 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
         viewModelScope.launch {
             val response = contactsRepository.deleteContact(contact, scope, apiContext)
             _deleteResponse.value = response
-            val contactsResponse = getContactsLiveData(scope).value
+            val contactsResponse = getAllContactsLiveData(scope).value
             if (response is Response.Success && contactsResponse is Response.Success) {
                 val contacts = contactsResponse.value.toMutableList()
                 contacts.remove(contact)
-                (getContactsLiveData(scope) as MutableLiveData).value = Response.Success(contacts)
+                (getAllContactsLiveData(scope) as MutableLiveData).value = Response.Success(contacts)
             }
         }
     }

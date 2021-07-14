@@ -25,7 +25,7 @@ class MailboxRepository @Inject constructor() : AbstractRepository() {
     }
 
     suspend fun getEmails(folder: IEmailFolder, apiContext: ApiContext) = apiCall {
-        folder.getEmails(context = apiContext.user.getRequestContext(apiContext)).sortedByDescending { it.date.time }
+        folder.getEmails(context = apiContext.user.getRequestContext(apiContext))
     }
 
     suspend fun sendEmail(to: String, subject: String, plainBody: String, cc: String? = null, bcc: String? = null, importSessionFiles: List<ISessionFile>? = null, referenceFolderId: String? = null, referenceMessageId: Int? = null, referenceMode: ReferenceMode? = null, text: String? = null, apiContext: ApiContext) = apiCall {

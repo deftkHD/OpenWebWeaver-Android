@@ -16,6 +16,7 @@ import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
 import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.feature.forum.ForumPostIcons
+import de.deftk.openww.android.utils.ContactUtil
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.utils.UIUtil
@@ -201,22 +202,7 @@ object BindingAdapters {
     @JvmStatic
     @BindingAdapter("contactName")
     fun setContactName(view: TextView, contact: IContact) {
-        val name = StringBuilder()
-
-        if (contact.nickName != null) {
-            name.append(contact.nickName)
-        } else if (contact.fullName != null) {
-            name.append(contact.fullName)
-        } else {
-            if (contact.firstName != null)
-                name.append(contact.firstName).append(" ")
-            if (contact.middleName != null)
-                name.append(contact.middleName).append(" ")
-            if (contact.lastName != null)
-                name.append(contact.lastName)
-        }
-
-        view.text = name.toString().trim()
+        view.text = ContactUtil.getContactName(contact)
     }
 
     @JvmStatic

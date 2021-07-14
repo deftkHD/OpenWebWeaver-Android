@@ -67,7 +67,7 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
                     // edit existing
                     editMode = true
 
-                    val foundContact = contactViewModel.getContactsLiveData(scope).value?.valueOrNull()?.firstOrNull { it.id.toString() == args.contactId }
+                    val foundContact = contactViewModel.getFilteredContactsLiveData(scope).value?.valueOrNull()?.firstOrNull { it.id.toString() == args.contactId }
                     if (foundContact == null) {
                         Reporter.reportException(R.string.error_contact_not_found, args.contactId!!, requireContext())
                         navController.popBackStack()

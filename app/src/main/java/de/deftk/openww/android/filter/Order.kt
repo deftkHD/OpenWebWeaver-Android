@@ -2,12 +2,14 @@ package de.deftk.openww.android.filter
 
 import androidx.annotation.StringRes
 import de.deftk.openww.android.feature.filestorage.FileCacheElement
+import de.deftk.openww.android.utils.ContactUtil
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.IScope
 import de.deftk.openww.api.model.IUser
 import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.model.feature.board.IBoardNotification
+import de.deftk.openww.api.model.feature.contacts.IContact
 import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.messenger.IQuickMessage
 import de.deftk.openww.api.model.feature.notes.INote
@@ -259,6 +261,22 @@ sealed class MailOrder(@StringRes nameRes: Int): Order<IEmail>(nameRes) {
     object ByDateDesc : MailOrder(0) {
         override fun sort(items: List<IEmail>): List<IEmail> {
             return items.sortedByDescending { it.date.time }
+        }
+    }
+
+}
+
+sealed class ContactOrder(@StringRes nameRes: Int): Order<IContact>(nameRes) {
+
+    object ByNameAsc : ContactOrder(0) {
+        override fun sort(items: List<IContact>): List<IContact> {
+            return items.sortedBy { ContactUtil.getContactName(it) }
+        }
+    }
+
+    object ByNameDesc : ContactOrder(0) {
+        override fun sort(items: List<IContact>): List<IContact> {
+            return items.sortedByDescending { ContactUtil.getContactName(it) }
         }
     }
 

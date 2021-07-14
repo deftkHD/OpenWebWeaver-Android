@@ -178,4 +178,23 @@ object ContactUtil {
         return getDetailValue(type)?.toString()
     }
 
+    fun getContactName(contact: IContact): String {
+        val name = StringBuilder()
+
+        if (contact.nickName != null) {
+            name.append(contact.nickName)
+        } else if (contact.fullName != null) {
+            name.append(contact.fullName)
+        } else {
+            if (contact.firstName != null)
+                name.append(contact.firstName).append(" ")
+            if (contact.middleName != null)
+                name.append(contact.middleName).append(" ")
+            if (contact.lastName != null)
+                name.append(contact.lastName)
+        }
+
+        return name.toString().trim()
+    }
+
 }
