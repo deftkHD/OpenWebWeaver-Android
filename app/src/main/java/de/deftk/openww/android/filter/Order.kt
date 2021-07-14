@@ -285,15 +285,9 @@ sealed class ContactOrder(@StringRes nameRes: Int): Order<IContact>(nameRes) {
 
 sealed class ForumPostOrder(@StringRes nameRes: Int): Order<IForumPost>(nameRes) {
 
-    object ByDateAsc : ForumPostOrder(0) {
-        override fun sort(items: List<IForumPost>): List<IForumPost> {
-            return items.sortedBy { it.created.date.time }
-        }
-    }
-
     object ByDateDesc : ForumPostOrder(0) {
         override fun sort(items: List<IForumPost>): List<IForumPost> {
-            return items.sortedByDescending { it.created.date.time }
+            return items.sortedWith(compareBy ({ it.isPinned }, { it.created.date })).reversed()
         }
     }
 
