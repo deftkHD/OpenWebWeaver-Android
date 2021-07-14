@@ -6,6 +6,7 @@ import android.text.InputType
 import android.view.*
 import android.widget.AdapterView
 import android.widget.EditText
+import android.widget.SearchView
 import android.widget.Spinner
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
@@ -15,13 +16,16 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.adapter.MailFolderAdapter
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.MailAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentMailBinding
+import de.deftk.openww.android.filter.MailFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
+import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MailboxViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -29,7 +33,7 @@ import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 
-class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.MailViewHolder>(R.menu.mail_actionmode_menu) {
+class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.MailViewHolder>(R.menu.mail_actionmode_menu), ISearchProvider {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val mailboxViewModel: MailboxViewModel by activityViewModels()
@@ -37,10 +41,12 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
     private lateinit var binding: FragmentMailBinding
     private lateinit var toolbarSpinner: Spinner
+    private lateinit var searchView: SearchView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMailBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        (requireActivity() as? MainActivity?)?.searchProvider = this
 
         toolbarSpinner = requireActivity().findViewById(R.id.toolbar_spinner)
         toolbarSpinner.isVisible = true
@@ -59,7 +65,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
         binding.mailList.adapter = adapter
         binding.mailList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        mailboxViewModel.currentMails.observe(viewLifecycleOwner) { response ->
+        mailboxViewModel.currentFilteredMails.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value.map { it to mailboxViewModel.currentFolder.value!! })
                 binding.mailEmpty.isVisible = response.value.isEmpty()
@@ -202,27 +208,34 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
-
-        // search menu
-        /*inflater.inflate(R.menu.list_filter_menu, menu)
+        inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
-        val searchView = searchItem.actionView as SearchView
+        searchView = searchItem.actionView as SearchView
+        searchView.setQuery(mailboxViewModel.mailFilter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchView.clearFocus()
-                return false
+                return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                //TODO search
-                return false
+                val filter = MailFilter()
+                filter.smartSearchCriteria.value = newText
+                mailboxViewModel.mailFilter.value = filter
+                return true
             }
-        })*/
-
-        // utility menu
-        inflater.inflate(R.menu.mail_list_menu, menu)
-
+        })
         super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onSearchBackPressed(): Boolean {
+        return if (searchView.isIconified) {
+            false
+        } else {
+            searchView.isIconified = true
+            searchView.setQuery(null, true)
+            true
+        }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -298,6 +311,11 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
     override fun onStop() {
         toolbarSpinner.isVisible = false
         super.onStop()
+    }
+
+    override fun onDestroy() {
+        (requireActivity() as? MainActivity?)?.searchProvider = null
+        super.onDestroy()
     }
 
 }

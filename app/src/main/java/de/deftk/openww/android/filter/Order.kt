@@ -8,6 +8,7 @@ import de.deftk.openww.api.model.IScope
 import de.deftk.openww.api.model.IUser
 import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.model.feature.board.IBoardNotification
+import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.messenger.IQuickMessage
 import de.deftk.openww.api.model.feature.notes.INote
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
@@ -241,6 +242,22 @@ sealed class MessageOrder(@StringRes nameRes: Int): Order<IQuickMessage>(nameRes
 
     object ByDateCreatedDesc : MessageOrder(0) {
         override fun sort(items: List<IQuickMessage>): List<IQuickMessage> {
+            return items.sortedByDescending { it.date.time }
+        }
+    }
+
+}
+
+sealed class MailOrder(@StringRes nameRes: Int): Order<IEmail>(nameRes) {
+
+    object ByDateAsc : MailOrder(0) {
+        override fun sort(items: List<IEmail>): List<IEmail> {
+            return items.sortedBy { it.date.time }
+        }
+    }
+
+    object ByDateDesc : MailOrder(0) {
+        override fun sort(items: List<IEmail>): List<IEmail> {
             return items.sortedByDescending { it.date.time }
         }
     }

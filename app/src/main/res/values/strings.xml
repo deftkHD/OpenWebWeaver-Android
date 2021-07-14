@@ -292,5 +292,6 @@
     <string name="error_post_not_found">Failed to find post \"%s\"</string>
     <string name="type">Type</string>
     <string name="smart_search">Smart search</string>
+    <string name="from">From</string>
 
 </resources>

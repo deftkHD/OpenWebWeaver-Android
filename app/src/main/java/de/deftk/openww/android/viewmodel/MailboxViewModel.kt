@@ -1,9 +1,9 @@
 package de.deftk.openww.android.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.filter.MailFilter
 import de.deftk.openww.android.repository.MailboxRepository
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
@@ -26,9 +26,22 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
     val currentFolder: LiveData<IEmailFolder> = _currentFolder
 
     private val _currentMails = MutableLiveData<Response<List<IEmail>>>()
-    val currentMails: LiveData<Response<List<IEmail>>> = _currentMails
+    val allCurrentMails: LiveData<Response<List<IEmail>>> = _currentMails
 
     private val emailResponses = mutableMapOf<IEmailFolder, MutableLiveData<Response<List<IEmail>>>>()
+
+    val mailFilter = MutableLiveData(MailFilter())
+    val currentFilteredMails: LiveData<Response<List<IEmail>>>
+        get() = mailFilter.switchMap { filter ->
+            when (filter) {
+                null -> allCurrentMails
+                else -> allCurrentMails.switchMap { response ->
+                    val filtered = MutableLiveData<Response<List<IEmail>>>()
+                    filtered.value = response.smartMap { filter.apply(it) }
+                    filtered
+                }
+            }
+        }
 
     private val _emailPostResponse = MutableLiveData<Response<IEmail?>?>()
     val emailPostResponse: LiveData<Response<IEmail?>?> = _emailPostResponse

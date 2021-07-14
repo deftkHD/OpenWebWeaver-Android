@@ -289,4 +289,5 @@
     <string name="error_post_not_found">Post \"%s\" konnte nicht gefunden werden</string>
     <string name="type">Typ</string>
     <string name="smart_search">Smarte Suche</string>
+    <string name="from">Von</string>
 </resources>
