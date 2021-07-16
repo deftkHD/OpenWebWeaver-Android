@@ -1,7 +1,6 @@
 package de.deftk.openww.android.fragments.feature.board
 
 import android.os.Bundle
-import android.text.method.LinkMovementMethod
 import android.view.*
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
@@ -11,19 +10,17 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import de.deftk.openww.api.model.IGroup
-import de.deftk.openww.api.model.Permission
-import de.deftk.openww.api.model.feature.board.BoardNotificationColor
-import de.deftk.openww.api.model.feature.board.IBoardNotification
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditNotificationBinding
 import de.deftk.openww.android.feature.board.BoardNotificationColors
-import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.Reporter
-import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.BoardViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.IGroup
+import de.deftk.openww.api.model.Permission
+import de.deftk.openww.api.model.feature.board.BoardNotificationColor
+import de.deftk.openww.api.model.feature.board.IBoardNotification
 
 class EditNotificationFragment : Fragment() {
 
@@ -70,9 +67,7 @@ class EditNotificationFragment : Fragment() {
                     binding.notificationGroup.setSelection(effectiveGroups.indexOf(group))
                     binding.notificationGroup.isEnabled = false
                     binding.notificationAccent.setSelection(colors.indexOf(BoardNotificationColors.getByApiColor(notification.color ?: BoardNotificationColor.BLUE)))
-                    binding.notificationText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text), group.login, navController))
-                    binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
-                    binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
+                    binding.notificationText.setText(notification.text)
                 } else {
                     // add new
                     editMode = false
