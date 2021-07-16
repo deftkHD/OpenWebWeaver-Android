@@ -73,14 +73,14 @@ class ForumPostFragment : Fragment() {
                     binding.forumPostTitle.text = post.title
                     binding.forumPostAuthor.text = post.created.member.name
                     binding.forumPostDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.created.date)
-                    binding.forumPostText.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(post.text)))
+                    binding.forumPostText.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(post.text), group.login, navController))
                     binding.forumPostText.movementMethod = LinkMovementMethod.getInstance()
                     binding.forumPostText.transformationMethod = CustomTabTransformationMethod(binding.forumPostText.autoLinkMask)
 
                     binding.forumPostNoComments.isVisible = comments.isEmpty()
                     binding.forumPostCommentList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
-                    val adapter = ForumPostCommentAdapter(group, arrayOf(*args.parentPostIds ?: emptyArray(), args.postId), forumViewModel)
+                    val adapter = ForumPostCommentAdapter(group, arrayOf(*args.parentPostIds ?: emptyArray(), args.postId), forumViewModel, navController)
                     binding.forumPostCommentList.adapter = adapter
                     adapter.submitList(comments.sortedBy { it.created.date.time })
 

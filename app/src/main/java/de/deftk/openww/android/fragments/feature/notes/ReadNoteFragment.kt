@@ -52,7 +52,7 @@ class ReadNoteFragment : Fragment() {
 
                 binding.noteTitle.text = note.title
                 binding.noteDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(note.created.date)
-                binding.noteText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(note.text))
+                binding.noteText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(note.text), userViewModel.apiContext.value?.user?.login, navController)
                 binding.noteText.movementMethod = LinkMovementMethod.getInstance()
                 binding.noteText.transformationMethod = CustomTabTransformationMethod(binding.noteText.autoLinkMask)
             } else if (response is Response.Failure) {

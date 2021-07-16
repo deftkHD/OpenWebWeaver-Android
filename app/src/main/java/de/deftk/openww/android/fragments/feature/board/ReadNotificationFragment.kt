@@ -62,7 +62,7 @@ class ReadNotificationFragment : Fragment() {
                 binding.notificationAuthor.text = notification.created.member.name
                 binding.notificationGroup.text = group.name
                 binding.notificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.created.date)
-                binding.notificationText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text))
+                binding.notificationText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text), group.login, navController)
                 binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
                 binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
 

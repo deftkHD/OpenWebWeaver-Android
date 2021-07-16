@@ -25,6 +25,10 @@
             name="hasChildren"
             type="Boolean" />
 
+        <variable
+            name="navController"
+            type="androidx.navigation.NavController" />
+
     </data>
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -89,6 +93,8 @@
         <TextView
             android:id="@+id/forum_comment_text"
             formattedText="@{post.text}"
+            currentScope="@{group.login}"
+            navController="@{navController}"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/forum_comment_date"

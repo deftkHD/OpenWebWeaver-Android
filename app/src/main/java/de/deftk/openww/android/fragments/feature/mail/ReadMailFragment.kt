@@ -62,7 +62,7 @@ class ReadMailFragment : Fragment() {
                     binding.mailAuthorAddress.text = (email.from ?: emptyList()).firstOrNull()?.address ?: ""
                     binding.mailDate.text = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.DEFAULT).format(email.date)
                     val text = email.text ?: email.plainBody
-                    binding.mailMessage.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(text)))
+                    binding.mailMessage.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(text), null, navController))
                     binding.mailMessage.movementMethod = LinkMovementMethod.getInstance()
                     binding.mailMessage.transformationMethod = CustomTabTransformationMethod(binding.mailMessage.autoLinkMask)
                 }

@@ -294,4 +294,6 @@
     <string name="show_ignored">Ignorierte anzeigen</string>
     <string name="unignore">Nicht mehr ignorieren</string>
     <string name="file_indicator_new">Datei wurde kürzlich erstellt</string>
+    <string name="error_invalid_internal_reference">Ungültige Referenz</string>
+    <string name="not_implemented">Noch nicht fertiggestellt</string>
 </resources>

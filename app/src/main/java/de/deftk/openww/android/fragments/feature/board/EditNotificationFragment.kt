@@ -70,7 +70,7 @@ class EditNotificationFragment : Fragment() {
                     binding.notificationGroup.setSelection(effectiveGroups.indexOf(group))
                     binding.notificationGroup.isEnabled = false
                     binding.notificationAccent.setSelection(colors.indexOf(BoardNotificationColors.getByApiColor(notification.color ?: BoardNotificationColor.BLUE)))
-                    binding.notificationText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text)))
+                    binding.notificationText.setText(TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text), group.login, navController))
                     binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
                     binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
                 } else {

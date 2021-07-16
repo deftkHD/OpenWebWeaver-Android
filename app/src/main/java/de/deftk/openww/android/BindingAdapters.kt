@@ -14,6 +14,7 @@ import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.core.view.isVisible
 import androidx.databinding.BindingAdapter
+import androidx.navigation.NavController
 import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.feature.forum.ForumPostIcons
 import de.deftk.openww.android.utils.ContactUtil
@@ -182,10 +183,10 @@ object BindingAdapters {
     }
 
     @JvmStatic
-    @BindingAdapter("formattedText")
-    fun setFormattedText(view: TextView, text: String?) {
+    @BindingAdapter("formattedText", "currentScope", "navController", requireAll = true)
+    fun setFormattedText(view: TextView, text: String?, currentScope: String, navController: NavController?) {
         if (text != null) {
-            view.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(text)))
+            view.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(text), currentScope, navController))
             view.movementMethod = LinkMovementMethod.getInstance()
             view.transformationMethod = CustomTabTransformationMethod(view.autoLinkMask)
         } else {

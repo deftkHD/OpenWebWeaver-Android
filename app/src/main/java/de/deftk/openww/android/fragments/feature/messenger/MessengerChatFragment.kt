@@ -45,7 +45,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         (requireActivity() as? MainActivity?)?.searchProvider = this
 
-        val adapter = ChatMessageAdapter(userViewModel, this)
+        val adapter = ChatMessageAdapter(userViewModel, this, findNavController(), userViewModel.apiContext.value?.user!!)
         binding.chatList.adapter = adapter
 
         binding.chatsSwipeRefresh.setOnRefreshListener {

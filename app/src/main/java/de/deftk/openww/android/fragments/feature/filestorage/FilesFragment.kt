@@ -81,6 +81,16 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             if (response is Response.Success) {
                 adapter.submitList(response.value.map { it.file })
                 binding.fileEmpty.isVisible = response.value.isEmpty()
+
+                if (args.highlightFileId != null) {
+                    // actually this filtering is very bad because someone could destroy it be naming a file like an id, but I guess this is a design problem, not mine
+                    val file = response.value.firstOrNull { it.file.id == args.highlightFileId || it.file.name == args.highlightFileId?.substring(1) }
+                    if (file == null) {
+                        Reporter.reportException(R.string.error_file_not_found, args.highlightFileId.toString(), requireContext())
+                    } else {
+                        binding.fileList.smoothScrollToPosition(adapter.currentList.indexOf(file.file))
+                    }
+                }
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())
             }

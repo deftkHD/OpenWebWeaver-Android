@@ -54,7 +54,7 @@ class SystemNotificationFragment : Fragment() {
                 binding.systemNotificationAuthor.text = systemNotification.member.name
                 binding.systemNotificationGroup.text = systemNotification.group.name
                 binding.systemNotificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(systemNotification.date)
-                binding.systemNotificationMessage.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(systemNotification.message))
+                binding.systemNotificationMessage.text = TextUtils.parseHtml(systemNotification.message)
                 binding.systemNotificationMessage.movementMethod = LinkMovementMethod.getInstance()
                 binding.systemNotificationMessage.transformationMethod = CustomTabTransformationMethod(binding.systemNotificationMessage.autoLinkMask)
             } else if (response is Response.Failure) {

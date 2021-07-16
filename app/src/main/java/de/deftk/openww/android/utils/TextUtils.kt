@@ -2,6 +2,7 @@ package de.deftk.openww.android.utils
 
 import android.content.res.Resources
 import android.os.Build
+import android.os.Bundle
 import android.text.Html
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -10,6 +11,7 @@ import android.text.format.DateUtils
 import android.text.style.ClickableSpan
 import android.view.View
 import android.widget.Toast
+import androidx.navigation.NavController
 import de.deftk.openww.android.R
 import java.text.DateFormat
 import java.util.*
@@ -38,7 +40,7 @@ object TextUtils {
 
     // structure {{<function>|<group>|<detail>|<display text>}}
     // alternative structure {{<email>}}
-    fun parseInternalReferences(spanned: Spanned): Spanned {
+    fun parseInternalReferences(spanned: Spanned, currentScope: String?, navController: NavController?): Spanned {
         var builder = SpannableStringBuilder(spanned)
         var startIndex: Int
         var endIndex = 0
@@ -62,15 +64,16 @@ object TextUtils {
                         break
                 }
                 endIndex += 2
-                if (params.size == 4) {
-                    builder = (builder.replace(startIndex, endIndex, params[3]))
+                if (params.size == 4 || params.size == 3) {
+                    builder = (builder.replace(startIndex, endIndex, params[params.size - 1]))
                     val type = InternalReferenceType.getById(params[0])
+                    val scope = if (params.size == 3) currentScope else params[1]
                     builder.setSpan(
-                        InternalReferenceSpan(type, params[1], params[2]),
+                        InternalReferenceSpan(type, scope, params[params.size - 2], params[params.size - 1], navController),
                         startIndex,
-                        startIndex + params[3].length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        startIndex + params[params.size - 1].length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                     )
-                    endIndex = startIndex + params[3].length
+                    endIndex = startIndex + params[params.size - 1].length
                 } else if (params.size == 1) {
                     val reference = params[0]
                     val name = if (reference.contains("@")) {
@@ -129,18 +132,41 @@ object TextUtils {
     }
 
 
-    class InternalReferenceSpan(private val type: InternalReferenceType, private val group: String, private val extra: String) : ClickableSpan() {
+    class InternalReferenceSpan(private val type: InternalReferenceType, private val scope: String?, private val extra: String, private val name: String, private val navController: NavController?) : ClickableSpan() {
         override fun onClick(widget: View) {
             when (type) {
                 InternalReferenceType.FILE_STORAGE -> {
-                    //TODO file revisions
-                    /*val intent = Intent(widget.context, StartActivity::class.java)
-                    intent.putExtra(StartActivity.EXTRA_FOCUS_FEATURE, Feature.FILES)
+                    if (scope == null) {
+                        Toast.makeText(widget.context, R.string.error_invalid_internal_reference, Toast.LENGTH_LONG).show()
+                        return
+                    }
+
+                    val lastSlashIndex = extra.lastIndexOf('/')
+                    val fileId = extra.substring(lastSlashIndex, extra.length) //TODO file revisions
+                    val folderId = extra.substring(0, lastSlashIndex)
+                    val path = mutableListOf<String>()
+                    val pathBuilder = StringBuilder("/")
+                    val splitted = extra.split('/')
+                    splitted.subList(1, splitted.size - 1).forEach { pathSegment ->
+                        pathBuilder.append(pathSegment)
+                        path.add(pathBuilder.toString())
+                        pathBuilder.append("/")
+                    }
+                    if (path.isNotEmpty())
+                        path.removeLast()
+
+                    if (path.isNotEmpty() || folderId.isNotBlank()) {
+                        Toast.makeText(widget.context, R.string.not_implemented, Toast.LENGTH_LONG).show()
+                        return
+                    }
+
                     val args = Bundle()
-                    //args.putString(FileStorageGroupFragment.ARGUMENT_GROUP, group)
-                    //args.putString(FileStorageGroupFragment.ARGUMENT_FILE_ID, extra)
-                    intent.putExtra(StartActivity.EXTRA_FOCUS_FEATURE_ARGUMENTS, args)
-                    widget.context.startActivity(intent)*/
+                    args.putString("operatorId", scope)
+                    args.putString("title", name) //TODO better title
+                    args.putString("highlightFileId", fileId)
+                    args.putString("folderId", folderId.ifBlank { null })
+                    args.putStringArray("path", path.ifEmpty { null }?.toTypedArray())
+                    navController?.navigate(R.id.filesFragment, args)
                 }
                 InternalReferenceType.LEANING_PLAN -> {
                     Toast.makeText(

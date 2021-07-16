@@ -64,7 +64,7 @@ class ReadTaskFragment : Fragment() {
                 binding.taskGroup.text = scope.name
                 binding.taskCreated.text = String.format(getString(R.string.created_date), DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.created.date))
                 binding.taskDue.text = String.format(getString(R.string.until_date), if (task.dueDate != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.dueDate!!) else getString(R.string.not_set))
-                binding.taskDetail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description))
+                binding.taskDetail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description), scope.login, navController)
                 binding.taskDetail.movementMethod = LinkMovementMethod.getInstance()
                 binding.taskDetail.transformationMethod = CustomTabTransformationMethod(binding.taskDetail.autoLinkMask)
 

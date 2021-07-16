@@ -297,5 +297,7 @@
     <string name="show_ignored">Show ignored</string>
     <string name="unignore">Unignore</string>
     <string name="file_indicator_new">File was recently created</string>
+    <string name="error_invalid_internal_reference">Invalid internal reference</string>
+    <string name="not_implemented">Not yet implemented</string>
 
 </resources>
