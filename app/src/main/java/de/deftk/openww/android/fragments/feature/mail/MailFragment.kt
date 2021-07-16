@@ -177,6 +177,14 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         navController.navigate(MailFragmentDirections.actionMailFragmentToReadMailFragment(viewHolder.binding.folder!!.id, viewHolder.binding.email!!.id))
     }
 
+    override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
+        val user = userViewModel.apiContext.value?.user
+        val canModify = user?.effectiveRights?.contains(Permission.MAILBOX_WRITE) == true || user?.effectiveRights?.contains(Permission.MAILBOX_ADMIN) == true
+        menu.findItem(R.id.mail_action_move).isEnabled = canModify
+        menu.findItem(R.id.mail_action_delete).isEnabled = canModify
+        return super.onPrepareActionMode(mode, menu)
+    }
+
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.mail_action_move -> {

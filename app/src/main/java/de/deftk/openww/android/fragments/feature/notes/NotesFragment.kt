@@ -108,6 +108,13 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
         navController.navigate(NotesFragmentDirections.actionNotesFragmentToReadNoteFragment(viewHolder.binding.note!!.id))
     }
 
+    override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
+        val user = userViewModel.apiContext.value?.user
+        val canModify = user?.effectiveRights?.contains(Permission.NOTES_WRITE) == true || user?.effectiveRights?.contains(Permission.NOTES_ADMIN) == true
+        menu.findItem(R.id.notes_action_delete).isEnabled = canModify
+        return super.onPrepareActionMode(mode, menu)
+    }
+
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.notes_action_delete -> {

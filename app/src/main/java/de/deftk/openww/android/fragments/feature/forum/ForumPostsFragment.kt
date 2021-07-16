@@ -120,6 +120,12 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         navController.navigate(ForumPostsFragmentDirections.actionForumPostsFragmentToForumPostFragment(viewHolder.binding.group!!.login, viewHolder.binding.post!!.id, null, getString(R.string.see_post)))
     }
 
+    override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
+        val canModify = adapter.selectedItems.all { it.binding.group!!.effectiveRights.contains(Permission.FORUM_WRITE) || it.binding.group!!.effectiveRights.contains(Permission.FORUM_ADMIN) }
+        menu.findItem(R.id.forum_action_delete).isEnabled = canModify
+        return super.onPrepareActionMode(mode, menu)
+    }
+
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.forum_action_delete -> {

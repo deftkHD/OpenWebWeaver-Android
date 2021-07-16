@@ -175,6 +175,9 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             menu.findItem(R.id.tasks_action_ignore).isVisible = canIgnore
             val canUnignore = adapter.selectedItems.all { task -> ignored.any { it.id == task.binding.task!!.id && it.scope == task.binding.scope!!.login } }
             menu.findItem(R.id.tasks_action_unignore).isVisible = canUnignore
+
+            val canModify = adapter.selectedItems.all { it.binding.scope!!.effectiveRights.contains(Permission.BOARD_WRITE) || it.binding.scope!!.effectiveRights.contains(Permission.BOARD_ADMIN) }
+            menu.findItem(R.id.tasks_action_delete).isEnabled = canModify
         }
 
         return super.onPrepareActionMode(mode, menu)
