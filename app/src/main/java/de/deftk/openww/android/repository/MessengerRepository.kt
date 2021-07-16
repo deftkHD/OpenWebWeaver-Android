@@ -27,9 +27,9 @@ class MessengerRepository @Inject constructor(private val quickMessageDao: Quick
             .filter { it.to.login == with || it.from.login == with }
             .toMutableList()
         withContext(Dispatchers.Unconfined) { // don't execute at network thread
-            val savedMessages = quickMessageDao.getHistoryWith(with)
+            val savedMessages = quickMessageDao.getHistoryWith(apiContext.user.login, with)
             val newMessages = onlineMessages.filter { receivedMessage -> savedMessages.none { it.id == receivedMessage.id } }
-            quickMessageDao.insertMessages(newMessages.map { RoomQuickMessage.from(it) })
+            quickMessageDao.insertMessages(newMessages.map { RoomQuickMessage.from(apiContext.user.login, it) })
             if (savedMessages.size != onlineMessages.size) {
                 // merge
                 savedMessages.forEach { savedMessage ->
@@ -47,8 +47,8 @@ class MessengerRepository @Inject constructor(private val quickMessageDao: Quick
         apiContext.user.sendQuickMessage(login, sessionFile, text, apiContext.user.getRequestContext(apiContext))
     }
 
-    suspend fun clearChat(login: String) {
-        quickMessageDao.deleteMessages(quickMessageDao.getHistoryWith(login))
+    suspend fun clearChat(login: String, apiContext: ApiContext) {
+        quickMessageDao.deleteMessages(quickMessageDao.getHistoryWith(apiContext.user.login, login))
     }
 
 }

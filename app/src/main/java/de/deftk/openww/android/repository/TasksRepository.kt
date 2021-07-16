@@ -13,7 +13,7 @@ class TasksRepository @Inject constructor(val ignoredTaskDao: IgnoredTaskDao) : 
 
     suspend fun getTasks(includeIgnored: Boolean, apiContext: ApiContext): Response<List<Pair<ITask, IOperatingScope>>> = apiCall {
         val remoteTasks = apiContext.user.getAllTasks(apiContext).toMutableList()
-        val ignoredTasks = ignoredTaskDao.getIgnoredTasks()
+        val ignoredTasks = ignoredTaskDao.getIgnoredTasks(apiContext.user.login)
         val unusedIgnoredTasks = mutableListOf<IgnoredTask>()
         ignoredTasks.forEach { ignoredTask ->
             val target = remoteTasks.filter { it.first.id == ignoredTask.id && it.second.login == ignoredTask.scope }
@@ -57,12 +57,12 @@ class TasksRepository @Inject constructor(val ignoredTaskDao: IgnoredTaskDao) : 
         task to scope
     }
 
-    suspend fun ignoreTasks(tasks: List<Pair<ITask, IOperatingScope>>) {
-        ignoredTaskDao.ignoreTasks(tasks.map { IgnoredTask.from(it.first, it.second) })
+    suspend fun ignoreTasks(tasks: List<Pair<ITask, IOperatingScope>>, apiContext: ApiContext) {
+        ignoredTaskDao.ignoreTasks(tasks.map { IgnoredTask.from(apiContext.user.login, it.first, it.second) })
     }
 
-    suspend fun unignoreTasks(tasks: List<Pair<ITask, IOperatingScope>>) {
-        ignoredTaskDao.unignoreTasks(tasks.map { IgnoredTask.from(it.first, it.second) })
+    suspend fun unignoreTasks(tasks: List<Pair<ITask, IOperatingScope>>, apiContext: ApiContext) {
+        ignoredTaskDao.unignoreTasks(tasks.map { IgnoredTask.from(apiContext.user.login, it.first, it.second) })
     }
 
 }

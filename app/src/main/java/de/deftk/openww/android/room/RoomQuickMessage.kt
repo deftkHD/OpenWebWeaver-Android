@@ -3,16 +3,16 @@ package de.deftk.openww.android.room
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 import de.deftk.openww.api.implementation.feature.messenger.QuickMessage
 import de.deftk.openww.api.model.RemoteScope
 import de.deftk.openww.api.model.feature.FileDownloadUrl
 import de.deftk.openww.api.model.feature.messenger.IQuickMessage
 import java.util.*
 
-@Entity
+@Entity(primaryKeys = ["account", "id"])
 data class RoomQuickMessage(
-    @PrimaryKey val id: Int,
+    val account: String,
+    val id: Int,
     @Embedded(prefix = "from") val from: RemoteScope,
     @Embedded(prefix = "to") val to: RemoteScope,
     val text: String?,
@@ -23,8 +23,9 @@ data class RoomQuickMessage(
 ) {
 
     companion object {
-        fun from(quickMessage: IQuickMessage): RoomQuickMessage {
+        fun from(account: String, quickMessage: IQuickMessage): RoomQuickMessage {
             return RoomQuickMessage(
+                account,
                 quickMessage.id,
                 quickMessage.from,
                 quickMessage.to,

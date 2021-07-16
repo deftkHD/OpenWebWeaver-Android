@@ -12,6 +12,8 @@ class TaskFilter(private val ignoredTaskDao: IgnoredTaskDao) : Filter<Pair<ITask
     private val groupDelegate = ScopeFilter()
     private val creatorDelegate = ScopeFilter()
 
+    var account: String? = null
+
     val titleCriteria = addCriteria<String>(R.string.name, null) { element, value ->
         value ?: return@addCriteria true
         element.first.title.contains(value, true)
@@ -23,7 +25,8 @@ class TaskFilter(private val ignoredTaskDao: IgnoredTaskDao) : Filter<Pair<ITask
     }
 
     val showIgnoredCriteria = addCriteria<Boolean>(R.string.ignore, null) { element, value ->
-        val isIgnored = runBlocking { ignoredTaskDao.getIgnoredTasks().any { it.id == element.first.id && it.scope == element.second.login } }
+        account ?: return@addCriteria true
+        val isIgnored = runBlocking { ignoredTaskDao.getIgnoredTasks(account!!).any { it.id == element.first.id && it.scope == element.second.login } }
         (value ?: false) || !isIgnored
     }
 

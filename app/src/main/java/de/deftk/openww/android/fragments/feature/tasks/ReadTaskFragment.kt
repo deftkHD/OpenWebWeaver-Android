@@ -105,19 +105,25 @@ class ReadTaskFragment : Fragment() {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
-        val ignored = tasksViewModel.getIgnoredTasksBlocking().any { it.id == task.id && it.scope == scope.login }
-        menu.findItem(R.id.menu_item_ignore).isVisible = !ignored
-        menu.findItem(R.id.menu_item_unignore).isVisible = ignored
+        userViewModel.apiContext.value?.also { apiContext ->
+            val ignored = tasksViewModel.getIgnoredTasksBlocking(apiContext).any { it.id == task.id && it.scope == scope.login }
+            menu.findItem(R.id.menu_item_ignore).isVisible = !ignored
+            menu.findItem(R.id.menu_item_unignore).isVisible = ignored
+        }
         super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.menu_item_ignore -> {
-                tasksViewModel.ignoreTasks(listOf(task to scope))
+                userViewModel.apiContext.value?.also { apiContext ->
+                    tasksViewModel.ignoreTasks(listOf(task to scope), apiContext)
+                }
             }
             R.id.menu_item_unignore -> {
-                tasksViewModel.unignoreTasks(listOf(task to scope))
+                userViewModel.apiContext.value?.also { apiContext ->
+                    tasksViewModel.unignoreTasks(listOf(task to scope), apiContext)
+                }
             }
             R.id.menu_item_import_in_calendar -> {
                 startActivity(CalendarUtil.importTaskIntoCalendar(task))

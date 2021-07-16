@@ -8,8 +8,8 @@ import androidx.room.Query
 @Dao
 interface QuickMessageDao {
 
-    @Query("SELECT * FROM roomquickmessage WHERE fromlogin = (:login) OR tologin = (:login)")
-    suspend fun getHistoryWith(login: String): List<RoomQuickMessage>
+    @Query("SELECT * FROM roomquickmessage WHERE account = (:account) AND (fromlogin = (:login) OR tologin = (:login))")
+    suspend fun getHistoryWith(account: String, login: String): List<RoomQuickMessage>
 
     @Insert
     suspend fun insertMessages(messages: List<RoomQuickMessage>)

@@ -3,7 +3,7 @@ package de.deftk.openww.android.room
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(entities = [RoomQuickMessage::class, IgnoredTask::class], version = 2)
+@Database(entities = [RoomQuickMessage::class, IgnoredTask::class], version = 3)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun quickMessageDao(): QuickMessageDao

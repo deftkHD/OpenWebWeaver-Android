@@ -109,9 +109,9 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
         }
     }
 
-    fun clearChat(user: String) {
+    fun clearChat(user: String, apiContext: ApiContext) {
         viewModelScope.launch {
-            messengerRepository.clearChat(user)
+            messengerRepository.clearChat(user, apiContext)
             _messagesResponse.getOrPut(user) { MutableLiveData() }.value = Response.Success(Pair(emptyList(), false))
         }
     }

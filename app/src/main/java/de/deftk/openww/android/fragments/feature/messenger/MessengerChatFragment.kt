@@ -156,7 +156,9 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.delete_saved_chat -> {
-                messengerViewModel.clearChat(args.user)
+                userViewModel.apiContext.value?.also { apiContext ->
+                    messengerViewModel.clearChat(args.user, apiContext)
+                }
             }
             else -> return false
         }

@@ -8,8 +8,8 @@ import androidx.room.Query
 @Dao
 interface IgnoredTaskDao {
 
-    @Query("SELECT * FROM ignoredtask")
-    suspend fun getIgnoredTasks(): List<IgnoredTask>
+    @Query("SELECT * FROM ignoredtask WHERE account = (:account)")
+    suspend fun getIgnoredTasks(account: String): List<IgnoredTask>
 
     @Insert
     suspend fun ignoreTasks(tasks: List<IgnoredTask>)

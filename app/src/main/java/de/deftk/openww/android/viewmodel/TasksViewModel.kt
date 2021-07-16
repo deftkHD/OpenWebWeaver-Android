@@ -119,16 +119,16 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
         _batchDeleteResponse.value = null
     }
 
-    fun ignoreTasks(tasks: List<Pair<ITask, IOperatingScope>>) {
+    fun ignoreTasks(tasks: List<Pair<ITask, IOperatingScope>>, apiContext: ApiContext) {
         viewModelScope.launch {
-            tasksRepository.ignoreTasks(tasks)
+            tasksRepository.ignoreTasks(tasks, apiContext)
             _tasksResponse.value = _tasksResponse.value
         }
     }
 
-    fun unignoreTasks(tasks: List<Pair<ITask, IOperatingScope>>) {
+    fun unignoreTasks(tasks: List<Pair<ITask, IOperatingScope>>, apiContext: ApiContext) {
         viewModelScope.launch {
-            tasksRepository.unignoreTasks(tasks)
+            tasksRepository.unignoreTasks(tasks, apiContext)
             _tasksResponse.value = _tasksResponse.value
         }
     }
@@ -139,9 +139,9 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
         this._filter.value = filter
     }
 
-    fun getIgnoredTasksBlocking(): List<IgnoredTask> {
+    fun getIgnoredTasksBlocking(apiContext: ApiContext): List<IgnoredTask> {
         return runBlocking {
-            tasksRepository.ignoredTaskDao.getIgnoredTasks()
+            tasksRepository.ignoredTaskDao.getIgnoredTasks(apiContext.user.login)
         }
     }
 
