@@ -14,6 +14,7 @@ import de.deftk.openww.android.viewmodel.FileStorageViewModel
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.FilePreviewUrl
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
+import java.util.*
 
 class FileAdapter(
     private val scope: IOperatingScope,
@@ -65,6 +66,7 @@ class FileAdapter(
             binding.file = file
             binding.folderId = folderId
             binding.path = path
+            binding.recentlyCreated = Date().time - file.created.date.time <= 259200000 // 3 days
             setProgress(progress ?: 0)
             if (previewUrl != null) {
                 Glide.with(itemView.context)

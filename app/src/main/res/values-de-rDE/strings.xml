@@ -293,4 +293,5 @@
     <string name="ignore">Ignorieren</string>
     <string name="show_ignored">Ignorierte anzeigen</string>
     <string name="unignore">Nicht mehr ignorieren</string>
+    <string name="file_indicator_new">Datei wurde kürzlich erstellt</string>
 </resources>

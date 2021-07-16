@@ -28,6 +28,10 @@
             name="selected"
             type="Boolean" />
 
+        <variable
+            name="recentlyCreated"
+            type="Boolean" />
+
     </data>
 
     <RelativeLayout xmlns:tools="http://schemas.android.com/tools"
@@ -73,7 +77,6 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_marginStart="5dp"
-            android:layout_toStartOf="@id/more_button"
             android:layout_toEndOf="@+id/file_image"
             android:ellipsize="end"
             android:lines="1"
@@ -81,6 +84,17 @@
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             tools:text="File name" />
+
+        <ImageView
+            android:id="@+id/file_new_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@id/file_name"
+            android:contentDescription="@string/file_indicator_new"
+            android:src="@drawable/ic_new_releases_24"
+            android:isVisible="@{recentlyCreated}" />
 
         <ImageView
             android:id="@+id/more_button"
