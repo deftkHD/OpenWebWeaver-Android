@@ -290,4 +290,7 @@
     <string name="type">Typ</string>
     <string name="smart_search">Smarte Suche</string>
     <string name="from">Von</string>
+    <string name="ignore">Ignorieren</string>
+    <string name="show_ignored">Ignorierte anzeigen</string>
+    <string name="unignore">Nicht mehr ignorieren</string>
 </resources>

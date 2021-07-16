@@ -5,10 +5,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.filter.TaskFilter
 import de.deftk.openww.android.repository.TasksRepository
+import de.deftk.openww.android.room.IgnoredTask
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.tasks.ITask
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.*
 import javax.inject.Inject
 
@@ -18,10 +20,11 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
     private val _tasksResponse = MutableLiveData<Response<List<Pair<ITask, IOperatingScope>>>>()
     val allTasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>> = _tasksResponse
 
-    val filter = MutableLiveData(TaskFilter())
+    private val _filter = MutableLiveData(TaskFilter(tasksRepository.ignoredTaskDao))
+    val filter: LiveData<TaskFilter> = _filter
 
     val filteredTasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>>
-        get() = filter.switchMap { filter ->
+        get() = _filter.switchMap { filter ->
             when (filter) {
                 null -> allTasksResponse
                 else -> allTasksResponse.switchMap { response ->
@@ -38,9 +41,9 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
     private val _batchDeleteResponse = MutableLiveData<List<Response<Pair<ITask, IOperatingScope>>>?>()
     val batchDeleteResponse: LiveData<List<Response<Pair<ITask, IOperatingScope>>>?> = _batchDeleteResponse
 
-    fun loadTasks(apiContext: ApiContext) {
+    fun loadTasks(includeIgnored: Boolean, apiContext: ApiContext) {
         viewModelScope.launch {
-            _tasksResponse.value = tasksRepository.getTasks(apiContext)
+            _tasksResponse.value = tasksRepository.getTasks(includeIgnored, apiContext)
         }
     }
 
@@ -114,6 +117,32 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
 
     fun resetBatchDeleteResponse() {
         _batchDeleteResponse.value = null
+    }
+
+    fun ignoreTasks(tasks: List<Pair<ITask, IOperatingScope>>) {
+        viewModelScope.launch {
+            tasksRepository.ignoreTasks(tasks)
+            _tasksResponse.value = _tasksResponse.value
+        }
+    }
+
+    fun unignoreTasks(tasks: List<Pair<ITask, IOperatingScope>>) {
+        viewModelScope.launch {
+            tasksRepository.unignoreTasks(tasks)
+            _tasksResponse.value = _tasksResponse.value
+        }
+    }
+
+    fun setFilter(setFilter: (filter: TaskFilter) -> Unit) {
+        val filter = this._filter.value ?: TaskFilter(tasksRepository.ignoredTaskDao)
+        setFilter(filter)
+        this._filter.value = filter
+    }
+
+    fun getIgnoredTasksBlocking(): List<IgnoredTask> {
+        return runBlocking {
+            tasksRepository.ignoredTaskDao.getIgnoredTasks()
+        }
     }
 
 }

@@ -1,8 +1,6 @@
 package de.deftk.openww.android.fragments.feature.tasks
 
-import android.content.Intent
 import android.os.Bundle
-import android.provider.CalendarContract
 import android.text.method.LinkMovementMethod
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
@@ -11,17 +9,18 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import de.deftk.openww.api.model.IOperatingScope
-import de.deftk.openww.api.model.Permission
-import de.deftk.openww.api.model.feature.tasks.ITask
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadTaskBinding
+import de.deftk.openww.android.utils.CalendarUtil
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.TasksViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.IOperatingScope
+import de.deftk.openww.api.model.Permission
+import de.deftk.openww.api.model.feature.tasks.ITask
 import java.text.DateFormat
 
 class ReadTaskFragment : Fragment() {
@@ -101,36 +100,39 @@ class ReadTaskFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         if (scope.effectiveRights.contains(Permission.TASKS_WRITE) || scope.effectiveRights.contains(Permission.TASKS_ADMIN))
             inflater.inflate(R.menu.simple_edit_item_menu, menu)
-        inflater.inflate(R.menu.read_task_menu, menu)
+        inflater.inflate(R.menu.task_item_menu, menu)
+
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        val ignored = tasksViewModel.getIgnoredTasksBlocking().any { it.id == task.id && it.scope == scope.login }
+        menu.findItem(R.id.menu_item_ignore).isVisible = !ignored
+        menu.findItem(R.id.menu_item_unignore).isVisible = ignored
+        super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+        when (item.itemId) {
+            R.id.menu_item_ignore -> {
+                tasksViewModel.ignoreTasks(listOf(task to scope))
+            }
+            R.id.menu_item_unignore -> {
+                tasksViewModel.unignoreTasks(listOf(task to scope))
+            }
             R.id.menu_item_import_in_calendar -> {
-                val intent = Intent(Intent.ACTION_INSERT)
-                intent.data = CalendarContract.Events.CONTENT_URI
-                intent.putExtra(CalendarContract.Events.TITLE, task.title)
-                if (task.startDate != null)
-                    intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, task.startDate!!.time)
-                if (task.dueDate != null)
-                    intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, task.dueDate!!.time)
-                if (task.description != null)
-                    intent.putExtra(CalendarContract.Events.DESCRIPTION, task.description)
-                startActivity(intent)
-                true
+                startActivity(CalendarUtil.importTaskIntoCalendar(task))
             }
             R.id.menu_item_edit -> {
                 val action = ReadTaskFragmentDirections.actionReadTaskFragmentToEditTaskFragment(task.id, scope.login, getString(R.string.edit_task))
                 navController.navigate(action)
-                true
             }
             R.id.menu_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 tasksViewModel.deleteTask(task, scope, apiContext)
-                true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> return super.onOptionsItemSelected(item)
         }
+        return true
     }
 
 }

@@ -133,7 +133,7 @@
     <string name="token_login_link"><a href="www.www.com">Token login</a></string>
     <string name="token">Token</string>
     <string name="remember_token">Remember token</string>
-    <string name="import_into_calendar">Imoprt into calendar</string>
+    <string name="import_into_calendar">Import into calendar</string>
     <string name="learning_plan_not_support">Learning plans are currently not supported</string>
     <string name="choose_account">Choose account</string>
     <string name="switch_account">Switch account</string>
@@ -293,5 +293,8 @@
     <string name="type">Type</string>
     <string name="smart_search">Smart search</string>
     <string name="from">From</string>
+    <string name="ignore">Ignore</string>
+    <string name="show_ignored">Show ignored</string>
+    <string name="unignore">Unignore</string>
 
 </resources>

@@ -1,11 +1,13 @@
 package de.deftk.openww.android.filter
 
 import de.deftk.openww.android.R
+import de.deftk.openww.android.room.IgnoredTaskDao
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.tasks.ITask
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
-class TaskFilter : Filter<Pair<ITask, IOperatingScope>>(TaskOrder.ByGivenDesc) {
+class TaskFilter(private val ignoredTaskDao: IgnoredTaskDao) : Filter<Pair<ITask, IOperatingScope>>(TaskOrder.ByGivenDesc) {
 
     private val groupDelegate = ScopeFilter()
     private val creatorDelegate = ScopeFilter()
@@ -18,6 +20,11 @@ class TaskFilter : Filter<Pair<ITask, IOperatingScope>>(TaskOrder.ByGivenDesc) {
     val descriptionCriteria = addCriteria<String>(R.string.description, null) { element, value ->
         value ?: return@addCriteria true
         element.first.description?.contains(value, true) == true
+    }
+
+    val showIgnoredCriteria = addCriteria<Boolean>(R.string.ignore, null) { element, value ->
+        val isIgnored = runBlocking { ignoredTaskDao.getIgnoredTasks().any { it.id == element.first.id && it.scope == element.second.login } }
+        (value ?: false) || !isIgnored
     }
 
     val smartSearchCriteria = addCriteria<String>(R.string.smart_search, null) { element, value ->
