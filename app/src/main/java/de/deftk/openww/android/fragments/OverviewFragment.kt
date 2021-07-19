@@ -5,12 +5,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.OverviewAdapter
@@ -30,24 +28,13 @@ class OverviewFragment: Fragment() {
     }
 
     private val userViewModel: UserViewModel by activityViewModels()
+    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentOverviewBinding
-    private lateinit var navController: NavController
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        navController = findNavController()
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, bundle: Bundle?): View {
         binding = FragmentOverviewBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding.overviewSwipeRefresh.isEnabled = false // will be enabled when apiContext exists
         binding.overviewSwipeRefresh.setOnRefreshListener {
             binding.overviewList.adapter = null
@@ -66,7 +53,7 @@ class OverviewFragment: Fragment() {
             if (response is Response.Success) {
                 binding.overviewList.adapter = OverviewAdapter(requireContext(), response.value)
                 Log.i(LOG_TAG, "Initialized ${response.value.size} overview elements")
-                binding.progressOverview.visibility = ProgressBar.GONE
+                binding.progressOverview.isVisible = false
                 binding.overviewSwipeRefresh.isRefreshing = false
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_overview_request_failed, response.exception, requireContext())
@@ -81,6 +68,7 @@ class OverviewFragment: Fragment() {
                 binding.overviewList.adapter = null
             }
         }
+        return binding.root
     }
 
 }
