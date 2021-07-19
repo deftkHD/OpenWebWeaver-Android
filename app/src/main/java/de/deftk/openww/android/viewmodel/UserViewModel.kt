@@ -13,6 +13,7 @@ import de.deftk.openww.android.filter.SystemNotificationFilter
 import de.deftk.openww.android.repository.UserRepository
 import de.deftk.openww.api.auth.Credentials
 import de.deftk.openww.api.implementation.ApiContext
+import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 import de.deftk.openww.api.request.handler.AutoLoginRequestHandler
 import kotlinx.coroutines.Dispatchers
@@ -23,9 +24,9 @@ import javax.inject.Inject
 @HiltViewModel
 class UserViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val userRepository: UserRepository) : ViewModel() {
 
-    private val _loginResponse = MutableLiveData<Response<ApiContext>?>()
-    val loginResponse: LiveData<Response<ApiContext>?> = _loginResponse
-    val apiContext: LiveData<ApiContext?> = loginResponse.map { if (it is Response.Success) it.value else null }
+    private val _loginResponse = MutableLiveData<Response<IApiContext>?>()
+    val loginResponse: LiveData<Response<IApiContext>?> = _loginResponse
+    val apiContext: LiveData<IApiContext?> = loginResponse.map { if (it is Response.Success) it.value else null }
 
     private val _loginToken = MutableLiveData<Response<Pair<String, String>>>()
     val loginToken: LiveData<Response<Pair<String, String>>> = _loginToken
@@ -137,7 +138,7 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
         }
     }
 
-    private fun setupApiContext(apiContext: ApiContext, credentials: Credentials) {
+    private fun setupApiContext(apiContext: IApiContext, credentials: Credentials) {
         apiContext.requestHandler = AutoLoginRequestHandler(object : AutoLoginRequestHandler.LoginHandler<ApiContext> {
             override suspend fun getCredentials(): Credentials = credentials
 
@@ -149,21 +150,21 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
         }, ApiContext::class.java)
     }
 
-    fun loadOverview(apiContext: ApiContext) {
+    fun loadOverview(apiContext: IApiContext) {
         viewModelScope.launch {
             val resource = userRepository.getOverviewElements(apiContext)
             _overviewResponse.value = resource
         }
     }
 
-    fun loadSystemNotifications(apiContext: ApiContext) {
+    fun loadSystemNotifications(apiContext: IApiContext) {
         viewModelScope.launch {
             val resource = userRepository.getSystemNotifications(apiContext)
             _systemNotificationsResponse.value = resource
         }
     }
 
-    fun deleteSystemNotification(systemNotification: ISystemNotification, apiContext: ApiContext) {
+    fun deleteSystemNotification(systemNotification: ISystemNotification, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = userRepository.deleteSystemNotification(systemNotification, apiContext)
             _systemNotificationDeleteResponse.value = response
@@ -175,7 +176,7 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
         }
     }
 
-    fun batchDeleteSystemNotifications(systemNotifications: List<ISystemNotification>, apiContext: ApiContext) {
+    fun batchDeleteSystemNotifications(systemNotifications: List<ISystemNotification>, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = systemNotifications.map { userRepository.deleteSystemNotification(it, apiContext) }
             _systemNotificationBatchDeleteResponse.value = responses

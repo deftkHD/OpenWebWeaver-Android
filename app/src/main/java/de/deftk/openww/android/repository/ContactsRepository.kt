@@ -1,21 +1,21 @@
 package de.deftk.openww.android.repository
 
-import de.deftk.openww.api.implementation.ApiContext
+import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.contacts.IContact
 import javax.inject.Inject
 
 class ContactsRepository @Inject constructor() : AbstractRepository() {
 
-    suspend fun getContacts(scope: IOperatingScope, apiContext: ApiContext) = apiCall {
+    suspend fun getContacts(scope: IOperatingScope, apiContext: IApiContext) = apiCall {
         scope.getContacts(scope.getRequestContext(apiContext))
     }
 
-    suspend fun addContact(contact: IContact, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
+    suspend fun addContact(contact: IContact, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
         scope.addContact(contact, scope.getRequestContext(apiContext))
     }
 
-    suspend fun editContact(contact: IContact, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
+    suspend fun editContact(contact: IContact, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
         contact.edit(
             contact.birthday,
             contact.businessCity,
@@ -65,7 +65,7 @@ class ContactsRepository @Inject constructor() : AbstractRepository() {
         contact
     }
 
-    suspend fun deleteContact(contact: IContact, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
+    suspend fun deleteContact(contact: IContact, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
         contact.delete(scope.getRequestContext(apiContext))
         contact to scope
     }

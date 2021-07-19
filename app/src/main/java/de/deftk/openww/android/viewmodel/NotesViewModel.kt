@@ -5,7 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.filter.NoteFilter
 import de.deftk.openww.android.repository.NotesRepository
-import de.deftk.openww.api.implementation.ApiContext
+import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.feature.notes.INote
 import de.deftk.openww.api.model.feature.notes.NoteColor
 import kotlinx.coroutines.launch
@@ -39,13 +39,13 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
     private val _batchDeleteResponse = MutableLiveData<List<Response<INote>>?>()
     val batchDeleteResponse: LiveData<List<Response<INote>>?> = _batchDeleteResponse
 
-    fun loadNotes(apiContext: ApiContext) {
+    fun loadNotes(apiContext: IApiContext) {
         viewModelScope.launch {
             _notesResponse.value = notesRepository.getNotes(apiContext)
         }
     }
 
-    fun addNote(title: String, text: String, color: NoteColor?, apiContext: ApiContext) {
+    fun addNote(title: String, text: String, color: NoteColor?, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = notesRepository.addNote(text, title, color, apiContext)
             _editResponse.value = response
@@ -59,7 +59,7 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
         }
     }
 
-    fun editNote(note: INote, title: String, text: String, color: NoteColor, apiContext: ApiContext) {
+    fun editNote(note: INote, title: String, text: String, color: NoteColor, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = notesRepository.editNote(note, text, title, color, apiContext)
             _editResponse.value = response
@@ -72,7 +72,7 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
         }
     }
 
-    fun deleteNote(note: INote, apiContext: ApiContext) {
+    fun deleteNote(note: INote, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = notesRepository.deleteNote(note, apiContext)
             _deleteResponse.value = response
@@ -93,7 +93,7 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
         _deleteResponse.value = null
     }
 
-    fun batchDelete(selectedTasks: List<INote>, apiContext: ApiContext) {
+    fun batchDelete(selectedTasks: List<INote>, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = selectedTasks.map { notesRepository.deleteNote(it, apiContext) }
             _batchDeleteResponse.value = responses

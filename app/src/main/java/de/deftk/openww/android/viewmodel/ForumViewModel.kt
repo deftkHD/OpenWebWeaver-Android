@@ -5,7 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.filter.ForumPostFilter
 import de.deftk.openww.android.repository.ForumRepository
-import de.deftk.openww.api.implementation.ApiContext
+import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.feature.forum.IForumPost
 import kotlinx.coroutines.launch
@@ -44,7 +44,7 @@ class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStat
         }
     }
 
-    fun loadForumPosts(group: IGroup, parentId: String? = null, apiContext: ApiContext) {
+    fun loadForumPosts(group: IGroup, parentId: String? = null, apiContext: IApiContext) {
         viewModelScope.launch {
             (getAllForumPosts(group) as MutableLiveData).value = forumRepository.getPosts(group, parentId, apiContext)
         }
@@ -58,7 +58,7 @@ class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStat
         return postsResponses[group]?.value?.valueOrNull()?.filter { it.parentId == postId } ?: emptyList()
     }
 
-    fun deletePost(post: IForumPost, parent: IForumPost?, group: IGroup, apiContext: ApiContext) {
+    fun deletePost(post: IForumPost, parent: IForumPost?, group: IGroup, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = forumRepository.deletePost(post, group, apiContext)
             _deleteResponse.value = response
@@ -95,7 +95,7 @@ class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStat
         return rootPosts.firstOrNull { it.id == id }
     }
 
-    fun batchDelete(selectedPosts: List<IForumPost>, group: IGroup, apiContext: ApiContext) {
+    fun batchDelete(selectedPosts: List<IForumPost>, group: IGroup, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = selectedPosts.map { forumRepository.deletePost(it, group, apiContext) }
             _batchDeleteResponse.value = responses

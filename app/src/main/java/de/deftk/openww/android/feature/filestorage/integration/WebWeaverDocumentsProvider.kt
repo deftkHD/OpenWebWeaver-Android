@@ -22,8 +22,8 @@ import de.deftk.openww.android.utils.FileUtil
 import de.deftk.openww.api.WebWeaverClient
 import de.deftk.openww.api.auth.Credentials
 import de.deftk.openww.api.implementation.ApiContext
-import de.deftk.openww.api.implementation.OperatingScope
 import de.deftk.openww.api.implementation.feature.filestorage.RemoteFile
+import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.filestorage.FileType
@@ -67,7 +67,7 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
     private val cache = ProviderCache()
     private val fileStorage = FileStorage()
     private val handler: Handler
-    private var apiContext: ApiContext? = null
+    private var apiContext: IApiContext? = null
 
     private lateinit var accounts: List<Account>
 
@@ -365,7 +365,7 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
         }
     }
 
-    private fun apiContext(): ApiContext {
+    private fun apiContext(): IApiContext {
         return apiContext ?: error("ApiContext not available")
     }
 
@@ -553,7 +553,7 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
         return id.substring(0, end)
     }
 
-    private fun findOperatingScope(name: String, apiContext: ApiContext): OperatingScope? {
+    private fun findOperatingScope(name: String, apiContext: IApiContext): IOperatingScope? {
         return apiContext.user.getGroups().firstOrNull { it.name == name } ?: if (name == apiContext.user.name) apiContext.user else null
     }
 
@@ -567,7 +567,7 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
         setupApiContext(apiContext!!, Credentials.fromToken(login, token))
     }
 
-    private fun setupApiContext(apiContext: ApiContext, credentials: Credentials) {
+    private fun setupApiContext(apiContext: IApiContext, credentials: Credentials) {
         apiContext.requestHandler = AutoLoginRequestHandler(object : AutoLoginRequestHandler.LoginHandler<ApiContext> {
             override suspend fun getCredentials(): Credentials = credentials
 

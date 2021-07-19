@@ -19,7 +19,7 @@ import de.deftk.openww.android.filter.ScopeFilter
 import de.deftk.openww.android.filter.ScopeOrder
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.viewmodel.UserViewModel
-import de.deftk.openww.api.implementation.ApiContext
+import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IOperatingScope
 
 abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener, ISearchProvider {
@@ -31,7 +31,7 @@ abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener,
     protected val navController by lazy { findNavController() }
 
     abstract val scopePredicate: (T : IOperatingScope) -> Boolean
-    open val adapter: ListAdapter<IOperatingScope, RecyclerView.ViewHolder> = OperatingScopeAdapter(this)
+    open val adapter: ListAdapter<IOperatingScope, RecyclerView.ViewHolder> by lazy { OperatingScopeAdapter(this) }
 
     private var filter = ScopeFilter(ScopeOrder.ByOperatorDefault)
 
@@ -63,7 +63,7 @@ abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener,
         return binding.root
     }
 
-    protected fun updateGroups(apiContext: ApiContext) {
+    protected fun updateGroups(apiContext: IApiContext) {
         var scopes: MutableList<IOperatingScope> = apiContext.user.getGroups().filter { scopePredicate(it) }.toMutableList()
         if (scopePredicate(apiContext.user))
             scopes.add(0, apiContext.user)

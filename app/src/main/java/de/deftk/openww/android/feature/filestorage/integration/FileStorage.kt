@@ -3,8 +3,8 @@ package de.deftk.openww.android.feature.filestorage.integration
 import android.util.Log
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.repository.FileStorageRepository
-import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.Feature
+import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFileProvider
@@ -19,7 +19,7 @@ class FileStorage {
     private val fileStorageRepository: FileStorageRepository = FileStorageRepository()
     private val files = mutableMapOf<IOperatingScope, Response<List<ProviderCacheElement>>>()
 
-    fun getScopes(apiContext: ApiContext): List<IOperatingScope> {
+    fun getScopes(apiContext: IApiContext): List<IOperatingScope> {
         val scopes = mutableListOf<IOperatingScope>()
         if (Feature.FILES.isAvailable(apiContext.user.effectiveRights)) {
             scopes.add(apiContext.user)
@@ -28,7 +28,7 @@ class FileStorage {
         return scopes
     }
 
-    suspend fun loadFiles(scope: IOperatingScope, directoryId: String?, path: List<String>?, apiContext: ApiContext) {
+    suspend fun loadFiles(scope: IOperatingScope, directoryId: String?, path: List<String>?, apiContext: IApiContext) {
         if (directoryId == null) {
             loadRootFiles(scope, apiContext)
         } else {
@@ -36,13 +36,13 @@ class FileStorage {
         }
     }
 
-    suspend fun loadRootFiles(scope: IOperatingScope, apiContext: ApiContext): Response<List<ProviderCacheElement>> {
+    suspend fun loadRootFiles(scope: IOperatingScope, apiContext: IApiContext): Response<List<ProviderCacheElement>> {
         val response = fileStorageRepository.getFiles(scope, scope, apiContext).smartMap { list -> list.map { ProviderCacheElement(scope, it) } }
         files[scope] = response
         return response
     }
 
-    suspend fun cacheDirectory(scope: IOperatingScope, directoryId: String, path: List<String>?, apiContext: ApiContext): Response<List<ProviderCacheElement>> {
+    suspend fun cacheDirectory(scope: IOperatingScope, directoryId: String, path: List<String>?, apiContext: IApiContext): Response<List<ProviderCacheElement>> {
         val pathSteps = path?.toMutableList()
         val cachedRootFiles = files[scope]
         val rootFiles = if (cachedRootFiles == null) {

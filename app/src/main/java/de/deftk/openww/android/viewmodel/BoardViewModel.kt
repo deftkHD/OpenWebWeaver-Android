@@ -5,7 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.filter.BoardNotificationFilter
 import de.deftk.openww.android.repository.BoardRepository
-import de.deftk.openww.api.implementation.ApiContext
+import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.feature.board.BoardNotificationColor
 import de.deftk.openww.api.model.feature.board.BoardType
@@ -40,13 +40,13 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
     private val _batchDeleteResponse = MutableLiveData<List<Response<Pair<IBoardNotification, IGroup>>>?>()
     val batchDeleteResponse: LiveData<List<Response<Pair<IBoardNotification, IGroup>>>?> = _batchDeleteResponse
 
-    fun loadBoardNotifications(apiContext: ApiContext) {
+    fun loadBoardNotifications(apiContext: IApiContext) {
         viewModelScope.launch {
             _notificationsResponse.value = boardRepository.getBoardNotifications(apiContext)
         }
     }
 
-    fun addBoardNotification(title: String, text: String, color: BoardNotificationColor?, killDate: Date?, group: IGroup, apiContext: ApiContext) {
+    fun addBoardNotification(title: String, text: String, color: BoardNotificationColor?, killDate: Date?, group: IGroup, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = boardRepository.addBoardNotification(
                 title,
@@ -66,7 +66,7 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
         }
     }
 
-    fun editBoardNotification(notification: IBoardNotification, title: String, text: String, color: BoardNotificationColor, killDate: Date?, group: IGroup, apiContext: ApiContext) {
+    fun editBoardNotification(notification: IBoardNotification, title: String, text: String, color: BoardNotificationColor, killDate: Date?, group: IGroup, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = boardRepository.editBoardNotification(
                 notification,
@@ -87,7 +87,7 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
         }
     }
 
-    fun deleteBoardNotification(notification: IBoardNotification, group: IGroup, apiContext: ApiContext) {
+    fun deleteBoardNotification(notification: IBoardNotification, group: IGroup, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = boardRepository.deleteBoardNotification(notification, group, apiContext)
             _postResponse.value = Response.Success(notification)
@@ -103,7 +103,7 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
         _postResponse.value = null
     }
 
-    fun batchDelete(selectedItems: List<Pair<IGroup, IBoardNotification>>, apiContext: ApiContext) {
+    fun batchDelete(selectedItems: List<Pair<IGroup, IBoardNotification>>, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = selectedItems.map { boardRepository.deleteBoardNotification(it.second, it.first, apiContext) }
             _batchDeleteResponse.value = responses

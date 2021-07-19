@@ -5,7 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.filter.ContactFilter
 import de.deftk.openww.android.repository.ContactsRepository
-import de.deftk.openww.api.implementation.ApiContext
+import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.contacts.IContact
 import kotlinx.coroutines.launch
@@ -47,13 +47,13 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
         }
     }
 
-    fun loadContacts(scope: IOperatingScope, apiContext: ApiContext) {
+    fun loadContacts(scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             _contactsResponses.getOrPut(scope) { MutableLiveData() }.value  = contactsRepository.getContacts(scope, apiContext)
         }
     }
 
-    fun addContact(contact: IContact, scope: IOperatingScope, apiContext: ApiContext) {
+    fun addContact(contact: IContact, scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = contactsRepository.addContact(contact, scope, apiContext)
             _editResponse.value = response
@@ -66,7 +66,7 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
         }
     }
 
-    fun editContact(contact: IContact, scope: IOperatingScope, apiContext: ApiContext) {
+    fun editContact(contact: IContact, scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = contactsRepository.editContact(contact, scope, apiContext)
             _editResponse.value = response
@@ -79,7 +79,7 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
         }
     }
 
-    fun deleteContact(contact: IContact, scope: IOperatingScope, apiContext: ApiContext) {
+    fun deleteContact(contact: IContact, scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = contactsRepository.deleteContact(contact, scope, apiContext)
             _deleteResponse.value = response
@@ -100,7 +100,7 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
         _deleteResponse.value = null
     }
 
-    fun batchDelete(contacts: List<Pair<IOperatingScope, IContact>>, apiContext: ApiContext) {
+    fun batchDelete(contacts: List<Pair<IOperatingScope, IContact>>, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = contacts.map { contactsRepository.deleteContact(it.second, it.first, apiContext) }
             _batchDeleteResponse.value = responses

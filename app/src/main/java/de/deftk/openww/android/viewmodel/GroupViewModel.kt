@@ -2,12 +2,12 @@ package de.deftk.openww.android.viewmodel
 
 import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.IScope
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.filter.ScopeFilter
 import de.deftk.openww.android.repository.GroupRepository
+import de.deftk.openww.api.model.IApiContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,7 +38,7 @@ class GroupViewModel @Inject constructor(private val groupRepository: GroupRepos
         }
     }
 
-    fun loadMembers(group: IGroup, onlineOnly: Boolean, apiContext: ApiContext) {
+    fun loadMembers(group: IGroup, onlineOnly: Boolean, apiContext: IApiContext) {
         viewModelScope.launch {
             (getAllGroupMembers(group) as MutableLiveData).value = groupRepository.getMembers(group, onlineOnly, apiContext)
         }

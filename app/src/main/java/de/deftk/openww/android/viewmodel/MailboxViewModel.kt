@@ -5,7 +5,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.filter.MailFilter
 import de.deftk.openww.android.repository.MailboxRepository
-import de.deftk.openww.api.implementation.ApiContext
+import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
 import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
@@ -58,7 +58,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
     private val _batchDeleteResponse = MutableLiveData<List<Response<IEmail>>?>()
     val batchDeleteResponse: LiveData<List<Response<IEmail>>?> = _batchDeleteResponse
 
-    fun loadFolders(apiContext: ApiContext) {
+    fun loadFolders(apiContext: IApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.getFolders(apiContext)
             _foldersResponse.value = response
@@ -73,7 +73,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
         }
     }
 
-    fun addFolder(name: String, apiContext: ApiContext) {
+    fun addFolder(name: String, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.addFolder(name, apiContext)
             _folderPostResponse.value = response
@@ -84,7 +84,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
         }
     }
 
-    fun selectFolder(folder: IEmailFolder, apiContext: ApiContext) {
+    fun selectFolder(folder: IEmailFolder, apiContext: IApiContext) {
         _currentFolder.value = folder
         if (!emailResponses.containsKey(folder)) {
             viewModelScope.launch {
@@ -96,7 +96,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
         }
     }
 
-    private suspend fun suspendLoadEmails(folder: IEmailFolder, apiContext: ApiContext) {
+    private suspend fun suspendLoadEmails(folder: IEmailFolder, apiContext: IApiContext) {
         val response = mailboxRepository.getEmails(folder, apiContext)
         emailResponses.getOrPut(folder) { MutableLiveData() }.value = response
     }
@@ -109,21 +109,21 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
         emailResponses.clear()
     }
 
-    fun sendEmail(to: String, subject: String, plainBody: String, cc: String? = null, bcc: String? = null, importSessionFiles: List<ISessionFile>? = null, referenceFolderId: String? = null, referenceMessageId: Int? = null, referenceMode: ReferenceMode? = null, text: String? = null, apiContext: ApiContext) {
+    fun sendEmail(to: String, subject: String, plainBody: String, cc: String? = null, bcc: String? = null, importSessionFiles: List<ISessionFile>? = null, referenceFolderId: String? = null, referenceMessageId: Int? = null, referenceMode: ReferenceMode? = null, text: String? = null, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.sendEmail(to, subject, plainBody, cc, bcc, importSessionFiles, referenceFolderId, referenceMessageId, referenceMode, text, apiContext)
             _emailSendResponse.value = response
         }
     }
 
-    fun readEmail(email: IEmail, folder: IEmailFolder, apiContext: ApiContext) {
+    fun readEmail(email: IEmail, folder: IEmailFolder, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.readEmail(email, folder, false, apiContext)
             _emailReadPostResponse.value = response
         }
     }
 
-    fun moveEmail(email: IEmail, folder: IEmailFolder, destination: IEmailFolder, apiContext: ApiContext) {
+    fun moveEmail(email: IEmail, folder: IEmailFolder, destination: IEmailFolder, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.moveEmail(email, folder, destination, apiContext)
             _emailPostResponse.value = response
@@ -152,7 +152,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
         }
     }
 
-    fun deleteEmail(email: IEmail, folder: IEmailFolder, allowTrash: Boolean, apiContext: ApiContext) {
+    fun deleteEmail(email: IEmail, folder: IEmailFolder, allowTrash: Boolean, apiContext: IApiContext) {
         if (allowTrash) {
             val foldersResponse = foldersResponse.value
             if (foldersResponse is Response.Success) {
@@ -168,7 +168,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
         }
     }
 
-    private suspend fun shredEmail(email: IEmail, folder: IEmailFolder, apiContext: ApiContext) {
+    private suspend fun shredEmail(email: IEmail, folder: IEmailFolder, apiContext: IApiContext) {
         val response = mailboxRepository.deleteEmail(email, folder, apiContext)
         _emailPostResponse.value = response
         if (response is Response.Success) {
@@ -193,7 +193,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
         _emailReadPostResponse.value = null
     }
 
-    fun batchDelete(selectedEmails: List<IEmail>, folder: IEmailFolder, apiContext: ApiContext) {
+    fun batchDelete(selectedEmails: List<IEmail>, folder: IEmailFolder, apiContext: IApiContext) {
         val trash = foldersResponse.value?.valueOrNull()?.firstOrNull { it.isTrash }
         if (folder.isTrash || trash == null) {
             viewModelScope.launch {
@@ -219,7 +219,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
         _batchDeleteResponse.value = null
     }
 
-    fun batchMove(selectedEmails: List<IEmail>, from: IEmailFolder, to: IEmailFolder, apiContext: ApiContext) {
+    fun batchMove(selectedEmails: List<IEmail>, from: IEmailFolder, to: IEmailFolder, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = selectedEmails.map { mailboxRepository.moveEmail(it, from, to, apiContext) }
             _batchMoveResponse.value = responses

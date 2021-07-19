@@ -1,8 +1,8 @@
 package de.deftk.openww.android.repository
 
 import de.deftk.openww.api.WebWeaverClient
-import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.Feature
+import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.IUser
 import de.deftk.openww.api.model.feature.FilePreviewUrl
@@ -16,23 +16,23 @@ import javax.inject.Inject
 
 class FileStorageRepository @Inject constructor() : AbstractRepository() {
 
-    suspend fun getAllFileStorageQuotas(apiContext: ApiContext) = apiCall {
+    suspend fun getAllFileStorageQuotas(apiContext: IApiContext) = apiCall {
         apiContext.user.getAllFileStorageQuotas(apiContext)
     }
 
-    suspend fun getFiles(provider: IRemoteFileProvider, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
+    suspend fun getFiles(provider: IRemoteFileProvider, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
         provider.getFiles(context = scope.getRequestContext(apiContext))
     }
 
-    suspend fun getFileDownloadUrl(file: IRemoteFile, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
+    suspend fun getFileDownloadUrl(file: IRemoteFile, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
         file.getDownloadUrl(scope.getRequestContext(apiContext))
     }
 
-    suspend fun getFilePreviews(files: List<IRemoteFile>, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
+    suspend fun getFilePreviews(files: List<IRemoteFile>, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
         scope.getFilePreviews(files, apiContext)
     }
 
-    suspend fun deleteFile(file: IRemoteFile, scope: IOperatingScope, apiContext: ApiContext) = apiCall {
+    suspend fun deleteFile(file: IRemoteFile, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
         file.delete(scope.getRequestContext(apiContext))
         file
     }
@@ -49,7 +49,7 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         return ids
     }
 
-    private suspend fun IUser.getAllFileStorageQuotas(apiContext: ApiContext): Map<IOperatingScope, Quota> {
+    private suspend fun IUser.getAllFileStorageQuotas(apiContext: IApiContext): Map<IOperatingScope, Quota> {
         val request = UserApiRequest(getRequestContext(apiContext))
         val requestIds = request.addGetAllFileStorageQuotasRequest(apiContext.user)
         val response = request.fireRequest().toJson().jsonArray
@@ -67,7 +67,7 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         return quotas
     }
 
-    private suspend fun IOperatingScope.getFilePreviews(files: List<IRemoteFile>, apiContext: ApiContext): Map<String, FilePreviewUrl?> {
+    private suspend fun IOperatingScope.getFilePreviews(files: List<IRemoteFile>, apiContext: IApiContext): Map<String, FilePreviewUrl?> {
         val request = OperatingScopeApiRequest(getRequestContext(apiContext))
 
         val requestIds = mutableListOf<Int>()

@@ -3,7 +3,6 @@ package de.deftk.openww.android.viewmodel
 import androidx.lifecycle.*
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
@@ -15,6 +14,7 @@ import de.deftk.openww.android.feature.filestorage.NetworkTransfer
 import de.deftk.openww.android.filter.FileStorageFileFilter
 import de.deftk.openww.android.filter.FileStorageQuotaFilter
 import de.deftk.openww.android.repository.FileStorageRepository
+import de.deftk.openww.api.model.IApiContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -48,13 +48,13 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
     private val _networkTransfers = MutableLiveData<List<NetworkTransfer>>()
     val networkTransfers: LiveData<List<NetworkTransfer>> = _networkTransfers
 
-    fun loadQuotas(apiContext: ApiContext) {
+    fun loadQuotas(apiContext: IApiContext) {
         viewModelScope.launch {
             _quotas.value = fileStorageRepository.getAllFileStorageQuotas(apiContext)
         }
     }
 
-    fun loadFiles(scope: IOperatingScope, directoryId: String?, path: List<String>?, apiContext: ApiContext) {
+    fun loadFiles(scope: IOperatingScope, directoryId: String?, path: List<String>?, apiContext: IApiContext) {
         if (directoryId != null) {
             cacheDirectory(scope, path, directoryId, apiContext)
         } else {
@@ -62,7 +62,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
     }
 
-    private fun loadRootFiles(scope: IOperatingScope, apiContext: ApiContext) {
+    private fun loadRootFiles(scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val files = fileStorageRepository.getFiles(scope, scope, apiContext).smartMap { list -> list.map { FileCacheElement(it) } }
             loadPreviews(files, scope, apiContext)
@@ -70,7 +70,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
     }
 
-    private suspend fun loadPreviews(filesResponse: Response<List<FileCacheElement>>, scope: IOperatingScope, apiContext: ApiContext) {
+    private suspend fun loadPreviews(filesResponse: Response<List<FileCacheElement>>, scope: IOperatingScope, apiContext: IApiContext) {
         if (filesResponse is Response.Success) {
             val previews = fileStorageRepository.getFilePreviews(filesResponse.value.map { it.file }, scope, apiContext)
             if (previews is Response.Success) {
@@ -147,7 +147,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
     }
 
     // hopefully this never breaks
-    private fun cacheDirectory(scope: IOperatingScope, path: List<String>?, directoryId: String, apiContext: ApiContext) {
+    private fun cacheDirectory(scope: IOperatingScope, path: List<String>?, directoryId: String, apiContext: IApiContext) {
         val pathSteps = path?.toMutableList()
         viewModelScope.launch {
             val cachedRootFiles = _files[scope]?.value
@@ -219,7 +219,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
     }
 
-    fun startOpenDownload(workManager: WorkManager, apiContext: ApiContext, file: IRemoteFile, scope: IOperatingScope, destinationUrl: String) {
+    fun startOpenDownload(workManager: WorkManager, apiContext: IApiContext, file: IRemoteFile, scope: IOperatingScope, destinationUrl: String) {
         viewModelScope.launch {
             val response = fileStorageRepository.getFileDownloadUrl(file, scope, apiContext)
             if (response is Response.Success) {
@@ -230,7 +230,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
     }
 
-    fun startSaveDownload(workManager: WorkManager, apiContext: ApiContext, file: IRemoteFile, scope: IOperatingScope, destinationUrl: String) {
+    fun startSaveDownload(workManager: WorkManager, apiContext: IApiContext, file: IRemoteFile, scope: IOperatingScope, destinationUrl: String) {
         viewModelScope.launch {
             val response = fileStorageRepository.getFileDownloadUrl(file, scope, apiContext)
             if (response is Response.Success) {
@@ -253,7 +253,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         _networkTransfers.value = transfers
     }
 
-    fun batchDelete(files: List<IRemoteFile>, parentId: String?, path: List<String>?, scope: IOperatingScope, apiContext: ApiContext) {
+    fun batchDelete(files: List<IRemoteFile>, parentId: String?, path: List<String>?, scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = files.map { fileStorageRepository.deleteFile(it, scope, apiContext) }
             val filesLiveData = getAllProviderLiveData(scope, parentId, path) as MutableLiveData

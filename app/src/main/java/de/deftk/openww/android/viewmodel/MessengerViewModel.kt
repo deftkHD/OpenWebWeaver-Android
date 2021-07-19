@@ -6,7 +6,7 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.filter.MessageFilter
 import de.deftk.openww.android.filter.ScopeFilter
 import de.deftk.openww.android.repository.MessengerRepository
-import de.deftk.openww.api.implementation.ApiContext
+import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IScope
 import de.deftk.openww.api.model.RemoteScope
 import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
@@ -70,20 +70,20 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
         }
     }
 
-    fun loadChats(apiContext: ApiContext) {
+    fun loadChats(apiContext: IApiContext) {
         viewModelScope.launch {
             val response = messengerRepository.getChats(apiContext)
             _usersResponse.value = response
         }
     }
 
-    fun loadHistory(with: String, silent: Boolean, apiContext: ApiContext) {
+    fun loadHistory(with: String, silent: Boolean, apiContext: IApiContext) {
         viewModelScope.launch {
             _messagesResponse.getOrPut(with) { MutableLiveData() }.value = messengerRepository.getHistory(with, apiContext).smartMap { it to silent }
         }
     }
 
-    fun addChat(user: String, apiContext: ApiContext) {
+    fun addChat(user: String, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = messengerRepository.addChat(user, apiContext)
             _addChatResponse.value = response
@@ -93,7 +93,7 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
         }
     }
 
-    fun removeChat(user: String, apiContext: ApiContext) {
+    fun removeChat(user: String, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = messengerRepository.removeChat(user, apiContext)
             _removeChatResponse.value = response
@@ -103,20 +103,20 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
         }
     }
 
-    fun sendMessage(login: String, text: String?, sessionFile: ISessionFile?, apiContext: ApiContext) {
+    fun sendMessage(login: String, text: String?, sessionFile: ISessionFile?, apiContext: IApiContext) {
         viewModelScope.launch {
             _sendMessageResponse.value = messengerRepository.sendMessage(login, sessionFile, text, apiContext)
         }
     }
 
-    fun clearChat(user: String, apiContext: ApiContext) {
+    fun clearChat(user: String, apiContext: IApiContext) {
         viewModelScope.launch {
             messengerRepository.clearChat(user, apiContext)
             _messagesResponse.getOrPut(user) { MutableLiveData() }.value = Response.Success(Pair(emptyList(), false))
         }
     }
 
-    fun batchDelete(selectedTasks: List<IScope>, apiContext: ApiContext) {
+    fun batchDelete(selectedTasks: List<IScope>, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = selectedTasks.map { messengerRepository.removeChat(it.login, apiContext) }
             _batchDeleteResponse.value = responses

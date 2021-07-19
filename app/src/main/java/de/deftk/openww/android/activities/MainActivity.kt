@@ -17,9 +17,6 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.*
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
-import de.deftk.openww.api.implementation.ApiContext
-import de.deftk.openww.api.model.Feature
-import de.deftk.openww.api.model.Permission
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
@@ -29,6 +26,9 @@ import de.deftk.openww.android.feature.LaunchMode
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.Feature
+import de.deftk.openww.api.model.IApiContext
+import de.deftk.openww.api.model.Permission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -151,7 +151,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
         navController.navigate(R.id.chooseAccountDialogFragment)
     }
 
-    private fun getEnabledFeatures(apiContext: ApiContext): List<Feature> {
+    private fun getEnabledFeatures(apiContext: IApiContext): List<Feature> {
         val features = mutableListOf<Feature>()
         val user = apiContext.user
         user.effectiveRights.forEach { permission ->
