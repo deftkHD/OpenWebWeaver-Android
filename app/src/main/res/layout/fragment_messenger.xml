@@ -46,7 +46,7 @@
         android:id="@+id/fab_add_chat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_margin="@dimen/fab_margin"
         android:contentDescription="@string/add_chat"
         android:src="@drawable/ic_add_32"
         android:layout_alignParentBottom="true"
