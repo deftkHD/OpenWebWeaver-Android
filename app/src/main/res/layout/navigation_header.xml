@@ -6,8 +6,7 @@
     android:background="@color/colorAccent"
     android:gravity="bottom"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    android:padding="16dp">
 
     <TextView
         android:id="@+id/header_name"
