@@ -3,10 +3,9 @@ package de.deftk.openww.android.fragments.feature.filestorage
 import android.os.Bundle
 import android.text.format.Formatter
 import android.view.*
-import android.widget.ArrayAdapter
-import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -82,8 +81,7 @@ class ReadFileFragment : Fragment() {
                 binding.fileNotifications.isVisible = file.file.downloadNotification != null
                 binding.fileSelfDownloadNotification.isChecked = file.file.downloadNotification?.me == true
                 binding.fileDownloadNotificationListDescription.isVisible = file.file.downloadNotification?.users?.isNotEmpty() == true
-                binding.fileDownloadNotificationList.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, file.file.downloadNotification?.users?.map { it.alias ?: it.name } ?: emptyList())
-
+                binding.fileDownloadNotificationList.text = file.file.downloadNotification?.users?.joinToString("\n") { it.alias ?: it.name } ?: ""
                 binding.fileDescription.text = file.file.description ?: ""
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())

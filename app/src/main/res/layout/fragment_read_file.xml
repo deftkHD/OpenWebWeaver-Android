@@ -209,15 +209,13 @@
                     android:layout_alignParentStart="true"
                     android:text="@string/file_download_notification_list_description" />
 
-                <ListView
+                <TextView
                     android:id="@+id/file_download_notification_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/file_download_notification_list_description"
                     android:layout_alignParentStart="true"
-                    android:layout_alignParentEnd="true"
-                    android:scrollbars="none" />
-
+                    android:layout_alignParentEnd="true" />
 
             </RelativeLayout>
 
