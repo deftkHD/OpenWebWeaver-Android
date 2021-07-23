@@ -3,21 +3,9 @@
     <string name="btn_login">Anmelden</string>
     <string name="email">E-Mail</string>
     <string name="password">Passwort</string>
-    <string name="version">Version</string>
     <string name="stay_logged_in">Angemeldet bleiben</string>
-    <string name="invalid_credentials">Ungültige Zugangsdaten</string>
     <string name="login_failed">Login fehlgeschlagen</string>
-    <string name="login_success">Erfolgreich angemeldet</string>
-    <string name="token_expired">Sitzung abgelaufen! Bitte melde dich erneut an</string>
-    <string name="open_navigation_drawer">Navigationsmenü öffnen</string>
-    <string name="close_navigation_drawer">Navigationsmenü schließen</string>
-    <string name="new_update">Neues Update verfügbar! Jetzt aktualisieren?</string>
-    <string name="yes">Ja</string>
-    <string name="later">Später</string>
-    <string name="update_failed">Update fehlgeschlagen</string>
-    <string name="try_later">Später wieder versuchen</string>
     <string name="confirm">Okay</string>
-    <string name="files_permission_description">Die folgende Berechtigung wird für die Funktion der Dateiablage benötigt. Bitte bestätigen Sie diese</string>
     <string name="task_completed_desc">Aufgabe erledigt</string>
     <string name="task_not_completed_desc">Aufgabe nicht erledigt</string>
     <string name="until_date">Bis %s</string>
@@ -28,7 +16,6 @@
     <string name="unread">Ungelesen: %d</string>
     <string name="system_notifications">Systemnachrichten</string>
     <string name="file_storage">Dateiablage</string>
-    <string name="unknown_name">Unbekannter Name</string>
     <string name="created_date">Erstellt: %s</string>
     <string name="not_set">&lt;keine Angabe&gt;</string>
     <string name="tasks_done">Erledigt: %d / %d</string>
@@ -40,26 +27,19 @@
     <string name="system_notification_type_unknown">Unbekannter Typ</string>
     <string name="logout">Abmelden</string>
     <string name="settings">Einstellungen</string>
-    <string name="logout_description">Das Abmelden wird dieses Gerät als vertrauenswürdiges Gerät abmelden. Sie müssen sich hiernach erneut mit Benutzernamen und Passwort anmelden. Fortfahren?</string>
-    <string name="no">Nein</string>
     <string name="notifications">Mitteilungen</string>
     <plurals name="notification_count">
         <item quantity="one">%d Mitteilung</item>
         <item quantity="other">%d Mitteilungen</item>
     </plurals>
     <string name="open_website">Website öffnen</string>
-    <string name="file_modified">Geändert: %s</string>
     <string name="directory">Verzeichnis</string>
     <string name="directory_empty">Verzeichnis ist leer</string>
-    <string name="download_started">Download angefangen</string>
-    <string name="download_open_failed">Öffnen der Datei fehlgeschlagen (%s)</string>
     <string name="mail_folder_inbox">Posteingang</string>
     <string name="mail_folder_drafts">Entwürfe</string>
     <string name="mail_folder_sent">Gesendet</string>
     <string name="mail_folder_trash">Papierkorb</string>
     <string name="forum">Forum</string>
-    <string name="request_failed_connection">Anfrage fehlgeschlagen (keine Internetverbindung)</string>
-    <string name="request_failed_timeout">Anfrage fehlgeschlagen (Timeout)</string>
     <string name="request_failed_other">Anfrage fehlgeschlagen (%s)</string>
     <string name="read_mail">E-Mail lesen</string>
     <string name="task_details">Aufgabe ansehen</string>
@@ -95,7 +75,6 @@
     <string name="task_start_before_due">Startzeitpunkt muss vor Endzeitpunkt liegen</string>
     <string name="task_completed">Erledigt</string>
     <string name="system_notification_unauthorized_login_location">Unautorisierter Anmeldeort</string>
-    <string name="no_mail_folders">Keine E-Mail Ordner</string>
     <string name="add_folder">Ordner hinzufügen</string>
     <string name="new_mail">Neue E-Mail</string>
     <string name="create_new_folder">Neuen Ordner erstellen</string>
@@ -132,7 +111,6 @@
     <string name="download">Herunterladen</string>
     <string name="download_finished">Download fertig</string>
     <string name="upload">Hochladen</string>
-    <string name="upload_finished">Datei hochgeladen</string>
     <string name="token_login_link"><a href="www.www.com">Anmelden mit Zugangsschlüssel</a></string>
     <string name="token">Zugangsschlüssel</string>
     <string name="remember_token">Zugangsschlüssel merken</string>
@@ -141,8 +119,6 @@
     <string name="choose_account">Account wählen</string>
     <string name="switch_account">Account wechseln</string>
     <string name="add_account">Account hinzufügen</string>
-    <string name="no_user">Keine Benutzer angemeldet</string>
-    <string name="next">Weiter</string>
     <string name="beta_disclaimer">Beta-Hinweis</string>
     <string name="beta_disclaimer_text">"Hi!\nDanke fürs Benutzen meiner App.\nDies ist allerdings erst die Beta-Version meiner App und kann deshalb noch einige Fehler enthalten.\nFalls etwas bei dir nicht richtig funktioniert oder du Verbesserungsvorschläge hast, kannst du hier ein Issue erstellen: https://github.com/deftkHD/OpenWebWeaver-Android/issues</string>
     <string name="privacy_title">Datenschutzerklärung</string>
@@ -170,7 +146,6 @@
     <string name="add_contact">Kontakt hinzufügen</string>
     <string name="contacts">Kontakte</string>
     <string name="edit_contact">Kontakt bearbeiten</string>
-    <string name="contact_details">Kontakt Details</string>
     <string name="nick_name">Spitzname</string>
     <string name="full_name">Vollständiger Name</string>
     <string name="first_name">Vorname</string>
@@ -296,7 +271,6 @@
     <string name="move_to">Verschieben nach</string>
     <string name="move">Verschieben</string>
     <string name="error_post_not_found">Post \"%s\" konnte nicht gefunden werden</string>
-    <string name="type">Typ</string>
     <string name="smart_search">Smarte Suche</string>
     <string name="from">Von</string>
     <string name="ignore">Ignorieren</string>

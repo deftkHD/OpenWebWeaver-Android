@@ -3,20 +3,8 @@
     <string name="btn_login">Login</string>
     <string name="email">Email</string>
     <string name="password">Password</string>
-    <string name="version">Version</string>
     <string name="stay_logged_in">Stay logged in</string>
-    <string name="invalid_credentials">Invalid credentials</string>
     <string name="login_failed">Login failed</string>
-    <string name="login_success">Logged in successfully</string>
-    <string name="token_expired">Token expired! Please login again</string>
-    <string name="open_navigation_drawer">Open navigation drawer</string>
-    <string name="close_navigation_drawer">Close navigation drawer</string>
-    <string name="new_update">New update available! Update now?</string>
-    <string name="yes">Yes</string>
-    <string name="later">Later</string>
-    <string name="update_failed">Update failed</string>
-    <string name="try_later">Try again later</string>
-    <string name="files_permission_description">The following permission is needed for file storage. Please grant this permission</string>
     <string name="confirm">Okay</string>
     <string name="task_completed_desc">Task completed</string>
     <string name="task_not_completed_desc">Task not completed</string>
@@ -28,7 +16,6 @@
     <string name="unread">Unread: %d</string>
     <string name="system_notifications">System notifications</string>
     <string name="file_storage">File storage</string>
-    <string name="unknown_name">Unknown name</string>
     <string name="created_date">Created: %s</string>
     <string name="not_set">&lt;not set&gt;</string>
     <string name="tasks_done">Done: %d / %d</string>
@@ -40,26 +27,19 @@
     <string name="system_notification_type_unknown">Unknown type</string>
     <string name="logout">Logout</string>
     <string name="settings">Settings</string>
-    <string name="logout_description">Logout will remove this as trusted device from WebWeaver. Proceed?</string>
-    <string name="no">Yesn\'t</string>
     <string name="notifications">Notifications</string>
     <plurals name="notification_count">
         <item quantity="one">%d notification</item>
         <item quantity="other">%d notifications</item>
     </plurals>
     <string name="open_website">Open website</string>
-    <string name="file_modified">Modified: %s</string>
     <string name="directory">Directory</string>
     <string name="directory_empty">Directory is empty</string>
-    <string name="download_started">Download started</string>
-    <string name="download_open_failed">Failed to open download (%s)</string>
     <string name="mail_folder_inbox">Inbox</string>
     <string name="mail_folder_drafts">Drafts</string>
     <string name="mail_folder_sent">Sent</string>
     <string name="mail_folder_trash">Trash</string>
     <string name="forum">Forum</string>
-    <string name="request_failed_connection">Request failed (Bad connection)</string>
-    <string name="request_failed_timeout">Request failed (Timeout)</string>
     <string name="request_failed_other">Request failed (%s)</string>
     <string name="read_mail">Read mail</string>
     <string name="task_details">Task details</string>
@@ -95,7 +75,6 @@
     <string name="task_start_before_due">Start date must be before due date</string>
     <string name="task_completed">Completed</string>
     <string name="system_notification_unauthorized_login_location">Unauthorized login location</string>
-    <string name="no_mail_folders">No email folders</string>
     <string name="add_folder">Add folder</string>
     <string name="new_mail">New mail</string>
     <string name="create_new_folder">Create new folder</string>
@@ -132,7 +111,6 @@
     <string name="download">Download</string>
     <string name="download_finished">Download finished</string>
     <string name="upload">Upload</string>
-    <string name="upload_finished">Upload finished</string>
     <string name="token_login_link"><a href="www.www.com">Token login</a></string>
     <string name="token">Token</string>
     <string name="remember_token">Remember token</string>
@@ -141,8 +119,6 @@
     <string name="choose_account">Choose account</string>
     <string name="switch_account">Switch account</string>
     <string name="add_account">Add account</string>
-    <string name="no_user">No user logged in</string>
-    <string name="next">Next</string>
     <string name="beta_disclaimer">Beta disclaimer</string>
     <string name="beta_disclaimer_text">Hi!\nThanks for using my app.\nSince this is just the beta-version of my app, there might be issues.\nIf you found any or have suggestions for improvement, feel free to create an issue here: https://github.com/deftkHD/OpenWebWeaver-Android/issues</string>
     <string name="privacy_title">Privacy statement</string>
@@ -170,7 +146,6 @@
     <string name="add_contact">Add contact</string>
     <string name="contacts">Contacts</string>
     <string name="edit_contact">Edit contact</string>
-    <string name="contact_details">Contact details</string>
     <string name="nick_name">Nick name</string>
     <string name="full_name">Full name</string>
     <string name="first_name">First name</string>
@@ -298,7 +273,6 @@
     <string name="move_to">Move to</string>
     <string name="move">Move</string>
     <string name="error_post_not_found">Failed to find post \"%s\"</string>
-    <string name="type">Type</string>
     <string name="smart_search">Smart search</string>
     <string name="from">From</string>
     <string name="ignore">Ignore</string>
