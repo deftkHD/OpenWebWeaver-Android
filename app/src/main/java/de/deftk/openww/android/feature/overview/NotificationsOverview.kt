@@ -10,7 +10,7 @@ import de.deftk.openww.android.R
 class NotificationsOverview(val count: Int): AbstractOverviewElement(object : AbstractOverviewAdapter() {
     override fun getView(position: Int, convertView: View?, parent: ViewGroup, context: Context): View {
         val itemView = convertView ?: LayoutInflater.from(context).inflate(R.layout.list_item_overview_notifications, parent, false)
-        itemView.findViewById<TextView>(R.id.overview_notifications_count).text = String.format(context.getString(R.string.notification_count), count)
+        itemView.findViewById<TextView>(R.id.overview_notifications_count).text = context.resources.getQuantityText(R.plurals.notification_count, count)
         return itemView
     }
 })

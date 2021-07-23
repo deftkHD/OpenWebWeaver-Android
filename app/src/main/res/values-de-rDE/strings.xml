@@ -43,7 +43,10 @@
     <string name="logout_description">Das Abmelden wird dieses Gerät als vertrauenswürdiges Gerät abmelden. Sie müssen sich hiernach erneut mit Benutzernamen und Passwort anmelden. Fortfahren?</string>
     <string name="no">Nein</string>
     <string name="notifications">Mitteilungen</string>
-    <string name="notification_count">%d Mitteilungen</string>
+    <plurals name="notification_count">
+        <item quantity="one">%d Mitteilung</item>
+        <item quantity="other">%d Mitteilungen</item>
+    </plurals>
     <string name="open_website">Website öffnen</string>
     <string name="file_modified">Geändert: %s</string>
     <string name="directory">Verzeichnis</string>
@@ -280,8 +283,14 @@
     <string name="file_download_notification_list_description">Benutzer:</string>
     <string name="more">Mehr</string>
     <string name="institution">Institution</string>
-    <string name="group_count">%d Gruppen</string>
-    <string name="selected_count">%d ausgewählt</string>
+    <plurals name="group_count">
+        <item quantity="one">%d Gruppe</item>
+        <item quantity="other">%d Gruppen</item>
+    </plurals>
+    <plurals name="selected_count">
+        <item quantity="one">%d ausgwählt</item>
+        <item quantity="other">%d ausgewählt</item>
+    </plurals>
     <string name="delete_saved_chat">Lokal gespeicherte Nachrichten löschen</string>
     <string name="error_move_failed">Verschieben fehlgeschlagen: %s</string>
     <string name="move_to">Verschieben nach</string>

@@ -43,7 +43,10 @@
     <string name="logout_description">Logout will remove this as trusted device from WebWeaver. Proceed?</string>
     <string name="no">Yesn\'t</string>
     <string name="notifications">Notifications</string>
-    <string name="notification_count">%d notifications</string>
+    <plurals name="notification_count">
+        <item quantity="one">%d notification</item>
+        <item quantity="other">%d notifications</item>
+    </plurals>
     <string name="open_website">Open website</string>
     <string name="file_modified">Modified: %s</string>
     <string name="directory">Directory</string>
@@ -283,8 +286,13 @@
     <string name="file_download_notification_list_description">Users:</string>
     <string name="more">More</string>
     <string name="institution">Institution</string>
-    <string name="group_count">%d groups</string>
-    <string name="selected_count">%d selected</string>
+    <plurals name="group_count">
+        <item quantity="one">%d group</item>
+        <item quantity="other">%d groups</item>
+    </plurals>
+    <plurals name="selected_count">
+        <item quantity="other">%d selected</item>
+    </plurals>
     <string name="delete_saved_chat">Delete locally saved messages</string>
     <string name="error_move_failed">Failed to move objects: %s</string>
     <string name="move_to">Move to</string>
