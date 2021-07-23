@@ -7,7 +7,7 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import de.deftk.openww.android.R
-import de.deftk.openww.android.databinding.RecyclerItemForumCommentBinding
+import de.deftk.openww.android.databinding.ListItemForumCommentBinding
 import de.deftk.openww.android.fragments.feature.forum.ForumPostFragmentDirections
 import de.deftk.openww.android.viewmodel.ForumViewModel
 import de.deftk.openww.api.model.IGroup
@@ -16,7 +16,7 @@ import de.deftk.openww.api.model.feature.forum.IForumPost
 class ForumPostCommentAdapter(private val group: IGroup, private val path: Array<String>, private val forumViewModel: ForumViewModel, private val navController: NavController): ListAdapter<IForumPost, ForumPostCommentAdapter.CommentViewHolder>(ForumPostDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
-        val binding = RecyclerItemForumCommentBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ListItemForumCommentBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return CommentViewHolder(binding)
     }
 
@@ -30,7 +30,7 @@ class ForumPostCommentAdapter(private val group: IGroup, private val path: Array
         return super.getItem(position)
     }
 
-    class CommentViewHolder(val binding: RecyclerItemForumCommentBinding): RecyclerView.ViewHolder(binding.root) {
+    class CommentViewHolder(val binding: ListItemForumCommentBinding): RecyclerView.ViewHolder(binding.root) {
 
         init {
             binding.setMenuClickListener {

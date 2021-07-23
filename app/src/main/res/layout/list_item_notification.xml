@@ -31,7 +31,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@{selected ? @color/colorAccent : @android:color/transparent}"
-        android:padding="16dp">
+        android:padding="@dimen/list_item_padding">
 
         <TextView
             android:id="@+id/notification_title"

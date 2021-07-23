@@ -36,7 +36,7 @@
         android:id="@+id/forum_comment_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="@dimen/list_item_padding">
 
         <ImageView
             android:id="@+id/forum_comment_image"

@@ -107,7 +107,7 @@
                     android:layout_below="@id/forum_post_comment_text"
                     android:padding="4dp"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/recycler_item_forum_comment" />
+                    tools:listitem="@layout/list_item_forum_comment" />
 
             </RelativeLayout>
 
