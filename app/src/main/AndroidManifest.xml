@@ -62,7 +62,7 @@
         <service
             android:name="de.deftk.openww.android.auth.AuthenticatorService"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
