@@ -96,6 +96,6 @@
         android:layout_alignParentBottom="true"
         android:layout_margin="@dimen/fab_margin"
         android:contentDescription="@string/send_mail"
-        android:src="@drawable/ic_send_32" />
+        android:src="@drawable/ic_send_24" />
 
 </RelativeLayout>

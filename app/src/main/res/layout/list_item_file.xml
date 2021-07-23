@@ -52,7 +52,7 @@
             android:maxHeight="32dp"
             android:minWidth="32dp"
             android:minHeight="32dp"
-            android:src="@drawable/ic_folder_24"
+            android:src="@drawable/ic_folder_32"
             app:filePreview="@{file}"
             tools:ignore="ContentDescription" />
 

@@ -49,7 +49,7 @@
         android:layout_alignParentBottom="true"
         android:layout_margin="@dimen/fab_margin"
         android:contentDescription="@string/add_contact"
-        android:src="@drawable/ic_add_32"
+        android:src="@drawable/ic_add_24"
         android:visibility="gone" />
 
 </RelativeLayout>
