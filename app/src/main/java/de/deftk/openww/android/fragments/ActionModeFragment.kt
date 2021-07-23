@@ -26,7 +26,7 @@ abstract class ActionModeFragment<T, VH : ActionModeAdapter.ActionModeViewHolder
     }
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-        mode.title = resources.getQuantityString(R.plurals.selected_count, adapter.selectedItems.size)
+        mode.title = resources.getQuantityString(R.plurals.selected_count, adapter.selectedItems.size).format(adapter.selectedItems.size)
         return true
     }
 
