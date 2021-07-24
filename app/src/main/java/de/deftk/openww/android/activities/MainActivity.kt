@@ -175,13 +175,19 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        if (launchMode == LaunchMode.DEFAULT) {
-            return searchProvider?.onSearchBackPressed() == true || navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-        } else if (launchMode == LaunchMode.EMAIL) {
-            finish()
-            return true
+        return when (launchMode) {
+            LaunchMode.DEFAULT -> {
+                searchProvider?.onSearchBackPressed() == true || navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+            }
+            LaunchMode.EMAIL -> {
+                finish()
+                true
+            }
+            LaunchMode.AUTHENTICATOR -> {
+                finish()
+                true
+            }
         }
-        return super.onSupportNavigateUp()
     }
 
     override fun onBackPressed() {
@@ -199,8 +205,9 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
             }
         } else if (launchMode == LaunchMode.EMAIL) {
             finish()
+        } else if (launchMode == LaunchMode.AUTHENTICATOR) {
+            finish()
         }
-
     }
 
 }
