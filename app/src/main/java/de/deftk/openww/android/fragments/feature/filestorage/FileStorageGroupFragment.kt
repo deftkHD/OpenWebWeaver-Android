@@ -40,7 +40,7 @@ class FileStorageGroupFragment : Fragment(), ISearchProvider {
                 adapter.submitList(response.value.toList())
                 binding.fileEmpty.isVisible = response.value.isEmpty()
             } else if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())
+                Reporter.reportException(R.string.error_get_quotas_failed, response.exception, requireContext())
             }
             binding.progressFileStorage.isVisible = false
             binding.fileStorageSwipeRefresh.isRefreshing = false

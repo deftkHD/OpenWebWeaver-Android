@@ -135,7 +135,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         baseContext,
-                        getString(R.string.request_failed_other).format(e.message ?: e),
+                        getString(R.string.error_get_login_link_failed).format(e.message ?: e),
                         Toast.LENGTH_LONG
                     ).show()
                 }

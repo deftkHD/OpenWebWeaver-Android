@@ -40,7 +40,6 @@
     <string name="mail_folder_sent">Gesendet</string>
     <string name="mail_folder_trash">Papierkorb</string>
     <string name="forum">Forum</string>
-    <string name="request_failed_other">Anfrage fehlgeschlagen (%s)</string>
     <string name="read_mail">E-Mail lesen</string>
     <string name="task_details">Aufgabe ansehen</string>
     <string name="see_post">Post ansehen</string>
@@ -279,4 +278,5 @@
     <string name="file_indicator_new">Datei wurde kürzlich erstellt</string>
     <string name="error_invalid_internal_reference">Ungültige Referenz</string>
     <string name="not_implemented">Noch nicht fertiggestellt</string>
+    <string name="error_get_login_link_failed">Anfragen des Login-Links fehlgeschlagen: %s</string>
 </resources>

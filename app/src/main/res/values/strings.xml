@@ -40,7 +40,6 @@
     <string name="mail_folder_sent">Sent</string>
     <string name="mail_folder_trash">Trash</string>
     <string name="forum">Forum</string>
-    <string name="request_failed_other">Request failed (%s)</string>
     <string name="read_mail">Read mail</string>
     <string name="task_details">Task details</string>
     <string name="see_post">See post</string>
@@ -281,5 +280,6 @@
     <string name="file_indicator_new">File was recently created</string>
     <string name="error_invalid_internal_reference">Invalid internal reference</string>
     <string name="not_implemented">Not yet implemented</string>
+    <string name="error_get_login_link_failed">Failed to get login link: %s</string>
 
 </resources>
