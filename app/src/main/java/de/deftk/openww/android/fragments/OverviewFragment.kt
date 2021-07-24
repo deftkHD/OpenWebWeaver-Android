@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.OverviewAdapter
 import de.deftk.openww.android.api.Response
@@ -29,6 +30,7 @@ class OverviewFragment: Fragment() {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val navController by lazy { findNavController() }
+    private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(requireContext()) }
 
     private lateinit var binding: FragmentOverviewBinding
 
@@ -39,7 +41,7 @@ class OverviewFragment: Fragment() {
         binding.overviewSwipeRefresh.setOnRefreshListener {
             binding.overviewList.adapter = null
             userViewModel.apiContext.value?.also { apiContext ->
-                userViewModel.loadOverview(apiContext)
+                userViewModel.loadOverview(getOverviewFeatures(), apiContext)
             }
         }
         binding.overviewList.setOnItemClickListener { _, _, position, _ ->
@@ -62,13 +64,17 @@ class OverviewFragment: Fragment() {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             binding.overviewSwipeRefresh.isEnabled = apiContext != null
             if (apiContext != null) {
-                userViewModel.loadOverview(apiContext)
+                userViewModel.loadOverview(getOverviewFeatures(), apiContext)
             } else {
                 binding.progressOverview.isVisible = true
                 binding.overviewList.adapter = null
             }
         }
         return binding.root
+    }
+
+    private fun getOverviewFeatures(): List<AppFeature> {
+        return AppFeature.values().filter { it.overviewBuilder != null && (it.preferenceName == null || preferences.getBoolean(it.preferenceName, false)) }
     }
 
 }

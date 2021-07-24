@@ -279,5 +279,7 @@
     <string name="error_get_login_link_failed">Failed to get login link: %s</string>
     <string name="notification_channel_network_progress_name">Network process</string>
     <string name="notification_channel_network_progress_description">Progress of ingoing and outgoing network transfers</string>
+    <string name="customize_overview">Customize overview</string>
+    <string name="customize_overview_description">Show or hide certain elements</string>
 
 </resources>

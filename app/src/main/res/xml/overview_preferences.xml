@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreference
+        app:defaultValue="true"
+        app:key="overview_show_tasks"
+        app:title="@string/tasks" />
+
+    <SwitchPreference
+        app:defaultValue="true"
+        app:key="overview_show_mail"
+        app:title="@string/mail" />
+
+    <SwitchPreference
+        app:defaultValue="true"
+        app:key="overview_show_filestorage"
+        app:title="@string/file_storage" />
+
+    <SwitchPreference
+        app:defaultValue="true"
+        app:key="overview_show_notifications"
+        app:title="@string/notifications" />
+
+    <SwitchPreference
+        app:defaultValue="true"
+        app:key="overview_show_groups"
+        app:title="@string/institution" />
+
+    <SwitchPreference
+        app:defaultValue="true"
+        app:key="overview_show_systemnotifications"
+        app:title="@string/system_notifications" />
+
+</PreferenceScreen>

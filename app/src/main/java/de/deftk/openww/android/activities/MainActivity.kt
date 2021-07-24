@@ -15,6 +15,8 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.*
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
 import de.deftk.openww.android.R
@@ -35,7 +37,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
+class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
@@ -114,6 +116,12 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner {
                 Reporter.reportException(R.string.error_logout_failed, response.exception, this)
             }
         }
+    }
+
+    override fun onPreferenceStartFragment(caller: PreferenceFragmentCompat, pref: Preference): Boolean {
+        val id = runCatching { pref.fragment.toInt() }.getOrNull() ?: return false // not sure if this is the intended way
+        navController.navigate(id, pref.extras)
+        return true
     }
 
     private fun openWebsite() {

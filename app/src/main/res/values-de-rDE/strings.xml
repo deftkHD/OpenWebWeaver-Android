@@ -277,4 +277,6 @@
     <string name="error_get_login_link_failed">Anfragen des Login-Links fehlgeschlagen: %s</string>
     <string name="notification_channel_network_progress_name">Netwerk Fortschritt</string>
     <string name="notification_channel_network_progress_description">Fortschritt von eingehenden und ausgehenden Netwerktransfers</string>
+    <string name="customize_overview">Übersicht anpassen</string>
+    <string name="customize_overview_description">Bestimmte Elemente anzeigen oder verstecken</string>
 </resources>

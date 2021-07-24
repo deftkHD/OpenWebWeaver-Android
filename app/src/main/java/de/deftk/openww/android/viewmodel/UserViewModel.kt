@@ -8,6 +8,7 @@ import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
+import de.deftk.openww.android.feature.AppFeature
 import de.deftk.openww.android.feature.overview.AbstractOverviewElement
 import de.deftk.openww.android.filter.SystemNotificationFilter
 import de.deftk.openww.android.repository.UserRepository
@@ -150,9 +151,9 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
         }, ApiContext::class.java)
     }
 
-    fun loadOverview(apiContext: IApiContext) {
+    fun loadOverview(features: List<AppFeature>, apiContext: IApiContext) {
         viewModelScope.launch {
-            val resource = userRepository.getOverviewElements(apiContext)
+            val resource = userRepository.getOverviewElements(features, apiContext)
             _overviewResponse.value = resource
         }
     }

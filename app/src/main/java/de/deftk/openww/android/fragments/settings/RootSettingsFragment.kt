@@ -1,11 +1,11 @@
-package de.deftk.openww.android.fragments
+package de.deftk.openww.android.fragments.settings
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceFragmentCompat
 import de.deftk.openww.android.R
 
-class SettingsFragment : PreferenceFragmentCompat() {
+class RootSettingsFragment : PreferenceFragmentCompat() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

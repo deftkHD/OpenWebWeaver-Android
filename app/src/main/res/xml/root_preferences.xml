@@ -2,30 +2,36 @@
 
     <PreferenceCategory app:title="@string/general">
 
+        <Preference
+            app:fragment="2131231505"
+            app:key="customize_overview_screen"
+            app:summary="@string/customize_overview_description"
+            app:title="@string/customize_overview" />
+
         <SwitchPreference
+            app:defaultValue="false"
             app:key="open_link_external"
-            app:title="@string/setting_open_link_external"
-            app:defaultValue="false" />
+            app:title="@string/setting_open_link_external" />
 
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/file_storage">
 
         <SwitchPreference
+            app:defaultValue="true"
             app:key="file_storage_correct_file_names"
             app:summary="@string/setting_correct_file_storage_file_names_description"
-            app:title="@string/setting_correct_file_storage_file_names"
-            app:defaultValue="true" />
+            app:title="@string/setting_correct_file_storage_file_names" />
 
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/file_storage_integration">
 
         <SwitchPreference
+            app:defaultValue="false"
             app:key="file_storage_integration_enable_preview_images"
             app:summary="@string/setting_enable_preview_images_description"
-            app:title="@string/setting_enable_preview_images"
-            app:defaultValue="false" />
+            app:title="@string/setting_enable_preview_images" />
 
     </PreferenceCategory>
 

@@ -42,11 +42,11 @@ class UserRepository @Inject constructor() : AbstractRepository() {
         )
     }
 
-    suspend fun getOverviewElements(apiContext: IApiContext) = apiCall {
+    suspend fun getOverviewElements(features: List<AppFeature>, apiContext: IApiContext) = apiCall {
         val elements = mutableListOf<AbstractOverviewElement>()
         val request = UserApiRequest(apiContext.user.getRequestContext(apiContext))
         val idMap = mutableMapOf<AppFeature, List<Int>>()
-        AppFeature.values().forEach { feature ->
+        features.forEach { feature ->
             if (feature.overviewBuilder != null) {
                 idMap[feature] = feature.overviewBuilder.appendRequests(request, apiContext.user)
             }

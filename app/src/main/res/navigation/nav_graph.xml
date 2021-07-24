@@ -119,8 +119,12 @@
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"
-        android:name="de.deftk.openww.android.fragments.SettingsFragment"
-        android:label="@string/settings" />
+        android:name="de.deftk.openww.android.fragments.settings.RootSettingsFragment"
+        android:label="@string/settings" >
+        <action
+            android:id="@+id/action_settingsFragment_to_overviewSettingsFragment"
+            app:destination="@id/overviewSettingsFragment" />
+    </fragment>
     <fragment
         android:id="@+id/systemNotificationsFragment"
         android:name="de.deftk.openww.android.fragments.feature.systemnotification.SystemNotificationsFragment"
@@ -532,4 +536,8 @@
             android:id="@+id/action_privacyDialogFragment_to_launchFragment"
             app:destination="@id/launchFragment" />
     </dialog>
+    <fragment
+        android:id="@+id/overviewSettingsFragment"
+        android:name="de.deftk.openww.android.fragments.settings.OverviewSettingsFragment"
+        android:label="@string/customize_overview" />
 </navigation>
