@@ -217,6 +217,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         inflater.inflate(R.menu.list_filter_menu, menu)
+        inflater.inflate(R.menu.mail_list_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(mailboxViewModel.mailFilter.value?.smartSearchCriteria?.value, false) // restore recent search
