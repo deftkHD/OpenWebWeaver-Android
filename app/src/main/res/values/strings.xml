@@ -124,10 +124,6 @@
     <string name="agree">Agree</string>
     <string name="decline">Decline</string>
     <string name="privacy_short">The complete data privacy statement can be accessed here: https://github.com/deftkHD/OpenWebWeaver-Android/blob/master/PRIVACY_DE.md\n\nIn short:\nThe provider of this app doesn\'t collect data, but can\'t guarantee how data sent to the provider is handled by the provider.\nFor more information please refer to the data privacy statement of your provider.</string>
-    <string name="notification_channel_upload_name">Upload progress</string>
-    <string name="notification_channel_upload_description">Progress indicator for uploads</string>
-    <string name="notification_channel_download_name">Download progress</string>
-    <string name="notification_channel_download_description">Progress indicator for downloads</string>
     <string name="notification_upload_title">Uploading</string>
     <string name="notification_upload_content">Uploading file %s…</string>
     <string name="notification_download_title">Downloading</string>
@@ -281,5 +277,7 @@
     <string name="error_invalid_internal_reference">Invalid internal reference</string>
     <string name="not_implemented">Not yet implemented</string>
     <string name="error_get_login_link_failed">Failed to get login link: %s</string>
+    <string name="notification_channel_network_progress_name">Network process</string>
+    <string name="notification_channel_network_progress_description">Progress of ingoing and outgoing network transfers</string>
 
 </resources>

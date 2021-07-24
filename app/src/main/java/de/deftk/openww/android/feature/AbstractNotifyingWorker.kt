@@ -34,14 +34,14 @@ abstract class AbstractNotifyingWorker(
     }
 
     protected fun createForegroundInfo(fileName: String): ForegroundInfo {
-        //TODO notification groups
-
-        // create notification channel
+        // create notification channel if needed
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(notificationChannelId, applicationContext.getString(
-                    R.string.notification_channel_upload_name
-                ), NotificationManager.IMPORTANCE_LOW)
-            channel.description = applicationContext.getString(R.string.notification_channel_upload_description)
+            val channel = NotificationChannel(
+                notificationChannelId,
+                applicationContext.getString(R.string.notification_channel_network_progress_name),
+                NotificationManager.IMPORTANCE_LOW
+            )
+            channel.description = applicationContext.getString(R.string.notification_channel_network_progress_description)
             notificationManager.createNotificationChannel(channel)
         }
 
