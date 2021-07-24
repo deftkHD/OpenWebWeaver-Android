@@ -30,11 +30,11 @@ class PrivacyDialogFragment : DialogFragment() {
         val layout = LinearLayout(requireContext())
         layout.addView(textView, params)
         builder.setView(layout)
-        builder.setPositiveButton(R.string.confirm) { _, _ ->
+        builder.setPositiveButton(R.string.agree) { _, _ ->
             preferences.edit().putBoolean(PRIVACY_STATEMENT_SHOWN_KEY, true).apply()
             navController.navigate(PrivacyDialogFragmentDirections.actionPrivacyDialogFragmentToLaunchFragment())
         }
-        builder.setNegativeButton(R.string.cancel) { _, _ ->
+        builder.setNegativeButton(R.string.decline) { _, _ ->
             requireActivity().finish()
         }
         return builder.create()
