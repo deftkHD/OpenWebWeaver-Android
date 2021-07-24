@@ -10,7 +10,7 @@ import de.deftk.openww.android.R
 class GroupsOverview(val groupCount: Int) : AbstractOverviewElement(object : AbstractOverviewAdapter() {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup, context: Context): View {
-        val itemView = convertView ?: LayoutInflater.from(context).inflate(R.layout.list_item_overview_groups, parent, false)
+        val itemView = LayoutInflater.from(context).inflate(R.layout.list_item_overview_groups, parent, false)
         itemView.findViewById<TextView>(R.id.overview_groups_count).text = context.resources.getQuantityString(R.plurals.group_count, groupCount).format(groupCount)
         return itemView
     }
