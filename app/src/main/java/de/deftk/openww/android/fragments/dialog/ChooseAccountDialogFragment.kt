@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.AccountAdapter
 import de.deftk.openww.android.api.Response
-import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
@@ -38,7 +37,7 @@ class ChooseAccountDialogFragment : DialogFragment() {
         val builder = AlertDialog.Builder(requireContext())
         builder.setTitle(R.string.choose_account)
         builder.setIcon(R.drawable.ic_account_circle_24)
-        val accountAdapter = AccountAdapter(requireContext(), accounts.toList())
+        val accountAdapter = AccountAdapter(requireContext(), accounts.toList(), userViewModel)
         builder.setAdapter(accountAdapter) { _, which ->
             actionPerformed = true
             val account = accounts[which]
