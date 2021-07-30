@@ -3,6 +3,7 @@ package de.deftk.openww.android.fragments.feature.tasks
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -18,6 +19,7 @@ import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.TasksViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.tasks.ITask
@@ -39,11 +41,7 @@ class ReadTaskFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadTaskBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        setHasOptionsMenu(true)
-        return binding.root
-    }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         tasksViewModel.allTasksResponse.observe(viewLifecycleOwner) { response ->
             if (deleted)
                 return@observe
@@ -69,10 +67,6 @@ class ReadTaskFragment : Fragment() {
                 binding.taskDetail.transformationMethod = CustomTabTransformationMethod(binding.taskDetail.autoLinkMask)
 
                 binding.fabEditTask.isVisible = scope.effectiveRights.contains(Permission.TASKS_WRITE) || scope.effectiveRights.contains(Permission.TASKS_ADMIN)
-                binding.fabEditTask.setOnClickListener {
-                    val action = ReadTaskFragmentDirections.actionReadTaskFragmentToEditTaskFragment(task.id, scope.login, getString(R.string.edit_task))
-                    navController.navigate(action)
-                }
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
                 navController.popBackStack()
@@ -90,11 +84,31 @@ class ReadTaskFragment : Fragment() {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
+        binding.fabEditTask.setOnClickListener {
+            val action = ReadTaskFragmentDirections.actionReadTaskFragmentToEditTaskFragment(task.id, scope.login, getString(R.string.edit_task))
+            navController.navigate(action)
+        }
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            if (apiContext == null) {
-                navController.popBackStack(R.id.tasksFragment, false)
+            if (apiContext != null) {
+                if (apiContext.user.getGroups().none { Feature.TASKS.isAvailable(it.effectiveRights) }) {
+                    Toast.makeText(requireContext(), R.string.feature_not_available, Toast.LENGTH_LONG).show()
+                    navController.popBackStack()
+                    return@observe
+                }
+                tasksViewModel.loadTasks(true, apiContext)
+            } else {
+                binding.taskTitle.text = ""
+                binding.taskAuthor.text = ""
+                binding.taskCreated.text = ""
+                binding.taskDetail.text = ""
+                binding.taskDue.text = ""
+                binding.taskGroup.text = ""
+                binding.fabEditTask.isVisible = false
             }
         }
+
+        setHasOptionsMenu(true)
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

@@ -103,7 +103,6 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
                     item?.isVisible = enabledFeatures.contains(appFeature.feature)
                 }
                 binding.navView.menu.findItem(R.id.overviewFragment).isVisible = true // seems like the last "enabled" menu item gets selected, so the overview has to be selected at app start
-                navController.navigate(R.id.overviewFragment)
             } else {
                 binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
             }
@@ -125,6 +124,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
     }
 
     private fun openWebsite() {
+        //TODO move to viewmodel
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val user = userViewModel.apiContext.value?.user ?: return@launch

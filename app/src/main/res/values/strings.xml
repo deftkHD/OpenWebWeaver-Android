@@ -281,5 +281,6 @@
     <string name="notification_channel_network_progress_description">Progress of ingoing and outgoing network transfers</string>
     <string name="customize_overview">Customize overview</string>
     <string name="customize_overview_description">Show or hide certain elements</string>
+    <string name="feature_not_available">Feature not available</string>
 
 </resources>

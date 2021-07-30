@@ -23,6 +23,7 @@ import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.GroupViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IGroup
 
 class MembersFragment : Fragment(), ISearchProvider {
@@ -33,46 +34,56 @@ class MembersFragment : Fragment(), ISearchProvider {
     private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentMembersBinding
-    private lateinit var group: IGroup
     private lateinit var searchView: SearchView
+
+    private var group: IGroup? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMembersBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         (requireActivity() as? MainActivity?)?.searchProvider = this
-        val foundGroup = userViewModel.apiContext.value?.user?.getGroups()?.firstOrNull { it.login == args.groupId }
-        if (foundGroup == null) {
-            Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
-            navController.popBackStack()
-            return binding.root
-        }
-        group = foundGroup
 
         val adapter = MemberAdapter()
         binding.memberList.adapter = adapter
         binding.memberList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        groupViewModel.getFilteredGroupMembers(group).observe(viewLifecycleOwner) { response ->
-            if (response is Response.Success) {
-                adapter.submitList(response.value)
-                binding.membersEmpty.isVisible = response.value.isEmpty()
-            } else if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_get_members_failed, response.exception, requireContext())
-            }
-            binding.progressMembers.isVisible = false
-            binding.membersSwipeRefresh.isRefreshing = false
-        }
 
         binding.membersSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
-                groupViewModel.loadMembers(group, false, apiContext)
+                groupViewModel.loadMembers(group!!, false, apiContext)
             }
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                groupViewModel.loadMembers(group, false, apiContext)
+                val refreshedGroup = apiContext.user.getGroups().firstOrNull { it.login == args.groupId }
+                if (refreshedGroup == null) {
+                    Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
+                    navController.popBackStack()
+                    return@observe
+                }
+                if (!Feature.MEMBERS.isAvailable(refreshedGroup.effectiveRights)) {
+                    Reporter.reportException(R.string.feature_not_available, args.groupId, requireContext())
+                    navController.popBackStack()
+                    return@observe
+                }
+                if (group != null)
+                    groupViewModel.getFilteredGroupMembers(group!!).removeObservers(viewLifecycleOwner)
+                group = refreshedGroup
+                groupViewModel.getFilteredGroupMembers(group!!).observe(viewLifecycleOwner) { response ->
+                    if (response is Response.Success) {
+                        adapter.submitList(response.value)
+                        binding.membersEmpty.isVisible = response.value.isEmpty()
+                    } else if (response is Response.Failure) {
+                        Reporter.reportException(R.string.error_get_members_failed, response.exception, requireContext())
+                    }
+                    binding.progressMembers.isVisible = false
+                    binding.membersSwipeRefresh.isRefreshing = false
+                }
+                groupViewModel.loadMembers(group!!, false, apiContext)
             } else {
-                navController.popBackStack(R.id.membersGroupFragment, false)
+                adapter.submitList(emptyList())
+                binding.membersEmpty.isVisible = false
+                binding.progressMembers.isVisible = true
             }
         }
 

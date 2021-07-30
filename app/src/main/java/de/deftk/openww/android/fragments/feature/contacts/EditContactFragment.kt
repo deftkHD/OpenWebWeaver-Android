@@ -28,6 +28,7 @@ import de.deftk.openww.android.viewmodel.ContactsViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.implementation.feature.contacts.Contact
 import de.deftk.openww.api.model.IOperatingScope
+import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.RemoteScope
 import de.deftk.openww.api.model.feature.Modification
 import de.deftk.openww.api.model.feature.contacts.IContact
@@ -43,8 +44,8 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
     private val contact = MutableLiveData<IContact>()
 
     private lateinit var binding: FragmentEditContactBinding
-    private lateinit var scope: IOperatingScope
 
+    private var scope: IOperatingScope? = null
     private var editMode = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -62,27 +63,41 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
                     navController.popBackStack()
                     return@observe
                 }
-                scope = foundScope
-                if (args.contactId != null) {
-                    // edit existing
-                    editMode = true
-
-                    val foundContact = contactViewModel.getFilteredContactsLiveData(scope).value?.valueOrNull()?.firstOrNull { it.id.toString() == args.contactId }
-                    if (foundContact == null) {
-                        Reporter.reportException(R.string.error_contact_not_found, args.contactId!!, requireContext())
-                        navController.popBackStack()
-                        return@observe
-                    }
-                    contact.value = foundContact!!
-                } else {
-                    // add new
-                    editMode = false
-                    val modification = Modification(RemoteScope("", "", -1, false, null), Date())
-                    contact.value = Contact(-1, _modified = modification, created = modification)
+                if (!foundScope.effectiveRights.contains(Permission.ADDRESSES_WRITE) && !foundScope.effectiveRights.contains(Permission.ADDRESSES_ADMIN)) {
+                    Reporter.reportException(R.string.feature_not_available, args.scope, requireContext())
+                    navController.popBackStack()
+                    return@observe
                 }
+                if (scope != null)
+                    contactViewModel.getFilteredContactsLiveData(scope!!).removeObservers(viewLifecycleOwner)
+                scope = foundScope
+                contactViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) { response ->
+                    if (response is Response.Success) {
+                        if (args.contactId != null) {
+                            // edit existing
+                            editMode = true
 
+                            val foundContact = contactViewModel.getFilteredContactsLiveData(scope!!).value?.valueOrNull()?.firstOrNull { it.id.toString() == args.contactId }
+                            if (foundContact == null) {
+                                Reporter.reportException(R.string.error_contact_not_found, args.contactId!!, requireContext())
+                                navController.popBackStack()
+                                return@observe
+                            }
+                            contact.value = foundContact!!
+                        } else {
+                            // add new
+                            editMode = false
+                            val modification = Modification(RemoteScope("", "", -1, false, null), Date())
+                            contact.value = Contact(-1, _modified = modification, created = modification)
+                        }
+                    } else if (response is Response.Failure) {
+                        Reporter.reportException(R.string.error_get_members_failed, response.exception, requireContext())
+                    }
+                }
             } else {
-                navController.popBackStack(R.id.contactsGroupFragment, false)
+                binding.contactDetailsEmpty.isVisible = false
+                adapter.submitList(emptyList())
+                binding.fabAddContactDetail.isVisible = false
             }
         }
 
@@ -227,9 +242,9 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
             val apiContext = userViewModel.apiContext.value ?: return false
 
             if (editMode) {
-                contactViewModel.editContact(contact.value!!, scope, apiContext)
+                contactViewModel.editContact(contact.value!!, scope!!, apiContext)
             } else {
-                contactViewModel.addContact(contact.value!!, scope, apiContext)
+                contactViewModel.addContact(contact.value!!, scope!!, apiContext)
             }
 
             return true

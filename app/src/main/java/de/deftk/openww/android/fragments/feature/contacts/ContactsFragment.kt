@@ -23,6 +23,7 @@ import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ContactsViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.contacts.IContact
@@ -35,33 +36,14 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
     private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentContactsBinding
-    private lateinit var scope: IOperatingScope
     private lateinit var searchView: SearchView
+
+    private var scope: IOperatingScope? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentContactsBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         (requireActivity() as? MainActivity?)?.searchProvider = this
-        val foundScope = userViewModel.apiContext.value?.findOperatingScope(args.login) //TODO update scope with apiContext observer & pop if scope == null
-        if (foundScope == null) {
-            Reporter.reportException(R.string.error_scope_not_found, args.login, requireContext())
-            navController.popBackStack()
-            return binding.root
-        }
-        scope = foundScope
-
-        binding.contactList.adapter = adapter
-        binding.contactList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        contactsViewModel.getFilteredContactsLiveData(scope).observe(viewLifecycleOwner) { response ->
-            if (response is Response.Success) {
-                adapter.submitList(response.value)
-                binding.contactsEmpty.isVisible = response.value.isEmpty()
-            } else if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_get_contacts_failed, response.exception, requireContext())
-            }
-            binding.progressContacts.isVisible = false
-            binding.contactsSwipeRefresh.isRefreshing = false
-        }
 
         contactsViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
@@ -78,20 +60,55 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
 
         binding.contactsSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
-                contactsViewModel.loadContacts(scope, apiContext)
+                contactsViewModel.loadContacts(scope!!, apiContext)
             }
         }
 
         binding.fabAddContact.setOnClickListener {
-            navController.navigate(ContactsFragmentDirections.actionContactsFragmentToEditContactFragment(scope.login, null, getString(R.string.add_contact)))
+            navController.navigate(ContactsFragmentDirections.actionContactsFragmentToEditContactFragment(scope!!.login, null, getString(R.string.add_contact)))
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                contactsViewModel.loadContacts(scope, apiContext)
-                binding.fabAddContact.isVisible = scope.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope.effectiveRights.contains(Permission.ADDRESSES_ADMIN)
+                val foundScope = userViewModel.apiContext.value?.findOperatingScope(args.login)
+                if (foundScope == null) {
+                    Reporter.reportException(R.string.error_scope_not_found, args.login, requireContext())
+                    navController.popBackStack()
+                    return@observe
+                }
+                if (!Feature.ADDRESSES.isAvailable(foundScope.effectiveRights)) {
+                    Reporter.reportException(R.string.feature_not_available, args.login, requireContext())
+                    navController.popBackStack()
+                    return@observe
+                }
+                if (scope != null) {
+                    contactsViewModel.getFilteredContactsLiveData(scope!!).removeObservers(viewLifecycleOwner)
+                    scope = foundScope
+                    (adapter as ContactAdapter).scope = scope!!
+                } else {
+                    scope = foundScope
+                    binding.contactList.adapter = adapter
+                    binding.contactList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+                }
+
+                contactsViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) { response ->
+                    if (response is Response.Success) {
+                        adapter.submitList(response.value)
+                        binding.contactsEmpty.isVisible = response.value.isEmpty()
+                    } else if (response is Response.Failure) {
+                        Reporter.reportException(R.string.error_get_contacts_failed, response.exception, requireContext())
+                    }
+                    binding.progressContacts.isVisible = false
+                    binding.contactsSwipeRefresh.isRefreshing = false
+                }
+
+                contactsViewModel.loadContacts(scope!!, apiContext)
+                binding.fabAddContact.isVisible = scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN)
             } else {
-                navController.popBackStack(R.id.contactsGroupFragment, false)
+                binding.contactsEmpty.isVisible = false
+                binding.progressContacts.isVisible = true
+                binding.fabAddContact.isVisible = false
+                adapter.submitList(emptyList())
             }
         }
 
@@ -101,7 +118,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
     }
 
     override fun createAdapter(): ActionModeAdapter<IContact, ContactAdapter.ContactViewHolder> {
-        return ContactAdapter(scope, this)
+        return ContactAdapter(scope!!, this)
     }
 
     override fun onItemClick(view: View, viewHolder: ContactAdapter.ContactViewHolder) {
@@ -162,7 +179,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
-            if (scope.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope.effectiveRights.contains(Permission.ADDRESSES_ADMIN)) {
+            if (scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN)) {
                 requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
             }
         }
@@ -174,14 +191,14 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
         return when (item.itemId) {
             R.id.menu_item_edit -> {
                 val contact = adapter.getItem(menuInfo.position)
-                val action = ContactsFragmentDirections.actionContactsFragmentToEditContactFragment(scope.login, contact.id.toString(), getString(R.string.edit_contact))
+                val action = ContactsFragmentDirections.actionContactsFragmentToEditContactFragment(scope!!.login, contact.id.toString(), getString(R.string.edit_contact))
                 navController.navigate(action)
                 true
             }
             R.id.menu_item_delete -> {
                 val contact = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
-                contactsViewModel.deleteContact(contact, scope, apiContext)
+                contactsViewModel.deleteContact(contact, scope!!, apiContext)
                 true
             }
             else -> false

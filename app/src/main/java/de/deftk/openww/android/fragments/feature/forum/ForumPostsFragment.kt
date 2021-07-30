@@ -23,6 +23,7 @@ import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ForumViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.forum.IForumPost
@@ -35,38 +36,18 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
     private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentForumPostsBinding
-    private lateinit var group: IGroup
     private lateinit var searchView: SearchView
+
+    private var group: IGroup? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentForumPostsBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         (requireActivity() as? MainActivity?)?.searchProvider = this
-        val group = userViewModel.apiContext.value?.user?.getGroups()?.firstOrNull { it.login == args.groupId }
-        if (group == null) {
-            Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
-            navController.popBackStack(R.id.forumGroupFragment, false)
-            return binding.root
-        }
-        this.group = group
-
-        binding.forumList.adapter = adapter
-        binding.forumList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        forumViewModel.getFilteredForumPosts(group).observe(viewLifecycleOwner) { response ->
-            if (response is Response.Success) {
-                val posts = forumViewModel.filterRootPosts(response.value)
-                adapter.submitList(posts)
-                binding.forumEmpty.isVisible = posts.isEmpty()
-            } else if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
-            }
-            binding.progressForum.isVisible = false
-            binding.forumSwipeRefresh.isRefreshing = false
-        }
 
         binding.forumSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
-                forumViewModel.loadForumPosts(group, null, apiContext)
+                forumViewModel.loadForumPosts(group!!, null, apiContext)
             }
         }
 
@@ -94,12 +75,40 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                val newGroup = userViewModel.apiContext.value?.user?.getGroups()?.firstOrNull { it.login == args.groupId }
-                if (newGroup != null) {
-                    forumViewModel.loadForumPosts(group, null, apiContext)
-                } else {
-                    navController.popBackStack(R.id.forumGroupFragment, false)
+                val newGroup = apiContext.user.getGroups().firstOrNull { it.login == args.groupId }
+                if (newGroup == null) {
+                    Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
+                    navController.popBackStack()
+                    return@observe
                 }
+                if (!Feature.FORUM.isAvailable(newGroup.effectiveRights)) {
+                    Reporter.reportException(R.string.feature_not_available, args.groupId, requireContext())
+                    navController.popBackStack()
+                    return@observe
+                }
+
+                if (group != null) {
+                    forumViewModel.getFilteredForumPosts(group!!).removeObservers(viewLifecycleOwner)
+                    group = newGroup
+                    (adapter as ForumPostAdapter).group = group!!
+                } else {
+                    group = newGroup
+                    binding.forumList.adapter = adapter
+                    binding.forumList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+                }
+                forumViewModel.getFilteredForumPosts(group!!).observe(viewLifecycleOwner) { response ->
+                    if (response is Response.Success) {
+                        val posts = forumViewModel.filterRootPosts(response.value)
+                        adapter.submitList(posts)
+                        binding.forumEmpty.isVisible = posts.isEmpty()
+                    } else if (response is Response.Failure) {
+                        Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
+                    }
+                    binding.progressForum.isVisible = false
+                    binding.forumSwipeRefresh.isRefreshing = false
+                }
+
+                forumViewModel.loadForumPosts(group!!, null, apiContext)
             } else {
                 binding.forumEmpty.isVisible = false
                 adapter.submitList(emptyList())
@@ -113,7 +122,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
     }
 
     override fun createAdapter(): ActionModeAdapter<IForumPost, ForumPostAdapter.ForumPostViewHolder> {
-        return ForumPostAdapter(group, this)
+        return ForumPostAdapter(group!!, this)
     }
 
     override fun onItemClick(view: View, viewHolder: ForumPostAdapter.ForumPostViewHolder) {
@@ -130,7 +139,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         when (item.itemId) {
             R.id.forum_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
-                    forumViewModel.batchDelete(adapter.selectedItems.map { it.binding.post!! }, group, apiContext)
+                    forumViewModel.batchDelete(adapter.selectedItems.map { it.binding.post!! }, group!!, apiContext)
                 }
             }
             else -> return false
@@ -140,7 +149,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
-        if (group.effectiveRights.contains(Permission.FORUM_WRITE) || group.effectiveRights.contains(Permission.FORUM_ADMIN)) {
+        if (group!!.effectiveRights.contains(Permission.FORUM_WRITE) || group!!.effectiveRights.contains(Permission.FORUM_ADMIN)) {
             requireActivity().menuInflater.inflate(R.menu.forum_post_options_menu, menu)
         }
     }
@@ -152,7 +161,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
             R.id.menu_item_delete -> {
                 val comment = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
-                    forumViewModel.deletePost(comment, null, group, apiContext)
+                    forumViewModel.deletePost(comment, null, group!!, apiContext)
                 }
             }
             else -> super.onContextItemSelected(item)

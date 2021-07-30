@@ -3,6 +3,7 @@ package de.deftk.openww.android.fragments.feature.notes
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -17,6 +18,7 @@ import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.NotesViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.notes.INote
 import java.text.DateFormat
@@ -62,6 +64,23 @@ class ReadNoteFragment : Fragment() {
             }
         }
 
+        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            if (apiContext != null) {
+                if (!Feature.NOTES.isAvailable(apiContext.user.effectiveRights)) {
+                    Toast.makeText(requireContext(), R.string.feature_not_available, Toast.LENGTH_LONG).show()
+                    navController.popBackStack(R.id.notesFragment, false)
+                    return@observe
+                }
+                binding.fabEditNote.isVisible = apiContext.user.effectiveRights.contains(Permission.NOTES_WRITE) || apiContext.user.effectiveRights.contains(Permission.NOTES_ADMIN)
+                notesViewModel.loadNotes(apiContext)
+            } else {
+                binding.noteTitle.text = ""
+                binding.noteText.text = ""
+                binding.noteDate.text = ""
+                binding.fabEditNote.isVisible = false
+            }
+        }
+
         notesViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 notesViewModel.resetDeleteResponse()
@@ -75,14 +94,6 @@ class ReadNoteFragment : Fragment() {
 
         binding.fabEditNote.setOnClickListener {
             navController.navigate(ReadNoteFragmentDirections.actionReadNoteFragmentToEditNoteFragment(note.id, getString(R.string.edit_note)))
-        }
-
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            if (apiContext != null) {
-                binding.fabEditNote.isVisible = apiContext.user.effectiveRights.contains(Permission.NOTES_WRITE) || apiContext.user.effectiveRights.contains(Permission.NOTES_ADMIN)
-            } else {
-                navController.popBackStack(R.id.notesFragment, false)
-            }
         }
 
         setHasOptionsMenu(true)

@@ -8,7 +8,7 @@ import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.contacts.IContact
 
-class ContactAdapter(val scope: IOperatingScope, clickListener: ActionModeClickListener<ContactViewHolder>) : ActionModeAdapter<IContact, ContactAdapter.ContactViewHolder>(ContactDiffCallback(), clickListener) {
+class ContactAdapter(var scope: IOperatingScope, clickListener: ActionModeClickListener<ContactViewHolder>) : ActionModeAdapter<IContact, ContactAdapter.ContactViewHolder>(ContactDiffCallback(), clickListener) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
         val binding = ListItemContactBinding.inflate(LayoutInflater.from(parent.context), parent, false)

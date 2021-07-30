@@ -8,7 +8,7 @@ import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.feature.forum.IForumPost
 
-class ForumPostAdapter(private val group: IGroup, clickListener: ActionModeClickListener<ForumPostViewHolder>): ActionModeAdapter<IForumPost, ForumPostAdapter.ForumPostViewHolder>(ForumPostDiffCallback(), clickListener) {
+class ForumPostAdapter(var group: IGroup, clickListener: ActionModeClickListener<ForumPostViewHolder>): ActionModeAdapter<IForumPost, ForumPostAdapter.ForumPostViewHolder>(ForumPostDiffCallback(), clickListener) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ForumPostViewHolder {
         val binding = ListItemForumPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)

@@ -23,6 +23,7 @@ import de.deftk.openww.android.databinding.FragmentEditTaskBinding
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.TasksViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.IGroup
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -43,20 +44,14 @@ class EditTaskFragment : Fragment() {
     private var editMode: Boolean = false
     private var startDate: Date? = null
     private var dueDate: Date? = null
+    private var effectiveGroups: List<IGroup>? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEditTaskBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        setHasOptionsMenu(true)
-        return binding.root
-    }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            if (apiContext != null) {
-                val effectiveGroups = apiContext.user.getGroups().filter { it.effectiveRights.contains(Permission.TASKS_WRITE) || it.effectiveRights.contains(Permission.TASKS_ADMIN) }
-                binding.taskGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups.map { it.login })
-
+        tasksViewModel.allTasksResponse.observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
                 if (args.groupId != null && args.taskId != null) {
                     // edit existing
                     editMode = true
@@ -71,7 +66,8 @@ class EditTaskFragment : Fragment() {
                     scope = foundTask.second
 
                     binding.taskTitle.setText(task.title)
-                    binding.taskGroup.setSelection(effectiveGroups.indexOf(scope))
+                    if (effectiveGroups != null)
+                        binding.taskGroup.setSelection(effectiveGroups!!.indexOf(scope))
                     binding.taskCompleted.isChecked = task.completed
                     binding.taskText.setText(task.description)
 
@@ -87,8 +83,34 @@ class EditTaskFragment : Fragment() {
                     editMode = false
                     binding.taskGroup.isEnabled = true
                 }
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
+                navController.popBackStack()
+                return@observe
+            }
+        }
+
+        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            if (apiContext != null) {
+                if (apiContext.user.getGroups().none { it.effectiveRights.contains(Permission.TASKS_WRITE) } && apiContext.user.getGroups().none { it.effectiveRights.contains(Permission.TASKS_ADMIN) }) {
+                    Toast.makeText(requireContext(), R.string.feature_not_available, Toast.LENGTH_LONG).show()
+                    navController.popBackStack()
+                    return@observe
+                }
+
+                effectiveGroups = apiContext.user.getGroups().filter { it.effectiveRights.contains(Permission.TASKS_WRITE) || it.effectiveRights.contains(Permission.TASKS_ADMIN) }
+                binding.taskGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups!!.map { it.login })
+
+                tasksViewModel.loadTasks(true, apiContext)
             } else {
-                navController.popBackStack(R.id.tasksFragment, false)
+                binding.taskTitle.setText("")
+                binding.taskGroup.adapter = null
+                binding.taskCompleted.isChecked = false
+                binding.taskText.setText("")
+                binding.taskStart.setText("")
+                startDate = null
+                binding.taskDue.setText("")
+                dueDate = null
             }
         }
 
@@ -154,7 +176,8 @@ class EditTaskFragment : Fragment() {
             }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
         }
 
-        super.onViewCreated(view, savedInstanceState)
+        setHasOptionsMenu(true)
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

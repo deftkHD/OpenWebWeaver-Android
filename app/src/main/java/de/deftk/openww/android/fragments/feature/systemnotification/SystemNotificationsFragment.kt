@@ -36,7 +36,6 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
         binding = FragmentSystemNotificationsBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
         (requireActivity() as? MainActivity?)?.searchProvider = this
-        context ?: return binding.root
 
         binding.systemNotificationList.adapter = adapter
         userViewModel.filteredSystemNotificationResponse.observe(viewLifecycleOwner) { response ->

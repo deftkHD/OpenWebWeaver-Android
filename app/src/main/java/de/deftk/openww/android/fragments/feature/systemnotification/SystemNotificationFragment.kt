@@ -33,11 +33,7 @@ class SystemNotificationFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSystemNotificationBinding.inflate(inflater, container, false)
         (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        setHasOptionsMenu(true)
-        return binding.root
-    }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         userViewModel.allSystemNotificationsResponse.observe(viewLifecycleOwner) { response ->
             if (deleted)
                 return@observe
@@ -74,9 +70,12 @@ class SystemNotificationFragment : Fragment() {
         }
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext == null) {
-                navController.popBackStack(R.id.systemNotificationsFragment, false)
+                navController.popBackStack()
             }
         }
+
+        setHasOptionsMenu(true)
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
