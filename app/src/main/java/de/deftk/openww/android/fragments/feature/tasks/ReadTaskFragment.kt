@@ -3,7 +3,6 @@ package de.deftk.openww.android.fragments.feature.tasks
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -91,7 +90,7 @@ class ReadTaskFragment : Fragment() {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (apiContext.user.getGroups().none { Feature.TASKS.isAvailable(it.effectiveRights) }) {
-                    Toast.makeText(requireContext(), R.string.feature_not_available, Toast.LENGTH_LONG).show()
+                    Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
                     return@observe
                 }

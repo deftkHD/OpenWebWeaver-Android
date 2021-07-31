@@ -64,7 +64,7 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
                     return@observe
                 }
                 if (!foundScope.effectiveRights.contains(Permission.ADDRESSES_WRITE) && !foundScope.effectiveRights.contains(Permission.ADDRESSES_ADMIN)) {
-                    Reporter.reportException(R.string.feature_not_available, args.scope, requireContext())
+                    Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
                     return@observe
                 }

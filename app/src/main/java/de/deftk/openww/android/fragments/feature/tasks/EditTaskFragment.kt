@@ -93,7 +93,7 @@ class EditTaskFragment : Fragment() {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (apiContext.user.getGroups().none { it.effectiveRights.contains(Permission.TASKS_WRITE) } && apiContext.user.getGroups().none { it.effectiveRights.contains(Permission.TASKS_ADMIN) }) {
-                    Toast.makeText(requireContext(), R.string.feature_not_available, Toast.LENGTH_LONG).show()
+                    Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
                     return@observe
                 }

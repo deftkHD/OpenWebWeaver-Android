@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.*
 import android.widget.ProgressBar
 import android.widget.SearchView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
@@ -85,7 +84,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (apiContext.user.getGroups().none { Feature.BOARD.isAvailable(it.effectiveRights) }) {
-                    Toast.makeText(requireContext(), R.string.feature_not_available, Toast.LENGTH_LONG).show()
+                    Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
                     return@observe
                 }

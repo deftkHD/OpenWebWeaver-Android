@@ -3,7 +3,6 @@ package de.deftk.openww.android.fragments.feature.board
 import android.os.Bundle
 import android.view.*
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -18,7 +17,6 @@ import de.deftk.openww.android.feature.board.BoardNotificationColors
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.BoardViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
-import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.board.BoardNotificationColor
@@ -83,7 +81,7 @@ class EditNotificationFragment : Fragment() {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (apiContext.user.getGroups().none { it.effectiveRights.contains(Permission.BOARD_WRITE) } && apiContext.user.getGroups().none { it.effectiveRights.contains(Permission.BOARD_ADMIN) }) {
-                    Toast.makeText(requireContext(), R.string.feature_not_available, Toast.LENGTH_LONG).show()
+                    Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
                     return@observe
                 }

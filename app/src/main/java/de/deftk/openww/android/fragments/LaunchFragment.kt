@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -108,7 +107,7 @@ class LaunchFragment : Fragment() {
                     if (launchMode == LaunchMode.DEFAULT) {
                         navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToLoginFragment(false, null))
                     } else if (launchMode == LaunchMode.EMAIL) {
-                        Toast.makeText(requireContext(), R.string.login_failed, Toast.LENGTH_LONG).show()
+                        Reporter.reportException(R.string.error_login_failed, "no api context", requireContext())
                         requireActivity().finish()
                     }
 

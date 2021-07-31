@@ -68,7 +68,7 @@ class ReadContactFragment : Fragment() {
                     return@observe
                 }
                 if (!Feature.ADDRESSES.isAvailable(foundScope.effectiveRights)) {
-                    Reporter.reportException(R.string.feature_not_available, args.scope, requireContext())
+                    Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
                     return@observe
                 }

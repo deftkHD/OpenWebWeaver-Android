@@ -3,16 +3,12 @@ package de.deftk.openww.android.fragments.feature.board
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import de.deftk.openww.api.model.IGroup
-import de.deftk.openww.api.model.Permission
-import de.deftk.openww.api.model.feature.board.IBoardNotification
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadNotificationBinding
@@ -22,6 +18,9 @@ import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.BoardViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
+import de.deftk.openww.api.model.IGroup
+import de.deftk.openww.api.model.Permission
+import de.deftk.openww.api.model.feature.board.IBoardNotification
 import java.text.DateFormat
 
 class ReadNotificationFragment : Fragment() {
@@ -89,7 +88,7 @@ class ReadNotificationFragment : Fragment() {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (apiContext.user.getGroups().none { Feature.BOARD.isAvailable(it.effectiveRights) }) {
-                    Toast.makeText(requireContext(), R.string.feature_not_available, Toast.LENGTH_LONG).show()
+                    Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
                     return@observe
                 }

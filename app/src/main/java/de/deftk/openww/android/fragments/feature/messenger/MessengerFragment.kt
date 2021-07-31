@@ -6,7 +6,6 @@ import android.text.InputType
 import android.view.*
 import android.widget.EditText
 import android.widget.SearchView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
@@ -112,7 +111,7 @@ class MessengerFragment : ActionModeFragment<IScope, ChatAdapter.ChatViewHolder>
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (!Feature.MESSENGER.isAvailable(apiContext.user.effectiveRights)) {
-                    Toast.makeText(requireContext(), R.string.feature_not_available, Toast.LENGTH_LONG).show()
+                    Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
                     return@observe
                 }

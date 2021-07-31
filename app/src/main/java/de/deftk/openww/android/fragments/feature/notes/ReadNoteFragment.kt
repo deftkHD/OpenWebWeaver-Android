@@ -3,7 +3,6 @@ package de.deftk.openww.android.fragments.feature.notes
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -67,7 +66,7 @@ class ReadNoteFragment : Fragment() {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (!Feature.NOTES.isAvailable(apiContext.user.effectiveRights)) {
-                    Toast.makeText(requireContext(), R.string.feature_not_available, Toast.LENGTH_LONG).show()
+                    Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack(R.id.notesFragment, false)
                     return@observe
                 }

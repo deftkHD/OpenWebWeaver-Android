@@ -4,7 +4,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
@@ -124,7 +123,6 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
     }
 
     private fun openWebsite() {
-        //TODO move to viewmodel
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val user = userViewModel.apiContext.value?.user ?: return@launch
@@ -139,14 +137,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
                     CustomTabsIntent.Builder().build().launchUrl(this@MainActivity, uri)
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(
-                        baseContext,
-                        getString(R.string.error_get_login_link_failed).format(e.message ?: e),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+                Reporter.reportException(R.string.error_get_login_link_failed, e, this@MainActivity)
             }
         }
     }

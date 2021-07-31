@@ -82,7 +82,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
                     return@observe
                 }
                 if (!Feature.FORUM.isAvailable(newGroup.effectiveRights)) {
-                    Reporter.reportException(R.string.feature_not_available, args.groupId, requireContext())
+                    Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
                     return@observe
                 }

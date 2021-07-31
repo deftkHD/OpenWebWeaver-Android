@@ -62,7 +62,7 @@ class MembersFragment : Fragment(), ISearchProvider {
                     return@observe
                 }
                 if (!Feature.MEMBERS.isAvailable(refreshedGroup.effectiveRights)) {
-                    Reporter.reportException(R.string.feature_not_available, args.groupId, requireContext())
+                    Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
                     return@observe
                 }
