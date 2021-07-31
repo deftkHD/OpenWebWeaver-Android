@@ -29,6 +29,7 @@ import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MailboxViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
@@ -141,6 +142,12 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
+                if (!Feature.MAILBOX.isAvailable(apiContext.user.effectiveRights)) {
+                    Reporter.reportFeatureNotAvailable(requireContext())
+                    navController.popBackStack()
+                    return@observe
+                }
+
                 mailboxViewModel.cleanCache()
                 mailboxViewModel.loadFolders(apiContext)
 

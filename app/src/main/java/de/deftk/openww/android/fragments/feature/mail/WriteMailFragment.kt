@@ -18,6 +18,7 @@ import de.deftk.openww.android.feature.LaunchMode
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MailboxViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.Permission
 
 class WriteMailFragment : Fragment() {
 
@@ -29,6 +30,7 @@ class WriteMailFragment : Fragment() {
     private val userViewModel: UserViewModel by activityViewModels()
     private val mailboxViewModel: MailboxViewModel by activityViewModels()
     private val launchMode by lazy { LaunchMode.getLaunchMode(requireActivity().intent) }
+    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentWriteMailBinding
 
@@ -95,6 +97,20 @@ class WriteMailFragment : Fragment() {
                     null,
                     apiContext
                 )
+            }
+        }
+
+        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            if (apiContext != null) {
+                if (!apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) && !apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
+                    Reporter.reportFeatureNotAvailable(requireContext())
+                    navController.popBackStack()
+                    return@observe
+                }
+
+                binding.fabSendMail.isEnabled = true
+            } else {
+                binding.fabSendMail.isEnabled = false
             }
         }
 
