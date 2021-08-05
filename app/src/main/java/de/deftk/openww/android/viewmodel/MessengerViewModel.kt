@@ -39,11 +39,11 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
     val messageFilter = MutableLiveData(MessageFilter())
     private val filteredMessageResponses = mutableMapOf<String, LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>>()
 
-    private val _addChatResponse = MutableLiveData<Response<RemoteScope>>()
-    val addChatResponse: LiveData<Response<RemoteScope>> = _addChatResponse
+    private val _addChatResponse = MutableLiveData<Response<RemoteScope>?>()
+    val addChatResponse: LiveData<Response<RemoteScope>?> = _addChatResponse
 
-    private val _removeChatResponse = MutableLiveData<Response<RemoteScope>>()
-    val removeChatResponse: LiveData<Response<RemoteScope>> = _removeChatResponse
+    private val _removeChatResponse = MutableLiveData<Response<RemoteScope>?>()
+    val removeChatResponse: LiveData<Response<RemoteScope>?> = _removeChatResponse
 
     private val _sendMessageResponse = MutableLiveData<Response<IQuickMessage>>()
     val sendMessageResponse: LiveData<Response<IQuickMessage>> = _sendMessageResponse
@@ -135,6 +135,14 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
 
     fun resetBatchDeleteResponse() {
         _batchDeleteResponse.value = null
+    }
+
+    fun resetAddChatResponse() {
+        _addChatResponse.value = null
+    }
+
+    fun resetRemoveChatResponse() {
+        _removeChatResponse.value = null
     }
 
 }

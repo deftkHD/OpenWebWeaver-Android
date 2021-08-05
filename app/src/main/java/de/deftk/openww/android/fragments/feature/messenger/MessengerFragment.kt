@@ -62,7 +62,9 @@ class MessengerFragment : ActionModeFragment<IScope, ChatAdapter.ChatViewHolder>
         }
 
         messengerViewModel.addChatResponse.observe(viewLifecycleOwner) { response ->
-            //FIXME mark as handled
+            if (response != null)
+                messengerViewModel.resetAddChatResponse()
+
             getMainActivity().progressIndicator.isVisible = true
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_add_chat_failed, response.exception, requireContext())
@@ -70,7 +72,9 @@ class MessengerFragment : ActionModeFragment<IScope, ChatAdapter.ChatViewHolder>
         }
 
         messengerViewModel.removeChatResponse.observe(viewLifecycleOwner) { response ->
-            //FIXME mark as handled
+            if (response != null)
+                messengerViewModel.resetRemoveChatResponse()
+
             getMainActivity().progressIndicator.isVisible = false
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_remove_chat_failed, response.exception, requireContext())
