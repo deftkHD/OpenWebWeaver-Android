@@ -2,16 +2,14 @@ package de.deftk.openww.android.fragments.feature.tasks
 
 import android.os.Bundle
 import android.view.*
-import android.widget.ProgressBar
 import android.widget.SearchView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.MainActivity
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.TasksAdapter
 import de.deftk.openww.android.api.Response
@@ -39,8 +37,8 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentTasksBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        (requireActivity() as? MainActivity?)?.searchProvider = this
+        getMainActivity().supportActionBar?.show()
+        getMainActivity().searchProvider = this
 
         binding.tasksList.adapter = adapter
         binding.tasksList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
@@ -51,7 +49,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
             }
-            binding.progressTasks.visibility = ProgressBar.INVISIBLE
+            getMainActivity().progressIndicator.isVisible = false
             binding.tasksSwipeRefresh.isRefreshing = false
         }
 
@@ -75,6 +73,8 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
                 }
 
                 tasksViewModel.loadTasks(true, apiContext)
+                if (tasksViewModel.allTasksResponse.value == null)
+                    getMainActivity().progressIndicator.isVisible = true
                 binding.fabAddTask.isVisible = apiContext.user.getGroups().any { it.effectiveRights.contains(Permission.TASKS_WRITE) } || apiContext.user.getGroups().any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }
                 tasksViewModel.setFilter { filter ->
                     filter.account = apiContext.user.login
@@ -83,18 +83,18 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
                 binding.fabAddTask.isVisible = false
                 binding.tasksEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                binding.progressTasks.isVisible = true
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 
         tasksViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 tasksViewModel.resetBatchDeleteResponse()
+            getMainActivity().progressIndicator.isVisible = false
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
-                binding.progressTasks.isVisible = false
             } else {
                 actionMode?.finish()
             }
@@ -103,6 +103,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 tasksViewModel.resetPostResponse() // mark as handled
+            getMainActivity().progressIndicator.isVisible = false
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
@@ -195,6 +196,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             R.id.tasks_action_ignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
+                    getMainActivity().progressIndicator.isVisible = true
                 }
                 mode.finish()
             }
@@ -207,8 +209,9 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             R.id.tasks_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.batchDelete(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
-                    binding.progressTasks.isVisible = true
+                    getMainActivity().progressIndicator.isVisible = true
                 }
+                mode.finish()
             }
             else -> return false
         }
@@ -239,11 +242,13 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             R.id.menu_item_ignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(listOf(adapter.getItem(menuInfo.position)), apiContext)
+                    getMainActivity().progressIndicator.isVisible = true
                 }
             }
             R.id.menu_item_unignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.unignoreTasks(listOf(adapter.getItem(menuInfo.position)), apiContext)
+                    getMainActivity().progressIndicator.isVisible = true
                 }
             }
             R.id.menu_item_import_in_calendar -> {
@@ -259,6 +264,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
                 val (task, scope) = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 tasksViewModel.deleteTask(task, scope, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
             }
             else -> return super.onContextItemSelected(item)
         }
@@ -266,7 +272,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
     }
 
     override fun onDestroy() {
-        (requireActivity() as? MainActivity?)?.searchProvider = null
+        getMainActivity().searchProvider = null
         super.onDestroy()
     }
 

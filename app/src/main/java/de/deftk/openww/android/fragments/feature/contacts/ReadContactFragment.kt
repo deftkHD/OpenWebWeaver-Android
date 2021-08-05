@@ -2,7 +2,6 @@ package de.deftk.openww.android.fragments.feature.contacts
 
 import android.os.Bundle
 import android.view.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -10,6 +9,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ContactDetailAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadContactBinding
@@ -38,7 +38,7 @@ class ReadContactFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadContactBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        getMainActivity().supportActionBar?.show()
 
         binding.contactDetailList.adapter = adapter
         binding.contactDetailList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
@@ -46,6 +46,7 @@ class ReadContactFragment : Fragment() {
         contactsViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 contactsViewModel.resetDeleteResponse()
+            getMainActivity().progressIndicator.isVisible = false
 
             if (response is Response.Success) {
                 deleted = true
@@ -76,6 +77,7 @@ class ReadContactFragment : Fragment() {
                     contactsViewModel.getFilteredContactsLiveData(scope!!).removeObservers(viewLifecycleOwner)
                 scope = foundScope
                 contactsViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) { response ->
+                    getMainActivity().progressIndicator.isVisible = false
                     if (deleted)
                         return@observe
 
@@ -96,10 +98,13 @@ class ReadContactFragment : Fragment() {
                     }
                 }
                 contactsViewModel.loadContacts(scope!!, apiContext)
+                if (contactsViewModel.getAllContactsLiveData(scope!!).value == null)
+                    getMainActivity().progressIndicator.isVisible = true
                 binding.fabEditContact.isVisible = scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN)
             } else {
                 adapter.submitList(emptyList())
                 binding.fabEditContact.isVisible = false
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 
@@ -122,6 +127,7 @@ class ReadContactFragment : Fragment() {
             R.id.menu_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 contactsViewModel.deleteContact(contact, scope!!, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
                 true
             }
             else -> super.onOptionsItemSelected(item)

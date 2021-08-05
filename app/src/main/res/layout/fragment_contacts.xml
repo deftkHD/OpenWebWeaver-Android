@@ -34,13 +34,6 @@
         android:text="@string/no_contacts"
         android:visibility="gone" />
 
-    <ProgressBar
-        android:id="@+id/progress_contacts"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true" />
-
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_contact"
         android:layout_width="wrap_content"

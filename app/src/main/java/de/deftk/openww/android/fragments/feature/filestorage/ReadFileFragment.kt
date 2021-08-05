@@ -3,13 +3,13 @@ package de.deftk.openww.android.fragments.feature.filestorage
 import android.os.Bundle
 import android.text.format.Formatter
 import android.view.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadFileBinding
 import de.deftk.openww.android.feature.filestorage.FileCacheElement
@@ -36,7 +36,7 @@ class ReadFileFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadFileBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        getMainActivity().supportActionBar?.show()
         val foundScope = userViewModel.apiContext.value?.findOperatingScope(args.scope)
         if (foundScope == null) {
             Reporter.reportException(R.string.error_scope_not_found, args.scope, requireContext())
@@ -87,6 +87,7 @@ class ReadFileFragment : Fragment() {
                 Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())
                 navController.popBackStack()
             }
+            getMainActivity().progressIndicator.isVisible = false
         }
 
         binding.fabEditFile.setOnClickListener {

@@ -3,13 +3,16 @@ package de.deftk.openww.android.activities
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.view.GravityCompat
+import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -41,6 +44,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
+    lateinit var progressIndicator: ProgressBar
 
     private val userViewModel: UserViewModel by viewModels()
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
@@ -52,6 +56,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
+        progressIndicator = binding.progressIndicator
         setContentView(binding.root)
 
         // setup navigation
@@ -201,4 +206,8 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
         }
     }
 
+}
+
+fun Fragment.getMainActivity(): MainActivity {
+    return (requireActivity() as? MainActivity?) ?: error("Invalid fragment scope")
 }

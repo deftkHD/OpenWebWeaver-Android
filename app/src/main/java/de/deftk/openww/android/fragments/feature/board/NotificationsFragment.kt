@@ -2,16 +2,14 @@ package de.deftk.openww.android.fragments.feature.board
 
 import android.os.Bundle
 import android.view.*
-import android.widget.ProgressBar
 import android.widget.SearchView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.MainActivity
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.BoardNotificationAdapter
 import de.deftk.openww.android.api.Response
@@ -39,9 +37,8 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentNotificationsBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        (requireActivity() as? MainActivity?)?.searchProvider = this
-        context ?: return binding.root
+        getMainActivity().supportActionBar?.show()
+        getMainActivity().searchProvider = this
 
         binding.notificationList.adapter = adapter
         binding.notificationList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
@@ -53,18 +50,18 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
                 Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
                 binding.notificationsEmpty.isVisible = false
             }
-            binding.progressNotifications.visibility = ProgressBar.INVISIBLE
+            getMainActivity().progressIndicator.isVisible = false
             binding.notificationsSwipeRefresh.isRefreshing = false
         }
 
         boardViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 boardViewModel.resetBatchDeleteResponse()
+            getMainActivity().progressIndicator.isVisible = false
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
-                binding.progressNotifications.isVisible = false
             } else {
                 actionMode?.finish()
             }
@@ -89,18 +86,21 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
                     return@observe
                 }
                 boardViewModel.loadBoardNotifications(apiContext)
+                if (boardViewModel.allNotificationsResponse.value == null)
+                    getMainActivity().progressIndicator.isVisible = true
                 binding.fabAddNotification.isVisible = apiContext.user.getGroups().any { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) }
             } else {
                 binding.fabAddNotification.isVisible = false
                 binding.notificationsEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                binding.progressNotifications.isVisible = true
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 
         boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 boardViewModel.resetPostResponse() // mark as handled
+            getMainActivity().progressIndicator.isVisible = false
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
@@ -127,7 +127,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
             R.id.board_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     boardViewModel.batchDelete(adapter.selectedItems.map { it.binding.group!! to it.binding.notification!! }, apiContext)
-                    binding.progressNotifications.isVisible = true
+                    getMainActivity().progressIndicator.isVisible = true
                 }
             }
             else -> return false
@@ -195,6 +195,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
                 val (notification, group) = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 boardViewModel.deleteBoardNotification(notification, group, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
                 true
             }
             else -> false
@@ -202,7 +203,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
     }
 
     override fun onDestroy() {
-        (requireActivity() as? MainActivity?)?.searchProvider = null
+        getMainActivity().searchProvider = null
         super.onDestroy()
     }
 

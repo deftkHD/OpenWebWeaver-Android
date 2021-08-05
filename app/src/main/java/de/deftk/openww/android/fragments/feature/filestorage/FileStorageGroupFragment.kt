@@ -3,13 +3,12 @@ package de.deftk.openww.android.fragments.feature.filestorage
 import android.os.Bundle
 import android.view.*
 import android.widget.SearchView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.MainActivity
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.FileStorageAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentFileStorageBinding
@@ -29,8 +28,8 @@ class FileStorageGroupFragment : Fragment(), ISearchProvider {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFileStorageBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        (requireActivity() as? MainActivity?)?.searchProvider = this
+        getMainActivity().supportActionBar?.show()
+        getMainActivity().searchProvider = this
 
         val adapter = FileStorageAdapter()
         binding.fileList.adapter = adapter
@@ -42,7 +41,7 @@ class FileStorageGroupFragment : Fragment(), ISearchProvider {
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_quotas_failed, response.exception, requireContext())
             }
-            binding.progressFileStorage.isVisible = false
+            getMainActivity().progressIndicator.isVisible = false
             binding.fileStorageSwipeRefresh.isRefreshing = false
         }
 
@@ -55,10 +54,12 @@ class FileStorageGroupFragment : Fragment(), ISearchProvider {
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 fileStorageViewModel.loadQuotas(apiContext)
+                if (fileStorageViewModel.allQuotasResponse.value == null)
+                    getMainActivity().progressIndicator.isVisible = true
             } else {
                 binding.fileEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                binding.progressFileStorage.isVisible = true
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 
@@ -99,7 +100,7 @@ class FileStorageGroupFragment : Fragment(), ISearchProvider {
     }
 
     override fun onDestroy() {
-        (requireActivity() as? MainActivity?)?.searchProvider = null
+        getMainActivity().searchProvider = null
         super.onDestroy()
     }
 

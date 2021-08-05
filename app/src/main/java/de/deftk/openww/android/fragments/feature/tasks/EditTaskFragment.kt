@@ -7,23 +7,24 @@ import android.text.InputType
 import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import de.deftk.openww.api.model.IOperatingScope
-import de.deftk.openww.api.model.Permission
-import de.deftk.openww.api.model.feature.tasks.ITask
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditTaskBinding
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.TasksViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.IGroup
+import de.deftk.openww.api.model.IOperatingScope
+import de.deftk.openww.api.model.Permission
+import de.deftk.openww.api.model.feature.tasks.ITask
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -48,9 +49,10 @@ class EditTaskFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEditTaskBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        getMainActivity().supportActionBar?.show()
 
         tasksViewModel.allTasksResponse.observe(viewLifecycleOwner) { response ->
+            getMainActivity().progressIndicator.isVisible = false
             if (response is Response.Success) {
                 if (args.groupId != null && args.taskId != null) {
                     // edit existing
@@ -102,6 +104,8 @@ class EditTaskFragment : Fragment() {
                 binding.taskGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups!!.map { it.login })
 
                 tasksViewModel.loadTasks(true, apiContext)
+                if (tasksViewModel.allTasksResponse.value == null)
+                    getMainActivity().progressIndicator.isVisible = true
             } else {
                 binding.taskTitle.setText("")
                 binding.taskGroup.adapter = null
@@ -111,12 +115,14 @@ class EditTaskFragment : Fragment() {
                 startDate = null
                 binding.taskDue.setText("")
                 dueDate = null
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 
         tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 tasksViewModel.resetPostResponse() // mark as handled
+            getMainActivity().progressIndicator.isVisible = false
 
             if (response is Response.Success) {
                 ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
@@ -194,9 +200,11 @@ class EditTaskFragment : Fragment() {
 
             if (editMode) {
                 tasksViewModel.editTask(task, title, description, completed, startDate, dueDate, scope, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
             } else {
                 scope = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup } ?: return false
                 tasksViewModel.addTask(title, description, completed, startDate, dueDate, scope, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
             }
             return true
         }

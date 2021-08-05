@@ -14,6 +14,7 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.activities.MainActivity
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.MemberAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
@@ -76,14 +77,16 @@ class MembersFragment : Fragment(), ISearchProvider {
                     } else if (response is Response.Failure) {
                         Reporter.reportException(R.string.error_get_members_failed, response.exception, requireContext())
                     }
-                    binding.progressMembers.isVisible = false
                     binding.membersSwipeRefresh.isRefreshing = false
+                    getMainActivity().progressIndicator.isVisible = false
                 }
                 groupViewModel.loadMembers(group!!, false, apiContext)
+                if (groupViewModel.getAllGroupMembers(group!!).value == null)
+                    getMainActivity().progressIndicator.isVisible = true
             } else {
                 adapter.submitList(emptyList())
                 binding.membersEmpty.isVisible = false
-                binding.progressMembers.isVisible = true
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 

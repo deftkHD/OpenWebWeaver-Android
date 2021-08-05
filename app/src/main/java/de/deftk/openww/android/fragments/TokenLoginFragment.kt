@@ -14,6 +14,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentTokenLoginBinding
 import de.deftk.openww.android.utils.Reporter
@@ -82,7 +83,7 @@ class TokenLoginFragment : Fragment() {
                     }
                     Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
                 }
-                binding.pgbLogin.isVisible = false
+                getMainActivity().progressIndicator.isVisible = false
             }
         }
 
@@ -91,9 +92,9 @@ class TokenLoginFragment : Fragment() {
         }
 
         binding.btnLogin.setOnClickListener {
-            if (!binding.pgbLogin.isVisible) {
+            if (!getMainActivity().progressIndicator.isVisible) {
                 actionPerformed = true
-                binding.pgbLogin.isVisible = true
+            getMainActivity().progressIndicator.isVisible = true
                 val username = binding.txtEmail.text.toString()
                 val token = binding.txtToken.text.toString()
                 userViewModel.loginToken(username, token)

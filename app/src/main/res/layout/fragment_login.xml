@@ -87,15 +87,4 @@
         android:autoLink="web"
         android:text="@string/token_login_link" />
 
-    <ProgressBar
-        android:id="@+id/pgbLogin"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/token_login"
-        android:layout_centerHorizontal="true"
-        android:progressBackgroundTint="@color/colorPrimaryDark"
-        android:visibility="gone"
-        tools:visibility="visible" />
-
 </RelativeLayout>

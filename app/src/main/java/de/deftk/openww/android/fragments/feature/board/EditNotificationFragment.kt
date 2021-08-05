@@ -3,14 +3,15 @@ package de.deftk.openww.android.fragments.feature.board
 import android.os.Bundle
 import android.view.*
 import android.widget.ArrayAdapter
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditNotificationBinding
 import de.deftk.openww.android.feature.board.BoardNotificationColors
@@ -42,9 +43,10 @@ class EditNotificationFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEditNotificationBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        getMainActivity().supportActionBar?.show()
 
         boardViewModel.allNotificationsResponse.observe(viewLifecycleOwner) { response ->
+            getMainActivity().progressIndicator.isVisible = false
             if (response is Response.Success) {
                 if (args.notificationId != null && args.groupId != null) {
                     // edit existing
@@ -74,7 +76,6 @@ class EditNotificationFragment : Fragment() {
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
                 navController.popBackStack()
-                return@observe
             }
         }
 
@@ -93,18 +94,22 @@ class EditNotificationFragment : Fragment() {
                 binding.notificationAccent.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, colors!!.map { getString(it.text) })
 
                 boardViewModel.loadBoardNotifications(apiContext)
+                if (boardViewModel.allNotificationsResponse.value == null)
+                    getMainActivity().progressIndicator.isVisible = true
             } else {
                 binding.notificationTitle.setText("")
                 binding.notificationGroup.adapter = null
                 binding.notificationGroup.isEnabled = false
                 binding.notificationAccent.adapter = null
                 binding.notificationText.setText("")
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 
         boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 boardViewModel.resetPostResponse() // mark as handled
+            getMainActivity().progressIndicator.isVisible = false
 
             if (response is Response.Success) {
                 ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
@@ -134,9 +139,11 @@ class EditNotificationFragment : Fragment() {
 
             if (editMode) {
                 boardViewModel.editBoardNotification(notification, title, text, color, null, group, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
             } else {
                 group = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup } ?: return false
                 boardViewModel.addBoardNotification(title, text, color, null, group, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
             }
             return true
         }

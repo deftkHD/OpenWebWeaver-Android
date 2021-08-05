@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import de.deftk.openww.android.R
 import de.deftk.openww.android.activities.MainActivity
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.OperatingScopeAdapter
 import de.deftk.openww.android.databinding.FragmentGroupsBinding
 import de.deftk.openww.android.filter.ScopeFilter
@@ -53,7 +54,7 @@ abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener,
                 updateGroups(apiContext)
             } else {
                 binding.groupsEmpty.isVisible = false
-                binding.progressGroups.isVisible = true
+                getMainActivity().progressIndicator.isVisible = true
                 binding.groupsSwipeRefresh.isRefreshing = false
                 adapter.submitList(emptyList())
             }
@@ -70,7 +71,7 @@ abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener,
         scopes = (filter.apply(scopes) as List<IOperatingScope>).toMutableList()
         adapter.submitList(scopes)
         binding.groupsEmpty.isVisible = scopes.isEmpty()
-        binding.progressGroups.isVisible = false
+        getMainActivity().progressIndicator.isVisible = false
         binding.groupsSwipeRefresh.isRefreshing = false
     }
 

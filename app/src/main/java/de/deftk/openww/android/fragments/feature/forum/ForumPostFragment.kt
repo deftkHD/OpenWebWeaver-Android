@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ForumPostCommentAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
@@ -59,6 +60,7 @@ class ForumPostFragment : Fragment() {
         this.group = group
 
         forumViewModel.getAllForumPosts(group).observe(viewLifecycleOwner) { response ->
+            getMainActivity().progressIndicator.isVisible = false
             if (deleted)
                 return@observe
 
@@ -99,6 +101,7 @@ class ForumPostFragment : Fragment() {
         forumViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 forumViewModel.resetDeleteResponse() // mark as handled
+            getMainActivity().progressIndicator.isVisible = false
 
             if (response is Response.Success) {
                 if (response.value == post) {
@@ -118,7 +121,9 @@ class ForumPostFragment : Fragment() {
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            if (apiContext == null) {
+            if (apiContext != null) {
+                //TODO implement
+            } else {
                 navController.popBackStack(R.id.forumPostsFragment, false)
             }
         }
@@ -137,6 +142,7 @@ class ForumPostFragment : Fragment() {
             R.id.menu_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.deletePost(post, parent, group, apiContext)
+                    getMainActivity().progressIndicator.isVisible = true
                 }
             }
             else -> return super.onOptionsItemSelected(item)
@@ -159,6 +165,7 @@ class ForumPostFragment : Fragment() {
                 val comment = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.deletePost(comment, post, group, apiContext)
+                    getMainActivity().progressIndicator.isVisible = true
                 }
             }
             else -> super.onContextItemSelected(item)

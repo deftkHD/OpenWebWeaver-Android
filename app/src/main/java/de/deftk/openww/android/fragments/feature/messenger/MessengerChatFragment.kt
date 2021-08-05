@@ -4,7 +4,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.SearchView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -14,7 +13,7 @@ import androidx.preference.PreferenceManager
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.MainActivity
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ChatMessageAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentMessengerChatBinding
@@ -42,8 +41,8 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMessengerChatBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        (requireActivity() as? MainActivity?)?.searchProvider = this
+        getMainActivity().supportActionBar?.show()
+        getMainActivity().searchProvider = this
 
         val adapter = ChatMessageAdapter(userViewModel, this, findNavController(), userViewModel.apiContext.value?.user!!)
         binding.chatList.adapter = adapter
@@ -57,6 +56,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
         binding.btnSend.setOnClickListener {
             userViewModel.apiContext.value?.also { apiContext ->
                 messengerViewModel.sendMessage(args.user, binding.txtMessage.text.toString(), null, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 
@@ -80,14 +80,17 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_messages_failed, response.exception, requireContext())
             }
-            binding.progressChats.isVisible = false
+            getMainActivity().progressIndicator.isVisible = false
             binding.chatsSwipeRefresh.isRefreshing = false
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 messengerViewModel.loadHistory(args.user, false, apiContext)
+                if (messengerViewModel.getAllMessagesResponse(args.user).value == null)
+                    getMainActivity().progressIndicator.isVisible = true
             } else {
+                //TODO implement
                 findNavController().popBackStack(R.id.chatsFragment, false)
             }
         }
@@ -158,6 +161,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
             R.id.delete_saved_chat -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     messengerViewModel.clearChat(args.user, apiContext)
+                    getMainActivity().progressIndicator.isVisible = true
                 }
             }
             else -> return false
@@ -166,7 +170,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
     }
 
     override fun onDestroy() {
-        (requireActivity() as? MainActivity?)?.searchProvider = null
+        getMainActivity().searchProvider = null
         super.onDestroy()
     }
 

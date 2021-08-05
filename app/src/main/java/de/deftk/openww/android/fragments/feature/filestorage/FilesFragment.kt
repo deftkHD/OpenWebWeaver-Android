@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
@@ -21,7 +20,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.MainActivity
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.FileAdapter
 import de.deftk.openww.android.api.Response
@@ -63,8 +62,8 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFilesBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        (requireActivity() as? MainActivity?)?.searchProvider = this
+        getMainActivity().supportActionBar?.show()
+        getMainActivity().searchProvider = this
         val argScope = userViewModel.apiContext.value?.findOperatingScope(args.operatorId)
         if (argScope == null) {
             Reporter.reportException(R.string.error_scope_not_found, args.operatorId, requireContext())
@@ -94,7 +93,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())
             }
-            binding.progressFileStorage.isVisible = false
+            getMainActivity().progressIndicator.isVisible = false
             binding.fileStorageSwipeRefresh.isRefreshing = false
         }
 
@@ -119,11 +118,11 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         fileStorageViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 fileStorageViewModel.resetBatchDeleteResponse()
+            getMainActivity().progressIndicator.isVisible = false
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
-                binding.progressFileStorage.isVisible = false
             } else {
                 actionMode?.finish()
             }
@@ -145,6 +144,8 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 } else {
                     this.scope = newScope
                     fileStorageViewModel.loadFiles(newScope, args.folderId, args.path?.toList(), apiContext)
+                    if (fileStorageViewModel.getAllProviderLiveData(scope, args.folderId, args.path?.toList()).value == null)
+                        getMainActivity().progressIndicator.isVisible = true
                 }
             } else {
                 navController.popBackStack(R.id.fileStorageGroupFragment, false)
@@ -313,7 +314,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             R.id.filestorage_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     fileStorageViewModel.batchDelete(adapter.selectedItems.map { it.binding.file!! }, args.folderId, args.path?.toList(), scope, apiContext)
-                    binding.progressFileStorage.isVisible = true
+                    getMainActivity().progressIndicator.isVisible = true
                 }
             }
             else -> return false
@@ -348,7 +349,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     }
 
     override fun onDestroy() {
-        (requireActivity() as? MainActivity?)?.searchProvider = null
+        getMainActivity().searchProvider = null
         super.onDestroy()
     }
 

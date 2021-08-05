@@ -35,13 +35,6 @@
         android:visibility="invisible"
         tools:text="No members" />
 
-    <ProgressBar
-        android:id="@+id/progress_chats"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true" />
-
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_chat"
         android:layout_width="wrap_content"

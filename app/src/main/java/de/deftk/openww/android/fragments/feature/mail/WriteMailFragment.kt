@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentWriteMailBinding
 import de.deftk.openww.android.feature.LaunchMode
@@ -51,7 +52,7 @@ class WriteMailFragment : Fragment() {
         }
 
         mailboxViewModel.emailSendResponse.observe(viewLifecycleOwner) { response ->
-            binding.progressSendMail.isVisible = false
+            getMainActivity().progressIndicator.isVisible = false
             if (response is Response.Success) {
                 Toast.makeText(requireContext(), R.string.email_sent, Toast.LENGTH_LONG).show()
                 if (launchMode == LaunchMode.DEFAULT) {
@@ -82,7 +83,7 @@ class WriteMailFragment : Fragment() {
                 Toast.makeText(requireContext(), R.string.mail_no_to, Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
-            binding.progressSendMail.isVisible = true
+            getMainActivity().progressIndicator.isVisible = true
             userViewModel.apiContext.value?.also { apiContext ->
                 mailboxViewModel.sendEmail(
                     to,
@@ -111,6 +112,7 @@ class WriteMailFragment : Fragment() {
                 binding.fabSendMail.isEnabled = true
             } else {
                 binding.fabSendMail.isEnabled = false
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 

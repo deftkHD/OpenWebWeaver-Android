@@ -4,14 +4,15 @@ import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
 import android.widget.ArrayAdapter
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditNoteBinding
 import de.deftk.openww.android.feature.notes.NoteColors
@@ -37,9 +38,10 @@ class EditNoteFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEditNoteBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        getMainActivity().supportActionBar?.show()
 
         notesViewModel.allNotesResponse.observe(viewLifecycleOwner) { response ->
+            getMainActivity().progressIndicator.isVisible = false
             if (response is Response.Success) {
                 if (args.noteId != null) {
                     val foundNote = response.value.firstOrNull { it.id == args.noteId }
@@ -77,16 +79,20 @@ class EditNoteFragment : Fragment() {
                 binding.noteColor.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, NoteColors.values().map { getString(it.text) })
 
                 notesViewModel.loadNotes(apiContext)
+                if (notesViewModel.allNotesResponse.value == null)
+                    getMainActivity().progressIndicator.isVisible = true
             } else {
                 binding.noteTitle.setText("")
                 binding.noteText.setText("")
                 binding.noteColor.adapter = null
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 
         notesViewModel.editResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 notesViewModel.resetEditResponse()
+            getMainActivity().progressIndicator.isVisible = false
 
             if (response is Response.Success) {
                 ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
@@ -110,8 +116,10 @@ class EditNoteFragment : Fragment() {
             val color = NoteColor.values()[binding.noteColor.selectedItemPosition]
             if (editMode) {
                 notesViewModel.editNote(note, binding.noteTitle.text.toString(), binding.noteText.text.toString(), color, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
             } else {
                 notesViewModel.addNote(binding.noteTitle.text.toString(), binding.noteText.text.toString(), color, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
             }
             return true
         }

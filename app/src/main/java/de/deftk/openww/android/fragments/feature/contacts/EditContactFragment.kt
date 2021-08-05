@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.view.*
 import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -15,6 +14,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ContactDetailAdapter
 import de.deftk.openww.android.adapter.recycler.ContactDetailClickListener
 import de.deftk.openww.android.api.Response
@@ -50,7 +50,7 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEditContactBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        getMainActivity().supportActionBar?.show()
 
         binding.contactDetailList.adapter = adapter
         binding.contactDetailList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
@@ -72,6 +72,7 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
                     contactViewModel.getFilteredContactsLiveData(scope!!).removeObservers(viewLifecycleOwner)
                 scope = foundScope
                 contactViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) { response ->
+                    getMainActivity().progressIndicator.isVisible = false
                     if (response is Response.Success) {
                         if (args.contactId != null) {
                             // edit existing
@@ -94,10 +95,15 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
                         Reporter.reportException(R.string.error_get_members_failed, response.exception, requireContext())
                     }
                 }
+
+                contactViewModel.loadContacts(scope!!, apiContext)
+                if (contactViewModel.getAllContactsLiveData(scope!!).value == null)
+                    getMainActivity().progressIndicator.isVisible = true
             } else {
                 binding.contactDetailsEmpty.isVisible = false
                 adapter.submitList(emptyList())
                 binding.fabAddContactDetail.isVisible = false
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 
@@ -182,6 +188,7 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
         contactViewModel.editResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 contactViewModel.resetEditResponse()
+            getMainActivity().progressIndicator.isVisible = false
 
             if (response is Response.Success) {
                 ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
@@ -243,8 +250,10 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
 
             if (editMode) {
                 contactViewModel.editContact(contact.value!!, scope!!, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
             } else {
                 contactViewModel.addContact(contact.value!!, scope!!, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
             }
 
             return true

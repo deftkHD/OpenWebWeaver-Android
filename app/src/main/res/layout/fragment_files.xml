@@ -35,13 +35,6 @@
         android:visibility="invisible"
         tools:text="Directory is empty" />
 
-    <ProgressBar
-        android:id="@+id/progress_file_storage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true" />
-
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_upload_file"
         android:layout_width="wrap_content"

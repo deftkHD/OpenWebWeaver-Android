@@ -12,6 +12,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.OverviewAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentOverviewBinding
@@ -55,19 +56,21 @@ class OverviewFragment: Fragment() {
             if (response is Response.Success) {
                 binding.overviewList.adapter = OverviewAdapter(requireContext(), response.value)
                 Log.i(LOG_TAG, "Initialized ${response.value.size} overview elements")
-                binding.progressOverview.isVisible = false
                 binding.overviewSwipeRefresh.isRefreshing = false
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_overview_request_failed, response.exception, requireContext())
             }
+            getMainActivity().progressIndicator.isVisible = false
         }
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             binding.overviewSwipeRefresh.isEnabled = apiContext != null
             if (apiContext != null) {
                 userViewModel.loadOverview(getOverviewFeatures(), apiContext)
+                if (userViewModel.overviewResponse.value == null)
+                    getMainActivity().progressIndicator.isVisible = true
             } else {
-                binding.progressOverview.isVisible = true
                 binding.overviewList.adapter = null
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
         return binding.root

@@ -3,13 +3,13 @@ package de.deftk.openww.android.fragments.feature.board
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadNotificationBinding
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
@@ -38,9 +38,10 @@ class ReadNotificationFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadNotificationBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
+        getMainActivity().supportActionBar?.show()
 
         boardViewModel.allNotificationsResponse.observe(viewLifecycleOwner) { response ->
+            getMainActivity().progressIndicator.isVisible = false
             if (deleted)
                 return@observe
 
@@ -77,6 +78,7 @@ class ReadNotificationFragment : Fragment() {
         boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 boardViewModel.resetPostResponse() // mark as handled
+            getMainActivity().progressIndicator.isVisible = false
 
             if (response is Response.Success) {
                 deleted = true
@@ -93,6 +95,8 @@ class ReadNotificationFragment : Fragment() {
                     return@observe
                 }
                 boardViewModel.loadBoardNotifications(apiContext)
+                if (boardViewModel.allNotificationsResponse.value == null)
+                    getMainActivity().progressIndicator.isVisible = true
             } else {
                 binding.notificationTitle.text = ""
                 binding.notificationAuthor.text = ""
@@ -100,6 +104,7 @@ class ReadNotificationFragment : Fragment() {
                 binding.notificationDate.text = ""
                 binding.notificationText.text = ""
                 binding.fabEditNotification.isVisible = false
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 
@@ -122,6 +127,7 @@ class ReadNotificationFragment : Fragment() {
             R.id.menu_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 boardViewModel.deleteBoardNotification(notification, group, apiContext)
+                getMainActivity().progressIndicator.isVisible = true
                 true
             }
             else -> super.onOptionsItemSelected(item)

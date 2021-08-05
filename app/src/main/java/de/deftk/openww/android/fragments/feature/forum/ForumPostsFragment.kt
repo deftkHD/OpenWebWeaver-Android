@@ -3,7 +3,6 @@ package de.deftk.openww.android.fragments.feature.forum
 import android.os.Bundle
 import android.view.*
 import android.widget.SearchView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
@@ -11,7 +10,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.MainActivity
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.ForumPostAdapter
 import de.deftk.openww.android.api.Response
@@ -42,8 +41,8 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentForumPostsBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        (requireActivity() as? MainActivity?)?.searchProvider = this
+        getMainActivity().supportActionBar?.show()
+        getMainActivity().searchProvider = this
 
         binding.forumSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
@@ -54,6 +53,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         forumViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 forumViewModel.resetDeleteResponse() // mark as handled
+            getMainActivity().progressIndicator.isVisible = false
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
@@ -63,11 +63,11 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         forumViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 forumViewModel.resetBatchDeleteResponse()
+            getMainActivity().progressIndicator.isVisible = false
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
-                binding.progressForum.isVisible = false
             } else {
                 actionMode?.finish()
             }
@@ -104,15 +104,17 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
                     } else if (response is Response.Failure) {
                         Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
                     }
-                    binding.progressForum.isVisible = false
+                    getMainActivity().progressIndicator.isVisible = false
                     binding.forumSwipeRefresh.isRefreshing = false
                 }
 
                 forumViewModel.loadForumPosts(group!!, null, apiContext)
+                if (forumViewModel.getAllForumPosts(group!!).value == null)
+                    getMainActivity().progressIndicator.isVisible = true
             } else {
                 binding.forumEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                binding.progressForum.isVisible = true
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 
@@ -202,7 +204,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
     }
 
     override fun onDestroy() {
-        (requireActivity() as? MainActivity?)?.searchProvider = null
+        getMainActivity().searchProvider = null
         super.onDestroy()
     }
 

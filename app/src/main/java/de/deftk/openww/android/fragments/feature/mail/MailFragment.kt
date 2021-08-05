@@ -8,7 +8,6 @@ import android.widget.AdapterView
 import android.widget.EditText
 import android.widget.SearchView
 import android.widget.Spinner
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
@@ -16,7 +15,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.MainActivity
+import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.MailFolderAdapter
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.MailAdapter
@@ -46,8 +45,8 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMailBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        (requireActivity() as? MainActivity?)?.searchProvider = this
+        getMainActivity().supportActionBar?.show()
+        getMainActivity().searchProvider = this
 
         toolbarSpinner = requireActivity().findViewById(R.id.toolbar_spinner)
         toolbarSpinner.isVisible = true
@@ -57,6 +56,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                 if (folder.id != mailboxViewModel.currentFolder.value?.id) {
                     userViewModel.apiContext.value?.also { apiContext ->
                         mailboxViewModel.selectFolder(folder, apiContext)
+                        getMainActivity().progressIndicator.isVisible = true
                     }
                 }
             }
@@ -73,7 +73,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_emails_failed, response.exception, requireContext())
             }
-            binding.progressMail.isVisible = false
+            getMainActivity().progressIndicator.isVisible = false
             binding.mailSwipeRefresh.isRefreshing = false
         }
 
@@ -87,11 +87,11 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         mailboxViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 mailboxViewModel.resetBatchDeleteResponse()
+            getMainActivity().progressIndicator.isVisible = false
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
-                binding.progressMail.isVisible = false
             } else {
                 actionMode?.finish()
             }
@@ -100,11 +100,11 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         mailboxViewModel.batchMoveResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 mailboxViewModel.resetBatchMoveResponse()
+            getMainActivity().progressIndicator.isVisible = false
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
                 Reporter.reportException(R.string.error_move_failed, failure.first().exception, requireContext())
-                binding.progressMail.isVisible = false
             } else {
                 actionMode?.finish()
             }
@@ -115,15 +115,14 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                 if ((toolbarSpinner.adapter as? MailFolderAdapter?)?.elements != response.value) {
                     toolbarSpinner.adapter = MailFolderAdapter(requireContext(), response.value)
                 } else {
-                    binding.progressMail.isVisible = false
                     binding.mailSwipeRefresh.isRefreshing = false
                 }
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_folders_failed, response.exception, requireContext())
                 toolbarSpinner.adapter = null
-                binding.progressMail.isVisible = false
                 binding.mailSwipeRefresh.isRefreshing = false
             }
+            getMainActivity().progressIndicator.isVisible = false
         }
 
         mailboxViewModel.currentFolder.observe(viewLifecycleOwner) { folder ->
@@ -132,6 +131,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             if (index != -1) {
                 toolbarSpinner.setSelection(index)
             }
+            getMainActivity().progressIndicator.isVisible = false
         }
 
         binding.fabMailAdd.setOnClickListener {
@@ -150,6 +150,8 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
                 mailboxViewModel.cleanCache()
                 mailboxViewModel.loadFolders(apiContext)
+                if (mailboxViewModel.foldersResponse.value == null)
+                    getMainActivity().progressIndicator.isVisible = true
 
                 //TODO not sure about this permissions
                 binding.fabMailAdd.isVisible = apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)
@@ -158,13 +160,14 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                 binding.mailEmpty.isVisible = false
                 toolbarSpinner.adapter = null
                 adapter.submitList(emptyList())
-                binding.progressMail.isVisible = true
+                getMainActivity().progressIndicator.isVisible = true
             }
         }
 
         mailboxViewModel.folderPostResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 mailboxViewModel.resetPostResponse() // mark as handled
+            getMainActivity().progressIndicator.isVisible = false
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
@@ -205,6 +208,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                     .setAdapter(MailFolderAdapter(requireContext(), folders)) { _, which ->
                         userViewModel.apiContext.value?.also { apiContext ->
                             mailboxViewModel.batchMove(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, folders[which], apiContext)
+                            getMainActivity().progressIndicator.isVisible = true
                         }
                     }
                     .create()
@@ -213,7 +217,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             R.id.mail_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.batchDelete(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, apiContext)
-                    binding.progressMail.isVisible = true
+                    getMainActivity().progressIndicator.isVisible = true
                 }
             }
             else -> return false
@@ -267,6 +271,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             builder.setPositiveButton(R.string.confirm) { _, _ ->
                 userViewModel.apiContext.value?.apply {
                     mailboxViewModel.addFolder(input.text.toString(), this)
+                    getMainActivity().progressIndicator.isVisible = true
                 }
             }
             builder.setNegativeButton(R.string.cancel) { dialog, _ ->
@@ -303,6 +308,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                     .setAdapter(MailFolderAdapter(requireContext(), folders)) { _, which ->
                         userViewModel.apiContext.value?.also { apiContext ->
                             mailboxViewModel.moveEmail(mailItem.first, mailItem.second, folders[which], apiContext)
+                            getMainActivity().progressIndicator.isVisible = true
                         }
                     }
                     .create()
@@ -312,6 +318,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                 val mailItem = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.deleteEmail(mailItem.first, mailItem.second, true, apiContext)
+                    getMainActivity().progressIndicator.isVisible = true
                 }
             }
             else -> return false
@@ -330,7 +337,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
     }
 
     override fun onDestroy() {
-        (requireActivity() as? MainActivity?)?.searchProvider = null
+        getMainActivity().searchProvider = null
         super.onDestroy()
     }
 
