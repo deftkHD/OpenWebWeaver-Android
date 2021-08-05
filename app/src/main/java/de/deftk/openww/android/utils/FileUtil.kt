@@ -19,7 +19,7 @@ object FileUtil {
     }
 
     fun escapeFileName(name: String): String {
-        return name.map {
+        return String(name.map {
             when (it) {
                 '|' -> '_'
                 '\\' -> '_'
@@ -31,7 +31,7 @@ object FileUtil {
                 ':' -> '_'
                 else -> it
             }
-        }.toString()
+        }.toTypedArray().toCharArray())
     }
 
     fun normalizeFileName(name: String, preferences: SharedPreferences): String {
