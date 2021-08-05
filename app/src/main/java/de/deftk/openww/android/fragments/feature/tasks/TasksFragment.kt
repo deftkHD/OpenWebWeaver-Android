@@ -157,7 +157,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
                     filter.showIgnoredCriteria.value = item.isChecked
                 }
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> return super.onOptionsItemSelected(item)
         }
         return true
     }
