@@ -96,9 +96,9 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
                     (adapter as ContactAdapter).scope = scope!!
                 } else {
                     scope = foundScope
-                    binding.contactList.adapter = adapter
-                    binding.contactList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
                 }
+                binding.contactList.adapter = adapter
+                binding.contactList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
                 contactsViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) { response ->
                     if (response is Response.Success) {
