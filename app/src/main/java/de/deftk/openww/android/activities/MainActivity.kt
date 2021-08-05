@@ -10,7 +10,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.view.GravityCompat
-import androidx.core.view.isVisible
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelStoreOwner
@@ -58,6 +57,10 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
         binding = ActivityMainBinding.inflate(layoutInflater)
         progressIndicator = binding.progressIndicator
         setContentView(binding.root)
+
+        // apply default settings
+        PreferenceManager.setDefaultValues(this, R.xml.root_preferences, true)
+        PreferenceManager.setDefaultValues(this, R.xml.overview_preferences, true)
 
         // setup navigation
         setSupportActionBar(binding.toolbar)
@@ -122,8 +125,11 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
     }
 
     override fun onPreferenceStartFragment(caller: PreferenceFragmentCompat, pref: Preference): Boolean {
-        val id = runCatching { pref.fragment.toInt() }.getOrNull() ?: return false // not sure if this is the intended way
-        navController.navigate(id, pref.extras)
+        if (pref.fragment == "OverviewSettingsFragment") {
+            navController.navigate(R.id.overviewSettingsFragment)
+        } else {
+            return false
+        }
         return true
     }
 

@@ -3,7 +3,7 @@
     <PreferenceCategory app:title="@string/general">
 
         <Preference
-            app:fragment="2131231505"
+            app:fragment="OverviewSettingsFragment"
             app:key="customize_overview_screen"
             app:summary="@string/customize_overview_description"
             app:title="@string/customize_overview" />
