@@ -65,7 +65,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
             if (response != null)
                 messengerViewModel.resetAddChatResponse()
 
-            getMainActivity().progressIndicator.isVisible = true
+            getMainActivity().progressIndicator.isVisible = false
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_add_chat_failed, response.exception, requireContext())
             }
