@@ -2,6 +2,7 @@ package de.deftk.openww.android.filter
 
 import androidx.annotation.StringRes
 import de.deftk.openww.android.feature.filestorage.FileCacheElement
+import de.deftk.openww.android.feature.messenger.ChatContact
 import de.deftk.openww.android.utils.ContactUtil
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.IOperatingScope
@@ -74,6 +75,22 @@ sealed class ScopeOrder(@StringRes nameRes: Int): Order<IScope>(nameRes) {
     object ByOperatorDefault : ScopeOrder(0) {
         override fun sort(items: List<IScope>): List<IScope> {
             return items.sortedWith(compareBy ({ it !is IUser }, { it.name }))
+        }
+    }
+
+}
+
+sealed class ChatContactOrder(@StringRes nameRes: Int): Order<ChatContact>(nameRes) {
+
+    object ByScopeNameAsc : ChatContactOrder(0) {
+        override fun sort(items: List<ChatContact>): List<ChatContact> {
+            return items.sortedBy { it.user.name }
+        }
+    }
+
+    object ByScopeNameDesc : ChatContactOrder(0) {
+        override fun sort(items: List<ChatContact>): List<ChatContact> {
+            return items.sortedByDescending { it.user.name }
         }
     }
 

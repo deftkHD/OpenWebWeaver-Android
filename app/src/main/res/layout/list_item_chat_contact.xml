@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="menuClickListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="chatContact"
+            type="de.deftk.openww.android.feature.messenger.ChatContact" />
+
+        <variable
+            name="selected"
+            type="Boolean" />
+
+    </data>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@{selected ? @color/colorAccent : @android:color/transparent}"
+        android:padding="@dimen/list_item_padding">
+
+        <ImageView
+            android:id="@+id/member_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="2dp"
+            app:memberOnlineImage="@{chatContact.user}"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_person_24" />
+
+        <TextView
+            italic="@{chatContact.local}"
+            android:id="@+id/member_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="5dp"
+            android:layout_toStartOf="@id/more_button"
+            android:layout_toEndOf="@+id/member_image"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@{chatContact.user.name}"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="20sp"
+            tools:text="Member name" />
+
+        <ImageView
+            android:id="@+id/more_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:contentDescription="@string/more"
+            android:onClick="@{menuClickListener}"
+            android:src="@drawable/ic_more_vert_24" />
+
+        <TextView
+            android:id="@+id/member_online_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/member_name"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/member_image"
+            app:memberOnlineText="@{chatContact.user}"
+            tools:text="Online" />
+
+    </RelativeLayout>
+
+</layout>

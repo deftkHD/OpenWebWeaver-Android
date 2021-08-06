@@ -280,4 +280,6 @@
     <string name="customize_overview">Übersicht anpassen</string>
     <string name="customize_overview_description">Bestimmte Elemente anzeigen oder verstecken</string>
     <string name="feature_not_available">Funktion nicht mehr verfügbar</string>
+    <string name="open_chat">Chat öffnen</string>
+    <string name="add_chat_contact">Chatkontakt hinzufügen</string>
 </resources>

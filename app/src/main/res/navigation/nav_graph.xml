@@ -259,6 +259,9 @@
         <argument
             android:name="title"
             app:argType="string" />
+        <action
+            android:id="@+id/action_membersFragment_to_messengerChatFragment"
+            app:destination="@id/messengerChatFragment" />
     </fragment>
     <fragment
         android:id="@+id/readMailFragment"

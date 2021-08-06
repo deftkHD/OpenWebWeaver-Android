@@ -2,6 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/member_action_open_messenger"
+        android:title="@string/open_chat" />
+
+    <item
         android:id="@+id/member_action_write_mail"
         android:title="@string/write_mail" />
 

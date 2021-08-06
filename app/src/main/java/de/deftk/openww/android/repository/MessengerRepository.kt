@@ -1,5 +1,6 @@
 package de.deftk.openww.android.repository
 
+import de.deftk.openww.android.feature.messenger.ChatContact
 import de.deftk.openww.android.room.QuickMessageDao
 import de.deftk.openww.android.room.RoomQuickMessage
 import de.deftk.openww.api.model.IApiContext
@@ -19,7 +20,22 @@ class MessengerRepository @Inject constructor(private val quickMessageDao: Quick
     }
 
     suspend fun getChats(apiContext: IApiContext) = apiCall {
-        apiContext.user.getUsers(onlineOnly = false, context = apiContext.user.getRequestContext(apiContext))
+        val chats = apiContext.user.getUsers(onlineOnly = false, context = apiContext.user.getRequestContext(apiContext))
+            .map { ChatContact(it, false) }
+            .toMutableList()
+        withContext(Dispatchers.Unconfined) {
+            chats.addAll(getLocalChats(apiContext))
+        }
+        chats.distinctBy { it.user.login }.filter { it.user.login != apiContext.user.login }
+    }
+
+    suspend fun getLocalChats(apiContext: IApiContext): List<ChatContact> {
+        val chats = mutableListOf<ChatContact>()
+        val storedSenders = quickMessageDao.getAllSenders(apiContext.user.login)
+        val storedRecipients = quickMessageDao.getAllRecipients(apiContext.user.login)
+        chats.addAll(storedSenders.map { ChatContact(it, true) })
+        chats.addAll(storedRecipients.map { ChatContact(it, true) })
+        return chats.distinctBy { it.user.login }.filter { it.user.login != apiContext.user.login }
     }
 
     suspend fun getHistory(with: String, apiContext: IApiContext) = apiCall {

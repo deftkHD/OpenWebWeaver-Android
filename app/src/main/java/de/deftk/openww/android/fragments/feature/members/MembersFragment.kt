@@ -131,8 +131,10 @@ class MembersFragment : Fragment(), ISearchProvider {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val member = (binding.memberList.adapter as MemberAdapter).getItem(menuInfo.position)
-            if (member.login != userViewModel.apiContext.value?.user?.login) {
+            val apiContext = userViewModel.apiContext.value ?: return
+            if (member.login != apiContext.user.login) {
                 requireActivity().menuInflater.inflate(R.menu.member_action_menu, menu)
+                menu.findItem(R.id.member_action_open_messenger).isVisible = Feature.MESSENGER.isAvailable(apiContext.user.effectiveRights)
             }
         }
     }
@@ -141,6 +143,11 @@ class MembersFragment : Fragment(), ISearchProvider {
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.memberList.adapter as MemberAdapter
         return when (item.itemId) {
+            R.id.member_action_open_messenger -> {
+                val member = adapter.getItem(menuInfo.position)
+                navController.navigate(MembersFragmentDirections.actionMembersFragmentToMessengerChatFragment(member.login, member.name))
+                true
+            }
             R.id.member_action_write_mail -> {
                 val member = adapter.getItem(menuInfo.position)
                 val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${Uri.encode(member.login)}"))

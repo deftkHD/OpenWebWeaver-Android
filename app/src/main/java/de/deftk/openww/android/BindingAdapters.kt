@@ -113,6 +113,16 @@ object BindingAdapters {
     }
 
     @JvmStatic
+    @BindingAdapter("italic")
+    fun italic(view: TextView, bold: Boolean) {
+        if (bold) {
+            view.setTypeface(null, Typeface.ITALIC)
+        } else {
+            view.setTypeface(null, Typeface.NORMAL)
+        }
+    }
+
+    @JvmStatic
     @BindingAdapter("memberOnlineImage")
     fun memberOnlineImage(view: ImageView, scope: IScope) {
         if (scope is RemoteScope) {

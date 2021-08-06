@@ -18,16 +18,16 @@ import de.deftk.openww.android.adapter.recycler.ChatAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentMessengerBinding
-import de.deftk.openww.android.filter.ScopeFilter
+import de.deftk.openww.android.feature.messenger.ChatContact
+import de.deftk.openww.android.filter.ChatContactFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MessengerViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
-import de.deftk.openww.api.model.IScope
 
-class MessengerFragment : ActionModeFragment<IScope, ChatAdapter.ChatViewHolder>(R.menu.chat_actionmode_menu), ISearchProvider {
+class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHolder>(R.menu.chat_actionmode_menu), ISearchProvider {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val messengerViewModel: MessengerViewModel by activityViewModels()
@@ -138,19 +138,19 @@ class MessengerFragment : ActionModeFragment<IScope, ChatAdapter.ChatViewHolder>
         return binding.root
     }
 
-    override fun createAdapter(): ActionModeAdapter<IScope, ChatAdapter.ChatViewHolder> {
+    override fun createAdapter(): ActionModeAdapter<ChatContact, ChatAdapter.ChatViewHolder> {
         return ChatAdapter(this)
     }
 
     override fun onItemClick(view: View, viewHolder: ChatAdapter.ChatViewHolder) {
-        navController.navigate(MessengerFragmentDirections.actionChatsFragmentToMessengerChatFragment(viewHolder.binding.scope!!.login, viewHolder.binding.scope!!.name))
+        navController.navigate(MessengerFragmentDirections.actionChatsFragmentToMessengerChatFragment(viewHolder.binding.chatContact!!.user.login, viewHolder.binding.chatContact!!.user.name))
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.chat_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
-                    messengerViewModel.batchDelete(adapter.selectedItems.map { it.binding.scope!! }, apiContext)
+                    messengerViewModel.batchDelete(adapter.selectedItems.map { it.binding.chatContact!! }, apiContext)
                     getMainActivity().progressIndicator.isVisible = true
                 }
             }
@@ -163,6 +163,10 @@ class MessengerFragment : ActionModeFragment<IScope, ChatAdapter.ChatViewHolder>
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             requireActivity().menuInflater.inflate(R.menu.messenger_chat_menu, menu)
+
+            val adapter = binding.chatList.adapter as ChatAdapter
+            val user = adapter.getItem(menuInfo.position)
+            menu.findItem(R.id.menu_item_add_chat_contact).isVisible = user.isLocal
         }
     }
 
@@ -170,10 +174,18 @@ class MessengerFragment : ActionModeFragment<IScope, ChatAdapter.ChatViewHolder>
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.chatList.adapter as ChatAdapter
         return when (item.itemId) {
+            R.id.menu_item_add_chat_contact -> {
+                val user = adapter.getItem(menuInfo.position)
+                userViewModel.apiContext.value?.apply {
+                    messengerViewModel.addChat(user.user.login, this)
+                    getMainActivity().progressIndicator.isVisible = true
+                }
+                true
+            }
             R.id.menu_item_delete -> {
                 val user = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
-                messengerViewModel.removeChat(user.login, apiContext)
+                messengerViewModel.removeChat(user, apiContext)
                 getMainActivity().progressIndicator.isVisible = true
                 true
             }
@@ -194,7 +206,7 @@ class MessengerFragment : ActionModeFragment<IScope, ChatAdapter.ChatViewHolder>
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                val filter = ScopeFilter()
+                val filter = ChatContactFilter()
                 filter.smartSearchCriteria.value = newText
                 messengerViewModel.userFilter.value = filter
                 return true
