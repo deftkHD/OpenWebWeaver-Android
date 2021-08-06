@@ -105,7 +105,11 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
 
             builder.setPositiveButton(R.string.confirm) { _, _ ->
                 userViewModel.apiContext.value?.apply {
-                    messengerViewModel.addChat(input.text.toString(), this)
+                    var targetUser = input.text.toString()
+                    if (!targetUser.contains("@")) {
+                        targetUser = "$targetUser@${this.user.login.split("@")[1]}"
+                    }
+                    messengerViewModel.addChat(targetUser, this)
                     getMainActivity().progressIndicator.isVisible = true
                 }
             }
