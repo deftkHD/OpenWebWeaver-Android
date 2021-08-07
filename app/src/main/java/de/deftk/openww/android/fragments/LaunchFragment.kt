@@ -44,17 +44,19 @@ class LaunchFragment : Fragment() {
             if (response is Response.Success) {
                 when (authState) {
                     AuthHelper.AuthState.SINGLE -> {
-                        if (launchMode == LaunchMode.DEFAULT) {
-                            navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToOverviewFragment())
-                        } else if (launchMode == LaunchMode.EMAIL) {
-                            navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToWriteMailFragment())
+                        when (launchMode) {
+                            LaunchMode.DEFAULT -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToOverviewFragment())
+                            LaunchMode.EMAIL -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToWriteMailFragment())
+                            LaunchMode.FILE_UPLOAD -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToFileStorageGroupFragment())
+                            else -> { /* ignore */ }
                         }
                     }
                     AuthHelper.AuthState.MULTIPLE -> {
-                        if (launchMode == LaunchMode.DEFAULT) {
-                            navController.navigate(R.id.overviewFragment)
-                        } else if (launchMode == LaunchMode.EMAIL) {
-                            navController.navigate(R.id.writeMailFragment)
+                        when (launchMode) {
+                            LaunchMode.DEFAULT -> navController.navigate(R.id.overviewFragment)
+                            LaunchMode.EMAIL -> navController.navigate(R.id.writeMailFragment)
+                            LaunchMode.FILE_UPLOAD -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToFileStorageGroupFragment())
+                            else -> { /* ignore */ }
                         }
                     }
                     else -> { /* ignore */ }

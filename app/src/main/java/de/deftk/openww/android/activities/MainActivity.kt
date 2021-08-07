@@ -67,9 +67,15 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
 
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host) as NavHostFragment
         navController = navHostFragment.navController
-        appBarConfiguration = AppBarConfiguration.Builder(R.id.overviewFragment)
-            .setOpenableLayout(binding.drawerLayout)
-            .build()
+        appBarConfiguration = if (launchMode == LaunchMode.FILE_UPLOAD) {
+            AppBarConfiguration.Builder(R.id.fileStorageGroupFragment)
+                .build()
+        } else {
+            AppBarConfiguration.Builder(R.id.overviewFragment)
+                .setOpenableLayout(binding.drawerLayout)
+                .build()
+        }
+
         setupActionBarWithNavController(navController, appBarConfiguration)
         binding.navView.setupWithNavController(navController)
 
@@ -189,6 +195,9 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
                 finish()
                 true
             }
+            LaunchMode.FILE_UPLOAD -> {
+                searchProvider?.onSearchBackPressed() == true || navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+            }
         }
     }
 
@@ -209,6 +218,14 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
             finish()
         } else if (launchMode == LaunchMode.AUTHENTICATOR) {
             finish()
+        } else if (launchMode == LaunchMode.FILE_UPLOAD) {
+            if (actionMode != null) {
+                actionMode!!.finish()
+            } else {
+                if (searchProvider?.onSearchBackPressed() != true) {
+                    super.onBackPressed()
+                }
+            }
         }
     }
 

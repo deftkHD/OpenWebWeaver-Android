@@ -12,6 +12,7 @@ import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.FileStorageAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentFileStorageBinding
+import de.deftk.openww.android.feature.LaunchMode
 import de.deftk.openww.android.filter.FileStorageQuotaFilter
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
@@ -31,7 +32,8 @@ class FileStorageGroupFragment : Fragment(), ISearchProvider {
         getMainActivity().supportActionBar?.show()
         getMainActivity().searchProvider = this
 
-        val adapter = FileStorageAdapter()
+        val pasteMode = LaunchMode.getLaunchMode(requireActivity().intent) == LaunchMode.FILE_UPLOAD
+        val adapter = FileStorageAdapter(pasteMode)
         binding.fileList.adapter = adapter
         binding.fileList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         fileStorageViewModel.filteredQuotasResponse.observe(viewLifecycleOwner) { response ->

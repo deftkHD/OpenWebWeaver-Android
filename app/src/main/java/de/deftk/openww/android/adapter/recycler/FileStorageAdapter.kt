@@ -11,11 +11,11 @@ import de.deftk.openww.android.fragments.feature.filestorage.FileStorageGroupFra
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.Quota
 
-class FileStorageAdapter : ListAdapter<Pair<IOperatingScope, Quota>, RecyclerView.ViewHolder>(FileStorageDiffCallback()) {
+class FileStorageAdapter(private val pasteMode: Boolean) : ListAdapter<Pair<IOperatingScope, Quota>, RecyclerView.ViewHolder>(FileStorageDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val binding = ListItemFileStorageBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return FileStorageViewHolder(binding)
+        return FileStorageViewHolder(binding, pasteMode)
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -23,11 +23,11 @@ class FileStorageAdapter : ListAdapter<Pair<IOperatingScope, Quota>, RecyclerVie
         (holder as FileStorageViewHolder).bind(scope, quota)
     }
 
-    class FileStorageViewHolder(val binding: ListItemFileStorageBinding) : RecyclerView.ViewHolder(binding.root) {
+    class FileStorageViewHolder(val binding: ListItemFileStorageBinding, private val pasteMode: Boolean) : RecyclerView.ViewHolder(binding.root) {
 
         init {
             binding.setClickListener { view ->
-                view.findNavController().navigate(FileStorageGroupFragmentDirections.actionFileStorageGroupFragmentToFilesFragment("/", binding.scope!!.login, binding.scope!!.name))
+                view.findNavController().navigate(FileStorageGroupFragmentDirections.actionFileStorageGroupFragmentToFilesFragment("/", binding.scope!!.login, binding.scope!!.name, pasteMode = pasteMode))
             }
         }
 

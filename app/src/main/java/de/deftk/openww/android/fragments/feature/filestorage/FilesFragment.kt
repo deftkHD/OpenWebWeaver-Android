@@ -28,6 +28,7 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentFilesBinding
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
+import de.deftk.openww.android.feature.LaunchMode
 import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
 import de.deftk.openww.android.feature.filestorage.NetworkTransfer
 import de.deftk.openww.android.feature.filestorage.SessionFileUploadWorker
@@ -186,7 +187,21 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         }
 
         binding.fabUploadFile.setOnClickListener {
-            uploadLauncher.launch(arrayOf("*/*"))
+            if (args.pasteMode) {
+                //TODO don't rely on intent (functionality should be reused for internal copy-paste/cut operations)
+                val intent = requireActivity().intent
+                if (intent.action == Intent.ACTION_SEND) {
+                    uploadFile(requireActivity().intent.getParcelableExtra(Intent.EXTRA_STREAM)!!)
+                } else if (intent.action == Intent.ACTION_SEND_MULTIPLE) {
+                    requireActivity().intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)!!.forEach { uri ->
+                        uploadFile(uri)
+                    }
+                }
+
+                binding.fabUploadFile.isVisible = false
+            } else {
+                uploadLauncher.launch(arrayOf("*/*"))
+            }
         }
 
         setHasOptionsMenu(true)
@@ -196,6 +211,11 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     private fun updateUploadFab() {
         binding.fabUploadFile.isVisible = fileStorageViewModel.getAllFiles(scope).value?.valueOrNull()?.firstOrNull { it.file.id == args.folderId || (it.file.id == "" && args.folderId == "/") }?.file?.effectiveCreate == true
+        if (args.pasteMode) {
+            binding.fabUploadFile.setImageResource(R.drawable.ic_content_paste_24)
+        } else {
+            binding.fabUploadFile.setImageResource(R.drawable.ic_add_24)
+        }
     }
 
     override fun createAdapter(): ActionModeAdapter<IRemoteFile, FileAdapter.FileViewHolder> {
@@ -294,7 +314,11 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         }
     }
 
-    private fun onNetworkTransferRemoved(transfer: NetworkTransfer) {}
+    private fun onNetworkTransferRemoved(transfer: NetworkTransfer) {
+        if (LaunchMode.getLaunchMode(requireActivity().intent) == LaunchMode.FILE_UPLOAD && fileStorageViewModel.networkTransfers.value?.isEmpty() != false) {
+            requireActivity().finish()
+        }
+    }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
@@ -386,7 +410,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     override fun onItemClick(view: View, viewHolder: FileAdapter.FileViewHolder) {
         if (viewHolder.binding.file!!.type == FileType.FOLDER) {
-            val action = FilesFragmentDirections.actionFilesFragmentSelf(viewHolder.binding.file!!.id, viewHolder.binding.scope!!.login, viewHolder.binding.file!!.name)
+            val action = FilesFragmentDirections.actionFilesFragmentSelf(viewHolder.binding.file!!.id, viewHolder.binding.scope!!.login, viewHolder.binding.file!!.name, pasteMode = args.pasteMode)
             navController.navigate(action)
         } else if (viewHolder.binding.file!!.type == FileType.FILE) {
             openFile(viewHolder.binding.file!!)

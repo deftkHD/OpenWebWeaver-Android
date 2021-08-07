@@ -203,6 +203,9 @@
         <action
             android:id="@+id/action_filesFragment_to_readFileFragment"
             app:destination="@id/readFileFragment" />
+        <argument
+            android:name="pasteMode"
+            app:argType="boolean" />
     </fragment>
     <fragment
         android:id="@+id/forumPostFragment"
@@ -384,6 +387,9 @@
         <action
             android:id="@+id/action_launchFragment_to_privacyDialogFragment"
             app:destination="@id/privacyDialogFragment" />
+        <action
+            android:id="@+id/action_launchFragment_to_fileStorageGroupFragment"
+            app:destination="@id/fileStorageGroupFragment" />
     </fragment>
     <fragment
         android:id="@+id/chatsFragment"
