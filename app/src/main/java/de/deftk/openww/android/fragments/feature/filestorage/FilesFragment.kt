@@ -139,6 +139,15 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             }
         }
 
+        fileStorageViewModel.importSessionFile.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                fileStorageViewModel.resetImportSessionFileResponse()
+
+            if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_import_session_file_failed, response.exception, requireContext())
+            }
+        }
+
         binding.fileStorageSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
                 fileStorageViewModel.loadChildren(scope, args.folderId, true, apiContext)

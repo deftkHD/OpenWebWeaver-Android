@@ -47,6 +47,9 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
     private val _batchDeleteResponse = MutableLiveData<List<Response<IRemoteFile>>?>()
     val batchDeleteResponse: LiveData<List<Response<IRemoteFile>>?> = _batchDeleteResponse
 
+    private val _importSessionFileResponse = MutableLiveData<Response<IRemoteFile>?>()
+    val importSessionFile: LiveData<Response<IRemoteFile>?> = _importSessionFileResponse
+
     private val _networkTransfers = MutableLiveData<List<NetworkTransfer>>()
     val networkTransfers: LiveData<List<NetworkTransfer>> = _networkTransfers
 
@@ -169,8 +172,12 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
                     }
                 }
             }
-            //TODO handle response
+            _importSessionFileResponse.value = response
         }
+    }
+
+    fun resetImportSessionFileResponse() {
+        _importSessionFileResponse.value = null
     }
 
     private fun addNetworkTransfer(networkTransfer: NetworkTransfer) {

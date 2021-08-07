@@ -284,4 +284,5 @@
     <string name="add_chat_contact">Chatkontakt hinzufügen</string>
     <string name="upload_finished">Upload abgeschlossen</string>
     <string name="error_upload_worker_failed">Upload fehlgeschlagen: %s</string>
+    <string name="error_import_session_file_failed">Importieren der Datei fehlgeschlagen: %s</string>
 </resources>
