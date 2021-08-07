@@ -78,10 +78,12 @@ class FileAdapter(
             if (progress < 1 || progress >= 100) {
                 binding.progressFile.isVisible = false
                 binding.fileImage.visibility = View.VISIBLE
+                binding.fileNewIndicator.isVisible = binding.recentlyCreated!!
             } else {
                 if (!binding.progressFile.isVisible) {
                     binding.progressFile.isVisible = true
                     binding.fileImage.visibility = View.INVISIBLE
+                    binding.fileNewIndicator.isVisible = false
                 }
                 binding.progressFile.progress = progress
             }
