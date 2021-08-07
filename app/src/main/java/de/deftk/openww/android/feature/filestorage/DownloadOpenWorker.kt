@@ -68,7 +68,7 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
                 val outputStream = file.outputStream()
 
                 var bytesCopied: Long = 0
-                val buffer = ByteArray(8192)
+                val buffer = ByteArray(1024 * 64)
                 var bytes = inputStream.read(buffer)
                 while (bytes >= 0 && !isStopped) {
                     outputStream.write(buffer, 0, bytes)

@@ -1,9 +1,11 @@
 package de.deftk.openww.android.fragments.feature.filestorage
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.SearchView
 import android.widget.Toast
@@ -29,6 +31,7 @@ import de.deftk.openww.android.databinding.FragmentFilesBinding
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
 import de.deftk.openww.android.feature.filestorage.NetworkTransfer
+import de.deftk.openww.android.feature.filestorage.SessionFileUploadWorker
 import de.deftk.openww.android.filter.FileStorageFileFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.FileUtil
@@ -36,9 +39,12 @@ import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.WebWeaverClient
+import de.deftk.openww.api.implementation.feature.filestorage.session.SessionFile
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.filestorage.FileType
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
+import kotlinx.serialization.decodeFromString
 import java.io.File
 import kotlin.math.max
 
@@ -54,6 +60,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     private val navController by lazy { findNavController() }
 
     private lateinit var downloadSaveLauncher: ActivityResultLauncher<Pair<Intent, IRemoteFile>>
+    private lateinit var uploadLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var binding: FragmentFilesBinding
     private lateinit var scope: IOperatingScope
     private lateinit var searchView: SearchView
@@ -83,6 +90,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             if (response is Response.Success) {
                 adapter.submitList(response.value.map { it.file })
                 binding.fileEmpty.isVisible = response.value.isEmpty()
+                updateUploadFab()
 
                 if (args.highlightFileId != null) {
                     // actually this filtering is very bad because someone could destroy it be naming a file like an id, but I guess this is a design problem, not mine
@@ -134,6 +142,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         binding.fileStorageSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
                 fileStorageViewModel.loadChildren(scope, args.folderId, true, apiContext)
+                adapter.notifyDataSetChanged() // update previews
             }
         }
 
@@ -146,6 +155,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 } else {
                     this.scope = newScope
                     fileStorageViewModel.loadChildren(scope, args.folderId, false, apiContext)
+                    updateUploadFab()
                     if (fileStorageViewModel.getCachedChildren(scope, args.folderId).isEmpty())
                         getMainActivity().progressIndicator.isVisible = true
                 }
@@ -161,9 +171,23 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             }
         }
 
+        uploadLauncher = registerForActivityResult(OpenDocumentsContract()) { uris ->
+            uris?.forEach { uri ->
+                uploadFile(uri)
+            }
+        }
+
+        binding.fabUploadFile.setOnClickListener {
+            uploadLauncher.launch(arrayOf("*/*"))
+        }
+
         setHasOptionsMenu(true)
         registerForContextMenu(binding.fileList)
         return binding.root
+    }
+
+    private fun updateUploadFab() {
+        binding.fabUploadFile.isVisible = fileStorageViewModel.getAllFiles(scope).value?.valueOrNull()?.firstOrNull { it.file.id == args.folderId || (it.file.id == "" && args.folderId == "/") }?.file?.effectiveCreate == true
     }
 
     override fun createAdapter(): ActionModeAdapter<IRemoteFile, FileAdapter.FileViewHolder> {
@@ -182,18 +206,18 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                         val fileUri = Uri.parse(workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_URI))
                         val fileName = workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_NAME)!!
                         FileUtil.showFileOpenIntent(fileName, fileUri, preferences, requireContext())
-                        fileStorageViewModel.hideNetworkTransfer(transfer)
+                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
                     }
                     WorkInfo.State.CANCELLED -> {
                         //TODO remove notification
                         progress = -1
-                        fileStorageViewModel.hideNetworkTransfer(transfer)
+                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
                     }
                     WorkInfo.State.FAILED -> {
                         val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
                         Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
                         progress = -1
-                        fileStorageViewModel.hideNetworkTransfer(transfer)
+                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
                     }
                     else -> { /* ignore */ }
                 }
@@ -209,18 +233,49 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                     WorkInfo.State.SUCCEEDED -> {
                         progress = 100
                         Toast.makeText(requireContext(), R.string.download_finished, Toast.LENGTH_LONG).show()
-                        fileStorageViewModel.hideNetworkTransfer(transfer)
+                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
                     }
                     WorkInfo.State.CANCELLED -> {
                         //TODO remove notification
                         progress = -1
-                        fileStorageViewModel.hideNetworkTransfer(transfer)
+                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
                     }
                     WorkInfo.State.FAILED -> {
                         val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
                         Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
                         progress = -1
-                        fileStorageViewModel.hideNetworkTransfer(transfer)
+                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
+                    }
+                    else -> { /* ignore */ }
+                }
+                transfer.progress = progress
+                val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
+                viewHolder.setProgress(progress)
+            }
+        } else if (transfer is NetworkTransfer.Upload) {
+            liveData.observe(viewLifecycleOwner) { workInfo ->
+                val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
+                var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
+                when (workInfo.state) {
+                    WorkInfo.State.SUCCEEDED -> {
+                        progress = 100
+                        Toast.makeText(requireContext(), R.string.upload_finished, Toast.LENGTH_LONG).show()
+                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
+                        val sessionFile = WebWeaverClient.json.decodeFromString<SessionFile>(workInfo.outputData.getString(SessionFileUploadWorker.DATA_SESSION_FILE) ?: "")
+                        userViewModel.apiContext.value?.also { apiContext ->
+                            fileStorageViewModel.importSessionFile(sessionFile, scope, apiContext)
+                        }
+                    }
+                    WorkInfo.State.CANCELLED -> {
+                        //TODO remove notification
+                        progress = -1
+                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
+                    }
+                    WorkInfo.State.FAILED -> {
+                        val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
+                        Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
+                        progress = -1
+                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
                     }
                     else -> { /* ignore */ }
                 }
@@ -231,11 +286,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         }
     }
 
-    private fun onNetworkTransferRemoved(transfer: NetworkTransfer) {
-        /*if (transfer is NetworkTransfer.Upload) {
-
-        }*/
-    }
+    private fun onNetworkTransferRemoved(transfer: NetworkTransfer) {}
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
@@ -346,6 +397,12 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         }
     }
 
+    private fun uploadFile(uri: Uri) {
+        userViewModel.apiContext.value?.also { apiContext ->
+            fileStorageViewModel.startUpload(workManager, scope, apiContext, uri, FileUtil.uriToFileName(uri, requireContext()), 0, args.folderId)
+        }
+    }
+
     override fun onDestroy() {
         getMainActivity().searchProvider = null
         super.onDestroy()
@@ -364,5 +421,26 @@ class SaveFileContract : ActivityResultContract<Pair<Intent, IRemoteFile>, Pair<
 
     override fun parseResult(resultCode: Int, intent: Intent?): Pair<ActivityResult, IRemoteFile> {
         return Pair(ActivityResult(resultCode, intent), file)
+    }
+}
+
+class OpenDocumentsContract : ActivityResultContract<Array<String>, Array<Uri>?>() {
+
+    override fun createIntent(context: Context, input: Array<String>?): Intent {
+        return Intent(Intent.ACTION_OPEN_DOCUMENT)
+            .putExtra(Intent.EXTRA_MIME_TYPES, input)
+            .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            .setType("*/*")
+    }
+
+    override fun parseResult(resultCode: Int, intent: Intent?): Array<Uri>? {
+        if (intent == null || resultCode != Activity.RESULT_OK)
+            return null
+
+        return if (intent.clipData != null) {
+            Array(intent.clipData!!.itemCount) { index -> intent.clipData!!.getItemAt(index).uri }
+        } else {
+            arrayOf(intent.data!!)
+        }
     }
 }

@@ -1,23 +1,25 @@
 package de.deftk.openww.android.viewmodel
 
+import android.net.Uri
 import androidx.lifecycle.*
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
-import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
-import de.deftk.openww.android.feature.filestorage.DownloadSaveWorker
-import de.deftk.openww.android.feature.filestorage.FileCacheElement
-import de.deftk.openww.android.feature.filestorage.NetworkTransfer
+import de.deftk.openww.android.feature.filestorage.*
 import de.deftk.openww.android.filter.FileStorageFileFilter
 import de.deftk.openww.android.filter.FileStorageQuotaFilter
 import de.deftk.openww.android.repository.FileStorageRepository
 import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IOperatingScope
+import de.deftk.openww.api.model.RemoteScope
+import de.deftk.openww.api.model.feature.Modification
 import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.model.feature.filestorage.FileType
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
+import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -75,7 +77,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
 
     fun loadChildren(scope: IOperatingScope, parentId: String, overwriteExisting: Boolean, apiContext: IApiContext) {
         viewModelScope.launch {
-            val response = fileStorageRepository.getFiles(parentId, parentId == "/" || parentId == "", scope, apiContext)
+            val response = fileStorageRepository.getFiles(parentId, true, scope, apiContext)
             val allFiles = getAllFiles(scope) as MutableLiveData
             allFiles.value = response.smartMap { responseValue ->
                 val previewResponse = runBlocking { loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext) }
@@ -83,8 +85,11 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
 
                 // insert into live data
                 val value = allFiles.value
-                if (value != null && !overwriteExisting) {
+                if (value != null) {
                     allFiles.value?.valueOrNull()?.toMutableList()?.apply {
+                        if (overwriteExisting) {
+                            removeAll { it.file.parentId == parentId }
+                        }
                         addAll(files)
                     }?.distinctBy { file -> file.file.id } ?: emptyList()
                 } else {
@@ -127,13 +132,63 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
     }
 
+    fun startUpload(workManager: WorkManager, scope: IOperatingScope, apiContext: IApiContext, uri: Uri, fileName: String, size: Long, parentId: String) {
+        // inject placeholder
+        val id = "upload_transfer_${networkTransfers.value?.size ?: 0}"
+        val liveData = getAllFiles(scope) as MutableLiveData
+        liveData.value = liveData.value?.smartMap {
+            it.toMutableList().apply {
+                val userScope = RemoteScope(apiContext.user.login, apiContext.user.name, apiContext.user.type, true, null)
+                add(0, FileCacheElement(RemoteFilePlaceholder(id, fileName, size, parentId, Modification(userScope, Date()))))
+            }
+        }
+
+        // start upload
+        val workRequest = SessionFileUploadWorker.createRequest(uri, fileName, scope.getRequestContext(apiContext))
+        addNetworkTransfer(NetworkTransfer.Upload(workRequest.id, id))
+        workManager.enqueue(workRequest)
+    }
+
+    fun importSessionFile(sessionFile: ISessionFile, scope: IOperatingScope, apiContext: IApiContext) {
+        viewModelScope.launch {
+            val response = fileStorageRepository.importSessionFile(sessionFile, scope, apiContext)
+            if (response is Response.Success) {
+                val allFiles = getAllFiles(scope) as MutableLiveData
+                allFiles.value = response.smartMap { responseValue ->
+                    val previewResponse = runBlocking { loadPreviews(listOf(response.value), scope, apiContext) }
+                    val files = listOf(FileCacheElement(responseValue, previewResponse.valueOrNull()?.firstOrNull { it.file.id == responseValue.id }?.previewUrl))
+
+                    // insert into live data
+                    val value = allFiles.value
+                    if (value != null) {
+                        allFiles.value?.valueOrNull()?.toMutableList()?.apply {
+                            addAll(files)
+                        }?.distinctBy { file -> file.file.id } ?: emptyList()
+                    } else {
+                        files
+                    }
+                }
+            }
+            //TODO handle response
+        }
+    }
+
     private fun addNetworkTransfer(networkTransfer: NetworkTransfer) {
         val transfers = (_networkTransfers.value ?: emptyList()).toMutableList()
         transfers.add(networkTransfer)
         _networkTransfers.value = transfers
     }
 
-    fun hideNetworkTransfer(networkTransfer: NetworkTransfer) {
+    fun hideNetworkTransfer(networkTransfer: NetworkTransfer, scope: IOperatingScope) {
+        if (networkTransfer is NetworkTransfer.Upload) {
+            val liveData = getAllFiles(scope) as MutableLiveData
+            liveData.value = liveData.value?.smartMap {
+                it.toMutableList().apply {
+                    removeAll { file -> file.file.id == networkTransfer.id }
+                }
+            }
+        }
+
         val transfers = (_networkTransfers.value ?: emptyList()).toMutableList()
         transfers.remove(networkTransfer)
         _networkTransfers.value = transfers
@@ -160,6 +215,5 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
     fun resetBatchDeleteResponse() {
         _batchDeleteResponse.value = null
     }
-
 
 }

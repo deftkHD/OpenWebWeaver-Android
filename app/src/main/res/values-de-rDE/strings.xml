@@ -282,4 +282,6 @@
     <string name="feature_not_available">Funktion nicht mehr verfügbar</string>
     <string name="open_chat">Chat öffnen</string>
     <string name="add_chat_contact">Chatkontakt hinzufügen</string>
+    <string name="upload_finished">Upload abgeschlossen</string>
+    <string name="error_upload_worker_failed">Upload fehlgeschlagen: %s</string>
 </resources>

@@ -284,5 +284,7 @@
     <string name="feature_not_available">Feature not available</string>
     <string name="open_chat">Open chat</string>
     <string name="add_chat_contact">Add chat contact</string>
+    <string name="upload_finished">Upload finished</string>
+    <string name="error_upload_worker_failed">Upload failed: %s</string>
 
 </resources>

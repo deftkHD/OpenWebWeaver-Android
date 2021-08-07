@@ -61,7 +61,7 @@ class DownloadSaveWorker(context: Context, params: WorkerParameters) :
             try {
                 val outputStream = applicationContext.contentResolver.openOutputStream(destinationUri, "w") ?: return@withContext exceptionResult(IllegalArgumentException("Destination not found"))
                 val inputStream = URL(downloadUrl).openStream()
-                val buffer = ByteArray(8192)
+                val buffer = ByteArray(1024 * 64)
                 var writtenBytes = 0
                 while (!isStopped) {
                     val read = inputStream.read(buffer)

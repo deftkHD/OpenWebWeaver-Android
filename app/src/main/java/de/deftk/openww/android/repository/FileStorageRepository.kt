@@ -10,6 +10,7 @@ import de.deftk.openww.api.model.feature.FilePreviewUrl
 import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFileProvider
+import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
 import de.deftk.openww.api.request.OperatingScopeApiRequest
 import de.deftk.openww.api.request.UserApiRequest
 import de.deftk.openww.api.response.ResponseUtil
@@ -46,6 +47,10 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun getFilePreviews(files: List<IRemoteFile>, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
         scope.getFilePreviews(files, apiContext)
+    }
+
+    suspend fun importSessionFile(sessionFile: ISessionFile, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
+        scope.importSessionFile(sessionFile, context = scope.getRequestContext(apiContext))
     }
 
     suspend fun deleteFile(file: IRemoteFile, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
