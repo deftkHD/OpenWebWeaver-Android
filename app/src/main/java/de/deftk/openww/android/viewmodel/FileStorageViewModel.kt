@@ -50,6 +50,9 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
     private val _importSessionFileResponse = MutableLiveData<Response<IRemoteFile>?>()
     val importSessionFile: LiveData<Response<IRemoteFile>?> = _importSessionFileResponse
 
+    private val _addFolderResponse = MutableLiveData<Response<IRemoteFile>?>()
+    val addFolderResponse: LiveData<Response<IRemoteFile>?> = _addFolderResponse
+
     private val _networkTransfers = MutableLiveData<List<NetworkTransfer>>()
     val networkTransfers: LiveData<List<NetworkTransfer>> = _networkTransfers
 
@@ -111,6 +114,21 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
     fun getCachedChildren(scope: IOperatingScope, parentId: String): List<FileCacheElement> {
         val files = getAllFiles(scope).value?.valueOrNull() ?: emptyList()
         return files.filter { it.file.parentId == parentId }
+    }
+
+    fun addFolder(name: String, parent: IRemoteFile, scope: IOperatingScope, apiContext: IApiContext) {
+        viewModelScope.launch {
+            val response = fileStorageRepository.addFolder(name, "", parent, scope, apiContext)
+            if (response is Response.Success) {
+                val allFiles = getAllFiles(scope) as MutableLiveData
+                allFiles.value = allFiles.value?.smartMap { files ->
+                    files.toMutableList().apply {
+                        add(FileCacheElement(response.value))
+                    }
+                }
+            }
+            _addFolderResponse.value = response
+        }
     }
 
     fun startOpenDownload(workManager: WorkManager, apiContext: IApiContext, file: IRemoteFile, scope: IOperatingScope, destinationUrl: String) {
@@ -221,6 +239,10 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
 
     fun resetBatchDeleteResponse() {
         _batchDeleteResponse.value = null
+    }
+
+    fun resetAddFolderResponse() {
+        _addFolderResponse.value = null
     }
 
 }

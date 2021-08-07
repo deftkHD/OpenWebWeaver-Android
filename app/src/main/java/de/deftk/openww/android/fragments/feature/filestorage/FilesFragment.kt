@@ -1,11 +1,14 @@
 package de.deftk.openww.android.fragments.feature.filestorage
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.InputType
 import android.view.*
+import android.widget.EditText
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -30,6 +33,7 @@ import de.deftk.openww.android.databinding.FragmentFilesBinding
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.feature.LaunchMode
 import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
+import de.deftk.openww.android.feature.filestorage.FileCacheElement
 import de.deftk.openww.android.feature.filestorage.NetworkTransfer
 import de.deftk.openww.android.feature.filestorage.SessionFileUploadWorker
 import de.deftk.openww.android.filter.FileStorageFileFilter
@@ -91,6 +95,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 adapter.submitList(response.value.map { it.file })
                 binding.fileEmpty.isVisible = response.value.isEmpty()
                 updateUploadFab()
+                requireActivity().invalidateOptionsMenu()
 
                 if (args.highlightFileId != null) {
                     // actually this filtering is very bad because someone could destroy it be naming a file like an id, but I guess this is a design problem, not mine
@@ -142,9 +147,20 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         fileStorageViewModel.importSessionFile.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 fileStorageViewModel.resetImportSessionFileResponse()
+            getMainActivity().progressIndicator.isVisible = false
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_import_session_file_failed, response.exception, requireContext())
+            }
+        }
+
+        fileStorageViewModel.addFolderResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                fileStorageViewModel.resetAddFolderResponse()
+            getMainActivity().progressIndicator.isVisible = false
+
+            if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_add_folder_failed, response.exception, requireContext())
             }
         }
 
@@ -210,12 +226,16 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     }
 
     private fun updateUploadFab() {
-        binding.fabUploadFile.isVisible = fileStorageViewModel.getAllFiles(scope).value?.valueOrNull()?.firstOrNull { it.file.id == args.folderId || (it.file.id == "" && args.folderId == "/") }?.file?.effectiveCreate == true
+        binding.fabUploadFile.isVisible = getProviderFile()?.file?.effectiveCreate == true
         if (args.pasteMode) {
             binding.fabUploadFile.setImageResource(R.drawable.ic_content_paste_24)
         } else {
             binding.fabUploadFile.setImageResource(R.drawable.ic_add_24)
         }
+    }
+
+    private fun getProviderFile(): FileCacheElement? {
+        return fileStorageViewModel.getAllFiles(scope).value?.valueOrNull()?.firstOrNull { it.file.id == args.folderId || (it.file.id == "" && args.folderId == "/") }
     }
 
     override fun createAdapter(): ActionModeAdapter<IRemoteFile, FileAdapter.FileViewHolder> {
@@ -322,6 +342,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
+        inflater.inflate(R.menu.filestorage_option_menu, menu)
         inflater.inflate(R.menu.list_filter_menu, menu)
         val searchItem = menu.findItem(R.id.filter_item_search)
         searchView = searchItem.actionView as SearchView
@@ -340,7 +361,37 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 return true
             }
         })
-        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        menu.findItem(R.id.filestorage_action_create_folder).isVisible = getProviderFile()?.file?.effectiveCreate == true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.filestorage_action_create_folder -> {
+                val builder = AlertDialog.Builder(requireContext())
+                builder.setTitle(R.string.create_new_folder)
+
+                val input = EditText(requireContext())
+                input.hint = getString(R.string.name)
+                input.inputType = InputType.TYPE_CLASS_TEXT
+                builder.setView(input)
+
+                builder.setPositiveButton(R.string.confirm) { _, _ ->
+                    userViewModel.apiContext.value?.apply {
+                        fileStorageViewModel.addFolder(input.text.toString(), getProviderFile()!!.file, scope, this)
+                        getMainActivity().progressIndicator.isVisible = true
+                    }
+                }
+                builder.setNegativeButton(R.string.cancel) { dialog, _ ->
+                    dialog.cancel()
+                }
+                builder.create().show()
+            }
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return true
     }
 
     override fun onSearchBackPressed(): Boolean {

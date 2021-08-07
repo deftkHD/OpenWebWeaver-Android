@@ -287,5 +287,6 @@
     <string name="upload_finished">Upload finished</string>
     <string name="error_upload_worker_failed">Upload failed: %s</string>
     <string name="error_import_session_file_failed">Failed to import session file: %s</string>
+    <string name="error_add_folder_failed">Failed to add folder: %s</string>
 
 </resources>

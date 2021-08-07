@@ -41,6 +41,10 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         subResponse["entries"]!!.jsonArray.map { WebWeaverClient.json.decodeFromJsonElement<RemoteFile>(it) }
     }
 
+    suspend fun addFolder(name: String, description: String?, parent: IRemoteFileProvider, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
+        parent.addFolder(name, description, scope.getRequestContext(apiContext))
+    }
+
     suspend fun getFileDownloadUrl(file: IRemoteFile, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
         file.getDownloadUrl(scope.getRequestContext(apiContext))
     }
