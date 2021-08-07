@@ -17,14 +17,6 @@
             type="de.deftk.openww.api.model.IOperatingScope" />
 
         <variable
-            name="folderId"
-            type="String" />
-
-        <variable
-            name="path"
-            type="String[]" />
-
-        <variable
             name="selected"
             type="Boolean" />
 

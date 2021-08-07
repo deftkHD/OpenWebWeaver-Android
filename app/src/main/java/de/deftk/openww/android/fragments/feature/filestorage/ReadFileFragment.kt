@@ -13,6 +13,7 @@ import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadFileBinding
 import de.deftk.openww.android.feature.filestorage.FileCacheElement
+import de.deftk.openww.android.filter.FileStorageFileFilter
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
@@ -45,7 +46,10 @@ class ReadFileFragment : Fragment() {
         }
         scope = foundScope
 
-        fileStorageViewModel.getAllProviderLiveData(scope, args.folderId, args.path?.toList()).observe(viewLifecycleOwner) { response ->
+        val filter = FileStorageFileFilter()
+        filter.parentCriteria.value = args.parentId
+        fileStorageViewModel.fileFilter.value = filter
+        fileStorageViewModel.getFilteredFiles(scope).observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 val foundFile = response.value.firstOrNull { it.file.id == args.fileId }
                 if (foundFile == null) {
@@ -65,7 +69,7 @@ class ReadFileFragment : Fragment() {
 
                 when (file.file.type) {
                     FileType.FILE -> binding.fileSize.text = getString(R.string.size).format(Formatter.formatFileSize(requireContext(), file.file.size))
-                    FileType.FOLDER -> binding.fileSize.text = getString(R.string.children_count).format(file.children.value?.valueOrNull()?.size?.toString() ?: getString(R.string.unknown))
+                    FileType.FOLDER -> binding.fileSize.text = getString(R.string.children_count).format(fileStorageViewModel.getCachedChildren(scope, file.file.id).size.takeIf { it != 0 }?.toString() ?: getString(R.string.unknown))
                 }
                 binding.fileIsMine.isChecked = file.file.mine == true
                 binding.fileIsShared.isChecked = file.file.shared == true

@@ -1,6 +1,7 @@
 package de.deftk.openww.android.repository
 
 import de.deftk.openww.api.WebWeaverClient
+import de.deftk.openww.api.implementation.feature.filestorage.RemoteFile
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IOperatingScope
@@ -11,6 +12,7 @@ import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFileProvider
 import de.deftk.openww.api.request.OperatingScopeApiRequest
 import de.deftk.openww.api.request.UserApiRequest
+import de.deftk.openww.api.response.ResponseUtil
 import kotlinx.serialization.json.*
 import javax.inject.Inject
 
@@ -20,8 +22,22 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         apiContext.user.getAllFileStorageQuotas(apiContext)
     }
 
-    suspend fun getFiles(provider: IRemoteFileProvider, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
+    suspend fun getProviderFiles(provider: IRemoteFileProvider, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
         provider.getFiles(context = scope.getRequestContext(apiContext))
+    }
+
+    suspend fun getFiles(parentId: String, getSelf: Boolean, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
+        val request = OperatingScopeApiRequest(scope.getRequestContext(apiContext))
+        val id = request.addGetFileStorageFilesRequest(
+            folderId = parentId,
+            getFiles = true,
+            getFolders = true,
+            getFolder = getSelf,
+            recursive = false
+        )[1]
+        val response = request.fireRequest()
+        val subResponse = ResponseUtil.getSubResponseResult(response.toJson(), id)
+        subResponse["entries"]!!.jsonArray.map { WebWeaverClient.json.decodeFromJsonElement<RemoteFile>(it) }
     }
 
     suspend fun getFileDownloadUrl(file: IRemoteFile, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
@@ -37,7 +53,7 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         file
     }
 
-    // extend LoNetApi to allow more efficient requests
+    // extend json api to allow more efficient requests
 
     private fun UserApiRequest.addGetAllFileStorageQuotasRequest(user: IUser): List<Int> {
         val ids = mutableListOf<Int>()

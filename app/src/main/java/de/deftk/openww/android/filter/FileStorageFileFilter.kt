@@ -19,6 +19,11 @@ class FileStorageFileFilter : Filter<Pair<FileCacheElement, IOperatingScope>>(Fi
         element.first.file.description?.contains(value, true) == true
     }
 
+    val parentCriteria = addCriteria<String>(0, null) { element, value ->
+        value ?: return@addCriteria true
+        element.first.file.parentId == value
+    }
+
     val smartSearchCriteria = addCriteria<String>(R.string.smart_search, null) { element, value ->
         value ?: return@addCriteria true
         nameCriteria.matches(element, value)

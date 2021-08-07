@@ -19,8 +19,6 @@ import java.util.*
 class FileAdapter(
     private val scope: IOperatingScope,
     clickListener: ActionModeClickListener<FileViewHolder>,
-    private val folderId: String?,
-    private val path: Array<String>?,
     private val fileStorageViewModel: FileStorageViewModel
 ) : ActionModeAdapter<IRemoteFile, FileAdapter.FileViewHolder>(FileDiffCallback(), clickListener) {
 
@@ -34,10 +32,8 @@ class FileAdapter(
         holder.bind(
             scope,
             file,
-            folderId,
-            path,
             fileStorageViewModel.networkTransfers.value?.firstOrNull { it.id == file.id }?.progress,
-            fileStorageViewModel.getLiveDataFromCache(scope, file.id, path?.toList())?.previewUrl
+            fileStorageViewModel.getAllFiles(scope).value?.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl
         )
     }
 
@@ -60,12 +56,10 @@ class FileAdapter(
             binding.selected = selected
         }
 
-        fun bind(scope: IOperatingScope, file: IRemoteFile, folderId: String?, path: Array<String>?, progress: Int?, previewUrl: FilePreviewUrl?) {
+        fun bind(scope: IOperatingScope, file: IRemoteFile, progress: Int?, previewUrl: FilePreviewUrl?) {
             binding.selected = false
             binding.scope = scope
             binding.file = file
-            binding.folderId = folderId
-            binding.path = path
             binding.recentlyCreated = Date().time - file.created.date.time <= 259200000 // 3 days
             setProgress(progress ?: 0)
             if (previewUrl != null) {

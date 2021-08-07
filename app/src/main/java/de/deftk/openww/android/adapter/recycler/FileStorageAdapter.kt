@@ -27,7 +27,7 @@ class FileStorageAdapter : ListAdapter<Pair<IOperatingScope, Quota>, RecyclerVie
 
         init {
             binding.setClickListener { view ->
-                view.findNavController().navigate(FileStorageGroupFragmentDirections.actionFileStorageGroupFragmentToFilesFragment(null, binding.scope!!.login, binding.scope!!.name))
+                view.findNavController().navigate(FileStorageGroupFragmentDirections.actionFileStorageGroupFragmentToFilesFragment("/", binding.scope!!.login, binding.scope!!.name))
             }
         }
 

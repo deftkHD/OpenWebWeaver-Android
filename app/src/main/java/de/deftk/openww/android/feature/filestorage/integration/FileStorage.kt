@@ -37,7 +37,7 @@ class FileStorage {
     }
 
     suspend fun loadRootFiles(scope: IOperatingScope, apiContext: IApiContext): Response<List<ProviderCacheElement>> {
-        val response = fileStorageRepository.getFiles(scope, scope, apiContext).smartMap { list -> list.map { ProviderCacheElement(scope, it) } }
+        val response = fileStorageRepository.getProviderFiles(scope, scope, apiContext).smartMap { list -> list.map { ProviderCacheElement(scope, it) } }
         files[scope] = response
         return response
     }
@@ -59,7 +59,7 @@ class FileStorage {
             if (pathSteps == null || pathSteps.isEmpty()) {
                 val targetDirectory = files.firstOrNull { getProviderId(it.provider) == directoryId }
                 if (targetDirectory != null) {
-                    val response = fileStorageRepository.getFiles(targetDirectory.provider, scope, apiContext).smartMap { list -> list.map { ProviderCacheElement(scope, it) } }
+                    val response = fileStorageRepository.getProviderFiles(targetDirectory.provider, scope, apiContext).smartMap { list -> list.map { ProviderCacheElement(scope, it) } }
                     targetDirectory.children = response
                     lastResponse = response
                     if (response is Response.Failure) {
@@ -76,7 +76,7 @@ class FileStorage {
                 if (parent != null) {
                     pathSteps.removeFirst()
                     if (parent.children == null) {
-                        val response = fileStorageRepository.getFiles(parent.provider, scope, apiContext).smartMap { list -> list.map { ProviderCacheElement(scope, it) } }
+                        val response = fileStorageRepository.getProviderFiles(parent.provider, scope, apiContext).smartMap { list -> list.map { ProviderCacheElement(scope, it) } }
                         parent.children = response
                         lastResponse = response
                         if (response is Response.Failure) {

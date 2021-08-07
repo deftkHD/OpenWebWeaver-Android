@@ -185,8 +185,7 @@
         tools:layout="@layout/fragment_files">
         <argument
             android:name="folderId"
-            app:argType="string"
-            app:nullable="true" />
+            app:argType="string" />
         <argument
             android:name="operatorId"
             app:argType="string" />
@@ -196,11 +195,6 @@
         <action
             android:id="@+id/action_filesFragment_self"
             app:destination="@id/filesFragment" />
-        <argument
-            android:name="path"
-            android:defaultValue="@null"
-            app:argType="string[]"
-            app:nullable="true" />
         <argument
             android:name="highlightFileId"
             android:defaultValue="@null"
@@ -515,13 +509,8 @@
             android:name="fileId"
             app:argType="string" />
         <argument
-            android:name="folderId"
-            app:argType="string"
-            app:nullable="true" />
-        <argument
-            android:name="path"
-            app:argType="string[]"
-            app:nullable="true" />
+            android:name="parentId"
+            app:argType="string" />
     </fragment>
     <dialog
         android:id="@+id/betaDisclaimerFragment"

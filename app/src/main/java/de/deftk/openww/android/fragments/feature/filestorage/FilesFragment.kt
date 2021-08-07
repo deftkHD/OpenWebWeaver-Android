@@ -76,7 +76,10 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         binding.fileList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         binding.fileList.recycledViewPool.setMaxRecycledViews(0, 0) // this is just a workaround (otherwise preview images disappear while scrolling, see https://github.com/square/picasso/issues/845#issuecomment-280626688) FIXME seems like an issue with recycling
 
-        fileStorageViewModel.getFilteredProviderLiveData(scope, args.folderId, args.path?.toList()).observe(viewLifecycleOwner) { response ->
+        val filter = FileStorageFileFilter()
+        filter.parentCriteria.value = args.folderId
+        fileStorageViewModel.fileFilter.value = filter
+        fileStorageViewModel.getFilteredFiles(scope).observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value.map { it.file })
                 binding.fileEmpty.isVisible = response.value.isEmpty()
@@ -130,8 +133,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
         binding.fileStorageSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
-                fileStorageViewModel.cleanCache(scope, args.folderId, args.path?.toList())
-                fileStorageViewModel.loadFiles(scope, args.folderId, args.path?.toList(), apiContext)
+                fileStorageViewModel.loadChildren(scope, args.folderId, true, apiContext)
             }
         }
 
@@ -143,8 +145,8 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                     return@observe
                 } else {
                     this.scope = newScope
-                    fileStorageViewModel.loadFiles(newScope, args.folderId, args.path?.toList(), apiContext)
-                    if (fileStorageViewModel.getAllProviderLiveData(scope, args.folderId, args.path?.toList()).value == null)
+                    fileStorageViewModel.loadChildren(scope, args.folderId, false, apiContext)
+                    if (fileStorageViewModel.getCachedChildren(scope, args.folderId).isEmpty())
                         getMainActivity().progressIndicator.isVisible = true
                 }
             } else {
@@ -165,7 +167,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     }
 
     override fun createAdapter(): ActionModeAdapter<IRemoteFile, FileAdapter.FileViewHolder> {
-        return FileAdapter(scope, this, args.folderId, args.path, fileStorageViewModel)
+        return FileAdapter(scope, this, fileStorageViewModel)
     }
 
     private fun onNetworkTransferAdded(transfer: NetworkTransfer) {
@@ -250,6 +252,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             override fun onQueryTextChange(newText: String?): Boolean {
                 val filter = FileStorageFileFilter()
                 filter.smartSearchCriteria.value = newText
+                filter.parentCriteria.value = args.folderId
                 fileStorageViewModel.fileFilter.value = filter
                 return true
             }
@@ -283,7 +286,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         return when (item.itemId) {
             R.id.filestorage_action_info -> {
                 val file = adapter.getItem(menuInfo.position)
-                navController.navigate(FilesFragmentDirections.actionFilesFragmentToReadFileFragment(args.operatorId, file.id, args.folderId, args.path))
+                navController.navigate(FilesFragmentDirections.actionFilesFragmentToReadFileFragment(args.operatorId, file.id, args.folderId))
                 true
             }
             R.id.filestorage_action_download -> {
@@ -313,7 +316,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         when (item.itemId) {
             R.id.filestorage_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
-                    fileStorageViewModel.batchDelete(adapter.selectedItems.map { it.binding.file!! }, args.folderId, args.path?.toList(), scope, apiContext)
+                    fileStorageViewModel.batchDelete(adapter.selectedItems.map { it.binding.file!! }, scope, apiContext)
                     getMainActivity().progressIndicator.isVisible = true
                 }
             }
@@ -324,12 +327,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     override fun onItemClick(view: View, viewHolder: FileAdapter.FileViewHolder) {
         if (viewHolder.binding.file!!.type == FileType.FOLDER) {
-            val path = if (viewHolder.binding.folderId != null) {
-                if (viewHolder.binding.path != null)
-                    arrayOf(*viewHolder.binding.path!!, viewHolder.binding.folderId!!)
-                else arrayOf(viewHolder.binding.folderId!!)
-            } else null
-            val action = FilesFragmentDirections.actionFilesFragmentSelf(viewHolder.binding.file!!.id, viewHolder.binding.scope!!.login, viewHolder.binding.file!!.name, path)
+            val action = FilesFragmentDirections.actionFilesFragmentSelf(viewHolder.binding.file!!.id, viewHolder.binding.scope!!.login, viewHolder.binding.file!!.name)
             navController.navigate(action)
         } else if (viewHolder.binding.file!!.type == FileType.FILE) {
             openFile(viewHolder.binding.file!!)
