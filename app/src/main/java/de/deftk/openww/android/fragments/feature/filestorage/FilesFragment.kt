@@ -411,6 +411,9 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             if (file.effectiveRead == true && file.type == FileType.FILE) {
                 requireActivity().menuInflater.inflate(R.menu.filestorage_read_list_menu, menu)
             }
+            if (file.effectiveDelete == true) {
+                requireActivity().menuInflater.inflate(R.menu.delete_menu_item, menu)
+            }
         }
     }
 
@@ -418,6 +421,13 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.fileList.adapter as FileAdapter
         return when (item.itemId) {
+            R.id.menu_item_delete -> {
+                val file = adapter.getItem(menuInfo.position)
+                userViewModel.apiContext.value?.also { apiContext ->
+                    fileStorageViewModel.batchDelete(listOf(file), scope, apiContext)
+                }
+                true
+            }
             R.id.filestorage_action_info -> {
                 val file = adapter.getItem(menuInfo.position)
                 navController.navigate(FilesFragmentDirections.actionFilesFragmentToReadFileFragment(args.operatorId, file.id, args.folderId))
