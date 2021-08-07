@@ -55,8 +55,8 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                 val folder = toolbarSpinner.getItemAtPosition(position) as IEmailFolder
                 if (folder.id != mailboxViewModel.currentFolder.value?.id) {
                     userViewModel.apiContext.value?.also { apiContext ->
-                        mailboxViewModel.selectFolder(folder, apiContext)
                         getMainActivity().progressIndicator.isVisible = true
+                        mailboxViewModel.selectFolder(folder, apiContext)
                     }
                 }
             }
