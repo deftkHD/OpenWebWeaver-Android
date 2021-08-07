@@ -13,6 +13,7 @@ import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.FilePreviewUrl
+import de.deftk.openww.api.model.feature.filestorage.FileType
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import java.util.*
 
@@ -60,7 +61,13 @@ class FileAdapter(
             binding.selected = false
             binding.scope = scope
             binding.file = file
-            binding.recentlyCreated = Date().time - file.created.date.time <= 259200000 // 3 days
+            val recentlyCreated = Date().time - file.created.date.time <= 259200000 // 3 days
+            binding.recentlyCreated = recentlyCreated
+            if (file.type == FileType.FOLDER && !recentlyCreated) {
+                val recentlyAdded = file.aggregation?.newestFile?.created?.date?.time
+                if (recentlyAdded != null)
+                    binding.recentlyCreated = Date().time - recentlyAdded <= 259200000 // 3 days
+            }
             setProgress(progress ?: 0)
             if (previewUrl != null) {
                 Glide.with(itemView.context)
