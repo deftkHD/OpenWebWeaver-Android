@@ -408,7 +408,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         requireActivity().menuInflater.inflate(R.menu.filestorage_list_menu, menu)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val file = (binding.fileList.adapter as FileAdapter).getItem(menuInfo.position)
-            if (file.effectiveRead == true) {
+            if (file.effectiveRead == true && file.type == FileType.FILE) {
                 requireActivity().menuInflater.inflate(R.menu.filestorage_read_list_menu, menu)
             }
         }
