@@ -2,6 +2,7 @@ package de.deftk.openww.android
 
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.os.Build
 import android.text.format.Formatter
 import android.text.method.LinkMovementMethod
 import android.view.View
@@ -239,6 +240,22 @@ object BindingAdapters {
     @BindingAdapter("android:srcRes")
     fun setSrcRes(view: ImageView, @DrawableRes res: Int) {
         view.setImageResource(res)
+    }
+
+    @JvmStatic
+    @BindingAdapter("lowerTextPriority")
+    fun setLowerTextPriority(view: TextView, state: Boolean) {
+        italic(view, state)
+
+        val a = view.context.theme.obtainStyledAttributes(R.style.AppTheme, intArrayOf(android.R.attr.textColorPrimary, android.R.attr.textColorSecondary))
+        val index = if (state) 1 else 0
+        val color = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            view.context.resources.getColor(a.getResourceId(index, 0), view.context.theme)
+        } else {
+            view.context.resources.getColor(a.getResourceId(index, 0))
+        }
+        view.setTextColor(color)
+
     }
 
 }

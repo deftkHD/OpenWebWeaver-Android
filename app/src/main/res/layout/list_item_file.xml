@@ -24,6 +24,10 @@
             name="recentlyCreated"
             type="Boolean" />
 
+        <variable
+            name="readable"
+            type="Boolean" />
+
     </data>
 
     <RelativeLayout xmlns:tools="http://schemas.android.com/tools"
@@ -55,11 +59,11 @@
                 android:id="@+id/file_new_indicator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="end|top"
                 android:layout_marginStart="5dp"
                 android:contentDescription="@string/file_indicator_new"
-                android:src="@drawable/ic_new_releases_16"
-                android:layout_gravity="end|top"
-                android:isVisible="@{recentlyCreated}" />
+                android:isVisible="@{recentlyCreated}"
+                android:src="@drawable/ic_new_releases_16" />
 
         </FrameLayout>
 
@@ -80,16 +84,16 @@
 
         <TextView
             android:id="@+id/file_name"
+            lowerTextPriority="@{!readable}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_marginStart="5dp"
-            android:layout_toEndOf="@+id/image_frame"
             android:layout_toStartOf="@id/more_button"
+            android:layout_toEndOf="@+id/image_frame"
             android:ellipsize="end"
             android:lines="1"
             android:text="@{file.name}"
-            android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             tools:text="File name" />
 
