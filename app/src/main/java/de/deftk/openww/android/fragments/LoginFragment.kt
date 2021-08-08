@@ -9,18 +9,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentLoginBinding
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
-class LoginFragment : Fragment() {
+class LoginFragment : AbstractFragment(false) {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val navController by lazy { findNavController() }
@@ -82,7 +80,7 @@ class LoginFragment : Fragment() {
                     }
                     Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
                 }
-                getMainActivity().progressIndicator.isVisible = false
+                enableUI(true)
             }
         }
 
@@ -91,9 +89,9 @@ class LoginFragment : Fragment() {
         }
 
         binding.btnLogin.setOnClickListener {
-            if (!getMainActivity().progressIndicator.isVisible) {
+            if (uiEnabled) {
                 actionPerformed = true
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
                 val username = binding.txtEmail.text.toString()
                 val password = binding.txtPassword.text.toString()
                 val generateToken = binding.chbStayLoggedIn.isChecked
@@ -108,4 +106,10 @@ class LoginFragment : Fragment() {
         return binding.root
     }
 
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.btnLogin.isEnabled = enabled
+        binding.chbStayLoggedIn.isEnabled = enabled
+        binding.txtEmail.isEnabled = enabled
+        binding.txtPassword.isEnabled = enabled
+    }
 }

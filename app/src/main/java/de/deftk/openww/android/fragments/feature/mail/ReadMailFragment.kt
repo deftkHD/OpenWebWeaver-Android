@@ -3,15 +3,13 @@ package de.deftk.openww.android.fragments.feature.mail
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
-import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadMailBinding
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
@@ -22,7 +20,7 @@ import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 import java.text.DateFormat
 
-class ReadMailFragment : Fragment() {
+class ReadMailFragment : AbstractFragment(true) {
 
     private val args: ReadMailFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
@@ -37,14 +35,9 @@ class ReadMailFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadMailBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
-        setHasOptionsMenu(true)
-        return binding.root
-    }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         mailboxViewModel.emailReadPostResponse.observe(viewLifecycleOwner) { response ->
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             if (response != null)
                 mailboxViewModel.resetReadPostResponse() // mark as handled
             if (deleted)
@@ -96,7 +89,7 @@ class ReadMailFragment : Fragment() {
                     email = foundEmail
                     userViewModel.apiContext.value?.apply {
                         mailboxViewModel.readEmail(email, emailFolder, this)
-                        getMainActivity().progressIndicator.isVisible = true
+                        enableUI(false)
                     }
                 } else if (mailResponse is Response.Failure) {
                     Reporter.reportException(R.string.error_get_emails_failed, mailResponse.exception, requireContext())
@@ -111,6 +104,8 @@ class ReadMailFragment : Fragment() {
                 navController.popBackStack(R.id.mailFragment, false)
             }
         }
+        setHasOptionsMenu(true)
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -126,7 +121,7 @@ class ReadMailFragment : Fragment() {
             R.id.menu_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.deleteEmail(email, emailFolder, true, apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
                 true
             }
@@ -134,4 +129,5 @@ class ReadMailFragment : Fragment() {
         }
     }
 
+    override fun onUIStateChanged(enabled: Boolean) {}
 }

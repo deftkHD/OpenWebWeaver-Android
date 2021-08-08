@@ -9,19 +9,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentTokenLoginBinding
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
 
-class TokenLoginFragment : Fragment() {
+class TokenLoginFragment : AbstractFragment(true) {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val navController by lazy { findNavController() }
@@ -83,7 +81,7 @@ class TokenLoginFragment : Fragment() {
                     }
                     Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
                 }
-                getMainActivity().progressIndicator.isVisible = false
+                enableUI(true)
             }
         }
 
@@ -92,9 +90,9 @@ class TokenLoginFragment : Fragment() {
         }
 
         binding.btnLogin.setOnClickListener {
-            if (!getMainActivity().progressIndicator.isVisible) {
+            if (uiEnabled) {
                 actionPerformed = true
-            getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
                 val username = binding.txtEmail.text.toString()
                 val token = binding.txtToken.text.toString()
                 userViewModel.loginToken(username, token)
@@ -104,4 +102,10 @@ class TokenLoginFragment : Fragment() {
         return binding.root
     }
 
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.btnLogin.isEnabled = enabled
+        binding.chbRememberToken.isEnabled = enabled
+        binding.txtEmail.isEnabled = enabled
+        binding.txtToken.isEnabled = enabled
+    }
 }

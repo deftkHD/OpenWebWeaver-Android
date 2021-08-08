@@ -11,7 +11,6 @@ import androidx.appcompat.view.ActionMode
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -229,8 +228,4 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
         }
     }
 
-}
-
-fun Fragment.getMainActivity(): MainActivity {
-    return (requireActivity() as? MainActivity?) ?: error("Invalid fragment scope")
 }

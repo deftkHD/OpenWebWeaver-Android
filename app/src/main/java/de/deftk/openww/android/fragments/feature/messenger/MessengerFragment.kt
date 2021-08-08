@@ -12,7 +12,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.ChatAdapter
 import de.deftk.openww.android.api.Response
@@ -38,8 +37,6 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMessengerBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
-        getMainActivity().searchProvider = this
 
         binding.chatList.adapter = adapter
         binding.chatList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
@@ -57,7 +54,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_users_failed, response.exception, requireContext())
             }
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             binding.chatsSwipeRefresh.isRefreshing = false
         }
 
@@ -65,7 +62,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
             if (response != null)
                 messengerViewModel.resetAddChatResponse()
 
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_add_chat_failed, response.exception, requireContext())
             }
@@ -75,7 +72,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
             if (response != null)
                 messengerViewModel.resetRemoveChatResponse()
 
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_remove_chat_failed, response.exception, requireContext())
             }
@@ -84,7 +81,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
         messengerViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 messengerViewModel.resetBatchDeleteResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
@@ -110,7 +107,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
                         targetUser = "$targetUser@${this.user.login.split("@")[1]}"
                     }
                     messengerViewModel.addChat(targetUser, this)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             builder.setNegativeButton(R.string.cancel) { dialog, _ ->
@@ -129,11 +126,11 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
                 }
                 messengerViewModel.loadChats(apiContext)
                 if (messengerViewModel.allUsersResponse.value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 binding.chatsEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
@@ -155,7 +152,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
             R.id.chat_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     messengerViewModel.batchDelete(adapter.selectedItems.map { it.binding.chatContact!! }, apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             else -> return false
@@ -182,7 +179,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
                 val user = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.apply {
                     messengerViewModel.addChat(user.user.login, this)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
                 true
             }
@@ -190,7 +187,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
                 val user = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 messengerViewModel.removeChat(user, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
                 true
             }
             else -> false
@@ -229,9 +226,9 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
         }
     }
 
-    override fun onDestroy() {
-        getMainActivity().searchProvider = null
-        super.onDestroy()
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.chatsSwipeRefresh.isEnabled = enabled
+        binding.chatList.isEnabled = enabled
+        binding.fabAddChat.isEnabled = enabled
     }
-
 }

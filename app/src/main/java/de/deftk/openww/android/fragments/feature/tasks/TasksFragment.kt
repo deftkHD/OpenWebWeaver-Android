@@ -9,7 +9,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.TasksAdapter
 import de.deftk.openww.android.api.Response
@@ -37,8 +36,6 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentTasksBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
-        getMainActivity().searchProvider = this
 
         binding.tasksList.adapter = adapter
         binding.tasksList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
@@ -49,7 +46,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
             }
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             binding.tasksSwipeRefresh.isRefreshing = false
         }
 
@@ -74,7 +71,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
 
                 tasksViewModel.loadTasks(true, apiContext)
                 if (tasksViewModel.allTasksResponse.value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 binding.fabAddTask.isVisible = apiContext.user.getGroups().any { it.effectiveRights.contains(Permission.TASKS_WRITE) } || apiContext.user.getGroups().any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }
                 tasksViewModel.setFilter { filter ->
                     filter.account = apiContext.user.login
@@ -83,14 +80,14 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
                 binding.fabAddTask.isVisible = false
                 binding.tasksEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
         tasksViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 tasksViewModel.resetBatchDeleteResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
@@ -103,7 +100,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 tasksViewModel.resetPostResponse() // mark as handled
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
@@ -196,7 +193,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             R.id.tasks_action_ignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
                 mode.finish()
             }
@@ -209,7 +206,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             R.id.tasks_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.batchDelete(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
                 mode.finish()
             }
@@ -242,13 +239,13 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             R.id.menu_item_ignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(listOf(adapter.getItem(menuInfo.position)), apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             R.id.menu_item_unignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.unignoreTasks(listOf(adapter.getItem(menuInfo.position)), apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             R.id.menu_item_import_in_calendar -> {
@@ -264,16 +261,16 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
                 val (task, scope) = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 tasksViewModel.deleteTask(task, scope, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
             else -> return super.onContextItemSelected(item)
         }
         return true
     }
 
-    override fun onDestroy() {
-        getMainActivity().searchProvider = null
-        super.onDestroy()
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.tasksSwipeRefresh.isEnabled = enabled
+        binding.tasksList.isEnabled = enabled
+        binding.fabAddTask.isEnabled = enabled
     }
-
 }

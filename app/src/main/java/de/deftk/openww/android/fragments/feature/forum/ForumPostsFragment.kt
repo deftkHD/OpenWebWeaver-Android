@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.ForumPostAdapter
 import de.deftk.openww.android.api.Response
@@ -41,8 +40,6 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentForumPostsBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
-        getMainActivity().searchProvider = this
 
         binding.forumSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
@@ -53,7 +50,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         forumViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 forumViewModel.resetDeleteResponse() // mark as handled
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
@@ -63,7 +60,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         forumViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 forumViewModel.resetBatchDeleteResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
@@ -104,17 +101,17 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
                     } else if (response is Response.Failure) {
                         Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
                     }
-                    getMainActivity().progressIndicator.isVisible = false
+                    enableUI(true)
                     binding.forumSwipeRefresh.isRefreshing = false
                 }
 
                 forumViewModel.loadForumPosts(group!!, null, apiContext)
                 if (forumViewModel.getAllForumPosts(group!!).value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 binding.forumEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
@@ -203,9 +200,8 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         }
     }
 
-    override fun onDestroy() {
-        getMainActivity().searchProvider = null
-        super.onDestroy()
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.forumSwipeRefresh.isEnabled = enabled
+        binding.forumList.isEnabled = enabled
     }
-
 }

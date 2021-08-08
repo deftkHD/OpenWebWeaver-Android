@@ -9,15 +9,13 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditTaskBinding
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.TasksViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -29,7 +27,7 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-class EditTaskFragment : Fragment() {
+class EditTaskFragment : AbstractFragment(true) {
 
     //TODO ability to remove start/due date
 
@@ -49,10 +47,9 @@ class EditTaskFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEditTaskBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
 
         tasksViewModel.allTasksResponse.observe(viewLifecycleOwner) { response ->
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             if (response is Response.Success) {
                 if (args.groupId != null && args.taskId != null) {
                     // edit existing
@@ -105,7 +102,7 @@ class EditTaskFragment : Fragment() {
 
                 tasksViewModel.loadTasks(true, apiContext)
                 if (tasksViewModel.allTasksResponse.value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 binding.taskTitle.setText("")
                 binding.taskGroup.adapter = null
@@ -115,14 +112,14 @@ class EditTaskFragment : Fragment() {
                 startDate = null
                 binding.taskDue.setText("")
                 dueDate = null
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
         tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 tasksViewModel.resetPostResponse() // mark as handled
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Success) {
                 ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
@@ -200,15 +197,24 @@ class EditTaskFragment : Fragment() {
 
             if (editMode) {
                 tasksViewModel.editTask(task, title, description, completed, startDate, dueDate, scope, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             } else {
                 scope = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup } ?: return false
                 tasksViewModel.addTask(title, description, completed, startDate, dueDate, scope, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.taskCompleted.isEnabled = enabled
+        binding.taskDue.isEnabled = enabled
+        binding.taskGroup.isEnabled = enabled
+        binding.taskStart.isEnabled = enabled
+        binding.taskText.isEnabled = enabled
+        binding.taskTitle.isEnabled = enabled
     }
 }
 

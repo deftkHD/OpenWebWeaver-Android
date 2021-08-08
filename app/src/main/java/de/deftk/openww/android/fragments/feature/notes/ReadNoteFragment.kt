@@ -4,14 +4,13 @@ import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadNoteBinding
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
@@ -22,7 +21,7 @@ import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.notes.INote
 import java.text.DateFormat
 
-class ReadNoteFragment : Fragment() {
+class ReadNoteFragment : AbstractFragment(true) {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val notesViewModel: NotesViewModel by activityViewModels()
@@ -36,10 +35,9 @@ class ReadNoteFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadNoteBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
 
         notesViewModel.allNotesResponse.observe(viewLifecycleOwner) { response ->
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             if (deleted)
                 return@observe
 
@@ -74,20 +72,20 @@ class ReadNoteFragment : Fragment() {
                 binding.fabEditNote.isVisible = apiContext.user.effectiveRights.contains(Permission.NOTES_WRITE) || apiContext.user.effectiveRights.contains(Permission.NOTES_ADMIN)
                 notesViewModel.loadNotes(apiContext)
                 if (notesViewModel.allNotesResponse.value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 binding.noteTitle.text = ""
                 binding.noteText.text = ""
                 binding.noteDate.text = ""
                 binding.fabEditNote.isVisible = false
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
         notesViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 notesViewModel.resetDeleteResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Success) {
                 deleted = true
@@ -121,11 +119,14 @@ class ReadNoteFragment : Fragment() {
             R.id.menu_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 notesViewModel.deleteNote(note, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.fabEditNote.isEnabled = enabled
+    }
 }

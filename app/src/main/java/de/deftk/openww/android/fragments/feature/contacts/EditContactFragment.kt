@@ -7,14 +7,12 @@ import android.widget.*
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ContactDetailAdapter
 import de.deftk.openww.android.adapter.recycler.ContactDetailClickListener
 import de.deftk.openww.android.api.Response
@@ -22,6 +20,7 @@ import de.deftk.openww.android.databinding.FragmentEditContactBinding
 import de.deftk.openww.android.feature.contacts.ContactDetail
 import de.deftk.openww.android.feature.contacts.ContactDetailType
 import de.deftk.openww.android.feature.contacts.GenderTranslation
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.ContactUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ContactsViewModel
@@ -34,7 +33,7 @@ import de.deftk.openww.api.model.feature.Modification
 import de.deftk.openww.api.model.feature.contacts.IContact
 import java.util.*
 
-class EditContactFragment : Fragment(), ContactDetailClickListener {
+class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val contactViewModel: ContactsViewModel by activityViewModels()
@@ -50,7 +49,6 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEditContactBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
 
         binding.contactDetailList.adapter = adapter
         binding.contactDetailList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
@@ -72,7 +70,7 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
                     contactViewModel.getFilteredContactsLiveData(scope!!).removeObservers(viewLifecycleOwner)
                 scope = foundScope
                 contactViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) { response ->
-                    getMainActivity().progressIndicator.isVisible = false
+                    enableUI(true)
                     if (response is Response.Success) {
                         if (args.contactId != null) {
                             // edit existing
@@ -98,12 +96,12 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
 
                 contactViewModel.loadContacts(scope!!, apiContext)
                 if (contactViewModel.getAllContactsLiveData(scope!!).value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 binding.contactDetailsEmpty.isVisible = false
                 adapter.submitList(emptyList())
                 binding.fabAddContactDetail.isVisible = false
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
@@ -188,7 +186,7 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
         contactViewModel.editResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 contactViewModel.resetEditResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Success) {
                 ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
@@ -250,10 +248,10 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
 
             if (editMode) {
                 contactViewModel.editContact(contact.value!!, scope!!, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             } else {
                 contactViewModel.addContact(contact.value!!, scope!!, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
 
             return true
@@ -269,5 +267,8 @@ class EditContactFragment : Fragment(), ContactDetailClickListener {
         return builder
     }
 
-
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.contactDetailList.isEnabled = enabled
+        binding.fabAddContactDetail.isEnabled = enabled
+    }
 }

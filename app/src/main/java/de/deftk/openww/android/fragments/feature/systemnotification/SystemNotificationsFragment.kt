@@ -9,7 +9,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.SystemNotificationAdapter
 import de.deftk.openww.android.api.Response
@@ -32,8 +31,6 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSystemNotificationsBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
-        getMainActivity().searchProvider = this
 
         binding.systemNotificationList.adapter = adapter
         userViewModel.filteredSystemNotificationResponse.observe(viewLifecycleOwner) { response ->
@@ -44,7 +41,7 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
                 binding.systemNotificationsEmpty.isVisible = false
                 Reporter.reportException(R.string.error_get_system_notifications_failed, response.exception, requireContext())
             }
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             binding.systemNotificationsSwipeRefresh.isRefreshing = false
         }
         binding.systemNotificationList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
@@ -52,7 +49,7 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
         userViewModel.systemNotificationDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 userViewModel.resetDeleteResponse() // mark as handled
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
@@ -62,7 +59,7 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
         userViewModel.systemNotificationBatchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 userViewModel.resetBatchDeleteResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
@@ -82,11 +79,11 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
             if (apiContext != null) {
                 userViewModel.loadSystemNotifications(apiContext)
                 if (userViewModel.allSystemNotificationsResponse.value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 binding.systemNotificationsEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
@@ -111,7 +108,7 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
             R.id.system_notification_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     userViewModel.batchDeleteSystemNotifications(adapter.selectedItems.map { it.binding.notification!! }, apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             else -> return false
@@ -163,16 +160,15 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
                 val notification = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 userViewModel.deleteSystemNotification(notification, apiContext)
-                getMainActivity().progressIndicator.isVisible = false
+                enableUI(true)
             }
             else -> return false
         }
         return true
     }
 
-    override fun onDestroy() {
-        getMainActivity().searchProvider = null
-        super.onDestroy()
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.systemNotificationsSwipeRefresh.isEnabled = enabled
+        binding.systemNotificationList.isEnabled = enabled
     }
-
 }

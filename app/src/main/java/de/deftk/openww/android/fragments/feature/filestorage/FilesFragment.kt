@@ -24,7 +24,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.FileAdapter
 import de.deftk.openww.android.api.Response
@@ -73,8 +72,6 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFilesBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
-        getMainActivity().searchProvider = this
         val argScope = userViewModel.apiContext.value?.findOperatingScope(args.operatorId)
         if (argScope == null) {
             Reporter.reportException(R.string.error_scope_not_found, args.operatorId, requireContext())
@@ -109,7 +106,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())
             }
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             binding.fileStorageSwipeRefresh.isRefreshing = false
         }
 
@@ -134,7 +131,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         fileStorageViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 fileStorageViewModel.resetBatchDeleteResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
@@ -147,7 +144,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         fileStorageViewModel.importSessionFile.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 fileStorageViewModel.resetImportSessionFileResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_import_session_file_failed, response.exception, requireContext())
@@ -157,7 +154,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         fileStorageViewModel.addFolderResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 fileStorageViewModel.resetAddFolderResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_add_folder_failed, response.exception, requireContext())
@@ -182,7 +179,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                     fileStorageViewModel.loadChildren(scope, args.folderId, false, apiContext)
                     updateUploadFab()
                     if (fileStorageViewModel.getCachedChildren(scope, args.folderId).isEmpty())
-                        getMainActivity().progressIndicator.isVisible = true
+                        enableUI(false)
                 }
             } else {
                 navController.popBackStack(R.id.fileStorageGroupFragment, false)
@@ -381,7 +378,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 builder.setPositiveButton(R.string.confirm) { _, _ ->
                     userViewModel.apiContext.value?.apply {
                         fileStorageViewModel.addFolder(input.text.toString(), getProviderFile()!!.file, scope, this)
-                        getMainActivity().progressIndicator.isVisible = true
+                        enableUI(false)
                     }
                 }
                 builder.setNegativeButton(R.string.cancel) { dialog, _ ->
@@ -461,7 +458,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             R.id.filestorage_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     fileStorageViewModel.batchDelete(adapter.selectedItems.map { it.binding.file!! }, scope, apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             else -> return false
@@ -496,11 +493,11 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         }
     }
 
-    override fun onDestroy() {
-        getMainActivity().searchProvider = null
-        super.onDestroy()
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.fileStorageSwipeRefresh.isEnabled = enabled
+        binding.fileList.isEnabled = enabled
+        binding.fabUploadFile.isEnabled = enabled
     }
-
 }
 
 class SaveFileContract : ActivityResultContract<Pair<Intent, IRemoteFile>, Pair<ActivityResult, IRemoteFile>>() {

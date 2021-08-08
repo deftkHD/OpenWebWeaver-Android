@@ -3,15 +3,13 @@ package de.deftk.openww.android.fragments.feature.systemnotification
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
-import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentSystemNotificationBinding
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
@@ -20,7 +18,7 @@ import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 import java.text.DateFormat
 
-class SystemNotificationFragment : Fragment() {
+class SystemNotificationFragment : AbstractFragment(true) {
 
     private val args: SystemNotificationFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
@@ -33,10 +31,9 @@ class SystemNotificationFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSystemNotificationBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
 
         userViewModel.allSystemNotificationsResponse.observe(viewLifecycleOwner) { response ->
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             if (deleted)
                 return@observe
 
@@ -62,7 +59,7 @@ class SystemNotificationFragment : Fragment() {
         userViewModel.systemNotificationDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 userViewModel.resetDeleteResponse() // mark as handled
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Success) {
                 deleted = true
@@ -90,11 +87,12 @@ class SystemNotificationFragment : Fragment() {
             R.id.menu_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 userViewModel.deleteSystemNotification(systemNotification, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
             else -> return false
         }
         return true
     }
 
+    override fun onUIStateChanged(enabled: Boolean) {}
 }

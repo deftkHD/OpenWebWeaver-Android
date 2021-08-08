@@ -10,7 +10,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.ContactAdapter
 import de.deftk.openww.android.api.Response
@@ -41,13 +40,11 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentContactsBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
-        getMainActivity().searchProvider = this
 
         contactsViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 contactsViewModel.resetBatchDeleteResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
@@ -60,7 +57,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
         contactsViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 contactsViewModel.resetDeleteResponse() // mark as handled
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
@@ -107,17 +104,17 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
                     } else if (response is Response.Failure) {
                         Reporter.reportException(R.string.error_get_contacts_failed, response.exception, requireContext())
                     }
-                    getMainActivity().progressIndicator.isVisible = false
+                    enableUI(true)
                     binding.contactsSwipeRefresh.isRefreshing = false
                 }
 
                 contactsViewModel.loadContacts(scope!!, apiContext)
                 if (contactsViewModel.getAllContactsLiveData(scope!!).value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 binding.fabAddContact.isVisible = scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN)
             } else {
                 binding.contactsEmpty.isVisible = false
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
                 binding.fabAddContact.isVisible = false
                 adapter.submitList(emptyList())
             }
@@ -147,7 +144,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
             R.id.contacts_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     contactsViewModel.batchDelete(adapter.selectedItems.map { it.binding.scope!! to it.binding.contact!! }, apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             else -> return false
@@ -210,16 +207,15 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
                 val contact = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 contactsViewModel.deleteContact(contact, scope!!, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
                 true
             }
             else -> false
         }
     }
 
-    override fun onDestroy() {
-        getMainActivity().searchProvider = null
-        super.onDestroy()
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.contactsSwipeRefresh.isEnabled = enabled
+        binding.contactList.isEnabled = enabled
     }
-
 }

@@ -9,7 +9,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.NoteAdapter
 import de.deftk.openww.android.api.Response
@@ -36,8 +35,6 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentNotesBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
-        getMainActivity().searchProvider = this
 
         binding.notesList.adapter = adapter
         binding.notesList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
@@ -49,14 +46,14 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_notes_failed, response.exception, requireContext())
             }
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             binding.notesSwipeRefresh.isRefreshing = false
         }
 
         notesViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 notesViewModel.resetBatchDeleteResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
@@ -69,7 +66,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
         notesViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 notesViewModel.resetDeleteResponse() // mark as handled
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
@@ -96,12 +93,12 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
                 binding.fabAddNote.isVisible = apiContext.user.effectiveRights.contains(Permission.NOTES_WRITE) || apiContext.user.effectiveRights.contains(Permission.NOTES_ADMIN)
                 notesViewModel.loadNotes(apiContext)
                 if (notesViewModel.allNotesResponse.value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 binding.notesEmpty.isVisible = false
                 adapter.submitList(emptyList())
                 binding.fabAddNote.isVisible = false
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
@@ -130,7 +127,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
             R.id.notes_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     notesViewModel.batchDelete(adapter.selectedItems.map { it.binding.note!! }, apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             else -> return false
@@ -194,16 +191,16 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
                 val note = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 notesViewModel.deleteNote(note, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
                 true
             }
             else -> false
         }
     }
 
-    override fun onDestroy() {
-        getMainActivity().searchProvider = null
-        super.onDestroy()
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.notesSwipeRefresh.isEnabled = enabled
+        binding.notesList.isEnabled = enabled
+        binding.fabAddNote.isEnabled = enabled
     }
-
 }

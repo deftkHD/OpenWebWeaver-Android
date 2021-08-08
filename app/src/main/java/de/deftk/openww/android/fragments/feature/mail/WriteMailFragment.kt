@@ -7,21 +7,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentWriteMailBinding
 import de.deftk.openww.android.feature.LaunchMode
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MailboxViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Permission
 
-class WriteMailFragment : Fragment() {
+class WriteMailFragment : AbstractFragment(true) {
 
     //TODO attachments
     //TODO reply emails
@@ -52,7 +50,7 @@ class WriteMailFragment : Fragment() {
         }
 
         mailboxViewModel.emailSendResponse.observe(viewLifecycleOwner) { response ->
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             if (response is Response.Success) {
                 Toast.makeText(requireContext(), R.string.email_sent, Toast.LENGTH_LONG).show()
                 if (launchMode == LaunchMode.DEFAULT) {
@@ -83,7 +81,7 @@ class WriteMailFragment : Fragment() {
                 Toast.makeText(requireContext(), R.string.mail_no_to, Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
-            getMainActivity().progressIndicator.isVisible = true
+            enableUI(false)
             userViewModel.apiContext.value?.also { apiContext ->
                 mailboxViewModel.sendEmail(
                     to,
@@ -112,11 +110,19 @@ class WriteMailFragment : Fragment() {
                 binding.fabSendMail.isEnabled = true
             } else {
                 binding.fabSendMail.isEnabled = false
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
         return binding.root
     }
 
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.fabSendMail.isEnabled = enabled
+        binding.mailMessage.isEnabled = enabled
+        binding.mailSubject.isEnabled = enabled
+        binding.mailToAddress.isEnabled = enabled
+        binding.mailToAddressCc.isEnabled = enabled
+        binding.mailToAddressBcc.isEnabled = enabled
+    }
 }

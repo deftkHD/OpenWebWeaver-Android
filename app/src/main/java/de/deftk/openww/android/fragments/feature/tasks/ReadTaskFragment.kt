@@ -4,14 +4,13 @@ import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadTaskBinding
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.CalendarUtil
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.Reporter
@@ -24,7 +23,7 @@ import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.tasks.ITask
 import java.text.DateFormat
 
-class ReadTaskFragment : Fragment() {
+class ReadTaskFragment : AbstractFragment(true) {
 
     private val args: ReadTaskFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
@@ -39,10 +38,9 @@ class ReadTaskFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadTaskBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
 
         tasksViewModel.allTasksResponse.observe(viewLifecycleOwner) { response ->
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
                 if (deleted)
                 return@observe
 
@@ -76,7 +74,7 @@ class ReadTaskFragment : Fragment() {
         tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 tasksViewModel.resetPostResponse() // mark as handled
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
                 if (response is Response.Success) {
                 deleted = true
@@ -98,7 +96,7 @@ class ReadTaskFragment : Fragment() {
                 }
                 tasksViewModel.loadTasks(true, apiContext)
                 if (tasksViewModel.allTasksResponse.value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 binding.taskTitle.text = ""
                 binding.taskAuthor.text = ""
@@ -107,7 +105,7 @@ class ReadTaskFragment : Fragment() {
                 binding.taskDue.text = ""
                 binding.taskGroup.text = ""
                 binding.fabEditTask.isVisible = false
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
@@ -136,13 +134,13 @@ class ReadTaskFragment : Fragment() {
             R.id.menu_item_ignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(listOf(task to scope), apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             R.id.menu_item_unignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.unignoreTasks(listOf(task to scope), apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             R.id.menu_item_import_in_calendar -> {
@@ -155,11 +153,14 @@ class ReadTaskFragment : Fragment() {
             R.id.menu_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 tasksViewModel.deleteTask(task, scope, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
             else -> return super.onOptionsItemSelected(item)
         }
         return true
     }
 
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.fabEditTask.isEnabled = enabled
+    }
 }

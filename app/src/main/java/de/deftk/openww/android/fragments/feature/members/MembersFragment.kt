@@ -7,19 +7,18 @@ import android.view.*
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.activities.MainActivity
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.MemberAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentMembersBinding
 import de.deftk.openww.android.filter.ScopeFilter
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.GroupViewModel
@@ -27,7 +26,7 @@ import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IGroup
 
-class MembersFragment : Fragment(), ISearchProvider {
+class MembersFragment : AbstractFragment(true), ISearchProvider {
 
     private val args: MembersFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
@@ -78,15 +77,15 @@ class MembersFragment : Fragment(), ISearchProvider {
                         Reporter.reportException(R.string.error_get_members_failed, response.exception, requireContext())
                     }
                     binding.membersSwipeRefresh.isRefreshing = false
-                    getMainActivity().progressIndicator.isVisible = false
+                    enableUI(true)
                 }
                 groupViewModel.loadMembers(group!!, false, apiContext)
                 if (groupViewModel.getAllGroupMembers(group!!).value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 adapter.submitList(emptyList())
                 binding.membersEmpty.isVisible = false
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
@@ -158,9 +157,8 @@ class MembersFragment : Fragment(), ISearchProvider {
         }
     }
 
-    override fun onDestroy() {
-        (requireActivity() as? MainActivity?)?.searchProvider = null
-        super.onDestroy()
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.membersSwipeRefresh.isEnabled = enabled
+        binding.memberList.isEnabled = enabled
     }
-
 }

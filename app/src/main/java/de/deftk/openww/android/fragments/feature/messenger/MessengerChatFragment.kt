@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.*
 import android.widget.SearchView
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -13,13 +12,13 @@ import androidx.preference.PreferenceManager
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ChatMessageAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentMessengerChatBinding
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
 import de.deftk.openww.android.filter.MessageFilter
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.FileUtil
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
@@ -29,7 +28,7 @@ import de.deftk.openww.api.model.feature.FileUrl
 import java.io.File
 
 
-class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider {
+class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISearchProvider {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val messengerViewModel: MessengerViewModel by activityViewModels()
@@ -41,8 +40,6 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMessengerChatBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
-        getMainActivity().searchProvider = this
 
         val adapter = ChatMessageAdapter(userViewModel, this, findNavController(), userViewModel.apiContext.value?.user!!)
         binding.chatList.adapter = adapter
@@ -56,7 +53,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
         binding.btnSend.setOnClickListener {
             userViewModel.apiContext.value?.also { apiContext ->
                 messengerViewModel.sendMessage(args.user, binding.txtMessage.text.toString(), null, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
@@ -80,7 +77,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_messages_failed, response.exception, requireContext())
             }
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             binding.chatsSwipeRefresh.isRefreshing = false
         }
 
@@ -88,7 +85,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
             if (apiContext != null) {
                 messengerViewModel.loadHistory(args.user, false, apiContext)
                 if (messengerViewModel.getAllMessagesResponse(args.user).value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 //TODO implement
                 findNavController().popBackStack(R.id.chatsFragment, false)
@@ -161,7 +158,7 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
             R.id.delete_saved_chat -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     messengerViewModel.clearChat(args.user, apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             else -> return false
@@ -169,11 +166,12 @@ class MessengerChatFragment : Fragment(), AttachmentDownloader, ISearchProvider 
         return true
     }
 
-    override fun onDestroy() {
-        getMainActivity().searchProvider = null
-        super.onDestroy()
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.btnSend.isEnabled = enabled
+        binding.txtMessage.isEnabled = enabled
+        binding.chatsSwipeRefresh.isEnabled = enabled
+        binding.chatList.isEnabled = enabled
     }
-
 }
 
 interface AttachmentDownloader {

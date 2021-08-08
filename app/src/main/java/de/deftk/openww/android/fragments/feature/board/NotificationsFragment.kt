@@ -9,7 +9,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.BoardNotificationAdapter
 import de.deftk.openww.android.api.Response
@@ -37,8 +36,6 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentNotificationsBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
-        getMainActivity().searchProvider = this
 
         binding.notificationList.adapter = adapter
         binding.notificationList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
@@ -50,14 +47,14 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
                 Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
                 binding.notificationsEmpty.isVisible = false
             }
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             binding.notificationsSwipeRefresh.isRefreshing = false
         }
 
         boardViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 boardViewModel.resetBatchDeleteResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
@@ -87,20 +84,20 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
                 }
                 boardViewModel.loadBoardNotifications(apiContext)
                 if (boardViewModel.allNotificationsResponse.value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 binding.fabAddNotification.isVisible = apiContext.user.getGroups().any { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) }
             } else {
                 binding.fabAddNotification.isVisible = false
                 binding.notificationsEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
         boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 boardViewModel.resetPostResponse() // mark as handled
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
@@ -127,7 +124,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
             R.id.board_action_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     boardViewModel.batchDelete(adapter.selectedItems.map { it.binding.group!! to it.binding.notification!! }, apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             else -> return false
@@ -195,16 +192,17 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
                 val (notification, group) = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 boardViewModel.deleteBoardNotification(notification, group, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
                 true
             }
             else -> false
         }
     }
 
-    override fun onDestroy() {
-        getMainActivity().searchProvider = null
-        super.onDestroy()
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.notificationsSwipeRefresh.isEnabled = enabled
+        binding.notificationList.isEnabled = enabled
+        binding.fabAddNotification.isEnabled = enabled
     }
 
 }

@@ -5,16 +5,14 @@ import android.view.*
 import android.widget.ArrayAdapter
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditNotificationBinding
 import de.deftk.openww.android.feature.board.BoardNotificationColors
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.BoardViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -23,7 +21,7 @@ import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.board.BoardNotificationColor
 import de.deftk.openww.api.model.feature.board.IBoardNotification
 
-class EditNotificationFragment : Fragment() {
+class EditNotificationFragment : AbstractFragment(true) {
 
     //TODO implement board type
     //TODO implement kill date
@@ -43,10 +41,9 @@ class EditNotificationFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEditNotificationBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
 
         boardViewModel.allNotificationsResponse.observe(viewLifecycleOwner) { response ->
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             if (response is Response.Success) {
                 if (args.notificationId != null && args.groupId != null) {
                     // edit existing
@@ -95,21 +92,21 @@ class EditNotificationFragment : Fragment() {
 
                 boardViewModel.loadBoardNotifications(apiContext)
                 if (boardViewModel.allNotificationsResponse.value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 binding.notificationTitle.setText("")
                 binding.notificationGroup.adapter = null
                 binding.notificationGroup.isEnabled = false
                 binding.notificationAccent.adapter = null
                 binding.notificationText.setText("")
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
         boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 boardViewModel.resetPostResponse() // mark as handled
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Success) {
                 ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
@@ -139,15 +136,22 @@ class EditNotificationFragment : Fragment() {
 
             if (editMode) {
                 boardViewModel.editBoardNotification(notification, title, text, color, null, group, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             } else {
                 group = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup } ?: return false
                 boardViewModel.addBoardNotification(title, text, color, null, group, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
             return true
         }
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.notificationAccent.isEnabled = enabled
+        if (!editMode)
+            binding.notificationGroup.isEnabled = enabled
+        binding.notificationText.isEnabled = enabled
+        binding.notificationTitle.isEnabled = enabled
+    }
 }

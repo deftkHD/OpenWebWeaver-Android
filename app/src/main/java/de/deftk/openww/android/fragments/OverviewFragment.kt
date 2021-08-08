@@ -6,13 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.OverviewAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentOverviewBinding
@@ -21,7 +18,7 @@ import de.deftk.openww.android.feature.overview.AbstractOverviewElement
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
-class OverviewFragment: Fragment() {
+class OverviewFragment: AbstractFragment(true) {
 
     //TODO recycler view
 
@@ -60,20 +57,25 @@ class OverviewFragment: Fragment() {
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_overview_request_failed, response.exception, requireContext())
             }
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
         }
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             binding.overviewSwipeRefresh.isEnabled = apiContext != null
             if (apiContext != null) {
                 userViewModel.loadOverview(getOverviewFeatures(), apiContext)
                 if (userViewModel.overviewResponse.value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 binding.overviewList.adapter = null
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
         return binding.root
+    }
+
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.overviewSwipeRefresh.isEnabled = enabled
+        binding.overviewList.isEnabled = enabled
     }
 
     private fun getOverviewFeatures(): List<AppFeature> {

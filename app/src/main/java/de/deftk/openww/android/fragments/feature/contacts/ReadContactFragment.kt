@@ -3,16 +3,15 @@ package de.deftk.openww.android.fragments.feature.contacts
 import android.os.Bundle
 import android.view.*
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ContactDetailAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadContactBinding
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.ContactUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ContactsViewModel
@@ -22,7 +21,7 @@ import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.contacts.IContact
 
-class ReadContactFragment : Fragment() {
+class ReadContactFragment : AbstractFragment(true) {
 
     private val args: ReadContactFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
@@ -38,7 +37,6 @@ class ReadContactFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadContactBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
 
         binding.contactDetailList.adapter = adapter
         binding.contactDetailList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
@@ -46,7 +44,7 @@ class ReadContactFragment : Fragment() {
         contactsViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 contactsViewModel.resetDeleteResponse()
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Success) {
                 deleted = true
@@ -77,7 +75,7 @@ class ReadContactFragment : Fragment() {
                     contactsViewModel.getFilteredContactsLiveData(scope!!).removeObservers(viewLifecycleOwner)
                 scope = foundScope
                 contactsViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) { response ->
-                    getMainActivity().progressIndicator.isVisible = false
+                    enableUI(true)
                     if (deleted)
                         return@observe
 
@@ -99,12 +97,12 @@ class ReadContactFragment : Fragment() {
                 }
                 contactsViewModel.loadContacts(scope!!, apiContext)
                 if (contactsViewModel.getAllContactsLiveData(scope!!).value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 binding.fabEditContact.isVisible = scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN)
             } else {
                 adapter.submitList(emptyList())
                 binding.fabEditContact.isVisible = false
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
@@ -127,11 +125,15 @@ class ReadContactFragment : Fragment() {
             R.id.menu_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 contactsViewModel.deleteContact(contact, scope!!, apiContext)
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.contactDetailList.isEnabled = enabled
+        binding.fabEditContact.isEnabled = enabled
+    }
 }

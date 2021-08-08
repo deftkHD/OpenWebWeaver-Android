@@ -4,22 +4,21 @@ import android.os.Bundle
 import android.view.*
 import android.widget.SearchView
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.FileStorageAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentFileStorageBinding
 import de.deftk.openww.android.feature.LaunchMode
 import de.deftk.openww.android.filter.FileStorageQuotaFilter
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 
-class FileStorageGroupFragment : Fragment(), ISearchProvider {
+class FileStorageGroupFragment : AbstractFragment(true), ISearchProvider {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val fileStorageViewModel: FileStorageViewModel by activityViewModels()
@@ -29,8 +28,6 @@ class FileStorageGroupFragment : Fragment(), ISearchProvider {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFileStorageBinding.inflate(inflater, container, false)
-        getMainActivity().supportActionBar?.show()
-        getMainActivity().searchProvider = this
 
         val pasteMode = LaunchMode.getLaunchMode(requireActivity().intent) == LaunchMode.FILE_UPLOAD
         val adapter = FileStorageAdapter(pasteMode)
@@ -43,7 +40,7 @@ class FileStorageGroupFragment : Fragment(), ISearchProvider {
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_get_quotas_failed, response.exception, requireContext())
             }
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             binding.fileStorageSwipeRefresh.isRefreshing = false
         }
 
@@ -57,11 +54,11 @@ class FileStorageGroupFragment : Fragment(), ISearchProvider {
             if (apiContext != null) {
                 fileStorageViewModel.loadQuotas(apiContext)
                 if (fileStorageViewModel.allQuotasResponse.value == null)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
             } else {
                 binding.fileEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
             }
         }
 
@@ -101,10 +98,8 @@ class FileStorageGroupFragment : Fragment(), ISearchProvider {
         }
     }
 
-    override fun onDestroy() {
-        getMainActivity().searchProvider = null
-        super.onDestroy()
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.fileStorageSwipeRefresh.isEnabled = enabled
+        binding.fileList.isEnabled = enabled
     }
-
-
 }

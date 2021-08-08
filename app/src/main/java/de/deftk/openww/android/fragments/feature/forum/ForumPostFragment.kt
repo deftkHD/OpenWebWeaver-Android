@@ -5,19 +5,18 @@ import android.text.method.LinkMovementMethod
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.ForumPostCommentAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentForumPostBinding
 import de.deftk.openww.android.feature.forum.ForumPostIcons
+import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
@@ -28,7 +27,7 @@ import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.forum.IForumPost
 import java.text.DateFormat
 
-class ForumPostFragment : Fragment() {
+class ForumPostFragment : AbstractFragment(true) {
 
     private val args: ForumPostFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
@@ -60,7 +59,7 @@ class ForumPostFragment : Fragment() {
         this.group = group
 
         forumViewModel.getAllForumPosts(group).observe(viewLifecycleOwner) { response ->
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
             if (deleted)
                 return@observe
 
@@ -101,7 +100,7 @@ class ForumPostFragment : Fragment() {
         forumViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 forumViewModel.resetDeleteResponse() // mark as handled
-            getMainActivity().progressIndicator.isVisible = false
+            enableUI(true)
 
             if (response is Response.Success) {
                 if (response.value == post) {
@@ -142,7 +141,7 @@ class ForumPostFragment : Fragment() {
             R.id.menu_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.deletePost(post, parent, group, apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             else -> return super.onOptionsItemSelected(item)
@@ -165,7 +164,7 @@ class ForumPostFragment : Fragment() {
                 val comment = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.deletePost(comment, post, group, apiContext)
-                    getMainActivity().progressIndicator.isVisible = true
+                    enableUI(false)
                 }
             }
             else -> super.onContextItemSelected(item)
@@ -173,4 +172,7 @@ class ForumPostFragment : Fragment() {
         return true
     }
 
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.forumPostCommentList.isEnabled = enabled
+    }
 }

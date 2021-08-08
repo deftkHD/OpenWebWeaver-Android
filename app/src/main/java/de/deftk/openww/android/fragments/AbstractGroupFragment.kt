@@ -5,7 +5,6 @@ import android.view.*
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -13,7 +12,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import de.deftk.openww.android.R
 import de.deftk.openww.android.activities.MainActivity
-import de.deftk.openww.android.activities.getMainActivity
 import de.deftk.openww.android.adapter.recycler.OperatingScopeAdapter
 import de.deftk.openww.android.databinding.FragmentGroupsBinding
 import de.deftk.openww.android.filter.ScopeFilter
@@ -23,7 +21,7 @@ import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IOperatingScope
 
-abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener, ISearchProvider {
+abstract class AbstractGroupFragment : AbstractFragment(true), IOperatingScopeClickListener, ISearchProvider {
 
     protected lateinit var binding: FragmentGroupsBinding
     private lateinit var searchView: SearchView
@@ -54,7 +52,7 @@ abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener,
                 updateGroups(apiContext)
             } else {
                 binding.groupsEmpty.isVisible = false
-                getMainActivity().progressIndicator.isVisible = true
+                enableUI(false)
                 binding.groupsSwipeRefresh.isRefreshing = false
                 adapter.submitList(emptyList())
             }
@@ -71,7 +69,7 @@ abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener,
         scopes = (filter.apply(scopes) as List<IOperatingScope>).toMutableList()
         adapter.submitList(scopes)
         binding.groupsEmpty.isVisible = scopes.isEmpty()
-        getMainActivity().progressIndicator.isVisible = false
+        enableUI(true)
         binding.groupsSwipeRefresh.isRefreshing = false
     }
 
@@ -110,6 +108,9 @@ abstract class AbstractGroupFragment : Fragment(), IOperatingScopeClickListener,
         }
     }
 
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.groupsSwipeRefresh.isEnabled = enabled
+    }
 }
 
 interface IOperatingScopeClickListener {
