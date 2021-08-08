@@ -97,7 +97,6 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
     }
 
     private suspend fun suspendLoadEmails(folder: IEmailFolder, apiContext: IApiContext) {
-        Thread.sleep(3000)
         val response = mailboxRepository.getEmails(folder, apiContext)
         emailResponses.getOrPut(folder) { MutableLiveData() }.value = response
     }
