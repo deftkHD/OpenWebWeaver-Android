@@ -94,6 +94,7 @@
             android:ellipsize="end"
             android:lines="1"
             android:text="@{file.name}"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             tools:text="File name" />
 

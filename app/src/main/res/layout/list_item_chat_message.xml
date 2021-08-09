@@ -36,8 +36,8 @@
 
         <TextView
             android:id="@+id/message_text"
-            formattedText="@{message.text}"
             currentScope="@{currentScope}"
+            formattedText="@{message.text}"
             navController="@{navController}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

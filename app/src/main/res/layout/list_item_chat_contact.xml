@@ -36,8 +36,8 @@
             tools:src="@drawable/ic_person_24" />
 
         <TextView
-            italic="@{chatContact.local}"
             android:id="@+id/member_name"
+            italic="@{chatContact.local}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
