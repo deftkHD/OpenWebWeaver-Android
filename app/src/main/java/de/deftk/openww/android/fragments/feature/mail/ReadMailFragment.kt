@@ -113,6 +113,8 @@ class ReadMailFragment : AbstractFragment(true) {
             if (apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
                 inflater.inflate(R.menu.mail_context_menu, menu)
                 menu.findItem(R.id.mail_context_item_move).isVisible = false
+                menu.findItem(R.id.mail_context_item_set_read).isVisible = false
+                menu.findItem(R.id.mail_context_item_set_unread).isVisible = false
             }
         }
     }

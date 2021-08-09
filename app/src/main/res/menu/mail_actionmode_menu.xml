@@ -3,6 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/mail_action_item_set_read"
+        android:icon="@drawable/ic_mark_email_read_24"
+        android:title="@string/set_read"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/mail_action_item_set_unread"
+        android:icon="@drawable/ic_mark_unread_mailbox_24"
+        android:title="@string/set_unread"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/mail_action_item_move"
         android:icon="@drawable/ic_move_to_inbox_24"
         android:title="@string/move"

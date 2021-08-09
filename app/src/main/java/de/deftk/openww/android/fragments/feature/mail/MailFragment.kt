@@ -107,6 +107,23 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             }
         }
 
+        mailboxViewModel.batchEmailSetResponse.observe(viewLifecycleOwner) { responses ->
+            if (responses != null)
+                mailboxViewModel.resetEmailSetResponse()
+            enableUI(true)
+
+            responses?.forEach { response ->
+                if (response is Response.Success) {
+                    val index = adapter.currentList.indexOfFirst { it.first.id == response.value.id }
+                    adapter.notifyItemChanged(index)
+                } else if (response is Response.Failure) {
+                    Reporter.reportException(R.string.error_set_email_failed, response.exception, requireContext())
+                    return@forEach
+                }
+            }
+            actionMode?.finish()
+        }
+
         mailboxViewModel.foldersResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 if ((toolbarSpinner.adapter as? MailFolderAdapter?)?.elements != response.value) {
@@ -217,6 +234,18 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                     enableUI(false)
                 }
             }
+            R.id.mail_action_item_set_read -> {
+                userViewModel.apiContext.value?.also { apiContext ->
+                    mailboxViewModel.batchSetEmails(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, null, false, apiContext)
+                    enableUI(false)
+                }
+            }
+            R.id.mail_action_item_set_unread -> {
+                userViewModel.apiContext.value?.also { apiContext ->
+                    mailboxViewModel.batchSetEmails(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, null, true, apiContext)
+                    enableUI(false)
+                }
+            }
             else -> return false
         }
         return true
@@ -281,9 +310,14 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
-        userViewModel.apiContext.value?.also { apiContext ->
-            if (apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
-                requireActivity().menuInflater.inflate(R.menu.mail_context_menu, menu)
+        if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
+            val (email, _) = (binding.mailList.adapter as MailAdapter).getItem(menuInfo.position)
+            userViewModel.apiContext.value?.also { apiContext ->
+                if (apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
+                    requireActivity().menuInflater.inflate(R.menu.mail_context_menu, menu)
+                    menu.findItem(R.id.mail_context_item_set_unread).isVisible = !email.unread
+                    menu.findItem(R.id.mail_context_item_set_read).isVisible = email.unread
+                }
             }
         }
     }
@@ -314,6 +348,20 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                 val mailItem = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.deleteEmail(mailItem.first, mailItem.second, true, apiContext)
+                    enableUI(false)
+                }
+            }
+            R.id.mail_context_item_set_read -> {
+                val mailItem = adapter.getItem(menuInfo.position)
+                userViewModel.apiContext.value?.also { apiContext ->
+                    mailboxViewModel.batchSetEmails(listOf(mailItem.first), mailItem.second, null, false, apiContext)
+                    enableUI(false)
+                }
+            }
+            R.id.mail_context_item_set_unread -> {
+                val mailItem = adapter.getItem(menuInfo.position)
+                userViewModel.apiContext.value?.also { apiContext ->
+                    mailboxViewModel.batchSetEmails(listOf(mailItem.first), mailItem.second, null, false, apiContext)
                     enableUI(false)
                 }
             }

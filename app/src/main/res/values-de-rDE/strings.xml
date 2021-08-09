@@ -286,4 +286,7 @@
     <string name="error_upload_worker_failed">Upload fehlgeschlagen: %s</string>
     <string name="error_import_session_file_failed">Importieren der Datei fehlgeschlagen: %s</string>
     <string name="error_add_folder_failed">Erstellen des Ordners fehlgeschlagen: %s</string>
+    <string name="set_unread">Als ungelesen markieren</string>
+    <string name="set_read">Als gelesen markieren</string>
+    <string name="error_set_email_failed">Setzen der Email-Eigenschaften fehlgeschlagen: %s</string>
 </resources>

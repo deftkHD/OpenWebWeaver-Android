@@ -12,20 +12,20 @@ class MailboxRepository @Inject constructor() : AbstractRepository() {
 
     suspend fun getFolders(apiContext: IApiContext) = apiCall {
         //TODO sort
-        apiContext.user.getEmailFolders(apiContext.user.getRequestContext(apiContext))
+        apiContext.user.getEmailFolders(apiContext.userContext())
     }
 
     suspend fun addFolder(name: String, apiContext: IApiContext): Response<IEmailFolder?> = apiCall {
-        apiContext.user.addEmailFolder(name, apiContext.user.getRequestContext(apiContext))
+        apiContext.user.addEmailFolder(name, apiContext.userContext())
         null
     }
 
     suspend fun deleteFolder(folder: IEmailFolder, apiContext: IApiContext) = apiCall {
-        folder.delete(apiContext.user.getRequestContext(apiContext))
+        folder.delete(apiContext.userContext())
     }
 
     suspend fun getEmails(folder: IEmailFolder, apiContext: IApiContext) = apiCall {
-        folder.getEmails(context = apiContext.user.getRequestContext(apiContext))
+        folder.getEmails(context = apiContext.userContext())
     }
 
     suspend fun sendEmail(to: String, subject: String, plainBody: String, cc: String? = null, bcc: String? = null, importSessionFiles: List<ISessionFile>? = null, referenceFolderId: String? = null, referenceMessageId: Int? = null, referenceMode: ReferenceMode? = null, text: String? = null, apiContext: IApiContext) = apiCall {
@@ -41,7 +41,7 @@ class MailboxRepository @Inject constructor() : AbstractRepository() {
             referenceMessageId,
             referenceMode,
             text,
-            apiContext.user.getRequestContext(apiContext)
+            apiContext.userContext()
         )
     }
 
@@ -49,18 +49,23 @@ class MailboxRepository @Inject constructor() : AbstractRepository() {
         email.read(
             folder,
             peek,
-            context = apiContext.user.getRequestContext(apiContext)
+            context = apiContext.userContext()
         )
         email
     }
 
+    suspend fun setEmail(email: IEmail, folder: IEmailFolder, isFlagged: Boolean?, isUnread: Boolean?, apiContext: IApiContext) = apiCall {
+        email.edit(folder, isFlagged ?: email.flagged, isUnread ?: email.unread, apiContext.userContext())
+        email
+    }
+
     suspend fun moveEmail(email: IEmail, src: IEmailFolder, dst: IEmailFolder, apiContext: IApiContext) = apiCall {
-        email.move(src, dst, apiContext.user.getRequestContext(apiContext))
+        email.move(src, dst, apiContext.userContext())
         email
     }
 
     suspend fun deleteEmail(email: IEmail, folder: IEmailFolder, apiContext: IApiContext) = apiCall {
-        email.delete(folder, apiContext.user.getRequestContext(apiContext))
+        email.delete(folder, apiContext.userContext())
         email
     }
 

@@ -58,6 +58,9 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
     private val _batchDeleteResponse = MutableLiveData<List<Response<IEmail>>?>()
     val batchDeleteResponse: LiveData<List<Response<IEmail>>?> = _batchDeleteResponse
 
+    private val _batchEmailSetResponse = MutableLiveData<List<Response<IEmail>>?>()
+    val batchEmailSetResponse: LiveData<List<Response<IEmail>>?> = _batchEmailSetResponse
+
     fun loadFolders(apiContext: IApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.getFolders(apiContext)
@@ -248,6 +251,16 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
 
     fun resetBatchMoveResponse() {
         _batchMoveResponse.value = null
+    }
+
+    fun batchSetEmails(emails: List<IEmail>, folder: IEmailFolder, flagged: Boolean?, unread: Boolean?, apiContext: IApiContext) {
+        viewModelScope.launch {
+            _batchEmailSetResponse.value = emails.map { mailboxRepository.setEmail(it, folder, flagged, unread, apiContext) }
+        }
+    }
+
+    fun resetEmailSetResponse() {
+        _batchEmailSetResponse.value = null
     }
 
 }

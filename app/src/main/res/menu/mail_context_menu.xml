@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mail_context_item_set_unread"
+        android:title="@string/set_unread"
+        android:visible="false" />
+
+    <item
+        android:id="@+id/mail_context_item_set_read"
+        android:title="@string/set_read"
+        android:visible="false" />
 
     <item
         android:id="@+id/mail_context_item_move"
-        android:title="@string/move"
-        app:showAsAction="ifRoom" />
+        android:title="@string/move" />
 
     <item
         android:id="@+id/mail_context_item_delete"
-        android:title="@string/delete"
-        app:showAsAction="ifRoom" />
+        android:title="@string/delete" />
 
 </menu>
