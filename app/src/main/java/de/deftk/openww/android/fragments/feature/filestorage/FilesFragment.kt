@@ -332,7 +332,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     }
 
     private fun onNetworkTransferRemoved(transfer: NetworkTransfer) {
-        if (LaunchMode.getLaunchMode(requireActivity().intent) == LaunchMode.FILE_UPLOAD && fileStorageViewModel.networkTransfers.value?.isEmpty() != false) {
+        if (LaunchMode.getLaunchMode(requireActivity().intent) == LaunchMode.FILE_UPLOAD && fileStorageViewModel.networkTransfers.value?.isEmpty() != false && transfer is NetworkTransfer.Upload) {
             requireActivity().finish()
         }
     }
