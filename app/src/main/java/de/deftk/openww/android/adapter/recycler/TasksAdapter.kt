@@ -3,6 +3,7 @@ package de.deftk.openww.android.adapter.recycler
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
+import de.deftk.openww.android.R
 import de.deftk.openww.android.databinding.ListItemTaskBinding
 import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.IOperatingScope
@@ -42,6 +43,7 @@ class TasksAdapter(clickListener: ActionModeClickListener<TaskViewHolder>) : Act
         fun bind(task: ITask, scope: IOperatingScope) {
             binding.task = task
             binding.scope = scope
+            binding.taskCompleted.contentDescription = itemView.context.getString(if (task.completed) R.string.task_completed_desc else R.string.task_not_completed_desc)
             binding.executePendingBindings()
         }
 
