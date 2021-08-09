@@ -90,9 +90,9 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
                     (adapter as ForumPostAdapter).group = group!!
                 } else {
                     group = newGroup
-                    binding.forumList.adapter = adapter
-                    binding.forumList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
                 }
+                binding.forumList.adapter = adapter
+                binding.forumList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
                 forumViewModel.getFilteredForumPosts(group!!).observe(viewLifecycleOwner) { response ->
                     if (response is Response.Success) {
                         val posts = forumViewModel.filterRootPosts(response.value)
