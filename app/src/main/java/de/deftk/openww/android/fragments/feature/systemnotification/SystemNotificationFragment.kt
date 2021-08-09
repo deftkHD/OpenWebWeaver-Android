@@ -49,7 +49,10 @@ class SystemNotificationFragment : AbstractFragment(true) {
                 binding.systemNotificationAuthor.text = systemNotification.member.name
                 binding.systemNotificationGroup.text = systemNotification.group.name
                 binding.systemNotificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(systemNotification.date)
-                binding.systemNotificationMessage.text = TextUtils.parseHtml(systemNotification.message)
+                var text = systemNotification.message
+                if (systemNotification.data != null)
+                    text += " (${systemNotification.data})"
+                binding.systemNotificationMessage.text = TextUtils.parseHtml(text)
                 binding.systemNotificationMessage.movementMethod = LinkMovementMethod.getInstance()
                 binding.systemNotificationMessage.transformationMethod = CustomTabTransformationMethod(binding.systemNotificationMessage.autoLinkMask)
             } else if (response is Response.Failure) {
