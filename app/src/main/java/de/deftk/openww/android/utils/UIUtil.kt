@@ -21,6 +21,7 @@ object UIUtil {
         SystemNotificationType.ADDED_TO_MESSENGER to R.string.system_notification_added_to_messenger,
         SystemNotificationType.REQUEST_PASSWORD_RESET_CODE to R.string.system_notification_request_password_reset_code,
         SystemNotificationType.NEW_POLL to R.string.system_notification_new_poll,
+        SystemNotificationType.NEW_POLL2 to R.string.system_notification_new_poll,
         SystemNotificationType.NEW_NOTIFICATION to R.string.system_notification_new_notification,
         SystemNotificationType.NEW_APPOINTMENT to R.string.system_notification_new_appointment,
         SystemNotificationType.NEW_TRUST to R.string.system_notification_new_trust,
