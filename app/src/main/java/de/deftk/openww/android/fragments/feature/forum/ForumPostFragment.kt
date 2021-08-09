@@ -21,6 +21,7 @@ import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.ForumViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.forum.IForumPost
@@ -34,60 +35,16 @@ class ForumPostFragment : AbstractFragment(true) {
     private val navController: NavController by lazy { findNavController() }
 
     private lateinit var binding: FragmentForumPostBinding
-    private lateinit var group: IGroup
     private lateinit var post: IForumPost
 
     private var parent: IForumPost? = null
+    private var group: IGroup? = null
     private var deleted = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentForumPostBinding.inflate(inflater, container, false)
-        val group = userViewModel.apiContext.value?.user?.getGroups()?.firstOrNull { it.login == args.groupId }
-        if (group == null) {
-            Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
-            navController.popBackStack()
-            return binding.root
-        }
-        this.group = group
 
-        forumViewModel.getAllForumPosts(group).observe(viewLifecycleOwner) { response ->
-            enableUI(true)
-            if (deleted)
-                return@observe
-
-            if (response is Response.Success) {
-                parent = forumViewModel.getParentPost(response.value, (args.parentPostIds ?: emptyArray()).toMutableList())
-                val post = forumViewModel.findPostOrComment(response.value, args.postId)
-                if (post != null) {
-                    this.post = post
-                    val comments = forumViewModel.getComments(group, post.id)
-
-                    binding.forumPostImage.setImageResource(ForumPostIcons.getByTypeOrDefault(post.icon).resource)
-                    binding.forumPostTitle.text = post.title
-                    binding.forumPostAuthor.text = post.created.member.name
-                    binding.forumPostDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.created.date)
-                    binding.forumPostText.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(post.text), group.login, navController))
-                    binding.forumPostText.movementMethod = LinkMovementMethod.getInstance()
-                    binding.forumPostText.transformationMethod = CustomTabTransformationMethod(binding.forumPostText.autoLinkMask)
-
-                    binding.forumPostNoComments.isVisible = comments.isEmpty()
-                    binding.forumPostCommentList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-
-                    val adapter = ForumPostCommentAdapter(group, arrayOf(*args.parentPostIds ?: emptyArray(), args.postId), forumViewModel, navController)
-                    binding.forumPostCommentList.adapter = adapter
-                    adapter.submitList(comments.sortedBy { it.created.date.time })
-
-                } else {
-                    Reporter.reportException(R.string.error_post_not_found, args.postId, requireContext())
-                    navController.popBackStack()
-                    return@observe
-                }
-            } else if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
-                navController.popBackStack()
-                return@observe
-            }
-        }
+        val adapter by lazy { ForumPostCommentAdapter(group!!, arrayOf(*args.parentPostIds ?: emptyArray(), args.postId), forumViewModel, navController) }
 
         forumViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
@@ -101,7 +58,7 @@ class ForumPostFragment : AbstractFragment(true) {
                     navController.popBackStack()
                 } else {
                     // comment deleted
-                    val comments = forumViewModel.getComments(group, post.id)
+                    val comments = forumViewModel.getComments(group!!, post.id)
                     binding.forumPostNoComments.isVisible = comments.isEmpty()
                     binding.forumPostCommentList.isVisible = comments.isNotEmpty()
                     (binding.forumPostCommentList.adapter as ForumPostCommentAdapter).submitList(comments)
@@ -113,9 +70,72 @@ class ForumPostFragment : AbstractFragment(true) {
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                //TODO implement
+                val group = apiContext.user.getGroups().firstOrNull { it.login == args.groupId }
+                if (group == null) {
+                    Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
+                    navController.popBackStack()
+                    return@observe
+                }
+                if (!Feature.FORUM.isAvailable(group.effectiveRights)) {
+                    Reporter.reportFeatureNotAvailable(requireContext())
+                    navController.popBackStack()
+                    return@observe
+                }
+                if (this.group != null) {
+                    forumViewModel.getFilteredForumPosts(this.group!!).removeObservers(viewLifecycleOwner)
+                    this.group = group
+                    adapter.group = group
+                } else {
+                    this.group = group
+                }
+                binding.forumPostCommentList.adapter = adapter
+                binding.forumPostCommentList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+
+                forumViewModel.getAllForumPosts(group).observe(viewLifecycleOwner) { response ->
+                    enableUI(true)
+                    if (deleted)
+                        return@observe
+
+                    if (response is Response.Success) {
+                        parent = forumViewModel.getParentPost(response.value, (args.parentPostIds ?: emptyArray()).toMutableList())
+                        val post = forumViewModel.findPostOrComment(response.value, args.postId)
+                        if (post != null) {
+                            this.post = post
+                            val comments = forumViewModel.getComments(group, post.id)
+
+                            binding.forumPostImage.setImageResource(ForumPostIcons.getByTypeOrDefault(post.icon).resource)
+                            binding.forumPostTitle.text = post.title
+                            binding.forumPostAuthor.text = post.created.member.name
+                            binding.forumPostDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(post.created.date)
+                            binding.forumPostText.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(post.text), group.login, navController))
+                            binding.forumPostText.movementMethod = LinkMovementMethod.getInstance()
+                            binding.forumPostText.transformationMethod = CustomTabTransformationMethod(binding.forumPostText.autoLinkMask)
+
+                            binding.forumPostNoComments.isVisible = comments.isEmpty()
+                            binding.forumPostCommentList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+
+                            binding.forumPostCommentList.adapter = adapter
+                            adapter.submitList(comments.sortedBy { it.created.date.time })
+
+                        } else {
+                            Reporter.reportException(R.string.error_post_not_found, args.postId, requireContext())
+                            navController.popBackStack()
+                            return@observe
+                        }
+                    } else if (response is Response.Failure) {
+                        Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
+                        navController.popBackStack()
+                        return@observe
+                    }
+                }
+
+                forumViewModel.loadForumPosts(group, null, apiContext)
+                if (forumViewModel.getAllForumPosts(group).value == null)
+                    enableUI(false)
             } else {
-                navController.popBackStack(R.id.forumPostsFragment, false)
+                binding.forumPostNoComments.isVisible = false
+                adapter.submitList(emptyList())
+                enableUI(false)
             }
         }
         setHasOptionsMenu(true)
@@ -125,7 +145,7 @@ class ForumPostFragment : AbstractFragment(true) {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        if (group.effectiveRights.contains(Permission.FORUM_WRITE) || group.effectiveRights.contains(Permission.FORUM_ADMIN)) {
+        if (group!!.effectiveRights.contains(Permission.FORUM_WRITE) || group!!.effectiveRights.contains(Permission.FORUM_ADMIN)) {
             inflater.inflate(R.menu.forum_context_menu, menu)
         }
     }
@@ -134,7 +154,7 @@ class ForumPostFragment : AbstractFragment(true) {
         when (item.itemId) {
             R.id.forum_context_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
-                    forumViewModel.deletePost(post, parent, group, apiContext)
+                    forumViewModel.deletePost(post, parent, group!!, apiContext)
                     enableUI(false)
                 }
             }
@@ -145,7 +165,7 @@ class ForumPostFragment : AbstractFragment(true) {
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
-        if (group.effectiveRights.contains(Permission.FORUM_WRITE) || group.effectiveRights.contains(Permission.FORUM_ADMIN)) {
+        if (group!!.effectiveRights.contains(Permission.FORUM_WRITE) || group!!.effectiveRights.contains(Permission.FORUM_ADMIN)) {
             requireActivity().menuInflater.inflate(R.menu.forum_context_menu, menu)
         }
     }
@@ -157,7 +177,7 @@ class ForumPostFragment : AbstractFragment(true) {
             R.id.forum_context_item_delete -> {
                 val comment = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
-                    forumViewModel.deletePost(comment, post, group, apiContext)
+                    forumViewModel.deletePost(comment, post, group!!, apiContext)
                     enableUI(false)
                 }
             }

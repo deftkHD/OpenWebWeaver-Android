@@ -15,7 +15,7 @@ import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.forum.IForumPost
 
-class ForumPostCommentAdapter(private val group: IGroup, private val path: Array<String>, private val forumViewModel: ForumViewModel, private val navController: NavController): ListAdapter<IForumPost, ForumPostCommentAdapter.CommentViewHolder>(ForumPostDiffCallback()) {
+class ForumPostCommentAdapter(var group: IGroup, private val path: Array<String>, private val forumViewModel: ForumViewModel, private val navController: NavController): ListAdapter<IForumPost, ForumPostCommentAdapter.CommentViewHolder>(ForumPostDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
         val binding = ListItemForumCommentBinding.inflate(LayoutInflater.from(parent.context), parent, false)
