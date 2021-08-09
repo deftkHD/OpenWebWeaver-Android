@@ -1,11 +1,14 @@
 package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import de.deftk.openww.android.databinding.ListItemForumPostBinding
 import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.IGroup
+import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.forum.IForumPost
 
 class ForumPostAdapter(var group: IGroup, clickListener: ActionModeClickListener<ForumPostViewHolder>): ActionModeAdapter<IForumPost, ForumPostAdapter.ForumPostViewHolder>(ForumPostDiffCallback(), clickListener) {
@@ -43,6 +46,7 @@ class ForumPostAdapter(var group: IGroup, clickListener: ActionModeClickListener
             binding.post = post
             binding.group = group
             binding.parentIds = parentIds
+            binding.moreButton.visibility = if (group.effectiveRights.contains(Permission.FORUM_WRITE) || group.effectiveRights.contains(Permission.FORUM_ADMIN)) View.VISIBLE else View.INVISIBLE
             binding.executePendingBindings()
         }
 

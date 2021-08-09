@@ -90,6 +90,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
                     navController.popBackStack()
                     return@observe
                 }
+                (adapter as NoteAdapter).user = apiContext.user
                 binding.fabAddNote.isVisible = apiContext.user.effectiveRights.contains(Permission.NOTES_WRITE) || apiContext.user.effectiveRights.contains(Permission.NOTES_ADMIN)
                 notesViewModel.loadNotes(apiContext)
                 if (notesViewModel.allNotesResponse.value == null)
@@ -108,7 +109,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
     }
 
     override fun createAdapter(): ActionModeAdapter<INote, NoteAdapter.NoteViewHolder> {
-        return NoteAdapter(this)
+        return NoteAdapter(this, userViewModel.apiContext.value!!.user)
     }
 
     override fun onItemClick(view: View, viewHolder: NoteAdapter.NoteViewHolder) {

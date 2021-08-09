@@ -1,13 +1,16 @@
 package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import de.deftk.openww.android.databinding.ListItemNoteBinding
 import de.deftk.openww.android.fragments.ActionModeClickListener
+import de.deftk.openww.api.model.IUser
+import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.notes.INote
 
-class NoteAdapter(clickListener: ActionModeClickListener<NoteViewHolder>) : ActionModeAdapter<INote, NoteAdapter.NoteViewHolder>(NoteDiffCallback(), clickListener) {
+class NoteAdapter(clickListener: ActionModeClickListener<NoteViewHolder>, var user: IUser) : ActionModeAdapter<INote, NoteAdapter.NoteViewHolder>(NoteDiffCallback(), clickListener) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
         val binding = ListItemNoteBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -16,10 +19,10 @@ class NoteAdapter(clickListener: ActionModeClickListener<NoteViewHolder>) : Acti
 
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         val note = getItem(position)
-        holder.bind(note)
+        holder.bind(note, user)
     }
 
-    class NoteViewHolder(val binding: ListItemNoteBinding, clickListener: ActionModeClickListener<ActionModeAdapter.ActionModeViewHolder>) : ActionModeAdapter.ActionModeViewHolder(binding.root, clickListener) {
+    class NoteViewHolder(val binding: ListItemNoteBinding, clickListener: ActionModeClickListener<ActionModeViewHolder>) : ActionModeAdapter.ActionModeViewHolder(binding.root, clickListener) {
 
         private var selected = false
 
@@ -38,8 +41,9 @@ class NoteAdapter(clickListener: ActionModeClickListener<NoteViewHolder>) : Acti
             binding.selected = selected
         }
 
-        fun bind(note: INote) {
+        fun bind(note: INote, user: IUser) {
             binding.note = note
+            binding.moreButton.visibility = if (user.effectiveRights.contains(Permission.NOTES_WRITE) || user.effectiveRights.contains(Permission.NOTES_ADMIN)) View.VISIBLE else View.INVISIBLE
             binding.executePendingBindings()
         }
 

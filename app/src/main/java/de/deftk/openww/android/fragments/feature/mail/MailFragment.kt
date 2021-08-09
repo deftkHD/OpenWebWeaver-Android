@@ -144,7 +144,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                     navController.popBackStack()
                     return@observe
                 }
-
+                (adapter as MailAdapter).user = apiContext.user
                 mailboxViewModel.cleanCache()
                 mailboxViewModel.loadFolders(apiContext)
                 if (mailboxViewModel.foldersResponse.value == null)
@@ -177,7 +177,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
     }
 
     override fun createAdapter(): ActionModeAdapter<Pair<IEmail, IEmailFolder>, MailAdapter.MailViewHolder> {
-        return MailAdapter(this)
+        return MailAdapter(this, userViewModel.apiContext.value!!.user)
     }
 
     override fun onItemClick(view: View, viewHolder: MailAdapter.MailViewHolder) {

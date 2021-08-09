@@ -1,11 +1,13 @@
 package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import de.deftk.openww.android.databinding.ListItemContactBinding
 import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.IOperatingScope
+import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.contacts.IContact
 
 class ContactAdapter(var scope: IOperatingScope, clickListener: ActionModeClickListener<ContactViewHolder>) : ActionModeAdapter<IContact, ContactAdapter.ContactViewHolder>(ContactDiffCallback(), clickListener) {
@@ -42,6 +44,7 @@ class ContactAdapter(var scope: IOperatingScope, clickListener: ActionModeClickL
         fun bind(scope: IOperatingScope, contact: IContact) {
             binding.scope = scope
             binding.contact = contact
+            binding.moreButton.visibility = if (scope.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope.effectiveRights.contains(Permission.ADDRESSES_ADMIN)) View.VISIBLE else View.INVISIBLE
             binding.executePendingBindings()
         }
 

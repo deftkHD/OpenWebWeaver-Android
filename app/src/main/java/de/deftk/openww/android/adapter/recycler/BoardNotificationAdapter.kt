@@ -1,11 +1,13 @@
 package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import de.deftk.openww.android.databinding.ListItemNotificationBinding
 import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.IGroup
+import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.board.IBoardNotification
 
 class BoardNotificationAdapter(clickListener: ActionModeClickListener<BoardNotificationViewHolder>) : ActionModeAdapter<Pair<IBoardNotification, IGroup>, BoardNotificationAdapter.BoardNotificationViewHolder>(BoardNotificationDiffCallback(), clickListener) {
@@ -42,6 +44,7 @@ class BoardNotificationAdapter(clickListener: ActionModeClickListener<BoardNotif
         fun bind(notification: IBoardNotification, group: IGroup) {
             binding.notification = notification
             binding.group = group
+            binding.moreButton.visibility = if (group.effectiveRights.contains(Permission.BOARD_WRITE) || group.effectiveRights.contains(Permission.BOARD_ADMIN)) View.VISIBLE else View.INVISIBLE
             binding.executePendingBindings()
         }
 

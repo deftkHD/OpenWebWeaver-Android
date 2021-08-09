@@ -1,6 +1,7 @@
 package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
@@ -11,6 +12,7 @@ import de.deftk.openww.android.databinding.ListItemForumCommentBinding
 import de.deftk.openww.android.fragments.feature.forum.ForumPostFragmentDirections
 import de.deftk.openww.android.viewmodel.ForumViewModel
 import de.deftk.openww.api.model.IGroup
+import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.forum.IForumPost
 
 class ForumPostCommentAdapter(private val group: IGroup, private val path: Array<String>, private val forumViewModel: ForumViewModel, private val navController: NavController): ListAdapter<IForumPost, ForumPostCommentAdapter.CommentViewHolder>(ForumPostDiffCallback()) {
@@ -43,6 +45,7 @@ class ForumPostCommentAdapter(private val group: IGroup, private val path: Array
             binding.group = group
             binding.hasChildren = hasChildren
             binding.navController = navController
+            binding.moreButton.visibility = if (group.effectiveRights.contains(Permission.FORUM_WRITE) || group.effectiveRights.contains(Permission.FORUM_ADMIN)) View.VISIBLE else View.INVISIBLE
             binding.setShowMoreClickListener { view ->
                 val action = ForumPostFragmentDirections.actionForumPostFragmentSelf(group.login, post.id, path, view.context.getString(R.string.see_comment))
                 view.findNavController().navigate(action)

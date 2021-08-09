@@ -1,14 +1,17 @@
 package de.deftk.openww.android.adapter.recycler
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import de.deftk.openww.android.databinding.ListItemMailBinding
 import de.deftk.openww.android.fragments.ActionModeClickListener
+import de.deftk.openww.api.model.IUser
+import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 
-class MailAdapter(clickListener: ActionModeClickListener<MailViewHolder>) : ActionModeAdapter<Pair<IEmail, IEmailFolder>, MailAdapter.MailViewHolder>(EmailDiffCallback(), clickListener) {
+class MailAdapter(clickListener: ActionModeClickListener<MailViewHolder>, var user: IUser) : ActionModeAdapter<Pair<IEmail, IEmailFolder>, MailAdapter.MailViewHolder>(EmailDiffCallback(), clickListener) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MailViewHolder {
         val binding = ListItemMailBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -17,7 +20,7 @@ class MailAdapter(clickListener: ActionModeClickListener<MailViewHolder>) : Acti
 
     override fun onBindViewHolder(holder: MailViewHolder, position: Int) {
         val (email, folder) = getItem(position)
-        holder.bind(email, folder)
+        holder.bind(email, folder, user)
     }
 
     class MailViewHolder(val binding: ListItemMailBinding, clickListener: ActionModeClickListener<ActionModeViewHolder>) : ActionModeAdapter.ActionModeViewHolder(binding.root, clickListener) {
@@ -39,9 +42,10 @@ class MailAdapter(clickListener: ActionModeClickListener<MailViewHolder>) : Acti
             binding.selected = selected
         }
 
-        fun bind(email: IEmail, folder: IEmailFolder) {
+        fun bind(email: IEmail, folder: IEmailFolder, user: IUser) {
             binding.email = email
             binding.folder = folder
+            binding.moreButton.visibility = if (user.effectiveRights.contains(Permission.MAILBOX_WRITE) || user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) View.VISIBLE else View.INVISIBLE
             binding.executePendingBindings()
         }
 
