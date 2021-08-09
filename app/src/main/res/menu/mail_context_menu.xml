@@ -3,12 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/mail_action_move"
+        android:id="@+id/mail_context_item_move"
         android:title="@string/move"
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/mail_action_delete"
+        android:id="@+id/mail_context_item_delete"
         android:title="@string/delete"
         app:showAsAction="ifRoom" />
 

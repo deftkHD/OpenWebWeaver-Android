@@ -105,7 +105,7 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.system_notification_action_delete -> {
+            R.id.system_notification_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     userViewModel.batchDeleteSystemNotifications(adapter.selectedItems.map { it.binding.notification!! }, apiContext)
                     enableUI(false)
@@ -118,8 +118,8 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
-        inflater.inflate(R.menu.list_filter_menu, menu)
-        val searchItem = menu.findItem(R.id.filter_item_search)
+        inflater.inflate(R.menu.list_options_menu, menu)
+        val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(userViewModel.systemNotificationFilter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -135,7 +135,6 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
                 return true
             }
         })
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onSearchBackPressed(): Boolean {
@@ -149,14 +148,14 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-        requireActivity().menuInflater.inflate(R.menu.delete_menu_item, menu)
+        requireActivity().menuInflater.inflate(R.menu.system_notification_context_menu, menu)
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.systemNotificationList.adapter as SystemNotificationAdapter
         when (item.itemId) {
-            R.id.menu_item_delete -> {
+            R.id.system_notification_context_item_delete -> {
                 val notification = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 userViewModel.deleteSystemNotification(notification, apiContext)

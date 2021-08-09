@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/filestorage_action_info"
-        android:title="@string/details" />
+        android:id="@+id/system_notification_context_item_delete"
+        android:title="@string/delete" />
 
 </menu>

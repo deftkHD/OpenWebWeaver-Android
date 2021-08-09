@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
-        android:id="@+id/menu_item_add_chat_contact"
-        android:title="@string/add_chat_contact" />
-
-    <item
-        android:id="@+id/menu_item_delete"
+        android:id="@+id/forum_context_item_delete"
         android:title="@string/delete" />
 </menu>

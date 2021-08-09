@@ -187,14 +187,14 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
         val user = userViewModel.apiContext.value?.user
         val canModify = user?.effectiveRights?.contains(Permission.MAILBOX_WRITE) == true || user?.effectiveRights?.contains(Permission.MAILBOX_ADMIN) == true
-        menu.findItem(R.id.mail_action_move).isEnabled = canModify
-        menu.findItem(R.id.mail_action_delete).isEnabled = canModify
+        menu.findItem(R.id.mail_action_item_move).isEnabled = canModify
+        menu.findItem(R.id.mail_action_item_delete).isEnabled = canModify
         return super.onPrepareActionMode(mode, menu)
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.mail_action_move -> {
+            R.id.mail_action_item_move -> {
                 val folders = mailboxViewModel.foldersResponse.value?.valueOrNull()?.filter { it.id != mailboxViewModel.currentFolder.value?.id } ?: emptyList()
                 AlertDialog.Builder(requireContext())
                     .setTitle(R.string.move_to)
@@ -211,7 +211,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                     .create()
                     .show()
             }
-            R.id.mail_action_delete -> {
+            R.id.mail_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.batchDelete(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, apiContext)
                     enableUI(false)
@@ -224,9 +224,9 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
-        inflater.inflate(R.menu.list_filter_menu, menu)
-        inflater.inflate(R.menu.mail_list_menu, menu)
-        val searchItem = menu.findItem(R.id.filter_item_search)
+        inflater.inflate(R.menu.list_options_menu, menu)
+        inflater.inflate(R.menu.mail_options_menu, menu)
+        val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(mailboxViewModel.mailFilter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -242,7 +242,6 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                 return true
             }
         })
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onSearchBackPressed(): Boolean {
@@ -256,7 +255,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.mail_list_menu_add_folder) {
+        if (item.itemId == R.id.mail_options_item_add_folder) {
             val builder = AlertDialog.Builder(requireContext())
             builder.setTitle(R.string.create_new_folder)
 
@@ -293,7 +292,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.mailList.adapter as MailAdapter
         when (item.itemId) {
-            R.id.mail_action_move -> {
+            R.id.mail_context_item_move -> {
                 val mailItem = adapter.getItem(menuInfo.position)
                 val folders = mailboxViewModel.foldersResponse.value?.valueOrNull()?.filter { it.id != mailItem.second.id } ?: emptyList()
                 AlertDialog.Builder(requireContext())
@@ -311,7 +310,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                     .create()
                     .show()
             }
-            R.id.mail_action_delete -> {
+            R.id.mail_context_item_delete -> {
                 val mailItem = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.deleteEmail(mailItem.first, mailItem.second, true, apiContext)

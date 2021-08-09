@@ -114,43 +114,43 @@ class ReadTaskFragment : AbstractFragment(true) {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        if (scope.effectiveRights.contains(Permission.TASKS_WRITE) || scope.effectiveRights.contains(Permission.TASKS_ADMIN))
-            inflater.inflate(R.menu.simple_edit_item_menu, menu)
-        inflater.inflate(R.menu.task_item_menu, menu)
-
+        inflater.inflate(R.menu.tasks_context_menu, menu)
+        val canEdit = scope.effectiveRights.contains(Permission.TASKS_WRITE) || scope.effectiveRights.contains(Permission.TASKS_ADMIN)
+        menu.findItem(R.id.tasks_context_item_edit).isVisible = canEdit
+        menu.findItem(R.id.tasks_context_item_delete).isVisible = canEdit
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
         userViewModel.apiContext.value?.also { apiContext ->
             val ignored = tasksViewModel.getIgnoredTasksBlocking(apiContext).any { it.id == task.id && it.scope == scope.login }
-            menu.findItem(R.id.menu_item_ignore).isVisible = !ignored
-            menu.findItem(R.id.menu_item_unignore).isVisible = ignored
+            menu.findItem(R.id.tasks_context_item_ignore).isVisible = !ignored
+            menu.findItem(R.id.tasks_context_item_unignore).isVisible = ignored
         }
         super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menu_item_ignore -> {
+            R.id.tasks_context_item_ignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(listOf(task to scope), apiContext)
                     enableUI(false)
                 }
             }
-            R.id.menu_item_unignore -> {
+            R.id.tasks_context_item_unignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.unignoreTasks(listOf(task to scope), apiContext)
                     enableUI(false)
                 }
             }
-            R.id.menu_item_import_in_calendar -> {
+            R.id.tasks_context_item_import_in_calendar -> {
                 startActivity(CalendarUtil.importTaskIntoCalendar(task))
             }
-            R.id.menu_item_edit -> {
+            R.id.tasks_context_item_edit -> {
                 val action = ReadTaskFragmentDirections.actionReadTaskFragmentToEditTaskFragment(task.id, scope.login, getString(R.string.edit_task))
                 navController.navigate(action)
             }
-            R.id.menu_item_delete -> {
+            R.id.tasks_context_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 tasksViewModel.deleteTask(task, scope, apiContext)
                 enableUI(false)

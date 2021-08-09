@@ -118,13 +118,13 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
         val user = userViewModel.apiContext.value?.user
         val canModify = user?.effectiveRights?.contains(Permission.NOTES_WRITE) == true || user?.effectiveRights?.contains(Permission.NOTES_ADMIN) == true
-        menu.findItem(R.id.notes_action_delete).isEnabled = canModify
+        menu.findItem(R.id.notes_action_item_delete).isEnabled = canModify
         return super.onPrepareActionMode(mode, menu)
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.notes_action_delete -> {
+            R.id.notes_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     notesViewModel.batchDelete(adapter.selectedItems.map { it.binding.note!! }, apiContext)
                     enableUI(false)
@@ -137,8 +137,8 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
-        inflater.inflate(R.menu.list_filter_menu, menu)
-        val searchItem = menu.findItem(R.id.filter_item_search)
+        inflater.inflate(R.menu.list_options_menu, menu)
+        val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(notesViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -154,7 +154,6 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
                 return true
             }
         })
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onSearchBackPressed(): Boolean {
@@ -172,7 +171,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val user = userViewModel.apiContext.value?.user ?: return
             if (user.effectiveRights.contains(Permission.NOTES_WRITE) || user.effectiveRights.contains(Permission.NOTES_ADMIN)) {
-                requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
+                requireActivity().menuInflater.inflate(R.menu.notes_context_menu, menu)
             }
         }
     }
@@ -181,13 +180,13 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.notesList.adapter as NoteAdapter
         return when (item.itemId) {
-            R.id.menu_item_edit -> {
+            R.id.notes_context_item_edit -> {
                 val note = adapter.getItem(menuInfo.position)
                 val action = NotesFragmentDirections.actionNotesFragmentToEditNoteFragment(note.id, getString(R.string.edit_note))
                 navController.navigate(action)
                 true
             }
-            R.id.menu_item_delete -> {
+            R.id.notes_context_item_delete -> {
                 val note = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 notesViewModel.deleteNote(note, apiContext)

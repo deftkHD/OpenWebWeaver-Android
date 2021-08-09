@@ -122,9 +122,9 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
-        inflater.inflate(R.menu.messenger_chat_options_menu, menu)
-        inflater.inflate(R.menu.list_filter_menu, menu)
-        val searchItem = menu.findItem(R.id.filter_item_search)
+        inflater.inflate(R.menu.messenger_options_menu, menu)
+        inflater.inflate(R.menu.list_options_menu, menu)
+        val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(messengerViewModel.messageFilter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -155,7 +155,7 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.delete_saved_chat -> {
+            R.id.messenger_options_item_delete_saved_chat -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     messengerViewModel.clearChat(args.user, apiContext)
                     enableUI(false)

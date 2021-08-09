@@ -26,7 +26,7 @@ import de.deftk.openww.android.viewmodel.MessengerViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 
-class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHolder>(R.menu.chat_actionmode_menu), ISearchProvider {
+class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHolder>(R.menu.messenger_actionmode_menu), ISearchProvider {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val messengerViewModel: MessengerViewModel by activityViewModels()
@@ -149,7 +149,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.chat_action_delete -> {
+            R.id.chat_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     messengerViewModel.batchDelete(adapter.selectedItems.map { it.binding.chatContact!! }, apiContext)
                     enableUI(false)
@@ -163,11 +163,11 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
-            requireActivity().menuInflater.inflate(R.menu.messenger_chat_menu, menu)
+            requireActivity().menuInflater.inflate(R.menu.messenger_context_item, menu)
 
             val adapter = binding.chatList.adapter as ChatAdapter
             val user = adapter.getItem(menuInfo.position)
-            menu.findItem(R.id.menu_item_add_chat_contact).isVisible = user.isLocal
+            menu.findItem(R.id.messenger_context_item_add_chat_contact).isVisible = user.isLocal
         }
     }
 
@@ -175,7 +175,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.chatList.adapter as ChatAdapter
         return when (item.itemId) {
-            R.id.menu_item_add_chat_contact -> {
+            R.id.messenger_context_item_add_chat_contact -> {
                 val user = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.apply {
                     messengerViewModel.addChat(user.user.login, this)
@@ -183,7 +183,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
                 }
                 true
             }
-            R.id.menu_item_delete -> {
+            R.id.messenger_context_item_delete -> {
                 val user = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 messengerViewModel.removeChat(user, apiContext)
@@ -196,8 +196,8 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
-        inflater.inflate(R.menu.list_filter_menu, menu)
-        val searchItem = menu.findItem(R.id.filter_item_search)
+        inflater.inflate(R.menu.list_options_menu, menu)
+        val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(messengerViewModel.userFilter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -213,7 +213,6 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
                 return true
             }
         })
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onSearchBackPressed(): Boolean {

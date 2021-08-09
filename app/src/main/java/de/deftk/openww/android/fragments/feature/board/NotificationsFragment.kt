@@ -115,13 +115,13 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
         val canModify = adapter.selectedItems.all { it.binding.group!!.effectiveRights.contains(Permission.BOARD_WRITE) || it.binding.group!!.effectiveRights.contains(Permission.BOARD_ADMIN) }
-        menu.findItem(R.id.board_action_delete).isEnabled = canModify
+        menu.findItem(R.id.board_action_item_delete).isEnabled = canModify
         return super.onPrepareActionMode(mode, menu)
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.board_action_delete -> {
+            R.id.board_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     boardViewModel.batchDelete(adapter.selectedItems.map { it.binding.group!! to it.binding.notification!! }, apiContext)
                     enableUI(false)
@@ -137,9 +137,8 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        menu.clear()
-        inflater.inflate(R.menu.list_filter_menu, menu)
-        val searchItem = menu.findItem(R.id.filter_item_search)
+        inflater.inflate(R.menu.list_options_menu, menu)
+        val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(boardViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -155,7 +154,6 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
                 return true
             }
         })
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onSearchBackPressed(): Boolean {
@@ -173,7 +171,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val (_, group) = (binding.notificationList.adapter as BoardNotificationAdapter).getItem(menuInfo.position)
             if (group.effectiveRights.contains(Permission.BOARD_WRITE) || group.effectiveRights.contains(Permission.BOARD_ADMIN)) {
-                requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
+                requireActivity().menuInflater.inflate(R.menu.board_context_menu, menu)
             }
         }
     }
@@ -182,13 +180,13 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.notificationList.adapter as BoardNotificationAdapter
         return when (item.itemId) {
-            R.id.menu_item_edit -> {
+            R.id.board_context_item_edit -> {
                 val (notification, group) = adapter.getItem(menuInfo.position)
                 val action = NotificationsFragmentDirections.actionNotificationsFragmentToEditNotificationFragment(notification.id, group.login, getString(R.string.edit_notification))
                 navController.navigate(action)
                 true
             }
-            R.id.menu_item_delete -> {
+            R.id.board_context_item_delete -> {
                 val (notification, group) = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 boardViewModel.deleteBoardNotification(notification, group, apiContext)

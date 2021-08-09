@@ -3,9 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/chat_action_delete"
-        android:icon="@drawable/ic_delete_24"
-        android:title="@string/delete"
+        android:id="@+id/edit_options_item_save"
+        android:icon="@drawable/ic_save_24"
+        android:orderInCategory="1"
+        android:title="@string/save"
         app:showAsAction="ifRoom" />
 
 </menu>

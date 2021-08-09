@@ -130,13 +130,13 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
         val canModify = adapter.selectedItems.all { it.binding.group!!.effectiveRights.contains(Permission.FORUM_WRITE) || it.binding.group!!.effectiveRights.contains(Permission.FORUM_ADMIN) }
-        menu.findItem(R.id.forum_action_delete).isEnabled = canModify
+        menu.findItem(R.id.forum_action_item_delete).isEnabled = canModify
         return super.onPrepareActionMode(mode, menu)
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.forum_action_delete -> {
+            R.id.forum_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.batchDelete(adapter.selectedItems.map { it.binding.post!! }, group!!, apiContext)
                 }
@@ -149,7 +149,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (group!!.effectiveRights.contains(Permission.FORUM_WRITE) || group!!.effectiveRights.contains(Permission.FORUM_ADMIN)) {
-            requireActivity().menuInflater.inflate(R.menu.forum_post_options_menu, menu)
+            requireActivity().menuInflater.inflate(R.menu.forum_context_menu, menu)
         }
     }
 
@@ -157,7 +157,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.forumList.adapter as ForumPostAdapter
         when (item.itemId) {
-            R.id.menu_item_delete -> {
+            R.id.forum_context_item_delete -> {
                 val comment = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.deletePost(comment, null, group!!, apiContext)
@@ -170,8 +170,8 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
-        inflater.inflate(R.menu.list_filter_menu, menu)
-        val searchItem = menu.findItem(R.id.filter_item_search)
+        inflater.inflate(R.menu.list_options_menu, menu)
+        val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(forumViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -187,7 +187,6 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
                 return true
             }
         })
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onSearchBackPressed(): Boolean {

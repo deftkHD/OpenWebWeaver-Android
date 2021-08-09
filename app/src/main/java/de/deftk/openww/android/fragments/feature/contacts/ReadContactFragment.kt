@@ -112,17 +112,17 @@ class ReadContactFragment : AbstractFragment(true) {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         if (scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN))
-            inflater.inflate(R.menu.simple_edit_item_menu, menu)
+            inflater.inflate(R.menu.contacts_context_menu, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.menu_item_edit -> {
+            R.id.contacts_context_item_edit -> {
                 val action = ReadContactFragmentDirections.actionReadContactFragmentToEditContactFragment(scope!!.login, contact.id.toString(), getString(R.string.edit_contact))
                 navController.navigate(action)
                 true
             }
-            R.id.menu_item_delete -> {
+            R.id.contacts_context_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 contactsViewModel.deleteContact(contact, scope!!, apiContext)
                 enableUI(false)

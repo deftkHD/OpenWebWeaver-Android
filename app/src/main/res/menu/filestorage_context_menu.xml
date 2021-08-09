@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/filestorage_context_item_info"
+        android:title="@string/details" />
+
+    <item
+        android:id="@+id/filestorage_context_item_open"
+        android:title="@string/open" />
+
+    <item
+        android:id="@+id/filestorage_context_item_download"
+        android:title="@string/download" />
+
+    <item
+        android:id="@+id/filestorage_context_item_delete"
+        android:title="@string/delete" />
+
+</menu>

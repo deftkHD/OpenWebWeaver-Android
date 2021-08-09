@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/delete_saved_chat"
+        android:id="@+id/messenger_options_item_delete_saved_chat"
         android:title="@string/delete_saved_chat" />
 
 </menu>

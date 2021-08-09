@@ -135,13 +135,13 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
         val canModify = adapter.selectedItems.all { it.binding.scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || it.binding.scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN) }
-        menu.findItem(R.id.contacts_action_delete).isEnabled = canModify
+        menu.findItem(R.id.contacts_action_item_delete).isEnabled = canModify
         return super.onPrepareActionMode(mode, menu)
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.contacts_action_delete -> {
+            R.id.contacts_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     contactsViewModel.batchDelete(adapter.selectedItems.map { it.binding.scope!! to it.binding.contact!! }, apiContext)
                     enableUI(false)
@@ -153,9 +153,8 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        menu.clear()
-        inflater.inflate(R.menu.list_filter_menu, menu)
-        val searchItem = menu.findItem(R.id.filter_item_search)
+        inflater.inflate(R.menu.list_options_menu, menu)
+        val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(contactsViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -171,7 +170,6 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
                 return true
             }
         })
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onSearchBackPressed(): Boolean {
@@ -188,7 +186,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             if (scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN)) {
-                requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
+                requireActivity().menuInflater.inflate(R.menu.contacts_context_menu, menu)
             }
         }
     }
@@ -197,13 +195,13 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.contactList.adapter as ContactAdapter
         return when (item.itemId) {
-            R.id.menu_item_edit -> {
+            R.id.contacts_context_item_edit -> {
                 val contact = adapter.getItem(menuInfo.position)
                 val action = ContactsFragmentDirections.actionContactsFragmentToEditContactFragment(scope!!.login, contact.id.toString(), getString(R.string.edit_contact))
                 navController.navigate(action)
                 true
             }
-            R.id.menu_item_delete -> {
+            R.id.contacts_context_item_delete -> {
                 val contact = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 contactsViewModel.deleteContact(contact, scope!!, apiContext)

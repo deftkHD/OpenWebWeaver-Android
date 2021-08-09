@@ -239,11 +239,11 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.toolbar_save_menu, menu)
+        inflater.inflate(R.menu.edit_options_menu, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.menu_item_save) {
+        if (item.itemId == R.id.edit_options_item_save) {
             val apiContext = userViewModel.apiContext.value ?: return false
 
             if (editMode) {

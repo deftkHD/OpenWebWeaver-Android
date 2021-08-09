@@ -96,8 +96,8 @@ class MembersFragment : AbstractFragment(true), ISearchProvider {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
-        inflater.inflate(R.menu.list_filter_menu, menu)
-        val searchItem = menu.findItem(R.id.filter_item_search)
+        inflater.inflate(R.menu.list_options_menu, menu)
+        val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(groupViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -113,7 +113,6 @@ class MembersFragment : AbstractFragment(true), ISearchProvider {
                 return true
             }
         })
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onSearchBackPressed(): Boolean {
@@ -132,8 +131,8 @@ class MembersFragment : AbstractFragment(true), ISearchProvider {
             val member = (binding.memberList.adapter as MemberAdapter).getItem(menuInfo.position)
             val apiContext = userViewModel.apiContext.value ?: return
             if (member.login != apiContext.user.login) {
-                requireActivity().menuInflater.inflate(R.menu.member_action_menu, menu)
-                menu.findItem(R.id.member_action_open_messenger).isVisible = Feature.MESSENGER.isAvailable(apiContext.user.effectiveRights)
+                requireActivity().menuInflater.inflate(R.menu.member_context_menu, menu)
+                menu.findItem(R.id.member_context_item_open_chat).isVisible = Feature.MESSENGER.isAvailable(apiContext.user.effectiveRights)
             }
         }
     }
@@ -142,12 +141,12 @@ class MembersFragment : AbstractFragment(true), ISearchProvider {
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.memberList.adapter as MemberAdapter
         return when (item.itemId) {
-            R.id.member_action_open_messenger -> {
+            R.id.member_context_item_open_chat -> {
                 val member = adapter.getItem(menuInfo.position)
                 navController.navigate(MembersFragmentDirections.actionMembersFragmentToMessengerChatFragment(member.login, member.name))
                 true
             }
-            R.id.member_action_write_mail -> {
+            R.id.member_context_item_write_mail -> {
                 val member = adapter.getItem(menuInfo.position)
                 val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${Uri.encode(member.login)}"))
                 startActivity(Intent.createChooser(intent, getString(R.string.send_mail)))

@@ -339,9 +339,9 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
-        inflater.inflate(R.menu.filestorage_option_menu, menu)
-        inflater.inflate(R.menu.list_filter_menu, menu)
-        val searchItem = menu.findItem(R.id.filter_item_search)
+        inflater.inflate(R.menu.filestorage_options_menu, menu)
+        inflater.inflate(R.menu.list_options_menu, menu)
+        val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(fileStorageViewModel.fileFilter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -361,12 +361,12 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
-        menu.findItem(R.id.filestorage_action_create_folder).isVisible = getProviderFile()?.file?.effectiveCreate == true
+        menu.findItem(R.id.filestorage_option_item_create_folder).isVisible = getProviderFile()?.file?.effectiveCreate == true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.filestorage_action_create_folder -> {
+            R.id.filestorage_option_item_create_folder -> {
                 val builder = AlertDialog.Builder(requireContext())
                 builder.setTitle(R.string.create_new_folder)
 
@@ -402,15 +402,13 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-        requireActivity().menuInflater.inflate(R.menu.filestorage_list_menu, menu)
+        requireActivity().menuInflater.inflate(R.menu.filestorage_context_menu, menu)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val file = (binding.fileList.adapter as FileAdapter).getItem(menuInfo.position)
-            if (file.effectiveRead == true && file.type == FileType.FILE) {
-                requireActivity().menuInflater.inflate(R.menu.filestorage_read_list_menu, menu)
-            }
-            if (file.effectiveDelete == true) {
-                requireActivity().menuInflater.inflate(R.menu.delete_menu_item, menu)
-            }
+            val canRead = file.effectiveRead == true && file.type == FileType.FILE
+            menu.findItem(R.id.filestorage_context_item_open).isVisible = canRead
+            menu.findItem(R.id.filestorage_context_item_download).isVisible = canRead
+            menu.findItem(R.id.filestorage_context_item_delete).isVisible = file.effectiveDelete == true
         }
     }
 
@@ -418,19 +416,19 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.fileList.adapter as FileAdapter
         return when (item.itemId) {
-            R.id.menu_item_delete -> {
+            R.id.filestorage_context_item_delete -> {
                 val file = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     fileStorageViewModel.batchDelete(listOf(file), scope, apiContext)
                 }
                 true
             }
-            R.id.filestorage_action_info -> {
+            R.id.filestorage_context_item_info -> {
                 val file = adapter.getItem(menuInfo.position)
                 navController.navigate(FilesFragmentDirections.actionFilesFragmentToReadFileFragment(args.operatorId, file.id, args.folderId))
                 true
             }
-            R.id.filestorage_action_download -> {
+            R.id.filestorage_context_item_download -> {
                 val file = adapter.getItem(menuInfo.position)
                 val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
                 intent.type = FileUtil.getMimeType(file.name)
@@ -438,7 +436,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 downloadSaveLauncher.launch(intent to file)
                 true
             }
-            R.id.filestorage_action_open -> {
+            R.id.filestorage_context_item_open -> {
                 val file = adapter.getItem(menuInfo.position)
                 openFile(file)
                 true
@@ -449,13 +447,13 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
         val canDelete = adapter.selectedItems.all { it.binding.file!!.effectiveDelete == true }
-        menu.findItem(R.id.filestorage_action_delete).isEnabled = canDelete //TODO should be visible if disabled
+        menu.findItem(R.id.filestorage_action_item_delete).isEnabled = canDelete //TODO should be visible if disabled
         return super.onPrepareActionMode(mode, menu)
     }
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.filestorage_action_delete -> {
+            R.id.filestorage_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     fileStorageViewModel.batchDelete(adapter.selectedItems.map { it.binding.file!! }, scope, apiContext)
                     enableUI(false)

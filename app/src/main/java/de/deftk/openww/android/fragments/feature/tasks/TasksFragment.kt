@@ -118,9 +118,9 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
-        inflater.inflate(R.menu.list_filter_menu, menu)
-        inflater.inflate(R.menu.task_list_filter_menu, menu)
-        val searchItem = menu.findItem(R.id.filter_item_search)
+        inflater.inflate(R.menu.list_options_menu, menu)
+        inflater.inflate(R.menu.tasks_options_menu, menu)
+        val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(tasksViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -142,13 +142,13 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
-        menu.findItem(R.id.menu_item_show_ignored).isChecked = tasksViewModel.filter.value?.showIgnoredCriteria?.value ?: false
+        menu.findItem(R.id.tasks_options_item_show_ignored).isChecked = tasksViewModel.filter.value?.showIgnoredCriteria?.value ?: false
         super.onPrepareOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menu_item_show_ignored -> {
+            R.id.tasks_options_item_show_ignored -> {
                 item.isChecked = !item.isChecked
                 tasksViewModel.setFilter { filter ->
                     filter.showIgnoredCriteria.value = item.isChecked
@@ -177,12 +177,12 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         userViewModel.apiContext.value?.also { apiContext ->
             val ignored = tasksViewModel.getIgnoredTasksBlocking(apiContext)
             val canIgnore = adapter.selectedItems.none { task -> ignored.any { it.id == task.binding.task!!.id && it.scope == task.binding.scope!!.login } }
-            menu.findItem(R.id.tasks_action_ignore).isVisible = canIgnore
+            menu.findItem(R.id.tasks_action_item_ignore).isVisible = canIgnore
             val canUnignore = adapter.selectedItems.all { task -> ignored.any { it.id == task.binding.task!!.id && it.scope == task.binding.scope!!.login } }
-            menu.findItem(R.id.tasks_action_unignore).isVisible = canUnignore
+            menu.findItem(R.id.tasks_action_item_unignore).isVisible = canUnignore
 
             val canModify = adapter.selectedItems.all { it.binding.scope!!.effectiveRights.contains(Permission.BOARD_WRITE) || it.binding.scope!!.effectiveRights.contains(Permission.BOARD_ADMIN) }
-            menu.findItem(R.id.tasks_action_delete).isEnabled = canModify
+            menu.findItem(R.id.tasks_action_item_delete).isEnabled = canModify
         }
 
         return super.onPrepareActionMode(mode, menu)
@@ -190,20 +190,20 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
 
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.tasks_action_ignore -> {
+            R.id.tasks_action_item_ignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
                     enableUI(false)
                 }
                 mode.finish()
             }
-            R.id.tasks_action_unignore -> {
+            R.id.tasks_action_item_unignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.unignoreTasks(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
                 }
                 mode.finish()
             }
-            R.id.tasks_action_delete -> {
+            R.id.tasks_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.batchDelete(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
                     enableUI(false)
@@ -219,16 +219,15 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val (task, group) = (binding.tasksList.adapter as TasksAdapter).getItem(menuInfo.position)
-            requireActivity().menuInflater.inflate(R.menu.task_item_menu, menu)
+            requireActivity().menuInflater.inflate(R.menu.tasks_context_menu, menu)
             userViewModel.apiContext.value?.also { apiContext ->
                 val ignored = tasksViewModel.getIgnoredTasksBlocking(apiContext).any { it.id == task.id && it.scope == group.login }
-                menu.findItem(R.id.menu_item_ignore).isVisible = !ignored
-                menu.findItem(R.id.menu_item_unignore).isVisible = ignored
+                menu.findItem(R.id.tasks_context_item_ignore).isVisible = !ignored
+                menu.findItem(R.id.tasks_context_item_unignore).isVisible = ignored
             }
-
-            if (group.effectiveRights.contains(Permission.TASKS_WRITE) || group.effectiveRights.contains(Permission.TASKS_ADMIN)) {
-                requireActivity().menuInflater.inflate(R.menu.simple_edit_item_menu, menu)
-            }
+            val canEdit = group.effectiveRights.contains(Permission.TASKS_WRITE) || group.effectiveRights.contains(Permission.TASKS_ADMIN)
+            menu.findItem(R.id.tasks_context_item_edit).isVisible = canEdit
+            menu.findItem(R.id.tasks_context_item_delete).isVisible = canEdit
         }
     }
 
@@ -236,28 +235,28 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.tasksList.adapter as TasksAdapter
         when (item.itemId) {
-            R.id.menu_item_ignore -> {
+            R.id.tasks_context_item_ignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(listOf(adapter.getItem(menuInfo.position)), apiContext)
                     enableUI(false)
                 }
             }
-            R.id.menu_item_unignore -> {
+            R.id.tasks_context_item_unignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.unignoreTasks(listOf(adapter.getItem(menuInfo.position)), apiContext)
                     enableUI(false)
                 }
             }
-            R.id.menu_item_import_in_calendar -> {
+            R.id.tasks_context_item_import_in_calendar -> {
                 val (task, _) = adapter.getItem(menuInfo.position)
                 startActivity(CalendarUtil.importTaskIntoCalendar(task))
             }
-            R.id.menu_item_edit -> {
+            R.id.tasks_context_item_edit -> {
                 val (task, scope) = adapter.getItem(menuInfo.position)
                 val action = TasksFragmentDirections.actionTasksFragmentToEditTaskFragment(task.id, scope.login, getString(R.string.edit_task))
                 navController.navigate(action)
             }
-            R.id.menu_item_delete -> {
+            R.id.tasks_context_item_delete -> {
                 val (task, scope) = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 tasksViewModel.deleteTask(task, scope, apiContext)

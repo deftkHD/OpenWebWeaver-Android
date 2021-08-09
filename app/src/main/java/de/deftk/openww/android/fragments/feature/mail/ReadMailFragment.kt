@@ -111,14 +111,15 @@ class ReadMailFragment : AbstractFragment(true) {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         userViewModel.apiContext.value?.also { apiContext ->
             if (apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
-                inflater.inflate(R.menu.simple_mail_edit_item_menu, menu)
+                inflater.inflate(R.menu.mail_context_menu, menu)
+                menu.findItem(R.id.mail_context_item_move).isVisible = false
             }
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.menu_item_delete -> {
+            R.id.mail_context_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.deleteEmail(email, emailFolder, true, apiContext)
                     enableUI(false)

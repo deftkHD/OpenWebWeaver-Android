@@ -79,12 +79,12 @@ class SystemNotificationFragment : AbstractFragment(true) {
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.delete_menu_item, menu)
+        inflater.inflate(R.menu.system_notification_context_menu, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menu_item_delete -> {
+            R.id.system_notification_context_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 userViewModel.deleteSystemNotification(systemNotification, apiContext)
                 enableUI(false)

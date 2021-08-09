@@ -3,7 +3,6 @@ package de.deftk.openww.android.fragments.feature.forum
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavController
@@ -43,18 +42,11 @@ class ForumPostFragment : AbstractFragment(true) {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentForumPostBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.show()
-        setHasOptionsMenu(true)
-        registerForContextMenu(binding.forumPostCommentList)
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val group = userViewModel.apiContext.value?.user?.getGroups()?.firstOrNull { it.login == args.groupId }
         if (group == null) {
             Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
             navController.popBackStack()
-            return
+            return binding.root
         }
         this.group = group
 
@@ -126,19 +118,21 @@ class ForumPostFragment : AbstractFragment(true) {
                 navController.popBackStack(R.id.forumPostsFragment, false)
             }
         }
-
+        setHasOptionsMenu(true)
+        registerForContextMenu(binding.forumPostCommentList)
+        return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         if (group.effectiveRights.contains(Permission.FORUM_WRITE) || group.effectiveRights.contains(Permission.FORUM_ADMIN)) {
-            inflater.inflate(R.menu.forum_post_options_menu, menu)
+            inflater.inflate(R.menu.forum_context_menu, menu)
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.menu_item_delete -> {
+            R.id.forum_context_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.deletePost(post, parent, group, apiContext)
                     enableUI(false)
@@ -152,7 +146,7 @@ class ForumPostFragment : AbstractFragment(true) {
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (group.effectiveRights.contains(Permission.FORUM_WRITE) || group.effectiveRights.contains(Permission.FORUM_ADMIN)) {
-            requireActivity().menuInflater.inflate(R.menu.forum_post_options_menu, menu)
+            requireActivity().menuInflater.inflate(R.menu.forum_context_menu, menu)
         }
     }
 
@@ -160,7 +154,7 @@ class ForumPostFragment : AbstractFragment(true) {
         val menuInfo = item.menuInfo as ContextMenuRecyclerView.RecyclerViewContextMenuInfo
         val adapter = binding.forumPostCommentList.adapter as ForumPostCommentAdapter
         when (item.itemId) {
-            R.id.menu_item_delete -> {
+            R.id.forum_context_item_delete -> {
                 val comment = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.deletePost(comment, post, group, apiContext)

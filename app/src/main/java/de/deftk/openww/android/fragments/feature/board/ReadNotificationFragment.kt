@@ -112,17 +112,17 @@ class ReadNotificationFragment : AbstractFragment(true) {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         if (group.effectiveRights.contains(Permission.BOARD_WRITE) || group.effectiveRights.contains(Permission.BOARD_ADMIN))
-            inflater.inflate(R.menu.simple_edit_item_menu, menu)
+            inflater.inflate(R.menu.board_context_menu, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.menu_item_edit -> {
+            R.id.board_context_item_edit -> {
                 val action = ReadNotificationFragmentDirections.actionReadNotificationFragmentToEditNotificationFragment(notification.id, group.login, getString(R.string.edit_notification))
                 navController.navigate(action)
                 true
             }
-            R.id.menu_item_delete -> {
+            R.id.board_context_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 boardViewModel.deleteBoardNotification(notification, group, apiContext)
                 enableUI(false)

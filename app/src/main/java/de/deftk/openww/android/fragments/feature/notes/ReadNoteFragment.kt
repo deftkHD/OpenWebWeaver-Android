@@ -106,17 +106,17 @@ class ReadNoteFragment : AbstractFragment(true) {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         val user = userViewModel.apiContext.value?.user ?: return
         if (user.effectiveRights.contains(Permission.NOTES_WRITE) || user.effectiveRights.contains(Permission.NOTES_ADMIN))
-            inflater.inflate(R.menu.simple_edit_item_menu, menu)
+            inflater.inflate(R.menu.notes_context_menu, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.menu_item_edit -> {
+            R.id.notes_context_item_edit -> {
                 val action = ReadNoteFragmentDirections.actionReadNoteFragmentToEditNoteFragment(note.id, getString(R.string.edit_note))
                 navController.navigate(action)
                 true
             }
-            R.id.menu_item_delete -> {
+            R.id.notes_context_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 notesViewModel.deleteNote(note, apiContext)
                 enableUI(false)
