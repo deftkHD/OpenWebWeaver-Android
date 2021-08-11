@@ -194,7 +194,10 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 if (fileStorageViewModel.getCachedChildren(scope!!, args.folderId).isEmpty())
                     enableUI(false)
             } else {
-                navController.popBackStack(R.id.fileStorageGroupFragment, false)
+                binding.fabUploadFile.isVisible = false
+                binding.fileEmpty.isVisible = false
+                binding.fileStorageSwipeRefresh.isRefreshing = false
+                adapter.submitList(emptyList())
             }
         }
 
