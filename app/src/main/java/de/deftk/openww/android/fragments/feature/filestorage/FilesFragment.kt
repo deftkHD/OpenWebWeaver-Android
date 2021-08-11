@@ -44,6 +44,7 @@ import de.deftk.openww.android.viewmodel.FileStorageViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.WebWeaverClient
 import de.deftk.openww.api.implementation.feature.filestorage.session.SessionFile
+import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.filestorage.FileType
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
@@ -65,50 +66,13 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     private lateinit var downloadSaveLauncher: ActivityResultLauncher<Pair<Intent, IRemoteFile>>
     private lateinit var uploadLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var binding: FragmentFilesBinding
-    private lateinit var scope: IOperatingScope
     private lateinit var searchView: SearchView
 
+    private var scope: IOperatingScope? = null
     private var currentNetworkTransfers = emptyList<NetworkTransfer>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFilesBinding.inflate(inflater, container, false)
-        val argScope = userViewModel.apiContext.value?.findOperatingScope(args.operatorId)
-        if (argScope == null) {
-            Reporter.reportException(R.string.error_scope_not_found, args.operatorId, requireContext())
-            navController.popBackStack(R.id.fileStorageGroupFragment, false)
-            return binding.root
-        }
-        scope = argScope
-
-        binding.fileList.adapter = adapter
-        binding.fileList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        binding.fileList.recycledViewPool.setMaxRecycledViews(0, 0) // this is just a workaround (otherwise preview images disappear while scrolling, see https://github.com/square/picasso/issues/845#issuecomment-280626688) FIXME seems like an issue with recycling
-
-        val filter = FileStorageFileFilter()
-        filter.parentCriteria.value = args.folderId
-        fileStorageViewModel.fileFilter.value = filter
-        fileStorageViewModel.getFilteredFiles(scope).observe(viewLifecycleOwner) { response ->
-            if (response is Response.Success) {
-                adapter.submitList(response.value.map { it.file })
-                binding.fileEmpty.isVisible = response.value.isEmpty()
-                updateUploadFab()
-                requireActivity().invalidateOptionsMenu()
-
-                if (args.highlightFileId != null) {
-                    // actually this filtering is very bad because someone could destroy it be naming a file like an id, but I guess this is a design problem, not mine
-                    val file = response.value.firstOrNull { it.file.id == args.highlightFileId || it.file.name == args.highlightFileId?.substring(1) }
-                    if (file == null) {
-                        Reporter.reportException(R.string.error_file_not_found, args.highlightFileId.toString(), requireContext())
-                    } else {
-                        binding.fileList.smoothScrollToPosition(adapter.currentList.indexOf(file.file))
-                    }
-                }
-            } else if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())
-            }
-            enableUI(true)
-            binding.fileStorageSwipeRefresh.isRefreshing = false
-        }
 
         fileStorageViewModel.networkTransfers.observe(viewLifecycleOwner) { transfers ->
             for (i in 0 until max(transfers.size, currentNetworkTransfers.size)) {
@@ -163,7 +127,8 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
         binding.fileStorageSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
-                fileStorageViewModel.loadChildren(scope, args.folderId, true, apiContext)
+                fileStorageViewModel.cleanCache(scope!!)
+                fileStorageViewModel.loadChildrenTree(scope!!, args.folderId, true, apiContext)
                 adapter.notifyDataSetChanged() // update previews
             }
         }
@@ -172,15 +137,62 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             if (apiContext != null) {
                 val newScope = userViewModel.apiContext.value?.findOperatingScope(args.operatorId)
                 if (newScope == null) {
+                    Reporter.reportException(R.string.error_scope_not_found, args.operatorId, requireContext())
                     navController.popBackStack(R.id.fileStorageGroupFragment, false)
                     return@observe
-                } else {
-                    this.scope = newScope
-                    fileStorageViewModel.loadChildren(scope, args.folderId, false, apiContext)
-                    updateUploadFab()
-                    if (fileStorageViewModel.getCachedChildren(scope, args.folderId).isEmpty())
-                        enableUI(false)
                 }
+                if (!Feature.FILES.isAvailable(newScope.effectiveRights)) {
+                    Reporter.reportFeatureNotAvailable(requireContext())
+                    navController.popBackStack(R.id.fileStorageGroupFragment, true)
+                    return@observe
+                }
+
+                if (scope != null) {
+                    fileStorageViewModel.getFilteredFiles(scope!!).removeObservers(viewLifecycleOwner)
+                    scope = newScope
+                    (adapter as FileAdapter).scope = newScope
+                } else {
+                    scope = newScope
+                }
+                binding.fileList.adapter = adapter
+                binding.fileList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+                binding.fileList.recycledViewPool.setMaxRecycledViews(0, 0) // this is just a workaround (otherwise preview images disappear while scrolling, see https://github.com/square/picasso/issues/845#issuecomment-280626688) FIXME seems like an issue with recycling
+
+                val filter = FileStorageFileFilter()
+                filter.parentCriteria.value = args.folderId
+                fileStorageViewModel.fileFilter.value = filter
+                fileStorageViewModel.getFilteredFiles(scope!!).observe(viewLifecycleOwner) { response ->
+                    if (response is Response.Success) {
+                        adapter.submitList(response.value.map { it.file })
+                        binding.fileEmpty.isVisible = response.value.isEmpty()
+                        updateUploadFab()
+                        requireActivity().invalidateOptionsMenu()
+
+                        if (args.highlightFileId != null) {
+                            // actually this filtering is very bad because someone could destroy it be naming a file like an id, but I guess this is a design problem, not mine
+                            val file = response.value.firstOrNull { it.file.name == args.highlightFileId?.substring(1) }
+                            if (file == null) {
+                                Reporter.reportException(R.string.error_file_not_found, args.highlightFileId.toString(), requireContext())
+                            } else {
+                                binding.fileList.smoothScrollToPosition(adapter.currentList.indexOf(file.file))
+                            }
+                        }
+                    } else if (response is Response.Failure) {
+                        Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())
+                    }
+                    enableUI(true)
+                    binding.fileStorageSwipeRefresh.isRefreshing = false
+                }
+
+                //TODO actually check if parent exists, not if files were loaded
+                if (fileStorageViewModel.getAllFiles(scope!!).value?.valueOrNull()?.isNotEmpty() == true) {
+                    fileStorageViewModel.loadChildren(scope!!, args.folderId, false, apiContext)
+                } else {
+                    fileStorageViewModel.loadChildrenTree(scope!!, args.folderId, false, apiContext)
+                }
+                updateUploadFab()
+                if (fileStorageViewModel.getCachedChildren(scope!!, args.folderId).isEmpty())
+                    enableUI(false)
             } else {
                 navController.popBackStack(R.id.fileStorageGroupFragment, false)
             }
@@ -189,7 +201,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         downloadSaveLauncher = registerForActivityResult(SaveFileContract()) { (result, file) ->
             val uri = result.data?.data
             userViewModel.apiContext.value?.also { apiContext ->
-                fileStorageViewModel.startSaveDownload(workManager, apiContext, file, scope, uri.toString())
+                fileStorageViewModel.startSaveDownload(workManager, apiContext, file, scope!!, uri.toString())
             }
         }
 
@@ -232,101 +244,105 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     }
 
     private fun getProviderFile(): FileCacheElement? {
-        return fileStorageViewModel.getAllFiles(scope).value?.valueOrNull()?.firstOrNull { it.file.id == args.folderId || (it.file.id == "" && args.folderId == "/") }
+        return fileStorageViewModel.getAllFiles(scope!!).value?.valueOrNull()?.firstOrNull { it.file.id == args.folderId || (it.file.id == "" && args.folderId == "/") }
     }
 
     override fun createAdapter(): ActionModeAdapter<IRemoteFile, FileAdapter.FileViewHolder> {
-        return FileAdapter(scope, this, fileStorageViewModel)
+        return FileAdapter(scope!!, this, fileStorageViewModel)
     }
 
     private fun onNetworkTransferAdded(transfer: NetworkTransfer) {
         val liveData = workManager.getWorkInfoByIdLiveData(transfer.workerId)
-        if (transfer is NetworkTransfer.DownloadOpen) {
-            liveData.observe(viewLifecycleOwner) { workInfo ->
-                val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
-                var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
-                when (workInfo.state) {
-                    WorkInfo.State.SUCCEEDED -> {
-                        progress = 100
-                        val fileUri = Uri.parse(workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_URI))
-                        val fileName = workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_NAME)!!
-                        FileUtil.showFileOpenIntent(fileName, fileUri, preferences, requireContext())
-                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
-                    }
-                    WorkInfo.State.CANCELLED -> {
-                        //TODO remove notification
-                        progress = -1
-                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
-                    }
-                    WorkInfo.State.FAILED -> {
-                        val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
-                        Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
-                        progress = -1
-                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
-                    }
-                    else -> { /* ignore */ }
-                }
-                transfer.progress = progress
-                val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
-                viewHolder.setProgress(progress)
-            }
-        } else if (transfer is NetworkTransfer.DownloadSave) {
-            liveData.observe(viewLifecycleOwner) { workInfo ->
-                val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
-                var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
-                when (workInfo.state) {
-                    WorkInfo.State.SUCCEEDED -> {
-                        progress = 100
-                        Toast.makeText(requireContext(), R.string.download_finished, Toast.LENGTH_LONG).show()
-                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
-                    }
-                    WorkInfo.State.CANCELLED -> {
-                        //TODO remove notification
-                        progress = -1
-                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
-                    }
-                    WorkInfo.State.FAILED -> {
-                        val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
-                        Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
-                        progress = -1
-                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
-                    }
-                    else -> { /* ignore */ }
-                }
-                transfer.progress = progress
-                val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
-                viewHolder.setProgress(progress)
-            }
-        } else if (transfer is NetworkTransfer.Upload) {
-            liveData.observe(viewLifecycleOwner) { workInfo ->
-                val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
-                var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
-                when (workInfo.state) {
-                    WorkInfo.State.SUCCEEDED -> {
-                        progress = 100
-                        Toast.makeText(requireContext(), R.string.upload_finished, Toast.LENGTH_LONG).show()
-                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
-                        val sessionFile = WebWeaverClient.json.decodeFromString<SessionFile>(workInfo.outputData.getString(SessionFileUploadWorker.DATA_SESSION_FILE) ?: "")
-                        userViewModel.apiContext.value?.also { apiContext ->
-                            fileStorageViewModel.importSessionFile(sessionFile, scope, apiContext)
+        when (transfer) {
+            is NetworkTransfer.DownloadOpen -> {
+                liveData.observe(viewLifecycleOwner) { workInfo ->
+                    val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
+                    var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
+                    when (workInfo.state) {
+                        WorkInfo.State.SUCCEEDED -> {
+                            progress = 100
+                            val fileUri = Uri.parse(workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_URI))
+                            val fileName = workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_NAME)!!
+                            FileUtil.showFileOpenIntent(fileName, fileUri, preferences, requireContext())
+                            fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                         }
+                        WorkInfo.State.CANCELLED -> {
+                            //TODO remove notification
+                            progress = -1
+                            fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
+                        }
+                        WorkInfo.State.FAILED -> {
+                            val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
+                            Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
+                            progress = -1
+                            fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
+                        }
+                        else -> { /* ignore */ }
                     }
-                    WorkInfo.State.CANCELLED -> {
-                        //TODO remove notification
-                        progress = -1
-                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
-                    }
-                    WorkInfo.State.FAILED -> {
-                        val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
-                        Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
-                        progress = -1
-                        fileStorageViewModel.hideNetworkTransfer(transfer, scope)
-                    }
-                    else -> { /* ignore */ }
+                    transfer.progress = progress
+                    val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
+                    viewHolder.setProgress(progress)
                 }
-                transfer.progress = progress
-                val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
-                viewHolder.setProgress(progress)
+            }
+            is NetworkTransfer.DownloadSave -> {
+                liveData.observe(viewLifecycleOwner) { workInfo ->
+                    val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
+                    var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
+                    when (workInfo.state) {
+                        WorkInfo.State.SUCCEEDED -> {
+                            progress = 100
+                            Toast.makeText(requireContext(), R.string.download_finished, Toast.LENGTH_LONG).show()
+                            fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
+                        }
+                        WorkInfo.State.CANCELLED -> {
+                            //TODO remove notification
+                            progress = -1
+                            fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
+                        }
+                        WorkInfo.State.FAILED -> {
+                            val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
+                            Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
+                            progress = -1
+                            fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
+                        }
+                        else -> { /* ignore */ }
+                    }
+                    transfer.progress = progress
+                    val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
+                    viewHolder.setProgress(progress)
+                }
+            }
+            is NetworkTransfer.Upload -> {
+                liveData.observe(viewLifecycleOwner) { workInfo ->
+                    val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
+                    var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
+                    when (workInfo.state) {
+                        WorkInfo.State.SUCCEEDED -> {
+                            progress = 100
+                            Toast.makeText(requireContext(), R.string.upload_finished, Toast.LENGTH_LONG).show()
+                            fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
+                            val sessionFile = WebWeaverClient.json.decodeFromString<SessionFile>(workInfo.outputData.getString(SessionFileUploadWorker.DATA_SESSION_FILE) ?: "")
+                            userViewModel.apiContext.value?.also { apiContext ->
+                                fileStorageViewModel.importSessionFile(sessionFile, scope!!, apiContext)
+                            }
+                        }
+                        WorkInfo.State.CANCELLED -> {
+                            //TODO remove notification
+                            progress = -1
+                            fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
+                        }
+                        WorkInfo.State.FAILED -> {
+                            val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
+                            Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
+                            progress = -1
+                            fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
+                        }
+                        else -> { /* ignore */ }
+                    }
+                    transfer.progress = progress
+                    val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
+                    viewHolder.setProgress(progress)
+                }
             }
         }
     }
@@ -377,7 +393,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
                 builder.setPositiveButton(R.string.confirm) { _, _ ->
                     userViewModel.apiContext.value?.apply {
-                        fileStorageViewModel.addFolder(input.text.toString(), getProviderFile()!!.file, scope, this)
+                        fileStorageViewModel.addFolder(input.text.toString(), getProviderFile()!!.file, scope!!, this)
                         enableUI(false)
                     }
                 }
@@ -419,7 +435,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             R.id.filestorage_context_item_delete -> {
                 val file = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
-                    fileStorageViewModel.batchDelete(listOf(file), scope, apiContext)
+                    fileStorageViewModel.batchDelete(listOf(file), scope!!, apiContext)
                 }
                 true
             }
@@ -455,7 +471,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         when (item.itemId) {
             R.id.filestorage_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
-                    fileStorageViewModel.batchDelete(adapter.selectedItems.map { it.binding.file!! }, scope, apiContext)
+                    fileStorageViewModel.batchDelete(adapter.selectedItems.map { it.binding.file!! }, scope!!, apiContext)
                     enableUI(false)
                 }
             }
@@ -480,14 +496,14 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 tempDir.mkdir()
             val tempFile = File(tempDir, FileUtil.escapeFileName(file.name))
             userViewModel.apiContext.value?.also { apiContext ->
-                fileStorageViewModel.startOpenDownload(workManager, apiContext, file, scope, tempFile.absolutePath)
+                fileStorageViewModel.startOpenDownload(workManager, apiContext, file, scope!!, tempFile.absolutePath)
             }
         }
     }
 
     private fun uploadFile(uri: Uri) {
         userViewModel.apiContext.value?.also { apiContext ->
-            fileStorageViewModel.startUpload(workManager, scope, apiContext, uri, FileUtil.uriToFileName(uri, requireContext()), 0, args.folderId)
+            fileStorageViewModel.startUpload(workManager, scope!!, apiContext, uri, FileUtil.uriToFileName(uri, requireContext()), 0, args.folderId)
         }
     }
 

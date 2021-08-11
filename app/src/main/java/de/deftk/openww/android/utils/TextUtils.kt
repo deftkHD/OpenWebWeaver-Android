@@ -162,10 +162,10 @@ object TextUtils {
 
                     val args = Bundle()
                     args.putString("operatorId", scope)
-                    args.putString("title", name) //TODO better title
+                    args.putString("title", name) //TODO better title (use parent contained inside extra or scope)
                     args.putString("highlightFileId", fileId)
-                    args.putString("folderId", folderId.ifBlank { null })
-                    args.putStringArray("path", path.ifEmpty { null }?.toTypedArray())
+                    args.putString("folderId", folderId.ifBlank { "/" }) //TODO the folder id which is passed uses parentNames, not parentIds
+                    args.putBoolean("pasteMode", false)
                     navController?.navigate(R.id.filesFragment, args)
                 }
                 InternalReferenceType.LEANING_PLAN -> {

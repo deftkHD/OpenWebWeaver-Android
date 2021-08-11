@@ -105,6 +105,30 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
     }
 
+    fun loadChildrenTree(scope: IOperatingScope, idTree: String, overwriteExisting: Boolean, apiContext: IApiContext) {
+        viewModelScope.launch {
+            val response = fileStorageRepository.getFileTree(idTree, true, scope, apiContext)
+            val allFiles = getAllFiles(scope) as MutableLiveData
+            allFiles.value = response.smartMap { responseValue ->
+                val previewResponse = runBlocking { loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext) }
+                val files = responseValue.map { file -> FileCacheElement(file, previewResponse.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl) }
+
+                // insert into live data
+                val value = allFiles.value
+                if (value != null) {
+                    return@smartMap allFiles.value?.valueOrNull()?.toMutableList()?.apply {
+                        if (overwriteExisting) {
+                            removeAll { idTree.startsWith(it.file.id) }
+                        }
+                        addAll(files)
+                    }?.distinctBy { file -> file.file.id } ?: emptyList()
+                } else {
+                    return@smartMap files
+                }
+            }
+        }
+    }
+
     private suspend fun loadPreviews(files: List<IRemoteFile>, scope: IOperatingScope, apiContext: IApiContext): Response<List<FileCacheElement>> {
         return fileStorageRepository.getFilePreviews(files, scope, apiContext).smartMap { value ->
             value.map { preview -> FileCacheElement(files.first { it.id == preview.key }, preview.value) }
@@ -243,6 +267,10 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
 
     fun resetAddFolderResponse() {
         _addFolderResponse.value = null
+    }
+
+    fun cleanCache(scope: IOperatingScope) {
+        _files[scope]?.value = Response.Success(emptyList())
     }
 
 }

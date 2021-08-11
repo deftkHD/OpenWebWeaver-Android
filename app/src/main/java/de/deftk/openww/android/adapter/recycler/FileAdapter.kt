@@ -18,7 +18,7 @@ import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import java.util.*
 
 class FileAdapter(
-    private val scope: IOperatingScope,
+    var scope: IOperatingScope,
     clickListener: ActionModeClickListener<FileViewHolder>,
     private val fileStorageViewModel: FileStorageViewModel
 ) : ActionModeAdapter<IRemoteFile, FileAdapter.FileViewHolder>(FileDiffCallback(), clickListener) {

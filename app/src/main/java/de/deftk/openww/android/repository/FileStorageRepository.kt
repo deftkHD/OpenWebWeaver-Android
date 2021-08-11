@@ -11,6 +11,7 @@ import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFileProvider
 import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
+import de.deftk.openww.api.request.Focusable
 import de.deftk.openww.api.request.OperatingScopeApiRequest
 import de.deftk.openww.api.request.UserApiRequest
 import de.deftk.openww.api.response.ResponseUtil
@@ -39,6 +40,40 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         val response = request.fireRequest()
         val subResponse = ResponseUtil.getSubResponseResult(response.toJson(), id)
         subResponse["entries"]!!.jsonArray.map { WebWeaverClient.json.decodeFromJsonElement<RemoteFile>(it) }
+    }
+
+    suspend fun getFileTree(trace: String, getSelf: Boolean, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
+        val parts = mutableListOf<String>()
+        val partBuilder = StringBuilder()
+        trace.split("/").forEach { part ->
+            if (part.isNotEmpty()) {
+                partBuilder.append("/$part")
+                parts.add(partBuilder.toString())
+            }
+        }
+        if (trace == "/" || trace == "") {
+            parts.add("/")
+        }
+
+        val request = OperatingScopeApiRequest(scope.getRequestContext(apiContext))
+        request.addSetFocusRequest(Focusable.FILES, scope.login)
+        val ids = parts.map { part ->
+            val requestParams = buildJsonObject {
+                put("folder_id", part)
+                put("get_files", 1)
+                put("get_folders", 1)
+                put("get_folder", if (getSelf) 1 else 0)
+            }
+            request.addRequest("get_entries", requestParams)
+        }
+        val response = request.fireRequest()
+        val json = response.toJson()
+        val files = mutableListOf<IRemoteFile>()
+        ids.forEach { id ->
+            val subResponse = ResponseUtil.getSubResponseResult(json, id)
+            files.addAll(subResponse["entries"]?.jsonArray?.map { WebWeaverClient.json.decodeFromJsonElement<RemoteFile>(it) } ?: emptyList())
+        }
+        files.distinctBy { it.id }
     }
 
     suspend fun addFolder(name: String, description: String?, parent: IRemoteFileProvider, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
