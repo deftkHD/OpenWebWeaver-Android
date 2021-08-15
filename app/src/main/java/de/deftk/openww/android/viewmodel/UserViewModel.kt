@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
-class UserViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val userRepository: UserRepository) : ViewModel() {
+class UserViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val userRepository: UserRepository) : ScopedViewModel() {
 
     private val _loginResponse = MutableLiveData<Response<IApiContext>?>()
     val loginResponse: LiveData<Response<IApiContext>?> = _loginResponse
@@ -35,21 +35,21 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
     private val _logoutResponse = MutableLiveData<Response<Unit>?>()
     val logoutResponse: LiveData<Response<Unit>?> = _logoutResponse
 
-    private val _overviewResponse = MutableLiveData<Response<List<AbstractOverviewElement>>>()
-    val overviewResponse: LiveData<Response<List<AbstractOverviewElement>>> = _overviewResponse
+    private val _overviewResponse = MutableLiveData<Response<List<AbstractOverviewElement>>?>()
+    val overviewResponse: LiveData<Response<List<AbstractOverviewElement>>?> = _overviewResponse
 
-    private val _systemNotificationsResponse = MutableLiveData<Response<List<ISystemNotification>>>()
-    val allSystemNotificationsResponse: LiveData<Response<List<ISystemNotification>>> = _systemNotificationsResponse
+    private val _systemNotificationsResponse = MutableLiveData<Response<List<ISystemNotification>>?>()
+    val allSystemNotificationsResponse: LiveData<Response<List<ISystemNotification>>?> = _systemNotificationsResponse
 
     val systemNotificationFilter = MutableLiveData<SystemNotificationFilter>()
 
-    val filteredSystemNotificationResponse: LiveData<Response<List<ISystemNotification>>>
+    val filteredSystemNotificationResponse: LiveData<Response<List<ISystemNotification>>?>
         get() = systemNotificationFilter.switchMap { filter ->
             when (filter) {
                 null -> allSystemNotificationsResponse
                 else -> allSystemNotificationsResponse.switchMap { response ->
-                    val filtered = MutableLiveData<Response<List<ISystemNotification>>>()
-                    filtered.value = response.smartMap { filter.apply(it) }
+                    val filtered = MutableLiveData<Response<List<ISystemNotification>>?>()
+                    filtered.value = response?.smartMap { filter.apply(it) }
                     filtered
                 }
             }
@@ -202,4 +202,12 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
         _systemNotificationBatchDeleteResponse.value = null
     }
 
+    override fun resetScopedData() {
+        _loginResponse.value = null
+        _logoutResponse.value = null
+        _systemNotificationsResponse.value = null
+        _systemNotificationDeleteResponse.value = null
+        _systemNotificationBatchDeleteResponse.value = null
+        _overviewResponse.value = null
+    }
 }

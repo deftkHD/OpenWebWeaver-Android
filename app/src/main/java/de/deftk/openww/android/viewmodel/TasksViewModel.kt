@@ -15,21 +15,21 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val tasksRepository: TasksRepository): ViewModel() {
+class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val tasksRepository: TasksRepository): ScopedViewModel() {
 
-    private val _tasksResponse = MutableLiveData<Response<List<Pair<ITask, IOperatingScope>>>>()
-    val allTasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>> = _tasksResponse
+    private val _tasksResponse = MutableLiveData<Response<List<Pair<ITask, IOperatingScope>>>?>()
+    val allTasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>?> = _tasksResponse
 
     private val _filter = MutableLiveData(TaskFilter(tasksRepository.ignoredTaskDao))
     val filter: LiveData<TaskFilter> = _filter
 
-    val filteredTasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>>
+    val filteredTasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>?>
         get() = _filter.switchMap { filter ->
             when (filter) {
                 null -> allTasksResponse
                 else -> allTasksResponse.switchMap { response ->
-                    val filtered = MutableLiveData<Response<List<Pair<ITask, IOperatingScope>>>>()
-                    filtered.value = response.smartMap { filter.apply(it) }
+                    val filtered = MutableLiveData<Response<List<Pair<ITask, IOperatingScope>>>?>()
+                    filtered.value = response?.smartMap { filter.apply(it) }
                     filtered
                 }
             }
@@ -145,4 +145,10 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
         }
     }
 
+    override fun resetScopedData() {
+        _tasksResponse.value = null
+        _postResponse.value = null
+        _batchDeleteResponse.value = null
+        _filter.value = TaskFilter(tasksRepository.ignoredTaskDao)
+    }
 }

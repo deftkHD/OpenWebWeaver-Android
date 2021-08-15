@@ -27,7 +27,7 @@ import de.deftk.openww.android.feature.AppFeature
 import de.deftk.openww.android.feature.LaunchMode
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
-import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.android.viewmodel.*
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.Permission
@@ -44,10 +44,21 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
     private lateinit var appBarConfiguration: AppBarConfiguration
     lateinit var progressIndicator: ProgressBar
 
+    private val boardViewModel: BoardViewModel by viewModels()
+    private val contactsViewModel: ContactsViewModel by viewModels()
+    private val fileStorageViewModel: FileStorageViewModel by viewModels()
+    private val forumViewModel: ForumViewModel by viewModels()
+    private val groupViewModel: GroupViewModel by viewModels()
+    private val mailboxViewModel: MailboxViewModel by viewModels()
+    private val messengerViewModel: MessengerViewModel by viewModels()
+    private val notesViewModel: NotesViewModel by viewModels()
+    private val tasksViewModel: TasksViewModel by viewModels()
     private val userViewModel: UserViewModel by viewModels()
+
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
     private val launchMode by lazy { LaunchMode.getLaunchMode(intent) }
 
+    private var viewModelsDirty = false
     var actionMode: ActionMode? = null
     var searchProvider: ISearchProvider? = null
 
@@ -101,7 +112,10 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
             // allow or disallow switching accounts
             binding.navView.menu.findItem(R.id.drawer_item_switch_account).isVisible = AuthHelper.findAccounts(null, this).size > 1
 
-            if (apiContext != null && launchMode == LaunchMode.DEFAULT) {
+            if (apiContext != null) {
+                if (launchMode != LaunchMode.DEFAULT)
+                    return@observe
+                viewModelsDirty = true
                 AuthHelper.rememberLogin(apiContext.user.login, this)
 
                 binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
@@ -117,6 +131,10 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
                 binding.navView.menu.findItem(R.id.overviewFragment).isVisible = true // seems like the last "enabled" menu item gets selected, so the overview has to be selected at app start
             } else {
                 binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+                if (viewModelsDirty) {
+                    resetScopedViewModels()
+                    viewModelsDirty = false
+                }
             }
         }
 
@@ -179,6 +197,19 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
         }
         features.addAll(Feature.getAvailableFeatures(Permission.SELF))
         return features
+    }
+
+    private fun resetScopedViewModels() {
+        boardViewModel.resetScopedData()
+        contactsViewModel.resetScopedData()
+        fileStorageViewModel.resetScopedData()
+        forumViewModel.resetScopedData()
+        groupViewModel.resetScopedData()
+        mailboxViewModel.resetScopedData()
+        messengerViewModel.resetScopedData()
+        notesViewModel.resetScopedData()
+        tasksViewModel.resetScopedData()
+        userViewModel.resetScopedData()
     }
 
     override fun onSupportNavigateUp(): Boolean {

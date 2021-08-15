@@ -14,30 +14,30 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val mailboxRepository: MailboxRepository) : ViewModel() {
+class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val mailboxRepository: MailboxRepository) : ScopedViewModel() {
 
-    private val _foldersResponse = MutableLiveData<Response<List<IEmailFolder>>>()
-    val foldersResponse: LiveData<Response<List<IEmailFolder>>> = _foldersResponse
+    private val _foldersResponse = MutableLiveData<Response<List<IEmailFolder>>?>()
+    val foldersResponse: LiveData<Response<List<IEmailFolder>>?> = _foldersResponse
 
     private val _folderPostResponse = MutableLiveData<Response<IEmailFolder?>?>()
     val folderPostResponse: LiveData<Response<IEmailFolder?>?> = _folderPostResponse
 
-    private val _currentFolder = MutableLiveData<IEmailFolder>()
-    val currentFolder: LiveData<IEmailFolder> = _currentFolder
+    private val _currentFolder = MutableLiveData<IEmailFolder?>()
+    val currentFolder: LiveData<IEmailFolder?> = _currentFolder
 
-    private val _currentMails = MutableLiveData<Response<List<IEmail>>>()
-    val allCurrentMails: LiveData<Response<List<IEmail>>> = _currentMails
+    private val _currentMails = MutableLiveData<Response<List<IEmail>>?>()
+    val allCurrentMails: LiveData<Response<List<IEmail>>?> = _currentMails
 
     private val emailResponses = mutableMapOf<IEmailFolder, MutableLiveData<Response<List<IEmail>>>>()
 
     val mailFilter = MutableLiveData(MailFilter())
-    val currentFilteredMails: LiveData<Response<List<IEmail>>>
+    val currentFilteredMails: LiveData<Response<List<IEmail>>?>
         get() = mailFilter.switchMap { filter ->
             when (filter) {
                 null -> allCurrentMails
                 else -> allCurrentMails.switchMap { response ->
-                    val filtered = MutableLiveData<Response<List<IEmail>>>()
-                    filtered.value = response.smartMap { filter.apply(it) }
+                    val filtered = MutableLiveData<Response<List<IEmail>>?>()
+                    filtered.value = response?.smartMap { filter.apply(it) }
                     filtered
                 }
             }
@@ -49,8 +49,8 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
     private val _emailReadPostResponse = MutableLiveData<Response<IEmail?>?>()
     val emailReadPostResponse: LiveData<Response<IEmail?>?> = _emailReadPostResponse
 
-    private val _emailSendResponse = MutableLiveData<Response<Unit>>()
-    val emailSendResponse: LiveData<Response<Unit>> = _emailSendResponse
+    private val _emailSendResponse = MutableLiveData<Response<Unit>?>()
+    val emailSendResponse: LiveData<Response<Unit>?> = _emailSendResponse
 
     private val _batchMoveResponse = MutableLiveData<List<Response<IEmail>>?>()
     val batchMoveResponse: LiveData<List<Response<IEmail>>?> = _batchMoveResponse
@@ -263,4 +263,17 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
         _batchEmailSetResponse.value = null
     }
 
+    override fun resetScopedData() {
+        _foldersResponse.value = null
+        _folderPostResponse.value = null
+        _currentFolder.value = null
+        _currentMails.value = null
+        _emailPostResponse.value = null
+        _emailReadPostResponse.value = null
+        _emailSendResponse.value = null
+        _batchMoveResponse.value = null
+        _batchDeleteResponse.value = null
+        _batchEmailSetResponse.value = null
+        mailFilter.value = MailFilter()
+    }
 }

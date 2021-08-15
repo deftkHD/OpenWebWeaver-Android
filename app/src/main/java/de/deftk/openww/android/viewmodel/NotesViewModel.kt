@@ -12,19 +12,19 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val notesRepository: NotesRepository) : ViewModel() {
+class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val notesRepository: NotesRepository) : ScopedViewModel() {
 
-    private val _notesResponse = MutableLiveData<Response<List<INote>>>()
-    val allNotesResponse: LiveData<Response<List<INote>>> = _notesResponse
+    private val _notesResponse = MutableLiveData<Response<List<INote>>?>()
+    val allNotesResponse: LiveData<Response<List<INote>>?> = _notesResponse
 
     val filter = MutableLiveData(NoteFilter())
-    val filteredNotesResponse: LiveData<Response<List<INote>>>
+    val filteredNotesResponse: LiveData<Response<List<INote>>?>
         get() = filter.switchMap { filter ->
             when (filter) {
                 null -> allNotesResponse
                 else -> allNotesResponse.switchMap { response ->
-                    val filtered = MutableLiveData<Response<List<INote>>>()
-                    filtered.value = response.smartMap { filter.apply(it) }
+                    val filtered = MutableLiveData<Response<List<INote>>?>()
+                    filtered.value = response?.smartMap { filter.apply(it) }
                     filtered
                 }
             }
@@ -114,5 +114,11 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
         _batchDeleteResponse.value = null
     }
 
-
+    override fun resetScopedData() {
+        _notesResponse.value = null
+        _editResponse.value = null
+        _deleteResponse.value = null
+        _batchDeleteResponse.value = null
+        filter.value = NoteFilter()
+    }
 }

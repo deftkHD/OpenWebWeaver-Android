@@ -23,26 +23,26 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class FileStorageViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val fileStorageRepository: FileStorageRepository) : ViewModel() {
+class FileStorageViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val fileStorageRepository: FileStorageRepository) : ScopedViewModel() {
 
-    private val _quotas = MutableLiveData<Response<Map<IOperatingScope, Quota>>>()
-    val allQuotasResponse: LiveData<Response<Map<IOperatingScope, Quota>>> = _quotas
+    private val _quotas = MutableLiveData<Response<Map<IOperatingScope, Quota>>?>()
+    val allQuotasResponse: LiveData<Response<Map<IOperatingScope, Quota>>?> = _quotas
 
     val quotaFilter = MutableLiveData(FileStorageQuotaFilter())
-    val filteredQuotasResponse: LiveData<Response<Map<IOperatingScope, Quota>>>
+    val filteredQuotasResponse: LiveData<Response<Map<IOperatingScope, Quota>>?>
         get() = quotaFilter.switchMap { filter ->
             when (filter) {
                 null -> allQuotasResponse
                 else -> allQuotasResponse.switchMap { response ->
-                    val filtered = MutableLiveData<Response<Map<IOperatingScope, Quota>>>()
-                    filtered.value = response.smartMap { filter.apply(it.toList()).toMap() }
+                    val filtered = MutableLiveData<Response<Map<IOperatingScope, Quota>>?>()
+                    filtered.value = response?.smartMap { filter.apply(it.toList()).toMap() }
                     filtered
                 }
             }
         }
-    private val _files = mutableMapOf<IOperatingScope, MutableLiveData<Response<List<FileCacheElement>>>>()
+    private val _files = mutableMapOf<IOperatingScope, MutableLiveData<Response<List<FileCacheElement>>?>>()
     val fileFilter = MutableLiveData(FileStorageFileFilter())
-    private val _filteredFiles = mutableMapOf<IOperatingScope, LiveData<Response<List<FileCacheElement>>>>()
+    private val _filteredFiles = mutableMapOf<IOperatingScope, LiveData<Response<List<FileCacheElement>>?>>()
 
     private val _batchDeleteResponse = MutableLiveData<List<Response<IRemoteFile>>?>()
     val batchDeleteResponse: LiveData<List<Response<IRemoteFile>>?> = _batchDeleteResponse
@@ -62,18 +62,18 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
     }
 
-    fun getAllFiles(scope: IOperatingScope): LiveData<Response<List<FileCacheElement>>> {
+    fun getAllFiles(scope: IOperatingScope): LiveData<Response<List<FileCacheElement>>?> {
         return _files.getOrPut(scope) { MutableLiveData() }
     }
 
-    fun getFilteredFiles(scope: IOperatingScope): LiveData<Response<List<FileCacheElement>>> {
+    fun getFilteredFiles(scope: IOperatingScope): LiveData<Response<List<FileCacheElement>>?> {
         return _filteredFiles.getOrPut(scope) {
             fileFilter.switchMap { filter ->
                 when (filter) {
                     null -> getAllFiles(scope)
                     else -> getAllFiles(scope).switchMap { response ->
                         val filtered = MutableLiveData<Response<List<FileCacheElement>>>()
-                        filtered.value = response.smartMap { filter.apply(it.map { file -> file to scope }).map { pair -> pair.first } }
+                        filtered.value = response?.smartMap { filter.apply(it.map { file -> file to scope }).map { pair -> pair.first } }
                         filtered
                     }
                 }
@@ -273,4 +273,17 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         _files[scope]?.value = Response.Success(emptyList())
     }
 
+    override fun resetScopedData() {
+        _files.forEach { (_, response) ->
+            response.value = null
+        }
+        _addFolderResponse.value = null
+        _batchDeleteResponse.value = null
+        _importSessionFileResponse.value = null
+        _quotas.value = null
+        _networkTransfers.value = emptyList()
+
+        quotaFilter.value = FileStorageQuotaFilter()
+        fileFilter.value = FileStorageFileFilter()
+    }
 }

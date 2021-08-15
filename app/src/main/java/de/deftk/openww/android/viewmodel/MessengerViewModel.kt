@@ -17,29 +17,28 @@ import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 @HiltViewModel
-class MessengerViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val messengerRepository: MessengerRepository) : ViewModel() {
+class MessengerViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val messengerRepository: MessengerRepository) : ScopedViewModel() {
 
-    private val _usersResponse: MutableLiveData<Response<List<ChatContact>>> = MutableLiveData()
-    val allUsersResponse: LiveData<Response<List<ChatContact>>> = _usersResponse
+    private val _usersResponse: MutableLiveData<Response<List<ChatContact>>?> = MutableLiveData()
+    val allUsersResponse: LiveData<Response<List<ChatContact>>?> = _usersResponse
 
     val userFilter = MutableLiveData(ChatContactFilter())
-    val filteredUsersResponse: LiveData<Response<List<ChatContact>>>
+    val filteredUsersResponse: LiveData<Response<List<ChatContact>>?>
         get() = userFilter.switchMap { filter ->
             when (filter) {
                 null -> allUsersResponse
                 else -> allUsersResponse.switchMap { response ->
                     val filtered = MutableLiveData<Response<List<ChatContact>>>()
-                    filtered.value = response.smartMap { filter.apply(it) }
+                    filtered.value = response?.smartMap { filter.apply(it) }
                     filtered
                 }
             }
         }
 
-    private val _messagesResponse = mutableMapOf<String, MutableLiveData<Response<Pair<List<IQuickMessage>, Boolean>>>>()
-    //private val allMessagesResponses: Map<String, LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>> = _messagesResponse
+    private val _messagesResponse = mutableMapOf<String, MutableLiveData<Response<Pair<List<IQuickMessage>, Boolean>>?>>()
 
     val messageFilter = MutableLiveData(MessageFilter())
-    private val filteredMessageResponses = mutableMapOf<String, LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>>()
+    private val filteredMessageResponses = mutableMapOf<String, LiveData<Response<Pair<List<IQuickMessage>, Boolean>>?>>()
 
     private val _addChatResponse = MutableLiveData<Response<RemoteScope>?>()
     val addChatResponse: LiveData<Response<RemoteScope>?> = _addChatResponse
@@ -47,24 +46,24 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
     private val _removeChatResponse = MutableLiveData<Response<RemoteScope>?>()
     val removeChatResponse: LiveData<Response<RemoteScope>?> = _removeChatResponse
 
-    private val _sendMessageResponse = MutableLiveData<Response<IQuickMessage>>()
-    val sendMessageResponse: LiveData<Response<IQuickMessage>> = _sendMessageResponse
+    private val _sendMessageResponse = MutableLiveData<Response<IQuickMessage>?>()
+    val sendMessageResponse: LiveData<Response<IQuickMessage>?> = _sendMessageResponse
 
     private val _batchDeleteResponse = MutableLiveData<List<Response<IScope>>?>()
     val batchDeleteResponse: LiveData<List<Response<IScope>>?> = _batchDeleteResponse
 
-    fun getAllMessagesResponse(with: String): LiveData<Response<Pair<List<IQuickMessage>, Boolean>>>  {
+    fun getAllMessagesResponse(with: String): LiveData<Response<Pair<List<IQuickMessage>, Boolean>>?>  {
         return _messagesResponse.getOrPut(with) { MutableLiveData() }
     }
 
-    fun getFilteredMessagesResponse(with: String): LiveData<Response<Pair<List<IQuickMessage>, Boolean>>> {
+    fun getFilteredMessagesResponse(with: String): LiveData<Response<Pair<List<IQuickMessage>, Boolean>>?> {
         return filteredMessageResponses.getOrPut(with) {
             messageFilter.switchMap { filter ->
                 when (filter) {
                     null -> getAllMessagesResponse(with)
                     else -> getAllMessagesResponse(with).switchMap { response ->
-                        val filtered = MutableLiveData<Response<Pair<List<IQuickMessage>, Boolean>>>()
-                        filtered.value = response.smartMap { filter.apply(it.first) to it.second }
+                        val filtered = MutableLiveData<Response<Pair<List<IQuickMessage>, Boolean>>?>()
+                        filtered.value = response?.smartMap { filter.apply(it.first) to it.second }
                         filtered
                     }
                 }
@@ -186,4 +185,15 @@ class MessengerViewModel @Inject constructor(private val savedStateHandle: Saved
         _removeChatResponse.value = null
     }
 
+    override fun resetScopedData() {
+        _usersResponse.value = null
+        _messagesResponse.forEach { (_, response) ->
+            response.value = null
+        }
+        _addChatResponse.value = null
+        _removeChatResponse.value = null
+        _sendMessageResponse.value = null
+        _batchDeleteResponse.value = null
+        userFilter.value = ChatContactFilter()
+    }
 }

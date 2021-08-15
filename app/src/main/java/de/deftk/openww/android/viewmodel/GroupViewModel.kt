@@ -12,25 +12,25 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class GroupViewModel @Inject constructor(private val groupRepository: GroupRepository) : ViewModel() {
+class GroupViewModel @Inject constructor(private val groupRepository: GroupRepository) : ScopedViewModel() {
 
-    private val allMemberResponses = mutableMapOf<IGroup, MutableLiveData<Response<List<IScope>>>>()
+    private val allMemberResponses = mutableMapOf<IGroup, MutableLiveData<Response<List<IScope>>?>>()
 
     val filter = MutableLiveData(ScopeFilter())
-    val filteredMemberResponses = mutableMapOf<IGroup, LiveData<Response<List<IScope>>>>()
+    val filteredMemberResponses = mutableMapOf<IGroup, LiveData<Response<List<IScope>>?>>()
 
-    fun getAllGroupMembers(group: IGroup): LiveData<Response<List<IScope>>> {
+    fun getAllGroupMembers(group: IGroup): LiveData<Response<List<IScope>>?> {
         return allMemberResponses.getOrPut(group) { MutableLiveData() }
     }
 
-    fun getFilteredGroupMembers(group: IGroup): LiveData<Response<List<IScope>>> {
+    fun getFilteredGroupMembers(group: IGroup): LiveData<Response<List<IScope>>?> {
         return filteredMemberResponses.getOrPut(group) {
             filter.switchMap { filter ->
                 when (filter) {
                     null -> getAllGroupMembers(group)
                     else -> getAllGroupMembers(group).switchMap { response ->
-                        val filtered = MutableLiveData<Response<List<IScope>>>()
-                        filtered.value = response.smartMap { filter.apply(it) }
+                        val filtered = MutableLiveData<Response<List<IScope>>?>()
+                        filtered.value = response?.smartMap { filter.apply(it) }
                         filtered
                     }
                 }
@@ -44,4 +44,10 @@ class GroupViewModel @Inject constructor(private val groupRepository: GroupRepos
         }
     }
 
+    override fun resetScopedData() {
+        allMemberResponses.forEach { (_, response) ->
+            response.value = null
+        }
+        filter.value = ScopeFilter()
+    }
 }

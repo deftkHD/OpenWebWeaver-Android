@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val forumRepository: ForumRepository) : ViewModel() {
+class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val forumRepository: ForumRepository) : ScopedViewModel() {
 
     private val postsResponses = mutableMapOf<IGroup, MutableLiveData<Response<List<IForumPost>>>>()
 
@@ -116,4 +116,12 @@ class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStat
         _batchDeleteResponse.value = null
     }
 
+    override fun resetScopedData() {
+        postsResponses.forEach { (_, response) ->
+            response.value = null
+        }
+        _deleteResponse.value = null
+        _batchDeleteResponse.value = null
+        filter.value = ForumPostFilter()
+    }
 }

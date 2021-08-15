@@ -15,20 +15,20 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val boardRepository: BoardRepository): ViewModel() {
+class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val boardRepository: BoardRepository): ScopedViewModel() {
 
-    private val _notificationsResponse = MutableLiveData<Response<List<Pair<IBoardNotification, IGroup>>>>()
-    val allNotificationsResponse: LiveData<Response<List<Pair<IBoardNotification, IGroup>>>> = _notificationsResponse
+    private val _notificationsResponse = MutableLiveData<Response<List<Pair<IBoardNotification, IGroup>>>?>()
+    val allNotificationsResponse: LiveData<Response<List<Pair<IBoardNotification, IGroup>>>?> = _notificationsResponse
 
     val filter = MutableLiveData(BoardNotificationFilter())
 
-    val filteredNotificationResponse: LiveData<Response<List<Pair<IBoardNotification, IGroup>>>>
+    val filteredNotificationResponse: LiveData<Response<List<Pair<IBoardNotification, IGroup>>>?>
         get() = filter.switchMap { filter ->
             when (filter) {
                 null -> allNotificationsResponse
                 else -> allNotificationsResponse.switchMap { response ->
-                    val filtered = MutableLiveData<Response<List<Pair<IBoardNotification, IGroup>>>>()
-                    filtered.value = response.smartMap { filter.apply(it) }
+                    val filtered = MutableLiveData<Response<List<Pair<IBoardNotification, IGroup>>>?>()
+                    filtered.value = response?.smartMap { filter.apply(it) }
                     filtered
                 }
             }
@@ -124,4 +124,10 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
         _batchDeleteResponse.value = null
     }
 
+    override fun resetScopedData() {
+        _notificationsResponse.value = null
+        _batchDeleteResponse.value = null
+        _postResponse.value = null
+        filter.value = BoardNotificationFilter()
+    }
 }

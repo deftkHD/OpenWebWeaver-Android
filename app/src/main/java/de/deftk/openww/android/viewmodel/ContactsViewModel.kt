@@ -12,12 +12,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val contactsRepository: ContactsRepository) : ViewModel() {
+class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val contactsRepository: ContactsRepository) : ScopedViewModel() {
 
-    private val _contactsResponses = mutableMapOf<IOperatingScope, MutableLiveData<Response<List<IContact>>>>()
+    private val _contactsResponses = mutableMapOf<IOperatingScope, MutableLiveData<Response<List<IContact>>?>>()
 
     val filter = MutableLiveData(ContactFilter())
-    private val filteredContactsResponses = mutableMapOf<IOperatingScope, LiveData<Response<List<IContact>>>>()
+    private val filteredContactsResponses = mutableMapOf<IOperatingScope, LiveData<Response<List<IContact>>?>>()
 
     private val _editResponse = MutableLiveData<Response<IContact>?>()
     val editResponse: LiveData<Response<IContact>?> = _editResponse
@@ -28,18 +28,18 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
     private val _batchDeleteResponse = MutableLiveData<List<Response<Pair<IContact, IOperatingScope>>>?>()
     val batchDeleteResponse: LiveData<List<Response<Pair<IContact, IOperatingScope>>>?> = _batchDeleteResponse
 
-    fun getAllContactsLiveData(scope: IOperatingScope): LiveData<Response<List<IContact>>> {
+    fun getAllContactsLiveData(scope: IOperatingScope): LiveData<Response<List<IContact>>?> {
         return _contactsResponses.getOrPut(scope) { MutableLiveData() }
     }
 
-    fun getFilteredContactsLiveData(scope: IOperatingScope): LiveData<Response<List<IContact>>> {
+    fun getFilteredContactsLiveData(scope: IOperatingScope): LiveData<Response<List<IContact>>?> {
         return filteredContactsResponses.getOrPut(scope) {
             filter.switchMap { filter ->
                 when (filter) {
                     null -> getAllContactsLiveData(scope)
                     else -> getAllContactsLiveData(scope).switchMap { response ->
-                        val filtered = MutableLiveData<Response<List<IContact>>>()
-                        filtered.value = response.smartMap { filter.apply(it) }
+                        val filtered = MutableLiveData<Response<List<IContact>>?>()
+                        filtered.value = response?.smartMap { filter.apply(it) }
                         filtered
                     }
                 }
@@ -122,4 +122,13 @@ class ContactsViewModel @Inject constructor(private val savedStateHandle: SavedS
         _batchDeleteResponse.value = null
     }
 
+    override fun resetScopedData() {
+        _contactsResponses.forEach { (_, response) ->
+            response.value = null
+        }
+        _batchDeleteResponse.value = null
+        _deleteResponse.value = null
+        _editResponse.value = null
+        filter.value = ContactFilter()
+    }
 }
