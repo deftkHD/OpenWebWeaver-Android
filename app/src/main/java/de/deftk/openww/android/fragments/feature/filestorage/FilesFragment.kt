@@ -69,6 +69,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     private lateinit var searchView: SearchView
 
     private var scope: IOperatingScope? = null
+    private var folderId: String? = null
     private var currentNetworkTransfers = emptyList<NetworkTransfer>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -128,7 +129,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         binding.fileStorageSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
                 fileStorageViewModel.cleanCache(scope!!)
-                fileStorageViewModel.loadChildrenTree(scope!!, args.folderId, true, apiContext)
+                fileStorageViewModel.loadChildrenTree(scope!!, folderId!!, true, apiContext)
                 adapter.notifyDataSetChanged() // update previews
             }
         }
@@ -159,22 +160,34 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 binding.fileList.recycledViewPool.setMaxRecycledViews(0, 0) // this is just a workaround (otherwise preview images disappear while scrolling, see https://github.com/square/picasso/issues/845#issuecomment-280626688) FIXME seems like an issue with recycling
 
                 val filter = FileStorageFileFilter()
-                filter.parentCriteria.value = args.folderId
+                filter.parentCriteria.value = folderId
                 fileStorageViewModel.fileFilter.value = filter
                 fileStorageViewModel.getFilteredFiles(scope!!).observe(viewLifecycleOwner) { response ->
                     if (response is Response.Success) {
+                        if (args.folderNameId != null && folderId == null) {
+                            folderId = fileStorageViewModel.resolveNameTree(scope!!, args.folderNameId!!)
+                            if (folderId != null) {
+                                filter.parentCriteria.value = folderId
+                                fileStorageViewModel.fileFilter.value = filter
+                                return@observe
+                            } else {
+                                //TODO bruh mission failed
+                            }
+                        }
                         adapter.submitList(response.value.map { it.file })
                         binding.fileEmpty.isVisible = response.value.isEmpty()
                         updateUploadFab()
                         requireActivity().invalidateOptionsMenu()
 
-                        if (args.highlightFileId != null) {
-                            // actually this filtering is very bad because someone could destroy it be naming a file like an id, but I guess this is a design problem, not mine
-                            val file = response.value.firstOrNull { it.file.name == args.highlightFileId?.substring(1) }
+                        if (args.highlightFileId != null && response.value.isNotEmpty()) {
+                            val highlightFileName = args.highlightFileId!!.substring(1)
+                            val file = response.value.firstOrNull { it.file.name == highlightFileName }
                             if (file == null) {
-                                Reporter.reportException(R.string.error_file_not_found, args.highlightFileId.toString(), requireContext())
+                                Reporter.reportException(R.string.error_file_not_found, highlightFileName, requireContext())
                             } else {
-                                binding.fileList.smoothScrollToPosition(adapter.currentList.indexOf(file.file))
+                                val position = adapter.currentList.indexOf(file.file)
+                                if (position != -1)
+                                    binding.fileList.smoothScrollToPosition(position)
                             }
                         }
                     } else if (response is Response.Failure) {
@@ -184,15 +197,21 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                     binding.fileStorageSwipeRefresh.isRefreshing = false
                 }
 
-                //TODO actually check if parent exists, not if files were loaded
-                if (fileStorageViewModel.getAllFiles(scope!!).value?.valueOrNull()?.isNotEmpty() == true) {
-                    fileStorageViewModel.loadChildren(scope!!, args.folderId, false, apiContext)
-                } else {
-                    fileStorageViewModel.loadChildrenTree(scope!!, args.folderId, false, apiContext)
-                }
-                updateUploadFab()
-                if (fileStorageViewModel.getCachedChildren(scope!!, args.folderId).isEmpty())
+                if (args.folderNameId != null) {
+                    fileStorageViewModel.loadChildrenNameTree(scope!!, args.folderNameId!!, false, apiContext)
+                    updateUploadFab()
                     enableUI(false)
+                } else {
+                    folderId = args.folderId
+                    if (fileStorageViewModel.getAllFiles(scope!!).value?.valueOrNull()?.any { it.file.parentId == folderId } == true) {
+                        fileStorageViewModel.loadChildren(scope!!, folderId!!, false, apiContext)
+                    } else {
+                        fileStorageViewModel.loadChildrenTree(scope!!, folderId!!, false, apiContext)
+                    }
+                    updateUploadFab()
+                    if (fileStorageViewModel.getCachedChildren(scope!!, folderId!!).isEmpty())
+                        enableUI(false)
+                }
             } else {
                 binding.fabUploadFile.isVisible = false
                 binding.fileEmpty.isVisible = false
@@ -247,7 +266,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     }
 
     private fun getProviderFile(): FileCacheElement? {
-        return fileStorageViewModel.getAllFiles(scope!!).value?.valueOrNull()?.firstOrNull { it.file.id == args.folderId || (it.file.id == "" && args.folderId == "/") }
+        return fileStorageViewModel.getAllFiles(scope!!).value?.valueOrNull()?.firstOrNull { it.file.id == folderId || (it.file.id == "" && folderId == "/") }
     }
 
     override fun createAdapter(): ActionModeAdapter<IRemoteFile, FileAdapter.FileViewHolder> {
@@ -372,7 +391,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             override fun onQueryTextChange(newText: String?): Boolean {
                 val filter = FileStorageFileFilter()
                 filter.smartSearchCriteria.value = newText
-                filter.parentCriteria.value = args.folderId
+                filter.parentCriteria.value = folderId
                 fileStorageViewModel.fileFilter.value = filter
                 return true
             }
@@ -444,7 +463,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             }
             R.id.filestorage_context_item_info -> {
                 val file = adapter.getItem(menuInfo.position)
-                navController.navigate(FilesFragmentDirections.actionFilesFragmentToReadFileFragment(args.operatorId, file.id, args.folderId))
+                navController.navigate(FilesFragmentDirections.actionFilesFragmentToReadFileFragment(args.operatorId, file.id, folderId!!))
                 true
             }
             R.id.filestorage_context_item_download -> {
@@ -485,7 +504,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     override fun onItemClick(view: View, viewHolder: FileAdapter.FileViewHolder) {
         if (viewHolder.binding.file!!.type == FileType.FOLDER) {
-            val action = FilesFragmentDirections.actionFilesFragmentSelf(viewHolder.binding.file!!.id, viewHolder.binding.scope!!.login, viewHolder.binding.file!!.name, pasteMode = args.pasteMode)
+            val action = FilesFragmentDirections.actionFilesFragmentSelf(viewHolder.binding.file!!.id, viewHolder.binding.scope!!.login, viewHolder.binding.file!!.name, pasteMode = args.pasteMode, folderNameId = args.folderNameId)
             navController.navigate(action)
         } else if (viewHolder.binding.file!!.type == FileType.FILE) {
             openFile(viewHolder.binding.file!!)
@@ -506,7 +525,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     private fun uploadFile(uri: Uri) {
         userViewModel.apiContext.value?.also { apiContext ->
-            fileStorageViewModel.startUpload(workManager, scope!!, apiContext, uri, FileUtil.uriToFileName(uri, requireContext()), 0, args.folderId)
+            fileStorageViewModel.startUpload(workManager, scope!!, apiContext, uri, FileUtil.uriToFileName(uri, requireContext()), 0, folderId!!)
         }
     }
 

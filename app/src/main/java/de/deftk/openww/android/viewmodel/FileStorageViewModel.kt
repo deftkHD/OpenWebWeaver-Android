@@ -129,6 +129,31 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
     }
 
+    fun loadChildrenNameTree(scope: IOperatingScope, nameTree: String, overwriteExisting: Boolean, apiContext: IApiContext) {
+        viewModelScope.launch {
+            val responses = fileStorageRepository.getFileNameTree(nameTree, true, scope, apiContext)
+            val response = Response.Success(responses.map { it.valueOrNull() ?: emptyList() }.flatten())
+            val allFiles = getAllFiles(scope) as MutableLiveData
+            allFiles.value = response.smartMap { responseValue ->
+                val previewResponse = runBlocking { loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext) }
+                val files = responseValue.map { file -> FileCacheElement(file, previewResponse.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl) }
+
+                // insert into live data
+                val value = allFiles.value
+                if (value != null) {
+                    return@smartMap allFiles.value?.valueOrNull()?.toMutableList()?.apply {
+                        if (overwriteExisting) {
+                            //TODO this won't be that simple...
+                        }
+                        addAll(files)
+                    }?.distinctBy { file -> file.file.id } ?: emptyList()
+                } else {
+                    return@smartMap files
+                }
+            }
+        }
+    }
+
     private suspend fun loadPreviews(files: List<IRemoteFile>, scope: IOperatingScope, apiContext: IApiContext): Response<List<FileCacheElement>> {
         return fileStorageRepository.getFilePreviews(files, scope, apiContext).smartMap { value ->
             value.map { preview -> FileCacheElement(files.first { it.id == preview.key }, preview.value) }
@@ -285,5 +310,16 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
 
         quotaFilter.value = FileStorageQuotaFilter()
         fileFilter.value = FileStorageFileFilter()
+    }
+
+    fun resolveNameTree(scope: IOperatingScope, nameTree: String): String? {
+        var lastId = "/"
+        val files = _files[scope]?.value?.valueOrNull() ?: return null
+        nameTree.split("/").forEach { child ->
+            if (child.isNotEmpty()) {
+                lastId = files.firstOrNull { it.file.parentId == lastId && it.file.name == child }?.file?.id ?: return null
+            }
+        }
+        return lastId
     }
 }

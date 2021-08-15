@@ -155,16 +155,19 @@ object TextUtils {
                     if (path.isNotEmpty())
                         path.removeLast()
 
-                    if (path.isNotEmpty() || folderId.isNotBlank()) {
-                        Toast.makeText(widget.context, R.string.not_implemented, Toast.LENGTH_LONG).show()
-                        return
+                    val folderName = if (extra.count { it == '/' } > 1) {
+                        val split = extra.split("/")
+                        split[split.size - 2]
+                    } else {
+                        scope // TODO get name of scope
                     }
 
                     val args = Bundle()
                     args.putString("operatorId", scope)
-                    args.putString("title", name) //TODO better title (use parent contained inside extra or scope)
+                    args.putString("title", folderName)
                     args.putString("highlightFileId", fileId)
-                    args.putString("folderId", folderId.ifBlank { "/" }) //TODO the folder id which is passed uses parentNames, not parentIds
+                    args.putString("folderNameId", folderId.ifBlank { "/" })
+                    args.putString("folderId", "")
                     args.putBoolean("pasteMode", false)
                     navController?.navigate(R.id.filesFragment, args)
                 }

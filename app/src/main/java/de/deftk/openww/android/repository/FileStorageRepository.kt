@@ -1,5 +1,6 @@
 package de.deftk.openww.android.repository
 
+import de.deftk.openww.android.api.Response
 import de.deftk.openww.api.WebWeaverClient
 import de.deftk.openww.api.implementation.feature.filestorage.RemoteFile
 import de.deftk.openww.api.model.Feature
@@ -74,6 +75,25 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
             files.addAll(subResponse["entries"]?.jsonArray?.map { WebWeaverClient.json.decodeFromJsonElement<RemoteFile>(it) } ?: emptyList())
         }
         files.distinctBy { it.id }
+    }
+
+    suspend fun getFileNameTree(nameTree: String, getSelf: Boolean, scope: IOperatingScope, apiContext: IApiContext): List<Response<List<IRemoteFile>>> {
+        val responses = mutableListOf<Response<List<IRemoteFile>>>()
+
+        val names = nameTree.split("/")
+        val files = mutableListOf<IRemoteFile>()
+        names.forEach { name ->
+            val id = files.firstOrNull { it.name == name }?.id ?: "/"
+            val response = getFiles(id, true, scope, apiContext)
+            responses.add(response)
+            if (response is Response.Success) {
+                files.addAll(response.value)
+            } else {
+                return responses
+            }
+        }
+
+        return responses
     }
 
     suspend fun addFolder(name: String, description: String?, parent: IRemoteFileProvider, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
