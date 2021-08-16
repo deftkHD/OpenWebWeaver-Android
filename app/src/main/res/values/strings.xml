@@ -291,5 +291,7 @@
     <string name="set_unread">Mark as unread</string>
     <string name="set_read">Mark as read</string>
     <string name="error_set_email_failed">Failed to set email properties: %s</string>
+    <string name="call">Call</string>
+    <string name="copied_to_clipboard">Item copied to clipboard</string>
 
 </resources>
