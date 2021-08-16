@@ -18,7 +18,7 @@ abstract class AbstractFragment(private val hasActionBar: Boolean) : Fragment() 
         if (hasActionBar) {
             getMainActivity().supportActionBar?.show()
         } else {
-            getMainActivity().supportActionBar?.show()
+            getMainActivity().supportActionBar?.hide()
         }
         if (this is ISearchProvider)
             getMainActivity().searchProvider = this

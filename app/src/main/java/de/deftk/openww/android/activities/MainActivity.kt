@@ -240,7 +240,8 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
                     actionMode!!.finish()
                 } else {
                     if (searchProvider?.onSearchBackPressed() != true) {
-                        super.onBackPressed()
+                        if (!navController.navigateUp(appBarConfiguration))
+                            super.onBackPressed()
                     }
                 }
             }

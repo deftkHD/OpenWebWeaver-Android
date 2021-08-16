@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -19,7 +18,7 @@ import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
 
-class TokenLoginFragment : AbstractFragment(true) {
+class TokenLoginFragment : AbstractFragment(false) {
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val navController by lazy { findNavController() }
@@ -31,7 +30,6 @@ class TokenLoginFragment : AbstractFragment(true) {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentTokenLoginBinding.inflate(inflater, container, false)
-        (requireActivity() as AppCompatActivity).supportActionBar?.hide()
 
         val authenticatorResponse: AccountAuthenticatorResponse? = requireActivity().intent?.getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
         authenticatorResponse?.onRequestContinued()
