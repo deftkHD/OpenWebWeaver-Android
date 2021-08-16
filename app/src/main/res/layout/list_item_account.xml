@@ -25,10 +25,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginStart="5dp"
         android:layout_toEndOf="@+id/account_image"
         android:ellipsize="end"
-        android:lines="1"
+        android:maxLines="1"
         android:textColor="?android:attr/textColorPrimary"
         android:textSize="20sp"
         tools:text="acc.name" />
@@ -38,7 +39,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/account_name"
+        android:layout_alignParentEnd="true"
         android:layout_marginStart="5dp"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:layout_toEndOf="@+id/account_image"
         tools:text="provider.com" />
 

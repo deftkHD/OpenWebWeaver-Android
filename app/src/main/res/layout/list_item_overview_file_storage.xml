@@ -20,8 +20,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginStart="5dp"
         android:layout_toEndOf="@+id/overview_file_storage_image"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:text="@string/file_storage"
         android:textColor="?android:attr/textColorPrimary"
         android:textSize="20sp" />
@@ -31,8 +34,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/textView"
+        android:layout_alignParentEnd="true"
         android:layout_marginStart="5dp"
         android:layout_toEndOf="@+id/overview_file_storage_image"
+        android:ellipsize="end"
+        android:maxLines="1"
         tools:text="Storage" />
 
     <ProgressBar
@@ -42,6 +48,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/overview_file_quota"
         android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginTop="2dp"
         tools:progress="75" />
 

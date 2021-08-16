@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:padding="16dp">
 
         <TextView
@@ -19,6 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             tools:text="Title" />
@@ -29,8 +31,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/task_title"
             android:layout_alignParentStart="true"
+            android:layout_toStartOf="@id/task_created"
             android:ellipsize="end"
-            android:maxLength="27"
+            android:maxLines="1"
             tools:text="abc.exampleuser" />
 
         <TextView
@@ -39,8 +42,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/task_author"
             android:layout_alignParentStart="true"
+            android:layout_toStartOf="@id/task_due"
             android:ellipsize="end"
-            android:maxLength="27"
+            android:maxLines="1"
             tools:text="abc.examplegroup" />
 
         <TextView

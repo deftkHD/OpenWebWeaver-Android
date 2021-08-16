@@ -92,7 +92,7 @@
             android:layout_toStartOf="@id/more_button"
             android:layout_toEndOf="@+id/image_frame"
             android:ellipsize="end"
-            android:lines="1"
+            android:maxLines="1"
             android:text="@{file.name}"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
@@ -114,7 +114,10 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/file_name"
             android:layout_marginStart="5dp"
+            android:layout_toStartOf="@id/file_modified_date"
             android:layout_toEndOf="@+id/image_frame"
+            android:ellipsize="end"
+            android:maxLines="1"
             app:fileSize="@{file}"
             tools:text="1 MB" />
 

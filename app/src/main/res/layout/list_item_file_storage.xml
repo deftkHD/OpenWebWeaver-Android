@@ -44,10 +44,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
             android:layout_marginStart="5dp"
             android:layout_toEndOf="@+id/file_image"
             android:ellipsize="end"
-            android:lines="1"
+            android:maxLines="1"
             android:text="@{scope.name}"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
@@ -58,8 +59,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/file_name"
+            android:layout_alignParentEnd="true"
             android:layout_marginStart="5dp"
             android:layout_toEndOf="@+id/file_image"
+            android:ellipsize="end"
+            android:maxLines="1"
             app:quotaText="@{quota}"
             tools:text="1 MB of 1 MB" />
 
@@ -70,6 +74,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/file_size"
             android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:layout_marginTop="2dp"
             app:quotaProgress="@{quota}"
             tools:progress="75" />

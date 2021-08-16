@@ -96,9 +96,10 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/forum_post_title"
             android:layout_marginStart="5dp"
+            android:layout_toStartOf="@id/forum_post_date"
             android:layout_toEndOf="@+id/forum_post_image"
             android:ellipsize="end"
-            android:maxLength="30"
+            android:maxLines="1"
             android:text="@{post.created.member.name}"
             tools:text="abc.exampleuser" />
 

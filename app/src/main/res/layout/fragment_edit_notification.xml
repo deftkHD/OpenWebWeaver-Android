@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:padding="16dp">
 
         <EditText
@@ -19,6 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
             android:hint="@string/title"
             android:importantForAutofill="no"
             android:inputType="textNoSuggestions"
@@ -32,6 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/notification_title"
             android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:importantForAutofill="no" />
 
         <Spinner
@@ -40,6 +43,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/notification_group"
             android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:importantForAutofill="no" />
 
     </RelativeLayout>

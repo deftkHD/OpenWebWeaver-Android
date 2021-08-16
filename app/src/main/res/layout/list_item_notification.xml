@@ -63,8 +63,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/notification_title"
             android:layout_alignParentStart="true"
+            android:layout_toStartOf="@id/notification_date"
             android:ellipsize="end"
-            android:maxLines="30"
+            android:maxLines="1"
             android:text="@{notification.created.member.name}"
             tools:text="abc.exampleuser" />
 

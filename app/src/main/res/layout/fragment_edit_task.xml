@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:padding="16dp">
 
         <EditText
@@ -19,6 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
             android:hint="@string/title"
             android:importantForAutofill="no"
             android:inputType="textNoSuggestions"
@@ -39,6 +41,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/task_group"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:text="@string/task_completed" />
 
         <EditText
@@ -47,6 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/task_completed"
             android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:focusable="false"
             android:hint="@string/task_start"
             android:importantForAutofill="no"
@@ -58,6 +63,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/task_start"
             android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:focusable="false"
             android:hint="@string/task_due"
             android:importantForAutofill="no"

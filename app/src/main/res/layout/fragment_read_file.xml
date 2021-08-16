@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:padding="16dp">
 
         <TextView
@@ -19,6 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             tools:text="File name" />
@@ -29,8 +31,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/file_name"
             android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:ellipsize="end"
-            android:maxLength="27"
+            android:maxLines="1"
             tools:text="abc.exampleuser" />
 
         <TextView
@@ -39,8 +42,9 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/file_created_author"
             android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
             android:ellipsize="end"
-            android:maxLength="27"
+            android:maxLines="1"
             tools:text="abc.exampleuser" />
 
         <TextView
@@ -77,6 +81,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
                 android:padding="10dp">
 
@@ -94,6 +99,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/file_size"
                     android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@id/file_is_shared"
                     android:enabled="false"
                     android:text="@string/mine" />
 

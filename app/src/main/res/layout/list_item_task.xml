@@ -4,6 +4,7 @@
     <data>
 
         <import type="de.deftk.openww.android.utils.UIUtil" />
+        <import type="android.view.View" />
 
         <variable
             name="menuClickListener"
@@ -39,16 +40,18 @@
             android:layout_marginStart="3dp"
             android:layout_marginTop="5dp"
             android:contentDescription="@string/task_not_completed_desc"
-            app:taskCompleted="@{task}" />
+            android:src="@drawable/ic_check_green_32"
+            android:visibility="@{task.completed ? View.VISIBLE : View.INVISIBLE}" />
 
         <TextView
             android:id="@+id/task_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:layout_marginStart="42dp"
+            android:layout_marginStart="18dp"
             android:layout_marginTop="5dp"
             android:layout_toStartOf="@id/more_button"
+            android:layout_toEndOf="@id/task_completed"
             android:ellipsize="end"
             android:maxLines="1"
             android:text="@{task.title}"
@@ -72,9 +75,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/task_title"
-            android:layout_marginStart="42dp"
+            android:layout_marginStart="18dp"
+            android:layout_toStartOf="@id/task_due"
+            android:layout_toEndOf="@id/task_completed"
             android:ellipsize="end"
-            android:maxLength="28"
+            android:maxLines="1"
             android:text="@{task.created.member.name}"
             tools:text="Author" />
 

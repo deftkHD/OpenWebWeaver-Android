@@ -77,7 +77,10 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/forum_comment_title"
             android:layout_marginStart="5dp"
+            android:layout_toStartOf="@id/forum_comment_date"
             android:layout_toEndOf="@+id/forum_comment_image"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:text="@{post.created.member.name}"
             tools:text="abc.exampleuser" />
 
@@ -92,12 +95,13 @@
 
         <TextView
             android:id="@+id/forum_comment_text"
-            formattedText="@{post.text}"
             currentScope="@{group.login}"
+            formattedText="@{post.text}"
             navController="@{navController}"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/forum_comment_date"
+            android:layout_alignParentEnd="true"
             android:layout_toEndOf="@id/forum_comment_image"
             android:autoLink="web|email"
             android:padding="5dp"

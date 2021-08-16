@@ -94,7 +94,10 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/contact_detail_value"
             android:layout_marginStart="5dp"
+            android:layout_toStartOf="@id/contact_detail_edit"
             android:layout_toEndOf="@id/contact_detail_image"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:text="@{detail.type.description}"
             tools:text="Description" />
 

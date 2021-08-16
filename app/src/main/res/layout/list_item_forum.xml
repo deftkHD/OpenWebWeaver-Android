@@ -35,13 +35,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
             android:layout_marginStart="5dp"
             android:layout_toEndOf="@+id/imageView"
             android:ellipsize="end"
             android:maxLines="1"
+            android:text="@{group.name}"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
-            android:text="@{group.name}"
             tools:text="Forum name" />
 
     </RelativeLayout>

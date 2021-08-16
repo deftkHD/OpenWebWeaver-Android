@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:padding="16dp">
 
         <ImageView
@@ -29,8 +30,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
             android:layout_marginStart="5dp"
             android:layout_toEndOf="@+id/forum_post_image"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textColor="?android:attr/textColorPrimary"
             android:textSize="20sp"
             tools:text="Post title" />
@@ -41,7 +45,10 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/forum_post_title"
             android:layout_marginStart="5dp"
+            android:layout_toStartOf="@id/forum_post_date"
             android:layout_toEndOf="@+id/forum_post_image"
+            android:ellipsize="end"
+            android:maxLines="1"
             tools:text="abc.exampleuser" />
 
         <TextView
@@ -71,6 +78,9 @@
                 android:id="@+id/forum_post_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
                 android:autoLink="web|email"
                 android:padding="8dp"
                 android:textColor="?android:attr/textColorPrimary"
@@ -80,6 +90,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/forum_post_text"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
                 android:layout_marginTop="20dp"
                 android:padding="10dp">
 
@@ -88,6 +101,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
                     android:text="@string/comments"
                     android:textSize="17sp" />
 
@@ -96,6 +111,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/forum_post_comment_text"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
                     android:padding="4dp"
                     android:text="@string/no_comments"
                     tools:text="No comments" />
@@ -105,6 +122,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/forum_post_comment_text"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true"
                     android:padding="4dp"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/list_item_forum_comment" />

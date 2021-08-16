@@ -17,8 +17,11 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:layout_marginStart="5dp"
         android:layout_toEndOf="@+id/overview_tasks_image"
+        android:ellipsize="end"
+        android:maxLines="1"
         android:text="@string/tasks"
         android:textColor="?android:attr/textColorPrimary"
         android:textSize="20sp" />
@@ -28,8 +31,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/textView"
+        android:layout_alignParentEnd="true"
         android:layout_marginStart="5dp"
         android:layout_toEndOf="@+id/overview_tasks_image"
+        android:ellipsize="end"
+        android:maxLines="1"
         tools:text="Done: 75 / 100" />
 
     <ProgressBar
@@ -39,6 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/overview_tasks_done"
         android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_marginTop="2dp"
         tools:progress="75" />
 
