@@ -1,98 +1,114 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="100dp"
-        android:text="@string/app_name"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="45sp" />
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal">
 
     <RelativeLayout
-        android:id="@+id/login_header"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/textView"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp">
+        android:layout_height="wrap_content">
 
-        <EditText
-            android:id="@+id/txtEmail"
+        <TextView
+            android:id="@+id/textView"
             android:layout_width="wrap_content"
+            android:maxLines="1"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="72dp"
-            android:layout_marginEnd="40dp"
-            android:autofillHints="username"
-            android:ems="10"
-            android:hint="@string/email"
-            android:inputType="textEmailAddress" />
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="100dp"
+            android:layout_marginHorizontal="30dp"
+            android:text="@string/app_name"
+            android:textColor="?android:attr/textColorPrimary"
+            android:autoSizeTextType="uniform"
+            android:textSize="45sp" />
 
-        <EditText
-            android:id="@+id/txtToken"
+        <RelativeLayout
+            android:id="@+id/login_header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/txtEmail"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="40dp"
-            android:layout_marginEnd="40dp"
-            android:ems="10"
-            android:hint="@string/token"
-            android:importantForAutofill="no"
-            android:inputType="text" />
+            android:layout_below="@id/textView"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="40dp">
 
-        <CheckBox
-            android:id="@+id/chbRememberToken"
+            <EditText
+                android:id="@+id/txtEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="40dp"
+                android:layout_marginTop="72dp"
+                android:layout_marginEnd="40dp"
+                android:autofillHints="username"
+                android:ems="10"
+                android:hint="@string/email"
+                android:inputType="textEmailAddress" />
+
+            <EditText
+                android:id="@+id/txtToken"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txtEmail"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="40dp"
+                android:layout_marginEnd="40dp"
+                android:ems="10"
+                android:hint="@string/token"
+                android:importantForAutofill="no"
+                android:inputType="text" />
+
+            <CheckBox
+                android:id="@+id/chbRememberToken"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/txtToken"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="40dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="40dp"
+                android:importantForAutofill="no"
+                android:text="@string/remember_token" />
+
+        </RelativeLayout>
+
+        <Button
+            android:id="@+id/btnLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/txtToken"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="40dp"
-            android:importantForAutofill="no"
-            android:text="@string/remember_token" />
+            android:layout_below="@id/login_header"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="25dp"
+            android:text="@string/btn_login" />
+
+        <TextView
+            android:id="@+id/password_login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/btnLogin"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp"
+            android:autoLink="web"
+            android:text="@string/password_login_link" />
+
+        <ProgressBar
+            android:id="@+id/pgbLogin"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/password_login"
+            android:layout_below="@id/textView"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="30dp"
+            android:progressBackgroundTint="@color/colorPrimaryDark"
+            tools:visibility="visible"
+            android:visibility="invisible" />
 
     </RelativeLayout>
 
-    <Button
-        android:id="@+id/btnLogin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/login_header"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="25dp"
-        android:text="@string/btn_login" />
-
-    <TextView
-        android:id="@+id/password_login"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="10dp"
-        android:autoLink="web"
-        android:text="@string/password_login_link" />
-
-    <ProgressBar
-        android:id="@+id/pgbLogin"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:layout_marginBottom="30dp"
-        android:progressBackgroundTint="@color/colorPrimaryDark"
-        android:visibility="invisible" />
-
-</RelativeLayout>
+</ScrollView>
