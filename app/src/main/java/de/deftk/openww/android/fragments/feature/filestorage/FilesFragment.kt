@@ -160,8 +160,11 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 binding.fileList.recycledViewPool.setMaxRecycledViews(0, 0) // this is just a workaround (otherwise preview images disappear while scrolling, see https://github.com/square/picasso/issues/845#issuecomment-280626688) FIXME seems like an issue with recycling
 
                 val filter = FileStorageFileFilter()
-                filter.parentCriteria.value = folderId
-                fileStorageViewModel.fileFilter.value = filter
+                if (args.folderNameId == null) {
+                    folderId = args.folderId
+                    filter.parentCriteria.value = folderId
+                    fileStorageViewModel.fileFilter.value = filter
+                }
                 fileStorageViewModel.getFilteredFiles(scope!!).observe(viewLifecycleOwner) { response ->
                     if (response is Response.Success) {
                         if (args.folderNameId != null && folderId == null) {
@@ -170,8 +173,6 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                                 filter.parentCriteria.value = folderId
                                 fileStorageViewModel.fileFilter.value = filter
                                 return@observe
-                            } else {
-                                //TODO bruh mission failed
                             }
                         }
                         adapter.submitList(response.value.map { it.file })
@@ -182,9 +183,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                         if (args.highlightFileId != null && response.value.isNotEmpty()) {
                             val highlightFileName = args.highlightFileId!!.substring(1)
                             val file = response.value.firstOrNull { it.file.name == highlightFileName }
-                            if (file == null) {
-                                Reporter.reportException(R.string.error_file_not_found, highlightFileName, requireContext())
-                            } else {
+                            if (file != null) {
                                 val position = adapter.currentList.indexOf(file.file)
                                 if (position != -1)
                                     binding.fileList.smoothScrollToPosition(position)
@@ -202,7 +201,6 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                     updateUploadFab()
                     enableUI(false)
                 } else {
-                    folderId = args.folderId
                     if (fileStorageViewModel.getAllFiles(scope!!).value?.valueOrNull()?.any { it.file.parentId == folderId } == true) {
                         fileStorageViewModel.loadChildren(scope!!, folderId!!, false, apiContext)
                     } else {
@@ -504,7 +502,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     override fun onItemClick(view: View, viewHolder: FileAdapter.FileViewHolder) {
         if (viewHolder.binding.file!!.type == FileType.FOLDER) {
-            val action = FilesFragmentDirections.actionFilesFragmentSelf(viewHolder.binding.file!!.id, viewHolder.binding.scope!!.login, viewHolder.binding.file!!.name, pasteMode = args.pasteMode, folderNameId = args.folderNameId)
+            val action = FilesFragmentDirections.actionFilesFragmentSelf(viewHolder.binding.file!!.id, viewHolder.binding.scope!!.login, viewHolder.binding.file!!.name, pasteMode = args.pasteMode, folderNameId = null)
             navController.navigate(action)
         } else if (viewHolder.binding.file!!.type == FileType.FILE) {
             openFile(viewHolder.binding.file!!)

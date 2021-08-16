@@ -136,14 +136,14 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
             val allFiles = getAllFiles(scope) as MutableLiveData
             allFiles.value = response.smartMap { responseValue ->
                 val previewResponse = runBlocking { loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext) }
-                val files = responseValue.map { file -> FileCacheElement(file, previewResponse.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl) }
+                val files = responseValue.map { file -> FileCacheElement(file, previewResponse.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl) }.distinctBy { it.file.id }
 
                 // insert into live data
                 val value = allFiles.value
                 if (value != null) {
                     return@smartMap allFiles.value?.valueOrNull()?.toMutableList()?.apply {
                         if (overwriteExisting) {
-                            //TODO this won't be that simple...
+                            removeAll { remove -> files.any { it.file.id == remove.file.id } }
                         }
                         addAll(files)
                     }?.distinctBy { file -> file.file.id } ?: emptyList()
