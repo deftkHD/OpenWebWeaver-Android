@@ -20,8 +20,6 @@ import de.deftk.openww.android.viewmodel.UserViewModel
 
 class OverviewFragment: AbstractFragment(true) {
 
-    //TODO recycler view
-
     companion object {
         private const val LOG_TAG = "OverviewFragment"
     }

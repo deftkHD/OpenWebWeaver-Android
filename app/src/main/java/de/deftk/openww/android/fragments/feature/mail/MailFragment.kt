@@ -361,7 +361,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             R.id.mail_context_item_set_unread -> {
                 val mailItem = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
-                    mailboxViewModel.batchSetEmails(listOf(mailItem.first), mailItem.second, null, false, apiContext)
+                    mailboxViewModel.batchSetEmails(listOf(mailItem.first), mailItem.second, null, true, apiContext)
                     enableUI(false)
                 }
             }
