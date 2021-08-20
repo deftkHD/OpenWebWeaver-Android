@@ -20,7 +20,7 @@ Send and receive messages
 Send and receive emails
 
 <b>File storage</b>
-Download files from file storage
+Upload and download files from file storage
 
 <b>System notifications</b>
 View system notifications

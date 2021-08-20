@@ -1,0 +1,33 @@
+- Added action modes
+- Added ability to delete system notifications
+- Added ability to delete forum posts
+- Added ability to delete files
+- Added ability to ignore tasks
+- Added search
+- Added indicator for recently uploaded files
+- Added ability to use internal file storage references
+- Added backup rule
+- Added ability to customize the overview
+- Added ability to open messenger from member list
+- Added ability to upload files & create folders
+- Added ability to mark emails as un-/read
+
+- Improved vector images
+- Improved translations
+- Improved account switching
+- Improved exception reporting
+- Improved status indicator
+- Improved UI for pending operations
+- Improved handling of contact detail fields
+
+- Messenger history is saved locally
+- Mark files that can't be downloaded
+- Show more details about system notifications
+
+- Cleaned up menus
+- Cleaned up permissions
+- Cleaned up resources
+
+- Fixed scrolling and rotating issues
+- Fixed distorted file names
+- Fixed issues regarding (text-)scaling
