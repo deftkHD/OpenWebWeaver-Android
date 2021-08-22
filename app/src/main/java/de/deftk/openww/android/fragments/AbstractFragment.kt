@@ -32,7 +32,8 @@ abstract class AbstractFragment(private val hasActionBar: Boolean) : Fragment() 
         uiEnabled = enabled
         getMainActivity().progressIndicator.isVisible = !enabled
         onUIStateChanged(enabled)
-        invalidateOptionsMenu()
+        if (!enabled)
+            invalidateOptionsMenu()
     }
 
     abstract fun onUIStateChanged(enabled: Boolean)
