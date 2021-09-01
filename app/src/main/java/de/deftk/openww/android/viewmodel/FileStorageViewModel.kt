@@ -214,7 +214,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
 
         // start upload
-        val workRequest = SessionFileUploadWorker.createRequest(uri, fileName, scope.getRequestContext(apiContext))
+        val workRequest = SessionFileUploadWorker.createRequest(uri, fileName, apiContext.userContext())
         addNetworkTransfer(NetworkTransfer.Upload(workRequest.id, id))
         workManager.enqueue(workRequest)
     }
