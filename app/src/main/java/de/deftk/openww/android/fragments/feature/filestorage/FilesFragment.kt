@@ -343,7 +343,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                             val sessionFile = WebWeaverClient.json.decodeFromString<SessionFile>(workInfo.outputData.getString(SessionFileUploadWorker.DATA_SESSION_FILE) ?: "")
                             userViewModel.apiContext.value?.also { apiContext ->
-                                fileStorageViewModel.importSessionFile(sessionFile, scope!!, apiContext)
+                                fileStorageViewModel.importSessionFile(sessionFile, getProviderFile()?.file ?: scope!!, scope!!, apiContext)
                             }
                         }
                         WorkInfo.State.CANCELLED -> {

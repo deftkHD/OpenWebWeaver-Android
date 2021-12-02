@@ -16,6 +16,7 @@ import de.deftk.openww.api.model.feature.Modification
 import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.model.feature.filestorage.FileType
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
+import de.deftk.openww.api.model.feature.filestorage.IRemoteFileProvider
 import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -219,9 +220,9 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         workManager.enqueue(workRequest)
     }
 
-    fun importSessionFile(sessionFile: ISessionFile, scope: IOperatingScope, apiContext: IApiContext) {
+    fun importSessionFile(sessionFile: ISessionFile, into: IRemoteFileProvider?, scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
-            val response = fileStorageRepository.importSessionFile(sessionFile, scope, apiContext)
+            val response = fileStorageRepository.importSessionFile(sessionFile, into, scope, apiContext)
             if (response is Response.Success) {
                 val allFiles = getAllFiles(scope) as MutableLiveData
                 allFiles.value = response.smartMap { responseValue ->

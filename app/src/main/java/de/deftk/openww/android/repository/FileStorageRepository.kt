@@ -108,8 +108,8 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         scope.getFilePreviews(files, apiContext)
     }
 
-    suspend fun importSessionFile(sessionFile: ISessionFile, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
-        scope.importSessionFile(sessionFile, context = scope.getRequestContext(apiContext))
+    suspend fun importSessionFile(sessionFile: ISessionFile, into: IRemoteFileProvider?, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
+        (into ?: scope).importSessionFile(sessionFile, context = scope.getRequestContext(apiContext))
     }
 
     suspend fun deleteFile(file: IRemoteFile, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
