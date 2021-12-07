@@ -291,4 +291,5 @@
     <string name="error_set_email_failed">Setzen der Email-Eigenschaften fehlgeschlagen: %s</string>
     <string name="call">Anrufen</string>
     <string name="copied_to_clipboard">Kopiert in die Zwischenablage</string>
+    <string name="file_name">Dateiname</string>
 </resources>

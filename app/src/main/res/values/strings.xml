@@ -293,5 +293,6 @@
     <string name="error_set_email_failed">Failed to set email properties: %s</string>
     <string name="call">Call</string>
     <string name="copied_to_clipboard">Item copied to clipboard</string>
+    <string name="file_name">File name</string>
 
 </resources>

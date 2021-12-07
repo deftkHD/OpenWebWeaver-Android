@@ -360,8 +360,8 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                         else -> { /* ignore */ }
                     }
                     transfer.progress = progress
-                    val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
-                    viewHolder.setProgress(progress)
+                    val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as? FileAdapter.FileViewHolder?
+                    viewHolder?.setProgress(progress)
                 }
             }
         }
@@ -522,9 +522,22 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     }
 
     private fun uploadFile(uri: Uri) {
-        userViewModel.apiContext.value?.also { apiContext ->
-            fileStorageViewModel.startUpload(workManager, scope!!, apiContext, uri, FileUtil.uriToFileName(uri, requireContext()), 0, folderId!!)
-        }
+        val view = layoutInflater.inflate(R.layout.dialog_upload_file, null, false)
+        view.findViewById<EditText>(R.id.file_name).setText(FileUtil.uriToFileName(uri, requireContext()))
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(view)
+            .setTitle(R.string.upload)
+            .setPositiveButton(R.string.upload) { _, _ ->
+                userViewModel.apiContext.value?.also { apiContext ->
+                    val name = view.findViewById<EditText>(R.id.file_name).text.toString()
+                    fileStorageViewModel.startUpload(workManager, scope!!, apiContext, uri, name, 0, folderId!!)
+                }
+            }
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
+                dialog.cancel()
+            }
+            .create()
+        dialog.show()
     }
 
     override fun onUIStateChanged(enabled: Boolean) {
