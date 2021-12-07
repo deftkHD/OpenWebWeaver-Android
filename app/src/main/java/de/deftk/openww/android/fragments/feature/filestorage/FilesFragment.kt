@@ -31,10 +31,7 @@ import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentFilesBinding
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.feature.LaunchMode
-import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
-import de.deftk.openww.android.feature.filestorage.FileCacheElement
-import de.deftk.openww.android.feature.filestorage.NetworkTransfer
-import de.deftk.openww.android.feature.filestorage.SessionFileUploadWorker
+import de.deftk.openww.android.feature.filestorage.*
 import de.deftk.openww.android.filter.FileStorageFileFilter
 import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.FileUtil
@@ -438,9 +435,11 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
-        requireActivity().menuInflater.inflate(R.menu.filestorage_context_menu, menu)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val file = (binding.fileList.adapter as FileAdapter).getItem(menuInfo.position)
+            if (file is RemoteFilePlaceholder)
+                return
+            requireActivity().menuInflater.inflate(R.menu.filestorage_context_menu, menu)
             val canRead = file.effectiveRead == true && file.type == FileType.FILE
             menu.findItem(R.id.filestorage_context_item_open).isVisible = canRead
             menu.findItem(R.id.filestorage_context_item_download).isVisible = canRead
