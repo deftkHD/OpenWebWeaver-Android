@@ -1,5 +1,6 @@
 package de.deftk.openww.android.adapter.recycler
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -82,6 +83,7 @@ class FileAdapter(
             binding.executePendingBindings()
         }
 
+        @SuppressLint("SetTextI18n")
         fun setProgress(progress: Int) {
             if (progress < 1 || progress >= 100) {
                 binding.progressFile.isVisible = false
@@ -94,6 +96,7 @@ class FileAdapter(
                     binding.fileNewIndicator.isVisible = false
                 }
                 binding.progressFile.progress = progress
+                binding.fileSize.text = "$progress%"
             }
         }
 
