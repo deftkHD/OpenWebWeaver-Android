@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragments.feature.filestorage.ReadFileFragment">
+
+    <RelativeLayout
+        android:id="@+id/file_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:padding="16dp">
+
+        <EditText
+            android:id="@+id/file_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:hint="@string/file_name"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="20sp"
+            tools:text="File name" />
+
+        <TextView
+            android:id="@+id/file_created_author"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/file_name"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="abc.exampleuser" />
+
+        <TextView
+            android:id="@+id/file_modified_author"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/file_created_author"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="abc.exampleuser" />
+
+        <TextView
+            android:id="@+id/file_created_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/file_name"
+            android:layout_alignParentEnd="true"
+            tools:text="Created 1.1.2020 12:00" />
+
+        <TextView
+            android:id="@+id/file_modified_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/file_created_date"
+            android:layout_alignParentEnd="true"
+            tools:text="Modified 2.2.2020 12:00" />
+
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/file_header"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RelativeLayout
+                android:id="@+id/file_metadata"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:padding="10dp">
+
+                <TextView
+                    android:id="@+id/file_size"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    tools:text="Size: 1MB" />
+
+                <CheckBox
+                    android:id="@+id/file_is_mine"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/file_size"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@id/file_is_shared"
+                    android:enabled="false"
+                    android:text="@string/mine" />
+
+                <CheckBox
+                    android:id="@+id/file_is_shared"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/file_size"
+                    android:layout_alignParentEnd="true"
+                    android:enabled="false"
+                    android:text="@string/shared" />
+
+                <CheckBox
+                    android:id="@+id/file_is_sparse"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/file_is_mine"
+                    android:layout_alignParentStart="true"
+                    android:enabled="false"
+                    android:text="@string/sparse" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/file_permissions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/file_metadata"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:padding="10dp">
+
+                <CheckBox
+                    android:id="@+id/file_permission_readable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:enabled="false"
+                    android:text="@string/file_permission_readable" />
+
+                <CheckBox
+                    android:id="@+id/file_permission_writable"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/file_permission_readable"
+                    android:layout_alignParentStart="true"
+                    android:enabled="false"
+                    android:text="@string/file_permission_writable" />
+
+                <CheckBox
+                    android:id="@+id/file_permission_effective_read"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/file_permission_writable"
+                    android:layout_alignParentStart="true"
+                    android:enabled="false"
+                    android:text="@string/file_permission_effective_read" />
+
+                <CheckBox
+                    android:id="@+id/file_permission_effective_create"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/file_permission_effective_read"
+                    android:layout_alignParentStart="true"
+                    android:enabled="false"
+                    android:text="@string/file_permission_effective_create" />
+
+                <CheckBox
+                    android:id="@+id/file_permission_effective_modify"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/file_permission_effective_create"
+                    android:layout_alignParentStart="true"
+                    android:enabled="false"
+                    android:text="@string/file_permission_effective_modify" />
+
+                <CheckBox
+                    android:id="@+id/file_permission_effective_delete"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/file_permission_effective_modify"
+                    android:layout_alignParentStart="true"
+                    android:enabled="false"
+                    android:text="@string/file_permission_effective_delete" />
+
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/file_notifications"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/file_permissions"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:padding="10dp">
+
+                <CheckBox
+                    android:id="@+id/file_self_download_notification"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:enabled="false"
+                    android:text="@string/file_receive_download_notification" />
+
+                <TextView
+                    android:id="@+id/file_download_notification_list_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/file_self_download_notification"
+                    android:layout_alignParentStart="true"
+                    android:text="@string/file_download_notification_list_description" />
+
+                <TextView
+                    android:id="@+id/file_download_notification_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/file_download_notification_list_description"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentEnd="true" />
+
+            </RelativeLayout>
+
+            <EditText
+                android:id="@+id/file_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/file_notifications"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentBottom="true"
+                android:autoLink="web|email"
+                android:hint="@string/description"
+                android:importantForAutofill="no"
+                android:inputType="textMultiLine"
+                android:padding="8dp"
+                android:textColor="?android:attr/textColorPrimary" />
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_edit_file"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="@dimen/fab_margin"
+        android:contentDescription="@string/edit_file"
+        android:src="@drawable/ic_edit_24"
+        android:visibility="invisible"
+        tools:visibility="visible" />
+
+</RelativeLayout>

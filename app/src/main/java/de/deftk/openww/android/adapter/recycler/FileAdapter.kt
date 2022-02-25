@@ -83,6 +83,7 @@ class FileAdapter(
             binding.executePendingBindings()
         }
 
+        //TODO don't set progress but rather supply current value and maximum -> also update size label
         @SuppressLint("SetTextI18n")
         fun setProgress(progress: Int) {
             if (progress < 1 || progress >= 100) {

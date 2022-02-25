@@ -117,6 +117,16 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         file
     }
 
+    suspend fun editFile(file: IRemoteFile, name: String, description: String?, downloadNotificationMe: Boolean?, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
+        file.setFile(name, description, null, null, downloadNotificationMe, scope.getRequestContext(apiContext))
+        file
+    }
+
+    suspend fun editFolder(file: IRemoteFile, name: String, description: String?, readable: Boolean?, writable: Boolean?, uploadNotificationMe: Boolean?, scope: IOperatingScope, apiContext: IApiContext) = apiCall {
+        file.setFolder(name, description, readable, writable, null, null, uploadNotificationMe, scope.getRequestContext(apiContext))
+        file
+    }
+
     // extend json api to allow more efficient requests
 
     private fun UserApiRequest.addGetAllFileStorageQuotasRequest(user: IUser): List<Int> {

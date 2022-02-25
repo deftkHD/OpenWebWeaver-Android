@@ -57,6 +57,9 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
     private val _networkTransfers = MutableLiveData<List<NetworkTransfer>>()
     val networkTransfers: LiveData<List<NetworkTransfer>> = _networkTransfers
 
+    private val _editFileResponse = MutableLiveData<Response<IRemoteFile>?>()
+    val editFileResponse: LiveData<Response<IRemoteFile>?> = _editFileResponse
+
     fun loadQuotas(apiContext: IApiContext) {
         viewModelScope.launch {
             _quotas.value = fileStorageRepository.getAllFileStorageQuotas(apiContext)
@@ -244,6 +247,38 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
     }
 
+    fun editFile(file: IRemoteFile, name: String, description: String?, downloadNotificationMe: Boolean?, scope: IOperatingScope, apiContext: IApiContext) {
+        viewModelScope.launch {
+            val response = fileStorageRepository.editFile(file, name, description, downloadNotificationMe, scope, apiContext)
+            _editFileResponse.value = response
+            if (response is Response.Success) {
+                val allFiles = getAllFiles(scope) as MutableLiveData
+                allFiles.value = allFiles.value?.smartMap { files ->
+                    files.toMutableList().apply {
+                        val orig = first { it.file.id == file.id }
+                        set(indexOf(orig), FileCacheElement(file, orig.previewUrl))
+                    }
+                }
+            }
+        }
+    }
+
+    fun editFolder(file: IRemoteFile, name: String, description: String?, readable: Boolean?, writable: Boolean?, uploadNotificationMe: Boolean?, scope: IOperatingScope, apiContext: IApiContext) {
+        viewModelScope.launch {
+            val response = fileStorageRepository.editFolder(file, name, description, readable, writable, uploadNotificationMe, scope, apiContext)
+            _editFileResponse.value = response
+            if (response is Response.Success) {
+                val allFiles = getAllFiles(scope) as MutableLiveData
+                allFiles.value = allFiles.value?.smartMap { files ->
+                    files.toMutableList().apply {
+                        val orig = first { it.file.id == file.id }
+                        set(indexOf(orig), FileCacheElement(file, orig.previewUrl))
+                    }
+                }
+            }
+        }
+    }
+
     fun resetImportSessionFileResponse() {
         _importSessionFileResponse.value = null
     }
@@ -293,6 +328,10 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
 
     fun resetAddFolderResponse() {
         _addFolderResponse.value = null
+    }
+
+    fun resetEditFileResponse() {
+        _editFileResponse.value = null
     }
 
     fun cleanCache(scope: IOperatingScope) {

@@ -210,6 +210,9 @@
             android:name="folderNameId"
             app:argType="string"
             app:nullable="true" />
+        <action
+            android:id="@+id/action_filesFragment_to_editFileFragment"
+            app:destination="@id/editFileFragment" />
     </fragment>
     <fragment
         android:id="@+id/forumPostFragment"
@@ -521,6 +524,9 @@
         <argument
             android:name="parentId"
             app:argType="string" />
+        <action
+            android:id="@+id/action_readFileFragment_to_editFileFragment"
+            app:destination="@id/editFileFragment" />
     </fragment>
     <dialog
         android:id="@+id/betaDisclaimerFragment"
@@ -542,4 +548,21 @@
         android:id="@+id/overviewSettingsFragment"
         android:name="de.deftk.openww.android.fragments.settings.OverviewSettingsFragment"
         android:label="@string/customize_overview" />
+    <fragment
+        android:id="@+id/editFileFragment"
+        android:name="de.deftk.openww.android.fragments.feature.filestorage.EditFileFragment"
+        android:label="{title}" >
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <argument
+            android:name="scope"
+            app:argType="string" />
+        <argument
+            android:name="fileId"
+            app:argType="string" />
+        <argument
+            android:name="parentId"
+            app:argType="string" />
+    </fragment>
 </navigation>

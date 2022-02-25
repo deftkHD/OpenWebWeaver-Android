@@ -294,5 +294,6 @@
     <string name="call">Call</string>
     <string name="copied_to_clipboard">Item copied to clipboard</string>
     <string name="file_name">File name</string>
+    <string name="invalid_file_name">Invalid filename</string>
 
 </resources>

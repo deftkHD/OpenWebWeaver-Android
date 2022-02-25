@@ -129,4 +129,12 @@ class RemoteFilePlaceholder(
     override suspend fun setWritable(writable: Boolean, context: IRequestContext) {
         throw IllegalStateException("Not supported")
     }
+
+    override suspend fun setFile(name: String, description: String?, downloadNotificationAddLogin: String?, downloadNotificationDeleteLogin: String?, downloadNotificationMe: Boolean?, context: IRequestContext) {
+        throw IllegalStateException("Not supported")
+    }
+
+    override suspend fun setFolder(name: String, description: String?, readable: Boolean?, writable: Boolean?, uploadNotificationAddLogin: String?, uploadNotificationDeleteLogin: String?, uploadNotificationMe: Boolean?, context: IRequestContext) {
+        throw IllegalStateException("Not supported")
+    }
 }
