@@ -1,10 +1,13 @@
 package de.deftk.openww.android.adapter.recycler
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.DiffUtil
 import com.bumptech.glide.Glide
 import com.bumptech.glide.signature.ObjectKey
@@ -17,6 +20,7 @@ import de.deftk.openww.api.model.feature.FilePreviewUrl
 import de.deftk.openww.api.model.feature.filestorage.FileType
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import java.util.*
+import kotlin.math.roundToInt
 
 class FileAdapter(
     var scope: IOperatingScope,
@@ -31,11 +35,14 @@ class FileAdapter(
 
     override fun onBindViewHolder(holder: FileViewHolder, position: Int) {
         val file = getItem(position)
+        val transfer = fileStorageViewModel.networkTransfers.value?.firstOrNull { it.id == file.id }
         holder.bind(
             scope,
             file,
-            fileStorageViewModel.networkTransfers.value?.firstOrNull { it.id == file.id }?.progress,
-            fileStorageViewModel.getAllFiles(scope).value?.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl
+            transfer?.progressValue,
+            transfer?.maxProgress,
+            fileStorageViewModel.getAllFiles(scope).value?.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl,
+            holder.itemView.context
         )
     }
 
@@ -58,7 +65,7 @@ class FileAdapter(
             binding.selected = selected
         }
 
-        fun bind(scope: IOperatingScope, file: IRemoteFile, progress: Int?, previewUrl: FilePreviewUrl?) {
+        fun bind(scope: IOperatingScope, file: IRemoteFile, progressValue: Int?, maxProgress: Int?, previewUrl: FilePreviewUrl?, context: Context) {
             binding.selected = false
             binding.scope = scope
             binding.file = file
@@ -70,7 +77,7 @@ class FileAdapter(
                 if (recentlyAdded != null)
                     binding.recentlyCreated = Date().time - recentlyAdded <= 259200000 // 3 days
             }
-            setProgress(progress ?: 0)
+            setProgress(progressValue ?: 0, maxProgress ?: 1, context) // do not divide by 0
             if (previewUrl != null) {
                 Glide.with(itemView.context)
                     .load(previewUrl.url)
@@ -83,21 +90,29 @@ class FileAdapter(
             binding.executePendingBindings()
         }
 
-        //TODO don't set progress but rather supply current value and maximum -> also update size label
         @SuppressLint("SetTextI18n")
-        fun setProgress(progress: Int) {
-            if (progress < 1 || progress >= 100) {
+        fun setProgress(value: Int, max: Int, context: Context) {
+            if (max == 1)
+                return
+            val progress = (value.toFloat() / max.toFloat()) * 100
+            if (value < 1 || value >= max) {
                 binding.progressFile.isVisible = false
                 binding.fileImage.visibility = View.VISIBLE
                 binding.fileNewIndicator.isVisible = binding.recentlyCreated!!
+                binding.fileSize.text = Formatter.formatFileSize(context, max.toLong())
             } else {
                 if (!binding.progressFile.isVisible) {
                     binding.progressFile.isVisible = true
                     binding.fileImage.visibility = View.INVISIBLE
                     binding.fileNewIndicator.isVisible = false
                 }
-                binding.progressFile.progress = progress
-                binding.fileSize.text = "$progress%"
+                binding.progressFile.progress = progress.toInt()
+                if (PreferenceManager.getDefaultSharedPreferences(context).getBoolean("file_storage_display_progress_pct", false)) {
+                    binding.fileSize.text = "${(progress * 100).roundToInt() / 100.0}%"
+                } else {
+                    binding.fileSize.text = "${Formatter.formatFileSize(context, value.toLong())}/${Formatter.formatFileSize(context, max.toLong())}"
+                }
+
             }
         }
 

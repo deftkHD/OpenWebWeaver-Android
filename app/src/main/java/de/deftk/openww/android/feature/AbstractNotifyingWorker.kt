@@ -20,7 +20,8 @@ abstract class AbstractNotifyingWorker(
 ) : CoroutineWorker(context, params) {
 
     companion object {
-        const val ARGUMENT_PROGRESS = "argument_progress"
+        const val ARGUMENT_PROGRESS_VALUE = "argument_progress"
+        const val ARGUMENT_PROGRESS_MAX = "argument_progress_max"
 
         // output
         const val DATA_ERROR_MESSAGE = "data_error_message"
@@ -28,9 +29,9 @@ abstract class AbstractNotifyingWorker(
 
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-    protected suspend fun updateProgress(progress: Int, fileName: String) {
-        setProgress(workDataOf(ARGUMENT_PROGRESS to progress))
-        notificationManager.notify(notificationId, buildNotification(fileName, progress))
+    protected suspend fun updateProgress(progressPct: Int, progressValue: Int, progressMax: Int, fileName: String) {
+        setProgress(workDataOf(ARGUMENT_PROGRESS_VALUE to progressValue, ARGUMENT_PROGRESS_MAX to progressMax))
+        notificationManager.notify(notificationId, buildNotification(fileName, progressPct))
     }
 
     protected fun createForegroundInfo(fileName: String): ForegroundInfo {

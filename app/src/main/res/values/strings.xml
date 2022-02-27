@@ -295,5 +295,6 @@
     <string name="copied_to_clipboard">Item copied to clipboard</string>
     <string name="file_name">File name</string>
     <string name="invalid_file_name">Invalid filename</string>
+    <string name="setting_file_storage_display_progress_pct_title">Display progress in percent</string>
 
 </resources>

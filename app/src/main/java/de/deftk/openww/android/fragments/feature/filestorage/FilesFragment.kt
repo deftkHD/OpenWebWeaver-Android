@@ -251,6 +251,13 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         return binding.root
     }
 
+    override fun onResume() {
+        //FIXME scenario: start download, exit app, download finishes in background, reentering app
+        // problem: download/upload indicator is not updated
+        // -> update indicator for each transfer here
+        super.onResume()
+    }
+
     private fun updateUploadFab() {
         binding.fabUploadFile.isVisible = getProviderFile()?.file?.effectiveCreate == true
         if (args.pasteMode) {
@@ -274,10 +281,11 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             is NetworkTransfer.DownloadOpen -> {
                 liveData.observe(viewLifecycleOwner) { workInfo ->
                     val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
-                    var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
+                    var progressValue = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS_VALUE, 0)
+                    val maxProgress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS_MAX, 1)
                     when (workInfo.state) {
                         WorkInfo.State.SUCCEEDED -> {
-                            progress = 100
+                            progressValue = maxProgress
                             val fileUri = Uri.parse(workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_URI))
                             val fileName = workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_NAME)!!
                             FileUtil.showFileOpenIntent(fileName, fileUri, preferences, requireContext())
@@ -285,57 +293,61 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                         }
                         WorkInfo.State.CANCELLED -> {
                             //TODO remove notification
-                            progress = -1
+                            progressValue = 0
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                         }
                         WorkInfo.State.FAILED -> {
                             val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
                             Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
-                            progress = -1
+                            progressValue = 0
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                         }
                         else -> { /* ignore */ }
                     }
-                    transfer.progress = progress
+                    transfer.progressValue = progressValue
+                    transfer.maxProgress = maxProgress
                     val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
-                    viewHolder.setProgress(progress)
+                    viewHolder.setProgress(progressValue, maxProgress, requireContext())
                 }
             }
             is NetworkTransfer.DownloadSave -> {
                 liveData.observe(viewLifecycleOwner) { workInfo ->
                     val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
-                    var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
+                    var progressValue = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS_VALUE, 0)
+                    val maxProgress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS_MAX, 1)
                     when (workInfo.state) {
                         WorkInfo.State.SUCCEEDED -> {
-                            progress = 100
+                            progressValue = maxProgress
                             Toast.makeText(requireContext(), R.string.download_finished, Toast.LENGTH_LONG).show()
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                         }
                         WorkInfo.State.CANCELLED -> {
                             //TODO remove notification
-                            progress = -1
+                            progressValue = 0
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                         }
                         WorkInfo.State.FAILED -> {
                             val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
                             Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
-                            progress = -1
+                            progressValue = 0
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                         }
                         else -> { /* ignore */ }
                     }
-                    transfer.progress = progress
+                    transfer.progressValue = progressValue
+                    transfer.maxProgress = maxProgress
                     val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as FileAdapter.FileViewHolder
-                    viewHolder.setProgress(progress)
+                    viewHolder.setProgress(progressValue, maxProgress, requireContext())
                 }
             }
             is NetworkTransfer.Upload -> {
                 liveData.observe(viewLifecycleOwner) { workInfo ->
                     val adapterIndex = adapter.currentList.indexOfFirst { it.id == transfer.id }
-                    var progress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS, 0)
+                    var progressValue = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS_VALUE, 0)
+                    val maxProgress = workInfo.progress.getInt(AbstractNotifyingWorker.ARGUMENT_PROGRESS_MAX, 1)
                     when (workInfo.state) {
                         WorkInfo.State.SUCCEEDED -> {
-                            progress = 100
+                            progressValue = maxProgress
                             Toast.makeText(requireContext(), R.string.upload_finished, Toast.LENGTH_LONG).show()
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                             val sessionFile = WebWeaverClient.json.decodeFromString<SessionFile>(workInfo.outputData.getString(SessionFileUploadWorker.DATA_SESSION_FILE) ?: "")
@@ -345,20 +357,21 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                         }
                         WorkInfo.State.CANCELLED -> {
                             //TODO remove notification
-                            progress = -1
+                            progressValue = 0
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                         }
                         WorkInfo.State.FAILED -> {
                             val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
                             Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
-                            progress = -1
+                            progressValue = 0
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                         }
                         else -> { /* ignore */ }
                     }
-                    transfer.progress = progress
+                    transfer.progressValue = progressValue
+                    transfer.maxProgress = maxProgress
                     val viewHolder = binding.fileList.findViewHolderForAdapterPosition(adapterIndex) as? FileAdapter.FileViewHolder?
-                    viewHolder?.setProgress(progress)
+                    viewHolder?.setProgress(progressValue, maxProgress, requireContext())
                 }
             }
         }

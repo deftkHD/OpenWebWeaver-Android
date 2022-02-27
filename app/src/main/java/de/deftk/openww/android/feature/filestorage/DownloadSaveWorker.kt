@@ -66,7 +66,7 @@ class DownloadSaveWorker(context: Context, params: WorkerParameters) :
                 while (!isStopped) {
                     val read = inputStream.read(buffer)
                     writtenBytes += read
-                    updateProgress(((writtenBytes.toFloat() / fileSize.toFloat()) * 100).roundToInt(), fileName)
+                    updateProgress(((writtenBytes.toFloat() / fileSize.toFloat()) * 100).roundToInt(), writtenBytes, fileSize.toInt(), fileName)
                     if (read <= 0)
                         break
                     outputStream.write(buffer, 0, read)
@@ -79,7 +79,7 @@ class DownloadSaveWorker(context: Context, params: WorkerParameters) :
                 Result.success() //TODO show permanent notification
             } catch (e: Exception) {
                 e.printStackTrace()
-                updateProgress(-1, fileName)
+                updateProgress(-1, 0, 1, fileName)
                 exceptionResult(e)
             }
         }

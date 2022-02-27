@@ -4,18 +4,11 @@ import java.util.*
 
 sealed class NetworkTransfer(val workerId: UUID, val id: String) {
 
-    var progress = 0
+    var progressValue = 0
+    var maxProgress = 1
 
-    class DownloadOpen(workerId: UUID, id: String) : NetworkTransfer(workerId, id) {
-
-    }
-
-    class DownloadSave(workerId: UUID, id: String) : NetworkTransfer(workerId, id) {
-
-    }
-
-    class Upload(workerId: UUID, id: String) : NetworkTransfer(workerId, id) {
-
-    }
+    class DownloadOpen(workerId: UUID, id: String) : NetworkTransfer(workerId, id)
+    class DownloadSave(workerId: UUID, id: String) : NetworkTransfer(workerId, id)
+    class Upload(workerId: UUID, id: String) : NetworkTransfer(workerId, id)
 
 }

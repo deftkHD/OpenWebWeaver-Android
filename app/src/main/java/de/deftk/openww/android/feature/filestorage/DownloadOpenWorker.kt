@@ -74,7 +74,7 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
                     outputStream.write(buffer, 0, bytes)
                     bytesCopied += bytes
                     bytes = inputStream.read(buffer)
-                    updateProgress(((bytesCopied.toFloat() / fileSize.toFloat()) * 100).roundToInt(), fileName)
+                    updateProgress(((bytesCopied.toFloat() / fileSize.toFloat()) * 100).roundToInt(), bytesCopied.toInt(), fileSize.toInt(), fileName)
                 }
                 inputStream.close()
                 if (isStopped) {
@@ -90,7 +90,7 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
                 try {
                     file.delete()
                 } catch (ignored: Exception) { }
-                updateProgress(-1, fileName)
+                updateProgress(-1, 0, 1, fileName)
                 e.printStackTrace()
                 Result.failure(workDataOf(DATA_ERROR_MESSAGE to (e.localizedMessage ?: e.message ?: e.toString())))
             }

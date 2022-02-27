@@ -88,7 +88,7 @@ class SessionFileUploadWorker(context: Context, params: WorkerParameters) : Abst
                     }
                     writtenBytes += read
                     val p = writtenBytes.toFloat() / fileSize.toFloat()
-                    updateProgress((p * 100).roundToInt(), fileName)
+                    updateProgress((p * 100).roundToInt(), writtenBytes, fileSize.toInt(), fileName)
                 }
                 if (isStopped) {
                     sessionFile.delete(requestContext)
@@ -96,7 +96,7 @@ class SessionFileUploadWorker(context: Context, params: WorkerParameters) : Abst
 
                 Result.success(workDataOf(DATA_SESSION_FILE to WebWeaverClient.json.encodeToString(sessionFile)))
             } catch (e: Exception) {
-                updateProgress(-1, fileName)
+                updateProgress(-1, 0, 1, fileName)
                 e.printStackTrace()
                 Result.failure(workDataOf(DATA_ERROR_MESSAGE to (e.localizedMessage ?: e.message ?: e.toString())))
             }
