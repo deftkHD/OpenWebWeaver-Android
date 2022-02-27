@@ -86,7 +86,6 @@ class EditFileFragment : AbstractFragment(true) {
                 binding.filePermissionEffectiveModify.isChecked = file.file.effectiveModify == true
                 binding.filePermissionEffectiveDelete.isChecked = file.file.effectiveDelete == true
 
-                binding.fileNotifications.isVisible = file.file.downloadNotification != null
                 binding.fileSelfDownloadNotification.isChecked = file.file.downloadNotification?.me == true
                 binding.fileDownloadNotificationListDescription.isVisible = file.file.downloadNotification?.users?.isNotEmpty() == true
                 binding.fileDownloadNotificationList.text = file.file.downloadNotification?.users?.joinToString("\n") { it.alias ?: it.name } ?: ""
@@ -102,7 +101,26 @@ class EditFileFragment : AbstractFragment(true) {
             if (apiContext != null) {
                 //TODO implement
             } else {
-                //TODO reset component values
+                binding.fileDescription.setText("")
+                binding.fileSelfDownloadNotification.isChecked = false
+                binding.filePermissionEffectiveDelete.isChecked = false
+                binding.filePermissionEffectiveModify.isChecked = false
+                binding.filePermissionEffectiveCreate.isChecked = false
+                binding.filePermissionEffectiveRead.isChecked = false
+                binding.filePermissionWritable.isChecked = false
+                binding.filePermissionReadable.isChecked = false
+                binding.fileIsSparse.isChecked = false
+                binding.fileIsShared.isChecked = false
+                binding.fileIsMine.isChecked = false
+                binding.fabEditFile.isEnabled = false
+                binding.fileCreatedAuthor.text = ""
+                binding.fileDownloadNotificationList.text = ""
+                binding.fileDownloadNotificationListDescription.text = ""
+                binding.fileModifiedAuthor.text = ""
+                binding.fileModifiedDate.text = ""
+                binding.fileName.setText("")
+                binding.fileCreatedDate.text = ""
+                binding.fileSize.text = ""
                 enableUI(false)
             }
         }
@@ -133,7 +151,6 @@ class EditFileFragment : AbstractFragment(true) {
             val apiContext = userViewModel.apiContext.value ?: return false
 
             if (binding.fileName.text.isBlank()) {
-                //TODO add more file name checks
                 Toast.makeText(requireContext(), R.string.invalid_file_name, Toast.LENGTH_SHORT).show()
                 return true
             }

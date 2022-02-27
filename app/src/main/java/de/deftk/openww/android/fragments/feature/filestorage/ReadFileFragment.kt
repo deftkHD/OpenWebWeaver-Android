@@ -79,7 +79,6 @@ class ReadFileFragment : AbstractFragment(true) {
                 binding.filePermissionEffectiveModify.isChecked = file.file.effectiveModify == true
                 binding.filePermissionEffectiveDelete.isChecked = file.file.effectiveDelete == true
 
-                binding.fileNotifications.isVisible = file.file.downloadNotification != null
                 binding.fileSelfDownloadNotification.isChecked = file.file.downloadNotification?.me == true
                 binding.fileDownloadNotificationListDescription.isVisible = file.file.downloadNotification?.users?.isNotEmpty() == true
                 binding.fileDownloadNotificationList.text = file.file.downloadNotification?.users?.joinToString("\n") { it.alias ?: it.name } ?: ""
