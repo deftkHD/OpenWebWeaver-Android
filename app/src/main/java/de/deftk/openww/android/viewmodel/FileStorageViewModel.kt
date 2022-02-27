@@ -212,7 +212,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         val liveData = getAllFiles(scope) as MutableLiveData
         liveData.value = liveData.value?.smartMap {
             it.toMutableList().apply {
-                val userScope = RemoteScope(apiContext.user.login, apiContext.user.name, apiContext.user.type, true, null)
+                val userScope = RemoteScope(apiContext.user.login, apiContext.user.name, apiContext.user.type, null, true)
                 add(0, FileCacheElement(RemoteFilePlaceholder(id, fileName, size, parentId, Modification(userScope, Date()))))
             }
         }

@@ -47,7 +47,7 @@ class ForumPostCommentAdapter(var group: IGroup, private val path: Array<String>
             binding.navController = navController
             binding.moreButton.visibility = if (group.effectiveRights.contains(Permission.FORUM_WRITE) || group.effectiveRights.contains(Permission.FORUM_ADMIN)) View.VISIBLE else View.INVISIBLE
             binding.setShowMoreClickListener { view ->
-                val action = ForumPostFragmentDirections.actionForumPostFragmentSelf(group.login, post.id, path, view.context.getString(R.string.see_comment))
+                val action = ForumPostFragmentDirections.actionForumPostFragmentSelf(group.login, post.id, view.context.getString(R.string.see_comment), path)
                 view.findNavController().navigate(action)
             }
             binding.executePendingBindings()

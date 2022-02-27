@@ -125,7 +125,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
     }
 
     override fun onItemClick(view: View, viewHolder: ForumPostAdapter.ForumPostViewHolder) {
-        navController.navigate(ForumPostsFragmentDirections.actionForumPostsFragmentToForumPostFragment(viewHolder.binding.group!!.login, viewHolder.binding.post!!.id, null, getString(R.string.see_post)))
+        navController.navigate(ForumPostsFragmentDirections.actionForumPostsFragmentToForumPostFragment(viewHolder.binding.group!!.login, viewHolder.binding.post!!.id, getString(R.string.see_post), null))
     }
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {

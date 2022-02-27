@@ -86,7 +86,7 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
                         } else {
                             // add new
                             editMode = false
-                            val modification = Modification(RemoteScope("", "", -1, false, null), Date())
+                            val modification = Modification(RemoteScope("", "", -1, null, false), Date())
                             contact.value = Contact(-1, _modified = modification, created = modification)
                         }
                     } else if (response is Response.Failure) {

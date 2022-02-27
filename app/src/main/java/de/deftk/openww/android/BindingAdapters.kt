@@ -127,7 +127,7 @@ object BindingAdapters {
     @BindingAdapter("memberOnlineImage")
     fun memberOnlineImage(view: ImageView, scope: IScope) {
         if (scope is RemoteScope) {
-            if (scope.isOnline) {
+            if (scope.online == true) {
                 view.setImageResource(R.drawable.ic_person_accent_24)
             } else {
                 view.setImageResource(R.drawable.ic_person_24)
@@ -143,7 +143,7 @@ object BindingAdapters {
     @BindingAdapter("memberOnlineText")
     fun memberOnlineText(view: TextView, scope: IScope) {
         if (scope is RemoteScope) {
-            if (scope.isOnline) {
+            if (scope.online == true) {
                 view.setText(R.string.online)
             } else {
                 view.setText(R.string.offline)
