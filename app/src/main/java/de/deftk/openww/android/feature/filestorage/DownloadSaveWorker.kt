@@ -1,10 +1,20 @@
 package de.deftk.openww.android.feature.filestorage
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.net.Uri
-import androidx.work.*
+import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import de.deftk.openww.android.R
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
+import de.deftk.openww.android.notification.Notifications
+import de.deftk.openww.android.utils.FileUtil
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -15,17 +25,14 @@ class DownloadSaveWorker(context: Context, params: WorkerParameters) :
     AbstractNotifyingWorker(
         context,
         params,
-        NOTIFICATION_CHANNEL_ID,
-        NOTIFICATION_ID,
+        Notifications.PROGRESS_NOTIFICATION_CHANNEL_ID,
+        Notifications.DOWNLOAD_PROGRESS_NOTIFICATION_ID,
         R.string.notification_download_title,
         R.string.notification_download_content,
         R.drawable.ic_cloud_download_24
     ) {
 
     companion object {
-        private const val NOTIFICATION_CHANNEL_ID = "notification_channel_download"
-        private const val NOTIFICATION_ID = 43
-
         // input
         private const val DATA_DOWNLOAD_URL = "data_download_url"
         private const val DATA_DESTINATION_URI = "data_destination_uri"
@@ -76,13 +83,47 @@ class DownloadSaveWorker(context: Context, params: WorkerParameters) :
                 if (isStopped)
                     return@withContext exceptionResult(IllegalStateException("Stopped"))
 
-                Result.success() //TODO show permanent notification
+                showDownloadFinishedNotification(fileName, destinationUri)
+                Result.success()
             } catch (e: Exception) {
                 e.printStackTrace()
                 updateProgress(-1, 0, 1, fileName)
                 exceptionResult(e)
             }
         }
+    }
+
+    private fun showDownloadFinishedNotification(filename: String, fileUri: Uri) {
+        val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        // create notification channel if needed
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                Notifications.DOWNLOAD_FINISHED_NOTIFICATION_CHANNEL_ID,
+                applicationContext.getString(R.string.notification_channel_download_finished_name),
+                NotificationManager.IMPORTANCE_LOW
+            )
+            channel.description = applicationContext.getString(R.string.notification_channel_download_finished_description)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        var flags = PendingIntent.FLAG_ONE_SHOT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags = flags or PendingIntent.FLAG_IMMUTABLE
+        }
+        val intent = FileUtil.getFileOpenIntent(filename, fileUri, applicationContext)
+        val openIntent = PendingIntent.getActivity(applicationContext, 0, intent, flags)
+
+        val notification = NotificationCompat.Builder(applicationContext, Notifications.DOWNLOAD_FINISHED_NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_cloud_download_24)
+            .setContentTitle(applicationContext.getString(R.string.download_finished_notification_title))
+            .setContentText(applicationContext.getString(R.string.download_finished_notification_content).format(filename))
+            .addAction(R.drawable.ic_cloud_download_24, applicationContext.getString(R.string.open), openIntent)
+            .setContentIntent(openIntent)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .build()
+        notificationManager.notify(Notifications.DOWNLOAD_FINISHED_NOTIFICATION_ID, notification)
     }
 
 }

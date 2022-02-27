@@ -288,7 +288,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                             progressValue = maxProgress
                             val fileUri = Uri.parse(workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_URI))
                             val fileName = workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_NAME)!!
-                            FileUtil.showFileOpenIntent(fileName, fileUri, preferences, requireContext())
+                            FileUtil.showFileOpenIntent(fileName, fileUri, requireContext())
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                         }
                         WorkInfo.State.CANCELLED -> {
@@ -318,7 +318,6 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                     when (workInfo.state) {
                         WorkInfo.State.SUCCEEDED -> {
                             progressValue = maxProgress
-                            Toast.makeText(requireContext(), R.string.download_finished, Toast.LENGTH_LONG).show()
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                         }
                         WorkInfo.State.CANCELLED -> {

@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.webkit.MimeTypeMap
+import androidx.preference.PreferenceManager
 
 object FileUtil {
 
@@ -53,7 +54,10 @@ object FileUtil {
             cursor = context.contentResolver.query(uri, arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME), null, null, null)
 
             if (cursor?.moveToFirst() == true) {
-                filename = cursor.getString(cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME))
+                val i = cursor.getColumnIndex(DocumentsContract.Document.COLUMN_DISPLAY_NAME)
+                if (i == -1)
+                    error("Failed to find column for display name")
+                filename = cursor.getString(i)
             }
         } finally {
             cursor?.close()
@@ -61,18 +65,23 @@ object FileUtil {
         return filename
     }
 
-    fun showFileOpenIntent(fileName: String, fileUri: Uri, preferences: SharedPreferences, context: Context) {
+    fun getFileOpenIntent(fileName: String, fileUri: Uri, context: Context): Intent {
         val mime = getMimeType(fileName)
         val sendIntent = Intent(Intent.ACTION_SEND)
         sendIntent.type = mime
         sendIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         sendIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         sendIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
-        sendIntent.putExtra(Intent.EXTRA_SUBJECT, normalizeFileName(fileName, preferences))
+        sendIntent.putExtra(Intent.EXTRA_SUBJECT, normalizeFileName(fileName, PreferenceManager.getDefaultSharedPreferences(context)))
         val viewIntent = Intent(Intent.ACTION_VIEW)
         viewIntent.setDataAndType(fileUri, mime)
         viewIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        context.startActivity(Intent.createChooser(sendIntent, fileName).apply { putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(viewIntent)) })
+        return Intent.createChooser(sendIntent, fileName).apply { putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(viewIntent)) }
+    }
+
+    fun showFileOpenIntent(fileName: String, fileUri: Uri, context: Context) {
+        val intent = getFileOpenIntent(fileName, fileUri, context)
+        context.startActivity(intent)
     }
 
 }

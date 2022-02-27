@@ -112,7 +112,7 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
             if (workInfo.state == WorkInfo.State.SUCCEEDED) {
                 val fileUri = Uri.parse(workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_URI))
                 val fileName = workInfo.outputData.getString(DownloadOpenWorker.DATA_FILE_NAME)!!
-                FileUtil.showFileOpenIntent(fileName, fileUri, preferences, requireContext())
+                FileUtil.showFileOpenIntent(fileName, fileUri, requireContext())
             } else if (workInfo.state == WorkInfo.State.FAILED) {
                 val errorMessage = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
                 Reporter.reportException(R.string.error_download_worker_failed, errorMessage, requireContext())

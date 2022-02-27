@@ -8,6 +8,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import de.deftk.openww.android.R
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
+import de.deftk.openww.android.notification.Notifications
 import de.deftk.openww.api.WebWeaverClient
 import de.deftk.openww.api.implementation.RequestContext
 import de.deftk.openww.api.implementation.feature.filestorage.session.SessionFile
@@ -22,17 +23,16 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import kotlin.math.roundToInt
 
 class SessionFileUploadWorker(context: Context, params: WorkerParameters) : AbstractNotifyingWorker(
-    context, params,
-    NOTIFICATION_CHANNEL_ID, NOTIFICATION_ID,
+    context,
+    params,
+    Notifications.PROGRESS_NOTIFICATION_CHANNEL_ID,
+    Notifications.UPLOAD_PROGRESS_NOTIFICATION_ID,
     R.string.notification_upload_title,
     R.string.notification_upload_content,
     R.drawable.ic_cloud_upload_24
 ) {
 
     companion object {
-        private const val NOTIFICATION_CHANNEL_ID = "notification_channel_upload"
-        private const val NOTIFICATION_ID = 44
-
         // input
         private const val DATA_FILE_URI = "data_file_uri"
         private const val DATA_FILE_NAME = "data_file_name"

@@ -189,7 +189,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
             val response = fileStorageRepository.getFileDownloadUrl(file, scope, apiContext)
             if (response is Response.Success) {
                 val workRequest = DownloadOpenWorker.createRequest(destinationUrl, response.value.url, file.name, file.size)
-                addNetworkTransfer(NetworkTransfer.DownloadOpen(workRequest.id, file.id))
+                addNetworkTransfer(NetworkTransfer.DownloadOpen(workRequest.id, file.id, file.name))
                 workManager.enqueue(workRequest)
             }
         }
@@ -200,7 +200,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
             val response = fileStorageRepository.getFileDownloadUrl(file, scope, apiContext)
             if (response is Response.Success) {
                 val workRequest = DownloadSaveWorker.createRequest(destinationUrl, response.value.url, file)
-                addNetworkTransfer(NetworkTransfer.DownloadSave(workRequest.id, file.id))
+                addNetworkTransfer(NetworkTransfer.DownloadSave(workRequest.id, file.id, file.name))
                 workManager.enqueue(workRequest)
             }
         }
@@ -219,7 +219,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
 
         // start upload
         val workRequest = SessionFileUploadWorker.createRequest(uri, fileName, apiContext.userContext())
-        addNetworkTransfer(NetworkTransfer.Upload(workRequest.id, id))
+        addNetworkTransfer(NetworkTransfer.Upload(workRequest.id, id, fileName))
         workManager.enqueue(workRequest)
     }
 

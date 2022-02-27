@@ -5,6 +5,7 @@ import androidx.core.content.FileProvider
 import androidx.work.*
 import de.deftk.openww.android.R
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
+import de.deftk.openww.android.notification.Notifications
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -15,17 +16,14 @@ class DownloadOpenWorker(context: Context, params: WorkerParameters) :
     AbstractNotifyingWorker(
         context,
         params,
-        NOTIFICATION_CHANNEL_ID,
-        NOTIFICATION_ID,
+        Notifications.PROGRESS_NOTIFICATION_CHANNEL_ID,
+        Notifications.DOWNLOAD_PROGRESS_NOTIFICATION_ID,
         R.string.notification_download_title,
         R.string.notification_download_content,
         R.drawable.ic_cloud_download_24
     ) {
 
     companion object {
-        private const val NOTIFICATION_CHANNEL_ID = "notification_channel_download"
-        private const val NOTIFICATION_ID = 43
-
         // input
         private const val DATA_DOWNLOAD_URL = "data_download_url"
         private const val DATA_DESTINATION_URI = "data_destination_uri"

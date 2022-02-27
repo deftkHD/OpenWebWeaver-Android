@@ -294,4 +294,8 @@
     <string name="file_name">Dateiname</string>
     <string name="invalid_file_name">Ungültiger Dateiname</string>
     <string name="setting_file_storage_display_progress_pct_title">Fortschritt in Prozent anzeigen</string>
+    <string name="notification_channel_download_finished_name">Download abgeschlossen</string>
+    <string name="notification_channel_download_finished_description">Benachrichtigung für abgeschlossene Downloads</string>
+    <string name="download_finished_notification_title">Download abgeschlossen</string>
+    <string name="download_finished_notification_content">Datei %s vollständig heruntergeladen</string>
 </resources>
