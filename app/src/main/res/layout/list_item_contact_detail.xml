@@ -9,6 +9,10 @@
             type="android.view.View.OnClickListener" />
 
         <variable
+            name="longClickListener"
+            type="android.view.View.OnLongClickListener" />
+
+        <variable
             name="editClickListener"
             type="android.view.View.OnClickListener" />
 
@@ -34,6 +38,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="@{clickListener}"
+        android:onLongClick="@{longClickListener}"
         android:padding="@dimen/list_item_padding">
 
         <ImageView

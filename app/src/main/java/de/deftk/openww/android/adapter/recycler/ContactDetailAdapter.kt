@@ -52,6 +52,10 @@ class ContactDetailAdapter(private val editable: Boolean, private val clickListe
                     else -> copyDetailValue(detail, itemView.context)
                 }
             }
+            binding.setLongClickListener {
+                copyDetailValue(detail, itemView.context)
+                true
+            }
             if (editable && clickListener != null) {
                 binding.setEditClickListener {
                     clickListener.onContactDetailEdit(binding.detail!!)
