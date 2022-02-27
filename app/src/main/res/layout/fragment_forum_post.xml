@@ -36,6 +36,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="?android:attr/textColorPrimary"
+            android:textIsSelectable="true"
             android:textSize="20sp"
             tools:text="Post title" />
 
@@ -84,6 +85,7 @@
                 android:autoLink="web|email"
                 android:padding="8dp"
                 android:textColor="?android:attr/textColorPrimary"
+                android:textIsSelectable="true"
                 tools:text="Post text" />
 
             <RelativeLayout
@@ -100,8 +102,8 @@
                     android:id="@+id/forum_post_comment_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentTop="true"
                     android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
                     android:layout_alignParentEnd="true"
                     android:text="@string/comments"
                     android:textSize="17sp" />

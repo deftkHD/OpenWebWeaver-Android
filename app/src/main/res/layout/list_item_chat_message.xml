@@ -47,6 +47,7 @@
             android:layout_marginStart="2dp"
             android:isVisible="@{message.text != `null` &amp;&amp; message.text != null}"
             android:textColor="?android:attr/textColorPrimary"
+            android:textIsSelectable="true"
             tools:text="Message" />
 
         <ImageView

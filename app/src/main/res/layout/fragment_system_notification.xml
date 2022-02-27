@@ -75,6 +75,7 @@
             android:autoLink="web|email"
             android:padding="8dp"
             android:textColor="?android:attr/textColorPrimary"
+            android:textIsSelectable="true"
             tools:text="Notification message" />
 
     </ScrollView>

@@ -58,6 +58,7 @@
             android:layout_toEndOf="@+id/forum_comment_image"
             android:text="@{post.title}"
             android:textColor="?android:attr/textColorPrimary"
+            android:textIsSelectable="true"
             android:textSize="20sp"
             tools:text="Comment title" />
 
@@ -106,6 +107,7 @@
             android:autoLink="web|email"
             android:padding="5dp"
             android:textColor="?android:attr/textColorPrimary"
+            android:textIsSelectable="true"
             tools:text="Comment text" />
 
         <TextView

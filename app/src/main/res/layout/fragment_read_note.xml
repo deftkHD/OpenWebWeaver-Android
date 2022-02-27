@@ -20,6 +20,7 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentEnd="true"
             android:textColor="?android:attr/textColorPrimary"
+            android:textIsSelectable="true"
             android:textSize="20sp"
             tools:text="Note title" />
 
@@ -49,6 +50,7 @@
             android:autoLink="web|email"
             android:padding="8dp"
             android:textColor="?android:attr/textColorPrimary"
+            android:textIsSelectable="true"
             tools:text="Note text" />
 
     </ScrollView>
