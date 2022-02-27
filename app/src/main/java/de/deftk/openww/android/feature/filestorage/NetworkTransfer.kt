@@ -9,6 +9,6 @@ sealed class NetworkTransfer(val workerId: UUID, val id: String, val filename: S
 
     class DownloadOpen(workerId: UUID, id: String, filename: String) : NetworkTransfer(workerId, id, filename)
     class DownloadSave(workerId: UUID, id: String, filename: String) : NetworkTransfer(workerId, id, filename)
-    class Upload(workerId: UUID, id: String, filename: String) : NetworkTransfer(workerId, id, filename)
+    class Upload(workerId: UUID, id: String, filename: String, val receiveDownloadNotification: Boolean) : NetworkTransfer(workerId, id, filename)
 
 }

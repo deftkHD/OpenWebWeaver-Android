@@ -249,7 +249,7 @@
     <string name="size">Größe: %s</string>
     <string name="children_count">Elemente: %s</string>
     <string name="unknown">Unbekannt</string>
-    <string name="file_receive_download_notification">Downloadbenachrichtigung erhalten</string>
+    <string name="file_receive_download_notification">Bei Download benachrichtigen</string>
     <string name="file_download_notification_list_description">Benutzer:</string>
     <string name="more">Mehr</string>
     <string name="institution">Institution</string>
@@ -298,4 +298,5 @@
     <string name="notification_channel_download_finished_description">Benachrichtigung für abgeschlossene Downloads</string>
     <string name="download_finished_notification_title">Download abgeschlossen</string>
     <string name="download_finished_notification_content">Datei %s vollständig heruntergeladen</string>
+    <string name="error_edit_file_failed">Bearbeiten der Datei fehlgeschlagen: %s</string>
 </resources>

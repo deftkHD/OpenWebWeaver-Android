@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.view.*
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.SearchView
 import android.widget.Toast
@@ -103,13 +104,33 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             }
         }
 
-        fileStorageViewModel.importSessionFile.observe(viewLifecycleOwner) { response ->
-            if (response != null)
+        fileStorageViewModel.importSessionFile.observe(viewLifecycleOwner) { data ->
+            if (data != null)
                 fileStorageViewModel.resetImportSessionFileResponse()
+
+            val response = data?.first
+            if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_import_session_file_failed, response.exception, requireContext())
+            } else if (response is Response.Success) {
+                val receiveDownloadNotification = data.second
+                if (receiveDownloadNotification) {
+                    userViewModel.apiContext.value?.apply {
+                        val file = response.value
+                        fileStorageViewModel.editFile(file, file.name, file.description, true, scope!!, this)
+                    }
+                    return@observe
+                }
+            }
+            enableUI(true)
+        }
+
+        fileStorageViewModel.editFileResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                fileStorageViewModel.resetEditFileResponse()
             enableUI(true)
 
             if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_import_session_file_failed, response.exception, requireContext())
+                Reporter.reportException(R.string.error_edit_file_failed, response.exception, requireContext())
             }
         }
 
@@ -351,7 +372,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                             val sessionFile = WebWeaverClient.json.decodeFromString<SessionFile>(workInfo.outputData.getString(SessionFileUploadWorker.DATA_SESSION_FILE) ?: "")
                             userViewModel.apiContext.value?.also { apiContext ->
-                                fileStorageViewModel.importSessionFile(sessionFile, getProviderFile()?.file ?: scope!!, scope!!, apiContext)
+                                fileStorageViewModel.importSessionFile(sessionFile, getProviderFile()?.file ?: scope!!, transfer.receiveDownloadNotification, scope!!, apiContext)
                             }
                         }
                         WorkInfo.State.CANCELLED -> {
@@ -541,7 +562,8 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             .setPositiveButton(R.string.upload) { _, _ ->
                 userViewModel.apiContext.value?.also { apiContext ->
                     val name = view.findViewById<EditText>(R.id.file_name).text.toString()
-                    fileStorageViewModel.startUpload(workManager, scope!!, apiContext, uri, name, 0, folderId!!)
+                    val downloadNotification = view.findViewById<CheckBox>(R.id.file_download_notification_me).isChecked
+                    fileStorageViewModel.startUpload(workManager, scope!!, apiContext, uri, name, 0, folderId!!, downloadNotification)
                 }
             }
             .setNegativeButton(R.string.cancel) { dialog, _ ->

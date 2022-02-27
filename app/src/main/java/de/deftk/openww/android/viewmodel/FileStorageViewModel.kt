@@ -48,8 +48,8 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
     private val _batchDeleteResponse = MutableLiveData<List<Response<IRemoteFile>>?>()
     val batchDeleteResponse: LiveData<List<Response<IRemoteFile>>?> = _batchDeleteResponse
 
-    private val _importSessionFileResponse = MutableLiveData<Response<IRemoteFile>?>()
-    val importSessionFile: LiveData<Response<IRemoteFile>?> = _importSessionFileResponse
+    private val _importSessionFileResponse = MutableLiveData<Pair<Response<IRemoteFile>, Boolean>?>()
+    val importSessionFile: LiveData<Pair<Response<IRemoteFile>, Boolean>?> = _importSessionFileResponse
 
     private val _addFolderResponse = MutableLiveData<Response<IRemoteFile>?>()
     val addFolderResponse: LiveData<Response<IRemoteFile>?> = _addFolderResponse
@@ -206,7 +206,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         }
     }
 
-    fun startUpload(workManager: WorkManager, scope: IOperatingScope, apiContext: IApiContext, uri: Uri, fileName: String, size: Long, parentId: String) {
+    fun startUpload(workManager: WorkManager, scope: IOperatingScope, apiContext: IApiContext, uri: Uri, fileName: String, size: Long, parentId: String, receiveDownloadNotification: Boolean) {
         // inject placeholder
         val id = "upload_transfer_${networkTransfers.value?.size ?: 0}"
         val liveData = getAllFiles(scope) as MutableLiveData
@@ -219,11 +219,11 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
 
         // start upload
         val workRequest = SessionFileUploadWorker.createRequest(uri, fileName, apiContext.userContext())
-        addNetworkTransfer(NetworkTransfer.Upload(workRequest.id, id, fileName))
+        addNetworkTransfer(NetworkTransfer.Upload(workRequest.id, id, fileName, receiveDownloadNotification))
         workManager.enqueue(workRequest)
     }
 
-    fun importSessionFile(sessionFile: ISessionFile, into: IRemoteFileProvider?, scope: IOperatingScope, apiContext: IApiContext) {
+    fun importSessionFile(sessionFile: ISessionFile, into: IRemoteFileProvider?, receiveDownloadNotification: Boolean?, scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = fileStorageRepository.importSessionFile(sessionFile, into, scope, apiContext)
             if (response is Response.Success) {
@@ -243,7 +243,7 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
                     }
                 }
             }
-            _importSessionFileResponse.value = response
+            _importSessionFileResponse.value = response to (receiveDownloadNotification ?: false)
         }
     }
 

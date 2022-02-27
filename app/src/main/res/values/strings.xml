@@ -300,5 +300,6 @@
     <string name="notification_channel_download_finished_description">Notification regarding finished downloads</string>
     <string name="download_finished_notification_title">Download finished</string>
     <string name="download_finished_notification_content">File %s successfully downloaded</string>
+    <string name="error_edit_file_failed">Failed to edit file: %s</string>
 
 </resources>
