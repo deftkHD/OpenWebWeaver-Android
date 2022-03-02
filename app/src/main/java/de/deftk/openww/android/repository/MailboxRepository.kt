@@ -5,6 +5,7 @@ import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
+import de.deftk.openww.api.model.feature.mailbox.IAttachment
 import de.deftk.openww.api.model.feature.mailbox.ReferenceMode
 import javax.inject.Inject
 
@@ -67,6 +68,10 @@ class MailboxRepository @Inject constructor() : AbstractRepository() {
     suspend fun deleteEmail(email: IEmail, folder: IEmailFolder, apiContext: IApiContext) = apiCall {
         email.delete(folder, apiContext.userContext())
         email
+    }
+
+    suspend fun exportAttachment(attachment: IAttachment, email: IEmail, folder: IEmailFolder, apiContext: IApiContext) = apiCall {
+        attachment.exportSessionFile(email, folder, apiContext.userContext())
     }
 
 }

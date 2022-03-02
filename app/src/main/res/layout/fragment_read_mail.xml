@@ -2,7 +2,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <RelativeLayout
         android:id="@+id/mail_header"
@@ -51,6 +52,43 @@
             android:layout_below="@+id/mail_subject"
             android:layout_alignParentEnd="true"
             tools:text="1.1.2020 12:00" />
+
+        <LinearLayout
+            android:id="@+id/container_attachments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/mail_author_address"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:orientation="vertical">
+
+            <ToggleButton
+                android:id="@+id/btn_attachments"
+                style="?attr/borderlessButtonStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:button="@drawable/button_up_down_arrow_selector"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="12sp"
+                tools:textOff="n Attachments" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:animateLayoutChanges="true"
+                android:orientation="vertical">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/attachment_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/list_item_attachment" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
     </RelativeLayout>
 

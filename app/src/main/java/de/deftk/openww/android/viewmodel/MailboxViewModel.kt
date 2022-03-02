@@ -6,7 +6,9 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.filter.MailFilter
 import de.deftk.openww.android.repository.MailboxRepository
 import de.deftk.openww.api.model.IApiContext
+import de.deftk.openww.api.model.feature.FileDownloadUrl
 import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
+import de.deftk.openww.api.model.feature.mailbox.IAttachment
 import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 import de.deftk.openww.api.model.feature.mailbox.ReferenceMode
@@ -27,6 +29,9 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
 
     private val _currentMails = MutableLiveData<Response<List<IEmail>>?>()
     val allCurrentMails: LiveData<Response<List<IEmail>>?> = _currentMails
+
+    private val _exportSessionFileResponse = MutableLiveData<Response<FileDownloadUrl>?>()
+    val exportSessionFileResponse: LiveData<Response<FileDownloadUrl>?> = _exportSessionFileResponse
 
     private val emailResponses = mutableMapOf<IEmailFolder, MutableLiveData<Response<List<IEmail>>>>()
 
@@ -188,6 +193,13 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
         }
     }
 
+    fun exportAttachment(attachment: IAttachment, email: IEmail, folder: IEmailFolder, apiContext: IApiContext) {
+        viewModelScope.launch {
+            val response = mailboxRepository.exportAttachment(attachment, email, folder, apiContext)
+            _exportSessionFileResponse.value = response
+        }
+    }
+
     fun resetPostResponse() {
         _emailPostResponse.value = null
     }
@@ -275,5 +287,9 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
         _batchDeleteResponse.value = null
         _batchEmailSetResponse.value = null
         mailFilter.value = MailFilter()
+    }
+
+    fun resetExportAttachmentResponse() {
+        _exportSessionFileResponse.value = null
     }
 }

@@ -3,24 +3,29 @@ package de.deftk.openww.android.fragments.feature.mail
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
+import de.deftk.openww.android.adapter.recycler.AttachmentAdapter
+import de.deftk.openww.android.adapter.recycler.AttachmentClickListener
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadMailBinding
 import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
+import de.deftk.openww.android.utils.FileUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.MailboxViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Permission
+import de.deftk.openww.api.model.feature.mailbox.IAttachment
 import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 import java.text.DateFormat
 
-class ReadMailFragment : AbstractFragment(true) {
+class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
 
     private val args: ReadMailFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
@@ -57,8 +62,22 @@ class ReadMailFragment : AbstractFragment(true) {
                     binding.mailMessage.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(text), null, navController))
                     binding.mailMessage.movementMethod = LinkMovementMethod.getInstance()
                     binding.mailMessage.transformationMethod = CustomTabTransformationMethod(binding.mailMessage.autoLinkMask)
-                }
 
+                    val hasAttachments = email.attachments?.isNotEmpty() == true
+                    binding.containerAttachments.isVisible = hasAttachments
+                    if (hasAttachments) {
+                        val attachmentText = resources.getQuantityText(R.plurals.attachments_num, email.attachments!!.size).toString().format(email.attachments!!.size)
+                        binding.btnAttachments.text = attachmentText
+                        binding.btnAttachments.textOff = attachmentText
+                        binding.btnAttachments.textOn = attachmentText
+                        binding.btnAttachments.setOnClickListener {
+                            binding.attachmentList.isVisible = !binding.attachmentList.isVisible
+                        }
+                        val adapter = AttachmentAdapter(this)
+                        binding.attachmentList.adapter = adapter
+                        adapter.submitList(email.attachments)
+                    }
+                }
             }
         }
 
@@ -99,6 +118,17 @@ class ReadMailFragment : AbstractFragment(true) {
             }
         }
 
+        mailboxViewModel.exportSessionFileResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null)
+                mailboxViewModel.resetExportAttachmentResponse() // mark as handled
+
+            if (response is Response.Success) {
+                FileUtil.openAttachment(this, response.value, "attachment")
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_download_worker_failed, response.exception, requireContext())
+            }
+        }
+
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext == null) {
                 navController.popBackStack(R.id.mailFragment, false)
@@ -133,4 +163,14 @@ class ReadMailFragment : AbstractFragment(true) {
     }
 
     override fun onUIStateChanged(enabled: Boolean) {}
+
+    override fun onSaveAttachment(attachment: IAttachment) {
+        TODO("implement attachment saving")
+    }
+
+    override fun onOpenAttachment(attachment: IAttachment) {
+        userViewModel.apiContext.value?.also { apiContext ->
+            mailboxViewModel.exportAttachment(attachment, email, emailFolder, apiContext)
+        }
+    }
 }

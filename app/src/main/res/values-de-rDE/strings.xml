@@ -299,4 +299,8 @@
     <string name="download_finished_notification_title">Download abgeschlossen</string>
     <string name="download_finished_notification_content">Datei %s vollständig heruntergeladen</string>
     <string name="error_edit_file_failed">Bearbeiten der Datei fehlgeschlagen: %s</string>
+    <plurals name="attachments_num">
+        <item quantity="one">%d Anhang</item>
+        <item quantity="other">%d Anhänge</item>
+    </plurals>
 </resources>

@@ -301,5 +301,9 @@
     <string name="download_finished_notification_title">Download finished</string>
     <string name="download_finished_notification_content">File %s successfully downloaded</string>
     <string name="error_edit_file_failed">Failed to edit file: %s</string>
+    <plurals name="attachments_num">
+        <item quantity="one">%d attachment</item>
+        <item quantity="other">%d attachments</item>
+    </plurals>
 
 </resources>

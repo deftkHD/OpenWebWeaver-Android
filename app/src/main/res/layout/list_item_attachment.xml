@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+
+    <data>
+
+        <variable
+            name="openClickListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="saveClickListener"
+            type="android.view.View.OnClickListener" />
+
+        <variable
+            name="attachment"
+            type="de.deftk.openww.api.model.feature.mailbox.IAttachment" />
+
+    </data>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="@{openClickListener}"
+        android:padding="4dp">
+
+        <ImageView
+            android:id="@+id/member_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="2dp"
+            android:src="@drawable/ic_attachment_24"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/member_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="5dp"
+            android:layout_toStartOf="@id/save_button"
+            android:layout_toEndOf="@+id/member_image"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@{attachment.name}"
+            android:textColor="?android:attr/textColorPrimary"
+            tools:text="File name" />
+
+        <ImageView
+            android:id="@+id/save_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="6dp"
+            android:contentDescription="@string/more"
+            android:onClick="@{saveClickListener}"
+            android:src="@drawable/ic_download_24"
+            android:visibility="invisible" />
+
+        <TextView
+            android:id="@+id/attachment_size"
+            byteSize="@{attachment.size}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/member_name"
+            android:layout_marginStart="5dp"
+            android:layout_toStartOf="@id/save_button"
+            android:layout_toEndOf="@+id/member_image"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="100 KB" />
+
+    </RelativeLayout>
+
+</layout>

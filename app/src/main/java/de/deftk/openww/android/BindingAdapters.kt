@@ -54,6 +54,12 @@ object BindingAdapters {
     }
 
     @JvmStatic
+    @BindingAdapter("byteSize")
+    fun byteSize(view: TextView, size: Long) {
+        view.text = Formatter.formatFileSize(view.context, size)
+    }
+
+    @JvmStatic
     @BindingAdapter("filePreview")
     fun filePreview(view: ImageView, file: IRemoteFile) {
         if (file.type == FileType.FILE) {
