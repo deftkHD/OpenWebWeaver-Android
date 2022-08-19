@@ -15,7 +15,10 @@ import de.deftk.openww.android.repository.UserRepository
 import de.deftk.openww.api.auth.Credentials
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IApiContext
+import de.deftk.openww.api.model.feature.systemnotification.INotificationSetting
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
+import de.deftk.openww.api.model.feature.systemnotification.NotificationFacility
+import de.deftk.openww.api.model.feature.systemnotification.NotificationFacilityState
 import de.deftk.openww.api.request.handler.AutoLoginRequestHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,6 +45,9 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
     val allSystemNotificationsResponse: LiveData<Response<List<ISystemNotification>>?> = _systemNotificationsResponse
 
     val systemNotificationFilter = MutableLiveData<SystemNotificationFilter>()
+
+    val _systemNotificationSettingsResponse = MutableLiveData<Response<List<INotificationSetting>>?>()
+    val systemNotificationSettingsResponse: LiveData<Response<List<INotificationSetting>>?> = _systemNotificationSettingsResponse
 
     val filteredSystemNotificationResponse: LiveData<Response<List<ISystemNotification>>?>
         get() = systemNotificationFilter.switchMap { filter ->
@@ -194,12 +200,48 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
         }
     }
 
+    fun loadSystemNotificationSettings(apiContext: IApiContext) {
+        viewModelScope.launch {
+            val response = userRepository.getSystemNotificationSettings(apiContext)
+            _systemNotificationSettingsResponse.value = response
+        }
+    }
+
+    //FIXME seems like this doesn't edit anything serverside
+    fun editSystemNotificationFacilities(setting: INotificationSetting, facility: NotificationFacilityState, apiContext: IApiContext) {
+        viewModelScope.launch {
+            val response = userRepository.editSystemNotificationSetting(setting, facility, apiContext)
+            val settings = _systemNotificationSettingsResponse.value?.valueOrNull()
+            if (settings != null && response is Response.Success) {
+                val currentSettings = settings.toMutableList()
+                val newSetting = response.value
+                currentSettings.removeAll { it.type == setting.type }
+                currentSettings.add(newSetting)
+                _systemNotificationSettingsResponse.value = Response.Success(currentSettings)
+            }
+        }
+    }
+
+    fun enableAllSystemNotificationSettingFacilities(setting: INotificationSetting, apiContext: IApiContext) {
+        val facilities = listOf(NotificationFacility.NORMAL, NotificationFacility.QUICK_MESSAGE, NotificationFacility.MAIL)
+        editSystemNotificationFacilities(setting, NotificationFacilityState(facilities, emptyList()), apiContext)
+    }
+
+    fun disableAllSystemNotificationSettingFacilities(setting: INotificationSetting, apiContext: IApiContext) {
+        val facilities = listOf(NotificationFacility.NORMAL, NotificationFacility.QUICK_MESSAGE, NotificationFacility.MAIL)
+        editSystemNotificationFacilities(setting, NotificationFacilityState(emptyList(), facilities), apiContext)
+    }
+
     fun resetDeleteResponse() {
         _systemNotificationDeleteResponse.value = null
     }
 
     fun resetBatchDeleteResponse() {
         _systemNotificationBatchDeleteResponse.value = null
+    }
+
+    fun resetSystemNotificationSettingsResponse() {
+        _systemNotificationSettingsResponse.value = null
     }
 
     override fun resetScopedData() {

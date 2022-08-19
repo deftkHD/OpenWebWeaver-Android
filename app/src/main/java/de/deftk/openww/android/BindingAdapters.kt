@@ -32,6 +32,8 @@ import de.deftk.openww.api.model.feature.filestorage.FileType
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import de.deftk.openww.api.model.feature.forum.IForumPost
 import de.deftk.openww.api.model.feature.mailbox.IEmail
+import de.deftk.openww.api.model.feature.systemnotification.INotificationSetting
+import de.deftk.openww.api.model.feature.systemnotification.NotificationFacility
 import de.deftk.openww.api.model.feature.tasks.ITask
 import java.util.*
 
@@ -258,10 +260,40 @@ object BindingAdapters {
         val color = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             view.context.resources.getColor(a.getResourceId(index, 0), view.context.theme)
         } else {
+            @Suppress("DEPRECATION")
             view.context.resources.getColor(a.getResourceId(index, 0))
         }
         view.setTextColor(color)
+    }
 
+    @JvmStatic
+    @BindingAdapter("notificationFacility")
+    fun translateNotificationFacility(view: TextView, facility: NotificationFacility) {
+        val strRes = UIUtil.translateNotificationFacility(facility)
+        view.setText(strRes)
+    }
+
+    @JvmStatic
+    @BindingAdapter("notificationFacilityPreview")
+    fun translateNotificationFacilityPreview(view: TextView, notificationSetting: INotificationSetting) {
+        val text = notificationSetting.facilities.enabled.joinToString(", ") {
+            view.context.getString(UIUtil.translateNotificationFacility(it))
+        }
+        view.text = text
+    }
+
+    @JvmStatic
+    @BindingAdapter("notificationSettingObj")
+    fun translateNotificationSettingObj(view: TextView, notificationSetting: INotificationSetting) {
+        view.setText(UIUtil.translateNotificationSettingObj(notificationSetting))
+    }
+
+    @JvmStatic
+    @BindingAdapter("notificationSettingName")
+    fun simplifyNotificationSettingName(view: TextView, notificationSetting: INotificationSetting) {
+        var name = notificationSetting.name
+        name = name.substring(name.indexOf(':') + 2)
+        view.text = name
     }
 
 }

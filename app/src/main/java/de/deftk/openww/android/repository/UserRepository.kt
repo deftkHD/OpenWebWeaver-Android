@@ -5,7 +5,9 @@ import de.deftk.openww.android.feature.AppFeature
 import de.deftk.openww.android.feature.overview.AbstractOverviewElement
 import de.deftk.openww.api.WebWeaverClient
 import de.deftk.openww.api.model.IApiContext
+import de.deftk.openww.api.model.feature.systemnotification.INotificationSetting
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
+import de.deftk.openww.api.model.feature.systemnotification.NotificationFacilityState
 import de.deftk.openww.api.request.UserApiRequest
 import de.deftk.openww.api.response.ResponseUtil
 import kotlinx.coroutines.Dispatchers
@@ -54,7 +56,7 @@ class UserRepository @Inject constructor() : AbstractRepository() {
         val response = request.fireRequest().toJson()
         withContext(Dispatchers.Default) {
             idMap.forEach { (feature, ids) ->
-                elements.add(feature.overviewBuilder!!.createElementFromResponse(ids.map { it to ResponseUtil.getSubResponseResult(response, it) }.toMap(), apiContext))
+                elements.add(feature.overviewBuilder!!.createElementFromResponse(ids.associateWith { ResponseUtil.getSubResponseResult(response, it) }, apiContext))
             }
         }
         elements
@@ -69,5 +71,13 @@ class UserRepository @Inject constructor() : AbstractRepository() {
         systemNotification
     }
 
+    suspend fun getSystemNotificationSettings(apiContext: IApiContext) = apiCall {
+        apiContext.user.getSystemNotificationSettings(apiContext.userContext())
+    }
+
+    suspend fun editSystemNotificationSetting(setting: INotificationSetting, facilities: NotificationFacilityState, apiContext: IApiContext) = apiCall {
+        setting.setFacilities(facilities, apiContext.userContext())
+        setting
+    }
 
 }

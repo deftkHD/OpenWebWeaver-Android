@@ -303,4 +303,32 @@
         <item quantity="one">%d Anhang</item>
         <item quantity="other">%d Anhänge</item>
     </plurals>
+    <string name="no_system_notification_settings">Keine Benachrichtigungseinstellungen verfügbar</string>
+    <string name="notification_settings">Benachrichtigungseinstellungen</string>
+    <string name="enable_all">Alles aktivieren</string>
+    <string name="disable_all">Alles deaktivieren</string>
+    <string name="normal">Normal</string>
+    <string name="push_notification">Push</string>
+    <string name="sms">SMS</string>
+    <string name="quick_message">Quickmessage</string>
+    <string name="digest">Zusammenfassung täglich</string>
+    <string name="digest_weekly">Zusammenfassung wöchentlich</string>
+    <string name="bookmarks">Lesezeichen</string>
+    <string name="notifications_teacher">Mitteilungen (Lehrer)</string>
+    <string name="notifications_pupil">Mitteilungen (Schüler)</string>
+    <string name="substitution_plan">Vertretungsplan</string>
+    <string name="calendar">Kalendar</string>
+    <string name="learning_plan">Lernplan</string>
+    <string name="courselets">Courselets</string>
+    <string name="ws_gen">Website</string>
+    <string name="blog">Blog</string>
+    <string name="poll">Umfragen</string>
+    <string name="forms">Formulare</string>
+    <string name="learning_log">Lerntagebuch</string>
+    <string name="courses">Lernerfolgskontrolle</string>
+    <string name="resource_management">Resourcenverwaltung</string>
+    <string name="consultation_hours">Sprechstunden</string>
+    <string name="trusts">Vertrauensbeziehungen</string>
+    <string name="wall">Pinnwand</string>
+    <string name="error_get_system_notification_settings">Abfragen der Systembenachrichtigungseinstellungen fehlgeschlagen: %s</string>
 </resources>

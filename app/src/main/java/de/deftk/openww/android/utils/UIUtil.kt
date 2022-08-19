@@ -7,7 +7,9 @@ import de.deftk.openww.android.feature.board.BoardNotificationColors
 import de.deftk.openww.android.feature.notes.NoteColors
 import de.deftk.openww.api.model.feature.board.IBoardNotification
 import de.deftk.openww.api.model.feature.notes.INote
+import de.deftk.openww.api.model.feature.systemnotification.INotificationSetting
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
+import de.deftk.openww.api.model.feature.systemnotification.NotificationFacility
 import de.deftk.openww.api.model.feature.systemnotification.SystemNotificationType
 import de.deftk.openww.api.model.feature.tasks.ITask
 import java.text.DateFormat
@@ -30,11 +32,13 @@ object UIUtil {
     )
 
     @StringRes
+    @Deprecated("Don't hardcode translations; request them from wwschool instead per system notification settings")
     fun getTranslatedSystemNotificationTitle(systemNotification: ISystemNotification): Int {
         return getTranslatedSystemNotificationTitle(systemNotification.messageType)
     }
 
     @StringRes
+    @Deprecated("Don't hardcode translations; request them from wwschool instead per system notification settings")
     fun getTranslatedSystemNotificationTitle(systemNotificationType: SystemNotificationType): Int {
         return systemNotificationTranslationMap[systemNotificationType] ?: R.string.system_notification_type_unknown
     }
@@ -54,6 +58,53 @@ object UIUtil {
         if (date != null)
             return DateFormat.getDateInstance().format(date)
         return ""
+    }
+
+    @StringRes
+    fun translateNotificationFacility(facility: NotificationFacility): Int {
+        return when (facility) {
+            NotificationFacility.NORMAL -> R.string.normal
+            NotificationFacility.QUICK_MESSAGE -> R.string.quick_message
+            NotificationFacility.MAIL -> R.string.mail
+            NotificationFacility.PUSH_NOTIFICATION -> R.string.push_notification
+            NotificationFacility.DIGEST -> R.string.digest
+            NotificationFacility.DIGEST_WEEKLY -> R.string.digest_weekly
+            NotificationFacility.SMS -> R.string.sms
+            else -> R.string.unknown
+        }
+    }
+
+    @StringRes
+    fun translateNotificationSettingObj(setting: INotificationSetting): Int {
+        return when (setting.obj) {
+            "wall" -> R.string.wall
+            "mail" -> R.string.mail
+            "bookmarks" -> R.string.bookmarks
+            "board" -> R.string.notifications
+            "board_teacher" -> R.string.notifications_teacher
+            "board_pupil" -> R.string.notifications_pupil
+            "messenger" -> R.string.messenger
+            "substitution_plan" -> R.string.substitution_plan
+            "calendar" -> R.string.calendar
+            "tasks" -> R.string.tasks
+            "learning_plan" -> R.string.learning_plan
+            "courselets" -> R.string.courselets
+            "forum" -> R.string.forum
+            "files" -> R.string.file_storage
+            "ws_gen" -> R.string.ws_gen
+            "blog" -> R.string.blog
+            "poll" -> R.string.poll
+            "forms" -> R.string.forms
+            "learning_log" -> R.string.learning_log
+            "courses" -> R.string.courses
+            "resource_management" -> R.string.resource_management
+            "consultation_hours" -> R.string.consultation_hours
+            "trusts" -> R.string.trusts
+            else -> {
+                println(setting.obj)
+                R.string.unknown
+            }
+        }
     }
 
 }

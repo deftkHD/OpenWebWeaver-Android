@@ -132,6 +132,9 @@
         <action
             android:id="@+id/action_systemNotificationsFragment_to_systemNotificationFragment"
             app:destination="@id/systemNotificationFragment" />
+        <action
+            android:id="@+id/action_systemNotificationsFragment_to_systemNotificationSettingsFragment"
+            app:destination="@id/systemNotificationSettingsFragment" />
     </fragment>
     <fragment
         android:id="@+id/tasksFragment"
@@ -563,6 +566,26 @@
             app:argType="string" />
         <argument
             android:name="parentId"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/systemNotificationSettingsFragment"
+        android:name="de.deftk.openww.android.fragments.feature.systemnotification.SystemNotificationSettingsFragment"
+        android:label="@string/notification_settings" >
+        <action
+            android:id="@+id/action_systemNotificationSettingsFragment_to_editSystemNotificationSettingFragment"
+            app:destination="@id/editSystemNotificationSettingFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editSystemNotificationSettingFragment"
+        android:name="de.deftk.openww.android.fragments.feature.systemnotification.EditSystemNotificationSettingFragment"
+        android:label="@string/edit"
+        tools:layout="@layout/fragment_edit_system_notification_setting">
+        <argument
+            android:name="setting_type"
+            app:argType="integer" />
+        <argument
+            android:name="setting_obj"
             app:argType="string" />
     </fragment>
 </navigation>

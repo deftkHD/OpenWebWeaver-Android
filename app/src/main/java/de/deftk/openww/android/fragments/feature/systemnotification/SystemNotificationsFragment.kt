@@ -119,6 +119,7 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         menu.clear()
         inflater.inflate(R.menu.list_options_menu, menu)
+        inflater.inflate(R.menu.system_notifications_options_menu, menu)
         val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(userViewModel.systemNotificationFilter.value?.smartSearchCriteria?.value, false) // restore recent search
@@ -135,6 +136,14 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
                 return true
             }
         })
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.system_notifications_show_settings) {
+            val action = SystemNotificationsFragmentDirections.actionSystemNotificationsFragmentToSystemNotificationSettingsFragment()
+            navController.navigate(action)
+            return true
+        } else return super.onOptionsItemSelected(item)
     }
 
     override fun onSearchBackPressed(): Boolean {

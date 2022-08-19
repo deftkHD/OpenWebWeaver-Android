@@ -305,5 +305,33 @@
         <item quantity="one">%d attachment</item>
         <item quantity="other">%d attachments</item>
     </plurals>
+    <string name="no_system_notification_settings">No system notification settings</string>
+    <string name="notification_settings">Notification settings</string>
+    <string name="enable_all">Enable all</string>
+    <string name="disable_all">Disable all</string>
+    <string name="normal">Normal</string>
+    <string name="quick_message">Quick message</string>
+    <string name="push_notification">Push</string>
+    <string name="digest">Digest</string>
+    <string name="digest_weekly">Digest weekly</string>
+    <string name="sms">SMS</string>
+    <string name="bookmarks">Bookmarks</string>
+    <string name="notifications_teacher">Notifications (teacher)</string>
+    <string name="notifications_pupil">Notifications (pupil)</string>
+    <string name="substitution_plan">Substitution plan</string>
+    <string name="calendar">Calendar</string>
+    <string name="learning_plan">Learning plan</string>
+    <string name="courselets">Courselets</string>
+    <string name="ws_gen">Website</string>
+    <string name="blog">Blog</string>
+    <string name="poll">Poll</string>
+    <string name="forms">Forms</string>
+    <string name="learning_log">Learning log</string>
+    <string name="courses">Courses</string>
+    <string name="resource_management">Resource management</string>
+    <string name="consultation_hours">Consultation hours</string>
+    <string name="trusts">Trusts</string>
+    <string name="wall">Wall</string>
+    <string name="error_get_system_notification_settings">Failed to get system notification settings: %s</string>
 
 </resources>
