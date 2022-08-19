@@ -132,11 +132,11 @@ object TextUtils {
     }
 
 
-    class InternalReferenceSpan(private val type: InternalReferenceType, private val scope: String?, private val extra: String, private val name: String, private val navController: NavController?) : ClickableSpan() {
+    class InternalReferenceSpan(private val type: InternalReferenceType, private val scopeId: String?, private val extra: String, private val name: String, private val navController: NavController?) : ClickableSpan() {
         override fun onClick(widget: View) {
             when (type) {
                 InternalReferenceType.FILE_STORAGE -> {
-                    if (scope == null) {
+                    if (scopeId == null) {
                         Toast.makeText(widget.context, R.string.error_invalid_internal_reference, Toast.LENGTH_LONG).show()
                         return
                     }
@@ -159,11 +159,11 @@ object TextUtils {
                         val split = extra.split("/")
                         split[split.size - 2]
                     } else {
-                        scope // TODO get name of scope
+                        scopeId // TODO get name of scope
                     }
 
                     val args = Bundle()
-                    args.putString("operatorId", scope)
+                    args.putString("operatorId", scopeId)
                     args.putString("title", folderName)
                     args.putString("highlightFileId", fileId)
                     args.putString("folderNameId", folderId.ifBlank { "/" })

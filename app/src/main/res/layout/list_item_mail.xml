@@ -79,7 +79,7 @@
             android:layout_toStartOf="@id/more_button"
             android:contentDescription="@string/answered"
             android:src="@drawable/ic_reply_24"
-            android:visibility="@{email.answered ? View.VISIBLE : View.INVISIBLE}" />
+            android:visibility="@{email.answered ? View.VISIBLE : View.GONE}" />
 
         <ImageView
             android:id="@+id/more_button"

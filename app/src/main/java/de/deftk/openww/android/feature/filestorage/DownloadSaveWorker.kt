@@ -16,6 +16,7 @@ import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.notification.Notifications
 import de.deftk.openww.android.utils.FileUtil
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
+import de.deftk.openww.api.model.feature.mailbox.IAttachment
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
@@ -47,6 +48,19 @@ class DownloadSaveWorker(context: Context, params: WorkerParameters) :
                         DATA_DOWNLOAD_URL to downloadUrl,
                         DATA_FILE_NAME to file.name,
                         DATA_FILE_SIZE to file.size
+                    )
+                )
+                .build()
+        }
+
+        fun createRequest(destinationUrl: String, downloadUrl: String, attachment: IAttachment): OneTimeWorkRequest {
+            return OneTimeWorkRequestBuilder<DownloadSaveWorker>()
+                .setInputData(
+                    workDataOf(
+                        DATA_DESTINATION_URI to destinationUrl,
+                        DATA_DOWNLOAD_URL to downloadUrl,
+                        DATA_FILE_NAME to attachment.name,
+                        DATA_FILE_SIZE to attachment.size.toLong()
                     )
                 )
                 .build()

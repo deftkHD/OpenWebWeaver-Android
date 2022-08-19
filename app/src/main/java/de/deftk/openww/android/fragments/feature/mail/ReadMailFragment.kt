@@ -1,17 +1,25 @@
 package de.deftk.openww.android.fragments.feature.mail
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.AttachmentAdapter
 import de.deftk.openww.android.adapter.recycler.AttachmentClickListener
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadMailBinding
+import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.FileUtil
@@ -31,10 +39,12 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
     private val userViewModel: UserViewModel by activityViewModels()
     private val mailboxViewModel: MailboxViewModel by activityViewModels()
     private val navController by lazy { findNavController() }
+    private val workManager by lazy { WorkManager.getInstance(requireContext()) }
 
     private lateinit var binding: FragmentReadMailBinding
     private lateinit var email: IEmail
     private lateinit var emailFolder: IEmailFolder
+    private lateinit var downloadSaveLauncher: ActivityResultLauncher<Pair<Intent, IAttachment>>
 
     private var deleted = false
 
@@ -129,6 +139,38 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
             }
         }
 
+        mailboxViewModel.downloadSaveAttachmentWorkerId.observe(viewLifecycleOwner) { uuid ->
+            if (uuid == null)
+                return@observe
+
+
+            workManager.getWorkInfoByIdLiveData(uuid).observe(viewLifecycleOwner) { workInfo ->
+                fun reset() {
+                    if (mailboxViewModel.downloadSaveAttachmentWorkerId.value == uuid) {
+                        mailboxViewModel.resetDownloadSaveAttachmentWorkerId()
+                    }
+                }
+                when (workInfo.state) {
+                    WorkInfo.State.SUCCEEDED -> {
+                        reset()
+                    }
+                    WorkInfo.State.FAILED -> {
+                        val message = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
+                        Reporter.reportException(R.string.error_download_worker_failed, message, requireContext())
+                        reset()
+                    }
+                    else -> { /* ignore */ }
+                }
+            }
+        }
+
+        downloadSaveLauncher = registerForActivityResult(SaveAttachmentContract()) { (result, attachment) ->
+            val uri = result.data?.data
+            userViewModel.apiContext.value?.also { apiContext ->
+                mailboxViewModel.startAttachmentSaveDownload(workManager, apiContext, attachment, email, emailFolder, uri.toString())
+            }
+        }
+
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext == null) {
                 navController.popBackStack(R.id.mailFragment, false)
@@ -165,12 +207,29 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
     override fun onUIStateChanged(enabled: Boolean) {}
 
     override fun onSaveAttachment(attachment: IAttachment) {
-        TODO("implement attachment saving")
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+        intent.type = FileUtil.getMimeType(attachment.name)
+        intent.putExtra(Intent.EXTRA_TITLE, attachment.name)
+        downloadSaveLauncher.launch(intent to attachment)
     }
 
     override fun onOpenAttachment(attachment: IAttachment) {
         userViewModel.apiContext.value?.also { apiContext ->
             mailboxViewModel.exportAttachment(attachment, email, emailFolder, apiContext)
         }
+    }
+}
+
+class SaveAttachmentContract : ActivityResultContract<Pair<Intent, IAttachment>, Pair<ActivityResult, IAttachment>>() {
+
+    private lateinit var attachment: IAttachment
+
+    override fun createIntent(context: Context, input: Pair<Intent, IAttachment>): Intent {
+        attachment = input.second
+        return input.first
+    }
+
+    override fun parseResult(resultCode: Int, intent: Intent?): Pair<ActivityResult, IAttachment> {
+        return Pair(ActivityResult(resultCode, intent), attachment)
     }
 }

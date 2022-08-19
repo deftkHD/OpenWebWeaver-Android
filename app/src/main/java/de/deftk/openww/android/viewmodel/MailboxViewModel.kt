@@ -1,8 +1,10 @@
 package de.deftk.openww.android.viewmodel
 
 import androidx.lifecycle.*
+import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
+import de.deftk.openww.android.feature.filestorage.DownloadSaveWorker
 import de.deftk.openww.android.filter.MailFilter
 import de.deftk.openww.android.repository.MailboxRepository
 import de.deftk.openww.api.model.IApiContext
@@ -13,6 +15,7 @@ import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 import de.deftk.openww.api.model.feature.mailbox.ReferenceMode
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,6 +35,10 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
 
     private val _exportSessionFileResponse = MutableLiveData<Response<FileDownloadUrl>?>()
     val exportSessionFileResponse: LiveData<Response<FileDownloadUrl>?> = _exportSessionFileResponse
+
+    private val _downloadSaveAttachmentWorkerId = MutableLiveData<UUID?>()
+    val downloadSaveAttachmentWorkerId: LiveData<UUID?> = _downloadSaveAttachmentWorkerId
+
 
     private val emailResponses = mutableMapOf<IEmailFolder, MutableLiveData<Response<List<IEmail>>>>()
 
@@ -271,6 +278,10 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
         }
     }
 
+    fun resetDownloadSaveAttachmentWorkerId() {
+        _downloadSaveAttachmentWorkerId.value = null
+    }
+
     fun resetEmailSetResponse() {
         _batchEmailSetResponse.value = null
     }
@@ -291,5 +302,16 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
 
     fun resetExportAttachmentResponse() {
         _exportSessionFileResponse.value = null
+    }
+
+    fun startAttachmentSaveDownload(workManager: WorkManager, apiContext: IApiContext, attachment: IAttachment, email: IEmail, folder: IEmailFolder, destinationUrl: String) {
+        viewModelScope.launch {
+            val response = mailboxRepository.exportAttachment(attachment, email, folder, apiContext)
+            if (response is Response.Success) {
+                val workRequest = DownloadSaveWorker.createRequest(destinationUrl, response.value.url, attachment)
+                _downloadSaveAttachmentWorkerId.value = workRequest.id
+                workManager.enqueue(workRequest)
+            }
+        }
     }
 }

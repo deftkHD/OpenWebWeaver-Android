@@ -144,7 +144,6 @@ class EditTaskFragment : AbstractFragment(true) {
                     calendar.set(Calendar.MINUTE, minute)
 
                     if (dueDate != null && calendar.timeInMillis > dueDate!!.time) {
-                        //TODO snackbar
                         Toast.makeText(requireContext(), R.string.task_start_before_due, Toast.LENGTH_SHORT).show()
                     } else {
                         startDate = calendar.time
@@ -168,7 +167,6 @@ class EditTaskFragment : AbstractFragment(true) {
                     calendar.set(Calendar.MINUTE, minute)
 
                     if (startDate != null && calendar.timeInMillis < startDate!!.time) {
-                        //TODO snackbar
                         Toast.makeText(requireContext(), R.string.task_start_before_due, Toast.LENGTH_SHORT).show()
                     } else {
                         dueDate = calendar.time

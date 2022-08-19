@@ -57,8 +57,7 @@
             android:layout_marginStart="6dp"
             android:contentDescription="@string/more"
             android:onClick="@{saveClickListener}"
-            android:src="@drawable/ic_download_24"
-            android:visibility="invisible" />
+            android:src="@drawable/ic_download_24" />
 
         <TextView
             android:id="@+id/attachment_size"
