@@ -135,7 +135,6 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
         }
 
         registerForContextMenu(binding.chatList)
-        setHasOptionsMenu(true)
         return binding.root
     }
 
@@ -194,9 +193,9 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menu.clear()
-        inflater.inflate(R.menu.list_options_menu, menu)
+        menuInflater.inflate(R.menu.list_options_menu, menu)
         val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(messengerViewModel.userFilter.value?.smartSearchCriteria?.value, false) // restore recent search

@@ -2,14 +2,17 @@ package de.deftk.openww.android.fragments
 
 import android.os.Bundle
 import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
+import androidx.core.view.MenuProvider
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.utils.ISearchProvider
 
-abstract class AbstractFragment(private val hasActionBar: Boolean) : Fragment() {
+abstract class AbstractFragment(private val hasActionBar: Boolean) : Fragment(), MenuProvider {
 
     protected var uiEnabled: Boolean = true
         private set
@@ -20,6 +23,7 @@ abstract class AbstractFragment(private val hasActionBar: Boolean) : Fragment() 
         } else {
             getMainActivity().supportActionBar?.hide()
         }
+        getMainActivity().addMenuProvider(this, viewLifecycleOwner)
         if (this is ISearchProvider)
             getMainActivity().searchProvider = this
     }
@@ -38,11 +42,17 @@ abstract class AbstractFragment(private val hasActionBar: Boolean) : Fragment() 
 
     abstract fun onUIStateChanged(enabled: Boolean)
 
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {}
+
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        return false
+    }
+
     protected fun invalidateOptionsMenu() {
         requireActivity().invalidateOptionsMenu()
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
+    override fun onPrepareMenu(menu: Menu) {
         menu.forEach { item ->
             item.isEnabled = uiEnabled
         }

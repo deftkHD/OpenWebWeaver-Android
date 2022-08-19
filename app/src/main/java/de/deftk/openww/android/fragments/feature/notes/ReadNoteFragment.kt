@@ -99,18 +99,17 @@ class ReadNoteFragment : AbstractFragment(true) {
             navController.navigate(ReadNoteFragmentDirections.actionReadNoteFragmentToEditNoteFragment(note.id, getString(R.string.edit_note)))
         }
 
-        setHasOptionsMenu(true)
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         val user = userViewModel.apiContext.value?.user ?: return
         if (user.effectiveRights.contains(Permission.NOTES_WRITE) || user.effectiveRights.contains(Permission.NOTES_ADMIN))
-            inflater.inflate(R.menu.notes_context_menu, menu)
+            menuInflater.inflate(R.menu.notes_context_menu, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        return when (menuItem.itemId) {
             R.id.notes_context_item_edit -> {
                 val action = ReadNoteFragmentDirections.actionReadNoteFragmentToEditNoteFragment(note.id, getString(R.string.edit_note))
                 navController.navigate(action)
@@ -122,7 +121,7 @@ class ReadNoteFragment : AbstractFragment(true) {
                 enableUI(false)
                 true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> false
         }
     }
 

@@ -104,7 +104,6 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
             }
         }
 
-        setHasOptionsMenu(true)
         registerForContextMenu(binding.notificationList)
         return binding.root
     }
@@ -136,8 +135,8 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
         navController.navigate(NotificationsFragmentDirections.actionNotificationsFragmentToReadNotificationFragment(viewHolder.binding.notification!!.id, viewHolder.binding.group!!.login))
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.list_options_menu, menu)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.list_options_menu, menu)
         val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(boardViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search

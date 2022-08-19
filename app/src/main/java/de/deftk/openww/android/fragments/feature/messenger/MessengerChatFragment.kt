@@ -86,7 +86,6 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
             }
         }
 
-        setHasOptionsMenu(true)
         return binding.root
     }
 
@@ -95,10 +94,9 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
         viewLifecycleOwner
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        menu.clear()
-        inflater.inflate(R.menu.messenger_options_menu, menu)
-        inflater.inflate(R.menu.list_options_menu, menu)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.messenger_options_menu, menu)
+        menuInflater.inflate(R.menu.list_options_menu, menu)
         val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(messengerViewModel.messageFilter.value?.smartSearchCriteria?.value, false) // restore recent search
@@ -115,7 +113,19 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
                 return true
             }
         })
-        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
+            R.id.messenger_options_item_delete_saved_chat -> {
+                userViewModel.apiContext.value?.also { apiContext ->
+                    messengerViewModel.clearChat(args.user, apiContext)
+                    enableUI(false)
+                }
+            }
+            else -> return false
+        }
+        return true
     }
 
     override fun onSearchBackPressed(): Boolean {
@@ -126,19 +136,6 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
             searchView.setQuery(null, true)
             true
         }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.messenger_options_item_delete_saved_chat -> {
-                userViewModel.apiContext.value?.also { apiContext ->
-                    messengerViewModel.clearChat(args.user, apiContext)
-                    enableUI(false)
-                }
-            }
-            else -> return false
-        }
-        return true
     }
 
     override fun onUIStateChanged(enabled: Boolean) {

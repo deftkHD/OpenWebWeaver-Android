@@ -40,7 +40,7 @@ class LaunchFragment : Fragment() {
         binding.version.text = BuildConfig.VERSION_NAME
         (requireActivity() as AppCompatActivity).supportActionBar?.hide()
 
-        userViewModel.loginResponse.observe(viewLifecycleOwner, { response ->
+        userViewModel.loginResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 when (authState) {
                     AuthHelper.AuthState.SINGLE -> {
@@ -66,7 +66,7 @@ class LaunchFragment : Fragment() {
                 Reporter.reportException(R.string.error_other, response.exception, requireContext())
                 requireActivity().finish()
             }
-        })
+        }
 
         return binding.root
     }

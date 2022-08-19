@@ -106,17 +106,16 @@ class ReadNotificationFragment : AbstractFragment(true) {
             }
         }
 
-        setHasOptionsMenu(true)
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         if (group.effectiveRights.contains(Permission.BOARD_WRITE) || group.effectiveRights.contains(Permission.BOARD_ADMIN))
-            inflater.inflate(R.menu.board_context_menu, menu)
+            menuInflater.inflate(R.menu.board_context_menu, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        return when (menuItem.itemId) {
             R.id.board_context_item_edit -> {
                 val action = ReadNotificationFragmentDirections.actionReadNotificationFragmentToEditNotificationFragment(notification.id, group.login, getString(R.string.edit_notification))
                 navController.navigate(action)
@@ -128,7 +127,7 @@ class ReadNotificationFragment : AbstractFragment(true) {
                 enableUI(false)
                 true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> false
         }
     }
 

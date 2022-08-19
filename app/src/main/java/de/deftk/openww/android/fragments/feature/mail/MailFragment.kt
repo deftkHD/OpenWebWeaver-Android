@@ -188,7 +188,6 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             }
         }
 
-        setHasOptionsMenu(true)
         registerForContextMenu(binding.mailList)
         return binding.root
     }
@@ -251,10 +250,9 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         return true
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        menu.clear()
-        inflater.inflate(R.menu.list_options_menu, menu)
-        inflater.inflate(R.menu.mail_options_menu, menu)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.list_options_menu, menu)
+        menuInflater.inflate(R.menu.mail_options_menu, menu)
         val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(mailboxViewModel.mailFilter.value?.smartSearchCriteria?.value, false) // restore recent search
@@ -273,18 +271,8 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         })
     }
 
-    override fun onSearchBackPressed(): Boolean {
-        return if (searchView.isIconified) {
-            false
-        } else {
-            searchView.isIconified = true
-            searchView.setQuery(null, true)
-            true
-        }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.mail_options_item_add_folder) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        if (menuItem.itemId == R.id.mail_options_item_add_folder) {
             val builder = AlertDialog.Builder(requireContext())
             builder.setTitle(R.string.create_new_folder)
 
@@ -305,7 +293,17 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
             builder.show()
             return true
-        } else return super.onOptionsItemSelected(item)
+        } else return false
+    }
+
+    override fun onSearchBackPressed(): Boolean {
+        return if (searchView.isIconified) {
+            false
+        } else {
+            searchView.isIconified = true
+            searchView.setQuery(null, true)
+            true
+        }
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {

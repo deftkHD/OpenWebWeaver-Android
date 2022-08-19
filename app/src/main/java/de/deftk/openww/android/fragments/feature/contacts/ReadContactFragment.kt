@@ -106,17 +106,16 @@ class ReadContactFragment : AbstractFragment(true) {
             }
         }
 
-        setHasOptionsMenu(true)
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         if (scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN))
-            inflater.inflate(R.menu.contacts_context_menu, menu)
+            menuInflater.inflate(R.menu.contacts_context_menu, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        return when (menuItem.itemId) {
             R.id.contacts_context_item_edit -> {
                 val action = ReadContactFragmentDirections.actionReadContactFragmentToEditContactFragment(scope!!.login, contact.id.toString(), getString(R.string.edit_contact))
                 navController.navigate(action)
@@ -128,7 +127,7 @@ class ReadContactFragment : AbstractFragment(true) {
                 enableUI(false)
                 true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> false
         }
     }
 

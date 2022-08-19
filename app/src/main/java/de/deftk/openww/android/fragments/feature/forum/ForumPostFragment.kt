@@ -138,27 +138,25 @@ class ForumPostFragment : AbstractFragment(true) {
                 enableUI(false)
             }
         }
-        setHasOptionsMenu(true)
         registerForContextMenu(binding.forumPostCommentList)
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         if (group!!.effectiveRights.contains(Permission.FORUM_WRITE) || group!!.effectiveRights.contains(Permission.FORUM_ADMIN)) {
-            inflater.inflate(R.menu.forum_context_menu, menu)
+            menuInflater.inflate(R.menu.forum_context_menu, menu)
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
             R.id.forum_context_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.deletePost(post, parent, group!!, apiContext)
                     enableUI(false)
                 }
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> return false
         }
         return true
     }

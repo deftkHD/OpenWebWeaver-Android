@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.view.GravityCompat
+import androidx.core.view.MenuHost
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
@@ -37,7 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
+class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmentCompat.OnPreferenceStartFragmentCallback, MenuHost {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController

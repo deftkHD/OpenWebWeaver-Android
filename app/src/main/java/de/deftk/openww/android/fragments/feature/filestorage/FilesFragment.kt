@@ -267,7 +267,6 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             }
         }
 
-        setHasOptionsMenu(true)
         registerForContextMenu(binding.fileList)
         return binding.root
     }
@@ -403,10 +402,9 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        menu.clear()
-        inflater.inflate(R.menu.filestorage_options_menu, menu)
-        inflater.inflate(R.menu.list_options_menu, menu)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.filestorage_options_menu, menu)
+        menuInflater.inflate(R.menu.list_options_menu, menu)
         val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(fileStorageViewModel.fileFilter.value?.smartSearchCriteria?.value, false) // restore recent search
@@ -426,12 +424,8 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         })
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        menu.findItem(R.id.filestorage_option_item_create_folder).isVisible = getProviderFile()?.file?.effectiveCreate == true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
             R.id.filestorage_option_item_create_folder -> {
                 val builder = AlertDialog.Builder(requireContext())
                 builder.setTitle(R.string.create_new_folder)
@@ -452,9 +446,13 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 }
                 builder.create().show()
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> return false
         }
         return true
+    }
+
+    override fun onPrepareMenu(menu: Menu) {
+        menu.findItem(R.id.filestorage_option_item_create_folder).isVisible = getProviderFile()?.file?.effectiveCreate == true
     }
 
     override fun onSearchBackPressed(): Boolean {

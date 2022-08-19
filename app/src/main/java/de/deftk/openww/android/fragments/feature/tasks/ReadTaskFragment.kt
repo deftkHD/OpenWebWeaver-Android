@@ -109,28 +109,18 @@ class ReadTaskFragment : AbstractFragment(true) {
             }
         }
 
-        setHasOptionsMenu(true)
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.tasks_context_menu, menu)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.tasks_context_menu, menu)
         val canEdit = scope.effectiveRights.contains(Permission.TASKS_WRITE) || scope.effectiveRights.contains(Permission.TASKS_ADMIN)
         menu.findItem(R.id.tasks_context_item_edit).isVisible = canEdit
         menu.findItem(R.id.tasks_context_item_delete).isVisible = canEdit
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        userViewModel.apiContext.value?.also { apiContext ->
-            val ignored = tasksViewModel.getIgnoredTasksBlocking(apiContext).any { it.id == task.id && it.scope == scope.login }
-            menu.findItem(R.id.tasks_context_item_ignore).isVisible = !ignored
-            menu.findItem(R.id.tasks_context_item_unignore).isVisible = ignored
-        }
-        super.onPrepareOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
             R.id.tasks_context_item_ignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(listOf(task to scope), apiContext)
@@ -155,9 +145,17 @@ class ReadTaskFragment : AbstractFragment(true) {
                 tasksViewModel.deleteTask(task, scope, apiContext)
                 enableUI(false)
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> return false
         }
         return true
+    }
+
+    override fun onPrepareMenu(menu: Menu) {
+        userViewModel.apiContext.value?.also { apiContext ->
+            val ignored = tasksViewModel.getIgnoredTasksBlocking(apiContext).any { it.id == task.id && it.scope == scope.login }
+            menu.findItem(R.id.tasks_context_item_ignore).isVisible = !ignored
+            menu.findItem(R.id.tasks_context_item_unignore).isVisible = ignored
+        }
     }
 
     override fun onUIStateChanged(enabled: Boolean) {

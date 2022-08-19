@@ -138,16 +138,15 @@ class EditFileFragment : AbstractFragment(true) {
             }
         }
 
-        setHasOptionsMenu(true)
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.edit_options_menu, menu)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.edit_options_menu, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.edit_options_item_save) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        if (menuItem.itemId == R.id.edit_options_item_save) {
             val apiContext = userViewModel.apiContext.value ?: return false
 
             if (binding.fileName.text.isBlank()) {
@@ -161,7 +160,7 @@ class EditFileFragment : AbstractFragment(true) {
             }
             enableUI(false)
         }
-        return super.onOptionsItemSelected(item)
+        return false
     }
 
     override fun onUIStateChanged(enabled: Boolean) {

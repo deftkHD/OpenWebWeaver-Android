@@ -107,7 +107,6 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             }
         }
 
-        setHasOptionsMenu(true)
         registerForContextMenu(binding.tasksList)
         return binding.root
     }
@@ -116,10 +115,9 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         return TasksAdapter(this)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        menu.clear()
-        inflater.inflate(R.menu.list_options_menu, menu)
-        inflater.inflate(R.menu.tasks_options_menu, menu)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.list_options_menu, menu)
+        menuInflater.inflate(R.menu.tasks_options_menu, menu)
         val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(tasksViewModel.filter.value?.smartSearchCriteria?.value, false) // restore recent search
@@ -138,25 +136,23 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
                 return true
             }
         })
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu) {
-        menu.findItem(R.id.tasks_options_item_show_ignored).isChecked = tasksViewModel.filter.value?.showIgnoredCriteria?.value ?: false
-        super.onPrepareOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
             R.id.tasks_options_item_show_ignored -> {
-                item.isChecked = !item.isChecked
+                menuItem.isChecked = !menuItem.isChecked
                 tasksViewModel.setFilter { filter ->
-                    filter.showIgnoredCriteria.value = item.isChecked
+                    filter.showIgnoredCriteria.value = menuItem.isChecked
                 }
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> return false
         }
         return true
+    }
+
+    override fun onPrepareMenu(menu: Menu) {
+        menu.findItem(R.id.tasks_options_item_show_ignored).isChecked = tasksViewModel.filter.value?.showIgnoredCriteria?.value ?: false
     }
 
     override fun onSearchBackPressed(): Boolean {

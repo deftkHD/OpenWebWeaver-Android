@@ -196,7 +196,6 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
             }
         }
 
-        setHasOptionsMenu(true)
         return binding.root
     }
 
@@ -238,12 +237,12 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
         contact.value = ContactUtil.removeContactDetail(detail.type, contact.value!!)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.edit_options_menu, menu)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.edit_options_menu, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.edit_options_item_save) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        if (menuItem.itemId == R.id.edit_options_item_save) {
             val apiContext = userViewModel.apiContext.value ?: return false
 
             if (editMode) {
@@ -256,7 +255,7 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
 
             return true
         }
-        return super.onOptionsItemSelected(item)
+        return false
     }
 
     private fun getDefaultDialogBuilder(): AlertDialog.Builder {

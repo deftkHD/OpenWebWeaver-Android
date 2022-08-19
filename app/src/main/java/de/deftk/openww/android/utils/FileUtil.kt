@@ -1,6 +1,5 @@
 package de.deftk.openww.android.utils
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -15,7 +14,6 @@ import androidx.work.WorkManager
 import de.deftk.openww.android.R
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
-import de.deftk.openww.api.model.feature.FileDownloadUrl
 import de.deftk.openww.api.model.feature.FileUrl
 import java.io.File
 

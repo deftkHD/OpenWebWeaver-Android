@@ -2,7 +2,9 @@ package de.deftk.openww.android.fragments.feature.filestorage
 
 import android.os.Bundle
 import android.text.format.Formatter
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController

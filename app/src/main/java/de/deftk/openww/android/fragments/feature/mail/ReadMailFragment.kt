@@ -134,14 +134,14 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
                 navController.popBackStack(R.id.mailFragment, false)
             }
         }
-        setHasOptionsMenu(true)
+
         return binding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         userViewModel.apiContext.value?.also { apiContext ->
             if (apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
-                inflater.inflate(R.menu.mail_context_menu, menu)
+                menuInflater.inflate(R.menu.mail_context_menu, menu)
                 menu.findItem(R.id.mail_context_item_move).isVisible = false
                 menu.findItem(R.id.mail_context_item_set_read).isVisible = false
                 menu.findItem(R.id.mail_context_item_set_unread).isVisible = false
@@ -149,8 +149,8 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        return when (menuItem.itemId) {
             R.id.mail_context_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.deleteEmail(email, emailFolder, true, apiContext)
@@ -158,7 +158,7 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
                 }
                 true
             }
-            else -> super.onOptionsItemSelected(item)
+            else -> false
         }
     }
 

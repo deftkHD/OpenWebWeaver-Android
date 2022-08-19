@@ -58,7 +58,6 @@ abstract class AbstractGroupFragment : AbstractFragment(true), IOperatingScopeCl
             }
         }
 
-        setHasOptionsMenu(true)
         return binding.root
     }
 
@@ -73,9 +72,8 @@ abstract class AbstractGroupFragment : AbstractFragment(true), IOperatingScopeCl
         binding.groupsSwipeRefresh.isRefreshing = false
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        menu.clear()
-        inflater.inflate(R.menu.list_options_menu, menu)
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.list_options_menu, menu)
         val searchItem = menu.findItem(R.id.list_options_item_search)
         searchView = searchItem.actionView as SearchView
         searchView.setQuery(filter.smartSearchCriteria.value, false) // restore recent search
@@ -95,7 +93,6 @@ abstract class AbstractGroupFragment : AbstractFragment(true), IOperatingScopeCl
                 return false
             }
         })
-        super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onSearchBackPressed(): Boolean {
