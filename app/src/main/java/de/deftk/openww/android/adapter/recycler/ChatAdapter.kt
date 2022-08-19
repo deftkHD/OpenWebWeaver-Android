@@ -11,6 +11,7 @@ class ChatAdapter(clickListener: ActionModeClickListener<ChatViewHolder>): Actio
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
         val binding = ListItemChatContactBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        @Suppress("UNCHECKED_CAST")
         return ChatViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 

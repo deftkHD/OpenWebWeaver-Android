@@ -14,6 +14,7 @@ class ContactAdapter(var scope: IOperatingScope, clickListener: ActionModeClickL
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
         val binding = ListItemContactBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        @Suppress("UNCHECKED_CAST")
         return ContactViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 

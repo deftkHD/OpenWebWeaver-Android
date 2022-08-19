@@ -13,6 +13,7 @@ class SystemNotificationAdapter(clickListener: ActionModeClickListener<SystemNot
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SystemNotificationViewHolder {
         val binding = ListItemSystemNotificationBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        @Suppress("UNCHECKED_CAST")
         return SystemNotificationViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 

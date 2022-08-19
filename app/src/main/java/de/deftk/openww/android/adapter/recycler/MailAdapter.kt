@@ -15,6 +15,7 @@ class MailAdapter(clickListener: ActionModeClickListener<MailViewHolder>, var us
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MailViewHolder {
         val binding = ListItemMailBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        @Suppress("UNCHECKED_CAST")
         return MailViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 

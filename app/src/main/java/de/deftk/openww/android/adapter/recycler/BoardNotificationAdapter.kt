@@ -14,6 +14,7 @@ class BoardNotificationAdapter(clickListener: ActionModeClickListener<BoardNotif
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BoardNotificationViewHolder {
         val binding = ListItemNotificationBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        @Suppress("UNCHECKED_CAST")
         return BoardNotificationViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 

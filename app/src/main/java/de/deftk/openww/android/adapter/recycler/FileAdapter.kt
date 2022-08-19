@@ -30,6 +30,7 @@ class FileAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
         val binding = ListItemFileBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        @Suppress("UNCHECKED_CAST")
         return FileViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 

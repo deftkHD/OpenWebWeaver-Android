@@ -13,6 +13,7 @@ class TasksAdapter(clickListener: ActionModeClickListener<TaskViewHolder>) : Act
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val binding = ListItemTaskBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        @Suppress("UNCHECKED_CAST")
         return TaskViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 

@@ -15,6 +15,7 @@ class ForumPostAdapter(var group: IGroup, clickListener: ActionModeClickListener
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ForumPostViewHolder {
         val binding = ListItemForumPostBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        @Suppress("UNCHECKED_CAST")
         return ForumPostViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 

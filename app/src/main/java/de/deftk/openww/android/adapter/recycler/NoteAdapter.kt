@@ -14,6 +14,7 @@ class NoteAdapter(clickListener: ActionModeClickListener<NoteViewHolder>, var us
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
         val binding = ListItemNoteBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        @Suppress("UNCHECKED_CAST")
         return NoteViewHolder(binding, clickListener as ActionModeClickListener<ActionModeViewHolder>)
     }
 
