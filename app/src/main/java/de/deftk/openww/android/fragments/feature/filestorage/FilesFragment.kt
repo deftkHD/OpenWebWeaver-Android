@@ -596,7 +596,7 @@ class SaveFileContract : ActivityResultContract<Pair<Intent, IRemoteFile>, Pair<
 
 class OpenDocumentsContract : ActivityResultContract<Array<String>, Array<Uri>?>() {
 
-    override fun createIntent(context: Context, input: Array<String>?): Intent {
+    override fun createIntent(context: Context, input: Array<String>): Intent {
         return Intent(Intent.ACTION_OPEN_DOCUMENT)
             .putExtra(Intent.EXTRA_MIME_TYPES, input)
             .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
