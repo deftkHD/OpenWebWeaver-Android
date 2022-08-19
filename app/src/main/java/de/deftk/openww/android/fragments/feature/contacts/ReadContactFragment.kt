@@ -58,26 +58,26 @@ class ReadContactFragment : AbstractFragment(true) {
             navController.navigate(ReadContactFragmentDirections.actionReadContactFragmentToEditContactFragment(scope!!.login, contact.id.toString(), getString(R.string.edit_contact)))
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        userViewModel.apiContext.observe(viewLifecycleOwner) apiContext@ { apiContext ->
             if (apiContext != null) {
                 val foundScope = userViewModel.apiContext.value?.findOperatingScope(args.scope)
                 if (foundScope == null) {
                     Reporter.reportException(R.string.error_scope_not_found, args.scope, requireContext())
                     navController.popBackStack()
-                    return@observe
+                    return@apiContext
                 }
                 if (!Feature.ADDRESSES.isAvailable(foundScope.effectiveRights)) {
                     Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
-                    return@observe
+                    return@apiContext
                 }
                 if (scope != null)
                     contactsViewModel.getFilteredContactsLiveData(scope!!).removeObservers(viewLifecycleOwner)
                 scope = foundScope
-                contactsViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) { response ->
+                contactsViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) filtered@ { response ->
                     enableUI(true)
                     if (deleted)
-                        return@observe
+                        return@filtered
 
                     if (response is Response.Success) {
                         val queried = response.value.firstOrNull { it.id.toString() == args.contactId }
@@ -86,13 +86,13 @@ class ReadContactFragment : AbstractFragment(true) {
                         } else {
                             Reporter.reportException(R.string.error_contact_not_found, args.contactId, requireContext())
                             navController.popBackStack()
-                            return@observe
+                            return@filtered
                         }
                         adapter.submitList(ContactUtil.extractContactDetails(contact))
                     } else if (response is Response.Failure) {
                         Reporter.reportException(R.string.error_get_contacts_failed, response.exception, requireContext())
                         navController.popBackStack()
-                        return@observe
+                        return@filtered
                     }
                 }
                 contactsViewModel.loadContacts(scope!!, apiContext)

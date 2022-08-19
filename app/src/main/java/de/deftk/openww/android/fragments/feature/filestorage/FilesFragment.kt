@@ -152,18 +152,18 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        userViewModel.apiContext.observe(viewLifecycleOwner) apiContext@ { apiContext ->
             if (apiContext != null) {
                 val newScope = userViewModel.apiContext.value?.findOperatingScope(args.operatorId)
                 if (newScope == null) {
                     Reporter.reportException(R.string.error_scope_not_found, args.operatorId, requireContext())
                     navController.popBackStack(R.id.fileStorageGroupFragment, false)
-                    return@observe
+                    return@apiContext
                 }
                 if (!Feature.FILES.isAvailable(newScope.effectiveRights)) {
                     Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack(R.id.fileStorageGroupFragment, true)
-                    return@observe
+                    return@apiContext
                 }
 
                 if (scope != null) {
@@ -183,14 +183,14 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                     filter.parentCriteria.value = folderId
                     fileStorageViewModel.fileFilter.value = filter
                 }
-                fileStorageViewModel.getFilteredFiles(scope!!).observe(viewLifecycleOwner) { response ->
+                fileStorageViewModel.getFilteredFiles(scope!!).observe(viewLifecycleOwner) filtered@ { response ->
                     if (response is Response.Success) {
                         if (args.folderNameId != null && folderId == null) {
                             folderId = fileStorageViewModel.resolveNameTree(scope!!, args.folderNameId!!)
                             if (folderId != null) {
                                 filter.parentCriteria.value = folderId
                                 fileStorageViewModel.fileFilter.value = filter
-                                return@observe
+                                return@filtered
                             }
                         }
                         adapter.submitList(response.value.map { it.file })

@@ -4,8 +4,6 @@ import android.app.AlertDialog
 import android.os.Bundle
 import android.view.*
 import android.widget.*
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
@@ -21,6 +19,7 @@ import de.deftk.openww.android.feature.contacts.ContactDetail
 import de.deftk.openww.android.feature.contacts.ContactDetailType
 import de.deftk.openww.android.feature.contacts.GenderTranslation
 import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.utils.AndroidUtil
 import de.deftk.openww.android.utils.ContactUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ContactsViewModel
@@ -53,23 +52,23 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
         binding.contactDetailList.adapter = adapter
         binding.contactDetailList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        userViewModel.apiContext.observe(viewLifecycleOwner) apiContext@ { apiContext ->
             if (apiContext != null) {
                 val foundScope = apiContext.findOperatingScope(args.scope)
                 if (foundScope == null) {
                     Reporter.reportException(R.string.error_scope_not_found, args.scope, requireContext())
                     navController.popBackStack()
-                    return@observe
+                    return@apiContext
                 }
                 if (!foundScope.effectiveRights.contains(Permission.ADDRESSES_WRITE) && !foundScope.effectiveRights.contains(Permission.ADDRESSES_ADMIN)) {
                     Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
-                    return@observe
+                    return@apiContext
                 }
                 if (scope != null)
                     contactViewModel.getFilteredContactsLiveData(scope!!).removeObservers(viewLifecycleOwner)
                 scope = foundScope
-                contactViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) { response ->
+                contactViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) filtered@ { response ->
                     enableUI(true)
                     if (response is Response.Success) {
                         if (args.contactId != null) {
@@ -80,7 +79,7 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
                             if (foundContact == null) {
                                 Reporter.reportException(R.string.error_contact_not_found, args.contactId!!, requireContext())
                                 navController.popBackStack()
-                                return@observe
+                                return@filtered
                             }
                             contact.value = foundContact!!
                         } else {
@@ -189,7 +188,7 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
             enableUI(true)
 
             if (response is Response.Success) {
-                ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
+                AndroidUtil.hideKeyboard(requireActivity(), requireView())
                 navController.popBackStack()
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())

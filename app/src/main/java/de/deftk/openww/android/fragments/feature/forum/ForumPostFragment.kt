@@ -68,18 +68,18 @@ class ForumPostFragment : AbstractFragment(true) {
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        userViewModel.apiContext.observe(viewLifecycleOwner) apiContext@ { apiContext ->
             if (apiContext != null) {
                 val group = apiContext.user.getGroups().firstOrNull { it.login == args.groupId }
                 if (group == null) {
                     Reporter.reportException(R.string.error_scope_not_found, args.groupId, requireContext())
                     navController.popBackStack()
-                    return@observe
+                    return@apiContext
                 }
                 if (!Feature.FORUM.isAvailable(group.effectiveRights)) {
                     Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
-                    return@observe
+                    return@apiContext
                 }
                 if (this.group != null) {
                     forumViewModel.getFilteredForumPosts(this.group!!).removeObservers(viewLifecycleOwner)
@@ -91,10 +91,10 @@ class ForumPostFragment : AbstractFragment(true) {
                 binding.forumPostCommentList.adapter = adapter
                 binding.forumPostCommentList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
-                forumViewModel.getAllForumPosts(group).observe(viewLifecycleOwner) { response ->
+                forumViewModel.getAllForumPosts(group).observe(viewLifecycleOwner) posts@ { response ->
                     enableUI(true)
                     if (deleted)
-                        return@observe
+                        return@posts
 
                     if (response is Response.Success) {
                         parent = forumViewModel.getParentPost(response.value, (args.parentPostIds ?: emptyArray()).toMutableList())
@@ -120,12 +120,12 @@ class ForumPostFragment : AbstractFragment(true) {
                         } else {
                             Reporter.reportException(R.string.error_post_not_found, args.postId, requireContext())
                             navController.popBackStack()
-                            return@observe
+                            return@posts
                         }
                     } else if (response is Response.Failure) {
                         Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
                         navController.popBackStack()
-                        return@observe
+                        return@posts
                     }
                 }
 

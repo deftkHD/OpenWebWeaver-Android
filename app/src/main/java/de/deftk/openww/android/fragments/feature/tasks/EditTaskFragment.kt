@@ -7,8 +7,6 @@ import android.text.InputType
 import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -16,6 +14,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditTaskBinding
 import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.utils.AndroidUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.TasksViewModel
 import de.deftk.openww.android.viewmodel.UserViewModel
@@ -122,7 +121,7 @@ class EditTaskFragment : AbstractFragment(true) {
             enableUI(true)
 
             if (response is Response.Success) {
-                ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
+                AndroidUtil.hideKeyboard(requireActivity(), requireView())
                 navController.popBackStack()
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())

@@ -4,8 +4,6 @@ import android.os.Bundle
 import android.text.format.Formatter
 import android.view.*
 import android.widget.Toast
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -16,6 +14,7 @@ import de.deftk.openww.android.databinding.FragmentEditFileBinding
 import de.deftk.openww.android.feature.filestorage.FileCacheElement
 import de.deftk.openww.android.filter.FileStorageFileFilter
 import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.utils.AndroidUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
@@ -131,7 +130,7 @@ class EditFileFragment : AbstractFragment(true) {
             enableUI(true)
 
             if (response is Response.Success) {
-                ViewCompat.getWindowInsetsController(requireView())?.hide(WindowInsetsCompat.Type.ime())
+                AndroidUtil.hideKeyboard(requireActivity(), requireView())
                 navController.popBackStack()
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())

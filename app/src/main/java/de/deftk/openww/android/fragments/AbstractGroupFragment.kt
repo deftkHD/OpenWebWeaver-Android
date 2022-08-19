@@ -65,7 +65,7 @@ abstract class AbstractGroupFragment : AbstractFragment(true), IOperatingScopeCl
         var scopes: MutableList<IOperatingScope> = apiContext.user.getGroups().filter { scopePredicate(it) }.toMutableList()
         if (scopePredicate(apiContext.user))
             scopes.add(0, apiContext.user)
-        scopes = (filter.apply(scopes) as List<IOperatingScope>).toMutableList()
+        scopes = (filter.apply(scopes).filterIsInstance<IOperatingScope>()).toMutableList()
         adapter.submitList(scopes)
         binding.groupsEmpty.isVisible = scopes.isEmpty()
         enableUI(true)
