@@ -1,0 +1,14 @@
+- Fixed wrong upload path for files
+- Allow editing file name before upload
+- Show progress number while uploading file
+- Don't allow context menu access while uploading file
+- Allow editing files
+- Improved file detail fragment
+- Allow selecting format for file progress indicator
+- Show notification if download finished
+- Add quick checkbox to receive file download notifications
+- Allow copying text
+- Allow copying special contact details
+- Support opening & saving email attachments
+- Implemented reading system notification settings
+- Hopefully fix issues regarding some emails

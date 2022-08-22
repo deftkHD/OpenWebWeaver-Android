@@ -12,8 +12,8 @@ android {
         applicationId "de.deftk.openww.android"
         minSdkVersion 21
         targetSdkVersion 32
-        versionCode 7
-        versionName "0.4.3"
+        versionCode 8
+        versionName "0.4.4"
 
         javaCompileOptions {
             annotationProcessorOptions {
