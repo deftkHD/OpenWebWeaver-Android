@@ -333,5 +333,9 @@
     <string name="trusts">Trusts</string>
     <string name="wall">Wall</string>
     <string name="error_get_system_notification_settings">Failed to get system notification settings: %s</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="devtools_teaser">To be continued</string>
+    <string name="devtools">DevTools</string>
+    <string name="devtools_summary">Caution! Only enable it if you know what you are doing</string>
 
 </resources>

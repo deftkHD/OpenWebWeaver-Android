@@ -13,6 +13,12 @@
             app:key="open_link_external"
             app:title="@string/setting_open_link_external" />
 
+        <!--<SwitchPreference
+            app:defaultValue="false"
+            app:key="show_devtools"
+            app:summary="@string/devtools_summary"
+            app:title="@string/devtools" />-->
+
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/file_storage">

@@ -109,6 +109,12 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
 
         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
 
+        preferences.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
+            if (key == "show_devtools") {
+                updateDevToolState()
+            }
+        }
+
         userViewModel.apiContext.observe(this) { apiContext ->
             // allow or disallow switching accounts
             binding.navView.menu.findItem(R.id.drawer_item_switch_account).isVisible = AuthHelper.findAccounts(null, this).size > 1
@@ -122,6 +128,8 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
                 binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
                 binding.navView.getHeaderView(0).findViewById<TextView>(R.id.header_name).text = apiContext.user.fullName
                 binding.navView.getHeaderView(0).findViewById<TextView>(R.id.header_login).text = apiContext.user.login
+
+                updateDevToolState()
 
                 // show or hide feature items
                 val enabledFeatures = getEnabledFeatures(apiContext)
@@ -259,6 +267,10 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
                 }
             }
         }
+    }
+
+    private fun updateDevToolState() {
+        binding.navView.menu.findItem(R.id.devToolsFragment).isVisible = preferences.getBoolean("show_devtools", false)
     }
 
 }

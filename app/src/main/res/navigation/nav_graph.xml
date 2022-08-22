@@ -45,6 +45,9 @@
         <action
             android:id="@+id/action_overviewFragment_to_notesFragment"
             app:destination="@id/notesFragment" />
+        <action
+            android:id="@+id/action_overviewFragment_to_devToolsFragment"
+            app:destination="@id/devToolsFragment" />
     </fragment>
     <fragment
         android:id="@+id/loginFragment"
@@ -588,4 +591,9 @@
             android:name="setting_obj"
             app:argType="string" />
     </fragment>
+    <fragment
+        android:id="@+id/devToolsFragment"
+        android:name="de.deftk.openww.android.fragments.devtools.DevToolsFragment"
+        android:label="@string/devtools"
+        tools:layout="@layout/fragment_dev_tools" />
 </navigation>

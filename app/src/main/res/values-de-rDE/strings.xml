@@ -331,4 +331,7 @@
     <string name="trusts">Vertrauensbeziehungen</string>
     <string name="wall">Pinnwand</string>
     <string name="error_get_system_notification_settings">Abfragen der Systembenachrichtigungseinstellungen fehlgeschlagen: %s</string>
+    <string name="devtools">DevTools</string>
+    <string name="devtools_summary">Vorsicht! Nur aktivieren, wenn du weißt was du tust</string>
+    <string name="devtools_teaser">To be continued</string>
 </resources>
