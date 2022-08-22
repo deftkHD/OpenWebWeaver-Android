@@ -313,8 +313,8 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             userViewModel.apiContext.value?.also { apiContext ->
                 if (apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
                     requireActivity().menuInflater.inflate(R.menu.mail_context_menu, menu)
-                    menu.findItem(R.id.mail_context_item_set_unread).isVisible = !email.unread
-                    menu.findItem(R.id.mail_context_item_set_read).isVisible = email.unread
+                    menu.findItem(R.id.mail_context_item_set_unread).isVisible = email.unread == false
+                    menu.findItem(R.id.mail_context_item_set_read).isVisible = email.unread == true
                 }
             }
         }

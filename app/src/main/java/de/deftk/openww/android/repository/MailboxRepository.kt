@@ -56,7 +56,7 @@ class MailboxRepository @Inject constructor() : AbstractRepository() {
     }
 
     suspend fun setEmail(email: IEmail, folder: IEmailFolder, isFlagged: Boolean?, isUnread: Boolean?, apiContext: IApiContext) = apiCall {
-        email.edit(folder, isFlagged ?: email.flagged, isUnread ?: email.unread, apiContext.userContext())
+        email.edit(folder, isFlagged ?: email.flagged ?: false, isUnread ?: email.unread ?: false, apiContext.userContext())
         email
     }
 
