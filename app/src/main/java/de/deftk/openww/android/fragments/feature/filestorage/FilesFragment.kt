@@ -68,27 +68,27 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     private var scope: IOperatingScope? = null
     private var folderId: String? = null
-    private var currentNetworkTransfers = emptyList<NetworkTransfer>()
+    private var cachedNetworkTransfers = emptyList<NetworkTransfer>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFilesBinding.inflate(inflater, container, false)
 
         fileStorageViewModel.networkTransfers.observe(viewLifecycleOwner) { transfers ->
-            for (i in 0 until max(transfers.size, currentNetworkTransfers.size)) {
-                if (i < transfers.size && !currentNetworkTransfers.contains(transfers[i])) {
+            for (i in 0 until max(transfers.size, cachedNetworkTransfers.size)) {
+                if (i < transfers.size && !cachedNetworkTransfers.contains(transfers[i])) {
                     // handle new transfer
                     val transfer = transfers[i]
                     onNetworkTransferAdded(transfer)
                     continue
                 }
-                if (i < currentNetworkTransfers.size && !transfers.contains(currentNetworkTransfers[i])) {
+                if (i < cachedNetworkTransfers.size && !transfers.contains(cachedNetworkTransfers[i])) {
                     // handle removed transfer
-                    val transfer = currentNetworkTransfers[i]
+                    val transfer = cachedNetworkTransfers[i]
                     onNetworkTransferRemoved(transfer)
                     continue
                 }
             }
-            currentNetworkTransfers = transfers
+            cachedNetworkTransfers = transfers
         }
 
         fileStorageViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->

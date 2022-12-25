@@ -337,5 +337,16 @@
     <string name="devtools_teaser">To be continued</string>
     <string name="devtools">DevTools</string>
     <string name="devtools_summary">Caution! Only enable it if you know what you are doing</string>
+    <string name="force_invalidate_session" translatable="false">Force invalidate session</string>
+    <string name="show_past_requests" translatable="false">Show past requests</string>
+    <string name="session_invalidated" translatable="false">Session invalidated!</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="past_requests_empty" translatable="false">No past requests</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="copy_to_clipboard" translatable="false">Copy to clipboard</string>
+    <string name="fragment_past_requests_title" translatable="false">Past requests</string>
+    <string name="fragment_past_request" translatable="false">Request details</string>
+    <string name="warning_contains_sensitive_data" translatable="false">WARNING: The data shown here contains sensitive information which can be used to impersonate you! DON\'T share it with someone you don\'t trust!</string>
+    <string name="error_session_invalidation_failed" translatable="false">Failed to invalidate session: %s</string>
 
 </resources>

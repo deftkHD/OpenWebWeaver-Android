@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragments.devtools.PastRequestFragment">
+
+    <RelativeLayout
+        android:id="@+id/request_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/request_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textIsSelectable="true"
+            android:textSize="20sp"
+            tools:text="Request #1 (HTTP 200)" />
+
+        <TextView
+            android:id="@+id/placeholder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/request_title"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@id/request_date"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="" />
+
+        <TextView
+            android:id="@+id/request_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/placeholder"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true"
+            android:background="@android:color/holo_orange_light"
+            android:text="@string/warning_contains_sensitive_data"
+            android:textColor="@android:color/holo_red_dark" />
+
+        <TextView
+            android:id="@+id/request_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/request_title"
+            android:layout_alignParentEnd="true"
+            tools:text="1.1.2020 12:00" />
+
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/request_header"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:scrollbars="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/request_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoLink="web|email"
+                android:padding="8dp"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textIsSelectable="true"
+                tools:text="request text" />
+
+            <View
+                android:id="@+id/accent"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:layout_below="@id/request_text"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="3dp"
+                android:background="@android:color/holo_blue_light" />
+
+            <TextView
+                android:id="@+id/response_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/accent"
+                android:autoLink="web|email"
+                android:padding="8dp"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textIsSelectable="true"
+                tools:text="response text" />
+
+        </RelativeLayout>
+
+    </ScrollView>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_copy_request_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="@dimen/fab_margin"
+        android:contentDescription="@string/copy_to_clipboard"
+        android:enabled="false"
+        android:src="@drawable/ic_content_paste_24" />
+
+</RelativeLayout>

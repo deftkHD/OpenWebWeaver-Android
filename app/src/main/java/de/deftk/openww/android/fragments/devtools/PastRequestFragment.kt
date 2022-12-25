@@ -1,0 +1,73 @@
+package de.deftk.openww.android.fragments.devtools
+
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
+import de.deftk.openww.android.databinding.FragmentPastRequestBinding
+import de.deftk.openww.android.feature.devtools.PastRequest
+import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.utils.Reporter
+import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.api.WebWeaverClient
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import java.text.DateFormat
+
+class PastRequestFragment : AbstractFragment(true) {
+
+    private val args: PastRequestFragmentArgs by navArgs()
+    private val userViewModel: UserViewModel by activityViewModels()
+    private val navController by lazy { findNavController() }
+
+    private lateinit var binding: FragmentPastRequestBinding
+    private lateinit var response: PastRequest
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentPastRequestBinding.inflate(inflater, container, false)
+
+        userViewModel.pastRequests.observe(viewLifecycleOwner) { responses ->
+            enableUI(true)
+
+            val resp = responses.singleOrNull { it.id == args.requestId }
+            if (resp == null) {
+                Reporter.reportException(0, args.requestId.toString(), requireContext())
+                navController.popBackStack()
+                return@observe
+            }
+            response = resp
+
+
+            binding.requestDate.text = "Response at " + DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.LONG).format(response.responseDate)
+            binding.requestTitle.text = response.getTitle()
+            binding.requestText.text = "[\n${response.request.requests.joinToString(",\n") { it.toString() }}\n]"
+            binding.responseText.text = response.response.text
+
+            binding.fabCopyRequestData.isEnabled = true
+        }
+
+        binding.fabCopyRequestData.setOnClickListener {
+            val clipboard = requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipObj = buildJsonObject {
+                put("requestId", response.id)
+                put("date", response.responseDate.time)
+                put("request", "[\n${response.request.requests.joinToString(",\n") { it.toString() }}\n]")
+                put("response", response.response.text)
+            }
+            clipboard.setPrimaryClip(ClipData.newPlainText("Request data", WebWeaverClient.json.encodeToString(clipObj)))
+        }
+
+        return binding.root
+    }
+
+    override fun onUIStateChanged(enabled: Boolean) {
+        binding.fabCopyRequestData.isEnabled = enabled
+    }
+}

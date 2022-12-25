@@ -32,6 +32,7 @@ abstract class AbstractFragment(private val hasActionBar: Boolean) : Fragment(),
         return (requireActivity() as? MainActivity?) ?: error("Invalid fragment scope")
     }
 
+    @Deprecated("Rename into setUIState()")
     protected fun enableUI(enabled: Boolean) {
         uiEnabled = enabled
         getMainActivity().progressIndicator.isVisible = !enabled

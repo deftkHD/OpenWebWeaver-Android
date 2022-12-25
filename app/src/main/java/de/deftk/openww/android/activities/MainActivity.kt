@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
 
         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
 
-        preferences.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
+        preferences.registerOnSharedPreferenceChangeListener { _, key ->
             if (key == "show_devtools") {
                 updateDevToolState()
             }

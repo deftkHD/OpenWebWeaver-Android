@@ -595,5 +595,27 @@
         android:id="@+id/devToolsFragment"
         android:name="de.deftk.openww.android.fragments.devtools.DevToolsFragment"
         android:label="@string/devtools"
-        tools:layout="@layout/fragment_dev_tools" />
+        tools:layout="@layout/fragment_dev_tools" >
+        <action
+            android:id="@+id/action_devToolsFragment_to_pastRequestsFragment"
+            app:destination="@id/pastRequestsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/pastRequestsFragment"
+        android:name="de.deftk.openww.android.fragments.devtools.PastRequestsFragment"
+        android:label="@string/fragment_past_requests_title"
+        tools:layout="@layout/fragment_past_requests">
+        <action
+            android:id="@+id/action_pastRequestsFragment_to_pastRequestFragment"
+            app:destination="@id/pastRequestFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/pastRequestFragment"
+        android:name="de.deftk.openww.android.fragments.devtools.PastRequestFragment"
+        android:label="@string/fragment_past_request"
+        tools:layout="@layout/fragment_past_request">
+        <argument
+            android:name="request_id"
+            app:argType="integer" />
+    </fragment>
 </navigation>

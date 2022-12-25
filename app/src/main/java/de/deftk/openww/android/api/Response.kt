@@ -1,5 +1,7 @@
 package de.deftk.openww.android.api
 
+import kotlinx.coroutines.CoroutineScope
+
 sealed class Response<out T> {
 
     data class Success<out T>(val value: T) : Response<T>() {
@@ -11,6 +13,13 @@ sealed class Response<out T> {
     fun <K> smartMap(block: (T) -> K): Response<K> {
         return when (this) {
             is Success -> Success(block(value))
+            is Failure -> this
+        }
+    }
+
+    suspend fun <K> smartCoroutineMap(coroutineScope: CoroutineScope, block: suspend CoroutineScope.(T) -> K): Response<K> {
+        return when (this) {
+            is Success -> Success(block(coroutineScope, value))
             is Failure -> this
         }
     }

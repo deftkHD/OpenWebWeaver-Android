@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.devtools.DevToolsFragment">
+    tools:context=".fragments.devtools.DevToolsFragment"
+    android:padding="16dp">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <Button
+        android:id="@+id/show_past_requests"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/devtools_teaser" />
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:text="@string/show_past_requests" />
 
-</FrameLayout>
+    <Button
+        android:id="@+id/force_invalidate_session"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/show_past_requests"
+        android:text="@string/force_invalidate_session" />
+
+</RelativeLayout>

@@ -19,7 +19,6 @@ import de.deftk.openww.api.model.feature.filestorage.IRemoteFile
 import de.deftk.openww.api.model.feature.filestorage.IRemoteFileProvider
 import de.deftk.openww.api.model.feature.filestorage.session.ISessionFile
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.util.*
 import javax.inject.Inject
 
@@ -89,8 +88,8 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         viewModelScope.launch {
             val response = fileStorageRepository.getFiles(parentId, true, scope, apiContext)
             val allFiles = getAllFiles(scope) as MutableLiveData
-            allFiles.value = response.smartMap { responseValue ->
-                val previewResponse = runBlocking { loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext) }
+            allFiles.value = response.smartCoroutineMap(this) { responseValue ->
+                val previewResponse = loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext)
                 val files = responseValue.map { file -> FileCacheElement(file, previewResponse.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl) }
 
                 // insert into live data
@@ -113,21 +112,21 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
         viewModelScope.launch {
             val response = fileStorageRepository.getFileTree(idTree, true, scope, apiContext)
             val allFiles = getAllFiles(scope) as MutableLiveData
-            allFiles.value = response.smartMap { responseValue ->
-                val previewResponse = runBlocking { loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext) }
+            allFiles.value = response.smartCoroutineMap(this) { responseValue ->
+                val previewResponse = loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext)
                 val files = responseValue.map { file -> FileCacheElement(file, previewResponse.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl) }
 
                 // insert into live data
                 val value = allFiles.value
                 if (value != null) {
-                    return@smartMap allFiles.value?.valueOrNull()?.toMutableList()?.apply {
+                    return@smartCoroutineMap allFiles.value?.valueOrNull()?.toMutableList()?.apply {
                         if (overwriteExisting) {
                             removeAll { idTree.startsWith(it.file.id) }
                         }
                         addAll(files)
                     }?.distinctBy { file -> file.file.id } ?: emptyList()
                 } else {
-                    return@smartMap files
+                    return@smartCoroutineMap files
                 }
             }
         }
@@ -138,21 +137,21 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
             val responses = fileStorageRepository.getFileNameTree(nameTree, true, scope, apiContext)
             val response = Response.Success(responses.map { it.valueOrNull() ?: emptyList() }.flatten())
             val allFiles = getAllFiles(scope) as MutableLiveData
-            allFiles.value = response.smartMap { responseValue ->
-                val previewResponse = runBlocking { loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext) }
+            allFiles.value = response.smartCoroutineMap(this) { responseValue ->
+                val previewResponse = loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext)
                 val files = responseValue.map { file -> FileCacheElement(file, previewResponse.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl) }.distinctBy { it.file.id }
 
                 // insert into live data
                 val value = allFiles.value
                 if (value != null) {
-                    return@smartMap allFiles.value?.valueOrNull()?.toMutableList()?.apply {
+                    return@smartCoroutineMap allFiles.value?.valueOrNull()?.toMutableList()?.apply {
                         if (overwriteExisting) {
                             removeAll { remove -> files.any { it.file.id == remove.file.id } }
                         }
                         addAll(files)
                     }?.distinctBy { file -> file.file.id } ?: emptyList()
                 } else {
-                    return@smartMap files
+                    return@smartCoroutineMap files
                 }
             }
         }
@@ -228,8 +227,8 @@ class FileStorageViewModel @Inject constructor(private val savedStateHandle: Sav
             val response = fileStorageRepository.importSessionFile(sessionFile, into, scope, apiContext)
             if (response is Response.Success) {
                 val allFiles = getAllFiles(scope) as MutableLiveData
-                allFiles.value = response.smartMap { responseValue ->
-                    val previewResponse = runBlocking { loadPreviews(listOf(response.value), scope, apiContext) }
+                allFiles.value = response.smartCoroutineMap(this) { responseValue ->
+                    val previewResponse = loadPreviews(listOf(response.value), scope, apiContext)
                     val files = listOf(FileCacheElement(responseValue, previewResponse.valueOrNull()?.firstOrNull { it.file.id == responseValue.id }?.previewUrl))
 
                     // insert into live data

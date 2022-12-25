@@ -9,20 +9,26 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.feature.AppFeature
+import de.deftk.openww.android.feature.devtools.PastRequest
 import de.deftk.openww.android.feature.overview.AbstractOverviewElement
 import de.deftk.openww.android.filter.SystemNotificationFilter
 import de.deftk.openww.android.repository.UserRepository
 import de.deftk.openww.api.auth.Credentials
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IApiContext
+import de.deftk.openww.api.model.IRequestContext
 import de.deftk.openww.api.model.feature.systemnotification.INotificationSetting
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 import de.deftk.openww.api.model.feature.systemnotification.NotificationFacility
 import de.deftk.openww.api.model.feature.systemnotification.NotificationFacilityState
+import de.deftk.openww.api.request.ApiRequest
 import de.deftk.openww.api.request.handler.AutoLoginRequestHandler
+import de.deftk.openww.api.request.handler.IRequestHandler
+import de.deftk.openww.api.response.ApiResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -66,6 +72,10 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
 
     private val _systemNotificationBatchDeleteResponse = MutableLiveData<List<Response<ISystemNotification>>?>()
     val systemNotificationBatchDeleteResponse: LiveData<List<Response<ISystemNotification>>?> = _systemNotificationBatchDeleteResponse
+
+    private val _pastRequests = MutableLiveData<MutableList<PastRequest>>()
+    val pastRequests: LiveData<MutableList<PastRequest>> = _pastRequests
+    private var nextRequestId = 0
 
     fun loginPassword(username: String, password: String) {
         viewModelScope.launch {
@@ -146,7 +156,7 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
     }
 
     private fun setupApiContext(apiContext: IApiContext, credentials: Credentials) {
-        apiContext.requestHandler = AutoLoginRequestHandler(object : AutoLoginRequestHandler.LoginHandler<ApiContext> {
+        val delegate = AutoLoginRequestHandler(object : AutoLoginRequestHandler.LoginHandler<ApiContext> {
             override suspend fun getCredentials(): Credentials = credentials
 
             override suspend fun onLogin(context: ApiContext) {
@@ -155,6 +165,14 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
                 }
             }
         }, ApiContext::class.java)
+
+        apiContext.requestHandler = object : IRequestHandler {
+            override suspend fun performRequest(request: ApiRequest, context: IRequestContext): ApiResponse {
+                val response = delegate.performRequest(request, context)
+                handleNewApiResponse(request, response)
+                return response
+            }
+        }
     }
 
     fun loadOverview(features: List<AppFeature>, apiContext: IApiContext) {
@@ -219,6 +237,15 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
                 currentSettings.add(newSetting)
                 _systemNotificationSettingsResponse.value = Response.Success(currentSettings)
             }
+        }
+    }
+
+    suspend fun handleNewApiResponse(request: ApiRequest, response: ApiResponse) {
+        //TODO check if dev tools are enabled -> reduce overhead
+        val list = _pastRequests.value ?: mutableListOf()
+        list.add(PastRequest(nextRequestId++, request, response, Date()))
+        withContext(Dispatchers.Main) {
+            _pastRequests.value = list
         }
     }
 
