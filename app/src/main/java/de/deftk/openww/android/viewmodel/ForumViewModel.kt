@@ -12,21 +12,21 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val forumRepository: ForumRepository) : ScopedViewModel() {
+class ForumViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val forumRepository: ForumRepository) : ScopedViewModel(savedStateHandle) {
 
     private val postsResponses = mutableMapOf<IGroup, MutableLiveData<Response<List<IForumPost>>>>()
 
-    val filter = MutableLiveData(ForumPostFilter())
+    val filter = registerProperty("filter", true, ForumPostFilter())
     private val filteredPostResponses = mutableMapOf<IGroup, LiveData<Response<List<IForumPost>>>>()
 
-    private val _deleteResponse = MutableLiveData<Response<IForumPost>?>()
+    private val _deleteResponse = registerProperty<Response<IForumPost>?>("deleteResponse", true)
     val deleteResponse: LiveData<Response<IForumPost>?> = _deleteResponse
 
-    private val _batchDeleteResponse = MutableLiveData<List<Response<IForumPost>>?>()
+    private val _batchDeleteResponse = registerProperty<List<Response<IForumPost>>?>("batchDeleteResponse", true)
     val batchDeleteResponse: LiveData<List<Response<IForumPost>>?> = _batchDeleteResponse
 
     fun getAllForumPosts(group: IGroup): LiveData<Response<List<IForumPost>>> {
-        return postsResponses.getOrPut(group) { MutableLiveData() }
+        return postsResponses.getOrPut(group) { registerProperty("posts", true) }
     }
 
     fun getFilteredForumPosts(group: IGroup): LiveData<Response<List<IForumPost>>> {
@@ -35,7 +35,7 @@ class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStat
                 when (filter) {
                     null -> getAllForumPosts(group)
                     else -> getAllForumPosts(group).switchMap { response ->
-                        val filtered = MutableLiveData<Response<List<IForumPost>>>()
+                        val filtered = registerProperty<Response<List<IForumPost>>>("filtered", true)
                         filtered.value = response.smartMap { filter.apply(it) }
                         filtered
                     }
@@ -116,12 +116,4 @@ class ForumViewModel @Inject constructor(private val savedStateHandle: SavedStat
         _batchDeleteResponse.value = null
     }
 
-    override fun resetScopedData() {
-        postsResponses.forEach { (_, response) ->
-            response.value = null
-        }
-        _deleteResponse.value = null
-        _batchDeleteResponse.value = null
-        filter.value = ForumPostFilter()
-    }
 }

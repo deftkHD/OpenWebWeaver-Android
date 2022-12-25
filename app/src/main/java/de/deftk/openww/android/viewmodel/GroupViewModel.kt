@@ -12,15 +12,15 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class GroupViewModel @Inject constructor(private val groupRepository: GroupRepository) : ScopedViewModel() {
+class GroupViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val groupRepository: GroupRepository) : ScopedViewModel(savedStateHandle) {
 
     private val allMemberResponses = mutableMapOf<IGroup, MutableLiveData<Response<List<IScope>>?>>()
 
-    val filter = MutableLiveData(ScopeFilter())
+    val filter = registerProperty("filter", true, ScopeFilter())
     val filteredMemberResponses = mutableMapOf<IGroup, LiveData<Response<List<IScope>>?>>()
 
     fun getAllGroupMembers(group: IGroup): LiveData<Response<List<IScope>>?> {
-        return allMemberResponses.getOrPut(group) { MutableLiveData() }
+        return allMemberResponses.getOrPut(group) { registerProperty("membersResponse", true) }
     }
 
     fun getFilteredGroupMembers(group: IGroup): LiveData<Response<List<IScope>>?> {
@@ -29,7 +29,7 @@ class GroupViewModel @Inject constructor(private val groupRepository: GroupRepos
                 when (filter) {
                     null -> getAllGroupMembers(group)
                     else -> getAllGroupMembers(group).switchMap { response ->
-                        val filtered = MutableLiveData<Response<List<IScope>>?>()
+                        val filtered = registerProperty<Response<List<IScope>>?>("filtered", true)
                         filtered.value = response?.smartMap { filter.apply(it) }
                         filtered
                     }
@@ -44,10 +44,4 @@ class GroupViewModel @Inject constructor(private val groupRepository: GroupRepos
         }
     }
 
-    override fun resetScopedData() {
-        allMemberResponses.forEach { (_, response) ->
-            response.value = null
-        }
-        filter.value = ScopeFilter()
-    }
 }

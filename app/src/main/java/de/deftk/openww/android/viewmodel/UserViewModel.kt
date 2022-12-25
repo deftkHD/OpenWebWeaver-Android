@@ -32,27 +32,27 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class UserViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val userRepository: UserRepository) : ScopedViewModel() {
+class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val userRepository: UserRepository) : ScopedViewModel(savedStateHandle) {
 
-    private val _loginResponse = MutableLiveData<Response<IApiContext>?>()
+    private val _loginResponse = registerProperty<Response<IApiContext>?>("loginResponse", true)
     val loginResponse: LiveData<Response<IApiContext>?> = _loginResponse
     val apiContext: LiveData<IApiContext?> = loginResponse.map { if (it is Response.Success) it.value else null }
 
-    private val _loginToken = MutableLiveData<Response<Pair<String, String>>>()
+    private val _loginToken = registerProperty<Response<Pair<String, String>>>("loginToken", false)
     val loginToken: LiveData<Response<Pair<String, String>>> = _loginToken
 
-    private val _logoutResponse = MutableLiveData<Response<Unit>?>()
+    private val _logoutResponse = registerProperty<Response<Unit>?>("logoutResponse", true)
     val logoutResponse: LiveData<Response<Unit>?> = _logoutResponse
 
-    private val _overviewResponse = MutableLiveData<Response<List<AbstractOverviewElement>>?>()
+    private val _overviewResponse = registerProperty<Response<List<AbstractOverviewElement>>?>("overviewResponse", true)
     val overviewResponse: LiveData<Response<List<AbstractOverviewElement>>?> = _overviewResponse
 
-    private val _systemNotificationsResponse = MutableLiveData<Response<List<ISystemNotification>>?>()
+    private val _systemNotificationsResponse = registerProperty<Response<List<ISystemNotification>>?>("systemNotificationsResponse", true)
     val allSystemNotificationsResponse: LiveData<Response<List<ISystemNotification>>?> = _systemNotificationsResponse
 
-    val systemNotificationFilter = MutableLiveData<SystemNotificationFilter>()
+    val systemNotificationFilter = registerProperty<SystemNotificationFilter>("systemNotificationFilter", true)
 
-    val _systemNotificationSettingsResponse = MutableLiveData<Response<List<INotificationSetting>>?>()
+    val _systemNotificationSettingsResponse = registerProperty<Response<List<INotificationSetting>>?>("systemNotificationSettingsResponse", true)
     val systemNotificationSettingsResponse: LiveData<Response<List<INotificationSetting>>?> = _systemNotificationSettingsResponse
 
     val filteredSystemNotificationResponse: LiveData<Response<List<ISystemNotification>>?>
@@ -60,20 +60,20 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
             when (filter) {
                 null -> allSystemNotificationsResponse
                 else -> allSystemNotificationsResponse.switchMap { response ->
-                    val filtered = MutableLiveData<Response<List<ISystemNotification>>?>()
+                    val filtered = registerProperty<Response<List<ISystemNotification>>?>("filtered", true)
                     filtered.value = response?.smartMap { filter.apply(it) }
                     filtered
                 }
             }
         }
 
-    private val _systemNotificationDeleteResponse = MutableLiveData<Response<ISystemNotification>?>()
+    private val _systemNotificationDeleteResponse = registerProperty<Response<ISystemNotification>?>("systemNotificationDeleteResponse", true)
     val systemNotificationDeleteResponse: LiveData<Response<ISystemNotification>?> = _systemNotificationDeleteResponse
 
-    private val _systemNotificationBatchDeleteResponse = MutableLiveData<List<Response<ISystemNotification>>?>()
+    private val _systemNotificationBatchDeleteResponse = registerProperty<List<Response<ISystemNotification>>?>("systemNotificationBatchDeleteResponse", true)
     val systemNotificationBatchDeleteResponse: LiveData<List<Response<ISystemNotification>>?> = _systemNotificationBatchDeleteResponse
 
-    private val _pastRequests = MutableLiveData<MutableList<PastRequest>>()
+    private val _pastRequests = registerProperty<MutableList<PastRequest>>("pastRequests", false)
     val pastRequests: LiveData<MutableList<PastRequest>> = _pastRequests
     private var nextRequestId = 0
 
@@ -271,12 +271,4 @@ class UserViewModel @Inject constructor(private val savedStateHandle: SavedState
         _systemNotificationSettingsResponse.value = null
     }
 
-    override fun resetScopedData() {
-        _loginResponse.value = null
-        _logoutResponse.value = null
-        _systemNotificationsResponse.value = null
-        _systemNotificationDeleteResponse.value = null
-        _systemNotificationBatchDeleteResponse.value = null
-        _overviewResponse.value = null
-    }
 }

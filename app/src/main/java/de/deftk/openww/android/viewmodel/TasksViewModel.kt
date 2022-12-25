@@ -15,12 +15,12 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val tasksRepository: TasksRepository): ScopedViewModel() {
+class TasksViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val tasksRepository: TasksRepository): ScopedViewModel(savedStateHandle) {
 
-    private val _tasksResponse = MutableLiveData<Response<List<Pair<ITask, IOperatingScope>>>?>()
+    private val _tasksResponse = registerProperty<Response<List<Pair<ITask, IOperatingScope>>>?>("tasksResponse", true)
     val allTasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>?> = _tasksResponse
 
-    private val _filter = MutableLiveData(TaskFilter(tasksRepository.ignoredTaskDao))
+    private val _filter = registerProperty("filter", true, TaskFilter(tasksRepository.ignoredTaskDao))
     val filter: LiveData<TaskFilter> = _filter
 
     val filteredTasksResponse: LiveData<Response<List<Pair<ITask, IOperatingScope>>>?>
@@ -28,17 +28,17 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
             when (filter) {
                 null -> allTasksResponse
                 else -> allTasksResponse.switchMap { response ->
-                    val filtered = MutableLiveData<Response<List<Pair<ITask, IOperatingScope>>>?>()
+                    val filtered = registerProperty<Response<List<Pair<ITask, IOperatingScope>>>?>("filtered", true)
                     filtered.value = response?.smartMap { filter.apply(it) }
                     filtered
                 }
             }
         }
 
-    private val _postResponse = MutableLiveData<Response<ITask?>?>()
+    private val _postResponse = registerProperty<Response<ITask?>?>("postResponse", true)
     val postResponse: LiveData<Response<ITask?>?> = _postResponse
 
-    private val _batchDeleteResponse = MutableLiveData<List<Response<Pair<ITask, IOperatingScope>>>?>()
+    private val _batchDeleteResponse = registerProperty<List<Response<Pair<ITask, IOperatingScope>>>?>("batchDeleteResponse", true)
     val batchDeleteResponse: LiveData<List<Response<Pair<ITask, IOperatingScope>>>?> = _batchDeleteResponse
 
     fun loadTasks(includeIgnored: Boolean, apiContext: IApiContext) {
@@ -145,10 +145,4 @@ class TasksViewModel @Inject constructor(private val savedStateHandle: SavedStat
         }
     }
 
-    override fun resetScopedData() {
-        _tasksResponse.value = null
-        _postResponse.value = null
-        _batchDeleteResponse.value = null
-        _filter.value = TaskFilter(tasksRepository.ignoredTaskDao)
-    }
 }

@@ -19,58 +19,58 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val mailboxRepository: MailboxRepository) : ScopedViewModel() {
+class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val mailboxRepository: MailboxRepository) : ScopedViewModel(savedStateHandle) {
 
-    private val _foldersResponse = MutableLiveData<Response<List<IEmailFolder>>?>()
+    private val _foldersResponse = registerProperty<Response<List<IEmailFolder>>?>("foldersResponse", true)
     val foldersResponse: LiveData<Response<List<IEmailFolder>>?> = _foldersResponse
 
-    private val _folderPostResponse = MutableLiveData<Response<IEmailFolder?>?>()
+    private val _folderPostResponse = registerProperty<Response<IEmailFolder?>?>("folderPostResponse", true)
     val folderPostResponse: LiveData<Response<IEmailFolder?>?> = _folderPostResponse
 
-    private val _currentFolder = MutableLiveData<IEmailFolder?>()
+    private val _currentFolder = registerProperty<IEmailFolder?>("currentFolder", true)
     val currentFolder: LiveData<IEmailFolder?> = _currentFolder
 
-    private val _currentMails = MutableLiveData<Response<List<IEmail>>?>()
+    private val _currentMails = registerProperty<Response<List<IEmail>>?>("currentMails", true)
     val allCurrentMails: LiveData<Response<List<IEmail>>?> = _currentMails
 
-    private val _exportSessionFileResponse = MutableLiveData<Response<FileDownloadUrl>?>()
+    private val _exportSessionFileResponse = registerProperty<Response<FileDownloadUrl>?>("exportSessionFileResponse", true)
     val exportSessionFileResponse: LiveData<Response<FileDownloadUrl>?> = _exportSessionFileResponse
 
-    private val _downloadSaveAttachmentWorkerId = MutableLiveData<UUID?>()
+    private val _downloadSaveAttachmentWorkerId = registerProperty<UUID?>("downloadSaveAttachmentWorkerId", true)
     val downloadSaveAttachmentWorkerId: LiveData<UUID?> = _downloadSaveAttachmentWorkerId
 
 
     private val emailResponses = mutableMapOf<IEmailFolder, MutableLiveData<Response<List<IEmail>>>>()
 
-    val mailFilter = MutableLiveData(MailFilter())
+    val mailFilter = registerProperty("mailFilter", true, MailFilter())
     val currentFilteredMails: LiveData<Response<List<IEmail>>?>
         get() = mailFilter.switchMap { filter ->
             when (filter) {
                 null -> allCurrentMails
                 else -> allCurrentMails.switchMap { response ->
-                    val filtered = MutableLiveData<Response<List<IEmail>>?>()
+                    val filtered = registerProperty<Response<List<IEmail>>?>("filtered", true)
                     filtered.value = response?.smartMap { filter.apply(it) }
                     filtered
                 }
             }
         }
 
-    private val _emailPostResponse = MutableLiveData<Response<IEmail?>?>()
+    private val _emailPostResponse = registerProperty<Response<IEmail?>?>("emailPostResponse", true)
     val emailPostResponse: LiveData<Response<IEmail?>?> = _emailPostResponse
 
-    private val _emailReadPostResponse = MutableLiveData<Response<IEmail?>?>()
+    private val _emailReadPostResponse = registerProperty<Response<IEmail?>?>("emailReadPostResponse", true)
     val emailReadPostResponse: LiveData<Response<IEmail?>?> = _emailReadPostResponse
 
-    private val _emailSendResponse = MutableLiveData<Response<Unit>?>()
+    private val _emailSendResponse = registerProperty<Response<Unit>?>("emailSendResponse", true)
     val emailSendResponse: LiveData<Response<Unit>?> = _emailSendResponse
 
-    private val _batchMoveResponse = MutableLiveData<List<Response<IEmail>>?>()
+    private val _batchMoveResponse = registerProperty<List<Response<IEmail>>?>("batchMoveResponse", true)
     val batchMoveResponse: LiveData<List<Response<IEmail>>?> = _batchMoveResponse
 
-    private val _batchDeleteResponse = MutableLiveData<List<Response<IEmail>>?>()
+    private val _batchDeleteResponse = registerProperty<List<Response<IEmail>>?>("batchDeleteResponse", true)
     val batchDeleteResponse: LiveData<List<Response<IEmail>>?> = _batchDeleteResponse
 
-    private val _batchEmailSetResponse = MutableLiveData<List<Response<IEmail>>?>()
+    private val _batchEmailSetResponse = registerProperty<List<Response<IEmail>>?>("batchEmailSetResponse", true)
     val batchEmailSetResponse: LiveData<List<Response<IEmail>>?> = _batchEmailSetResponse
 
     fun loadFolders(apiContext: IApiContext) {
@@ -113,7 +113,7 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
 
     private suspend fun suspendLoadEmails(folder: IEmailFolder, apiContext: IApiContext) {
         val response = mailboxRepository.getEmails(folder, apiContext)
-        emailResponses.getOrPut(folder) { MutableLiveData() }.value = response
+        emailResponses.getOrPut(folder) { registerProperty("emailResponse", true) }.value = response
     }
 
     fun getCachedResponse(folder: IEmailFolder): Response<List<IEmail>>? {
@@ -284,20 +284,6 @@ class MailboxViewModel @Inject constructor(private val savedStateHandle: SavedSt
 
     fun resetEmailSetResponse() {
         _batchEmailSetResponse.value = null
-    }
-
-    override fun resetScopedData() {
-        _foldersResponse.value = null
-        _folderPostResponse.value = null
-        _currentFolder.value = null
-        _currentMails.value = null
-        _emailPostResponse.value = null
-        _emailReadPostResponse.value = null
-        _emailSendResponse.value = null
-        _batchMoveResponse.value = null
-        _batchDeleteResponse.value = null
-        _batchEmailSetResponse.value = null
-        mailFilter.value = MailFilter()
     }
 
     fun resetExportAttachmentResponse() {

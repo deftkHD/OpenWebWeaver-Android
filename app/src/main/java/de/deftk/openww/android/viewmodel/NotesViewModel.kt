@@ -12,31 +12,31 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val notesRepository: NotesRepository) : ScopedViewModel() {
+class NotesViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val notesRepository: NotesRepository) : ScopedViewModel(savedStateHandle) {
 
-    private val _notesResponse = MutableLiveData<Response<List<INote>>?>()
+    private val _notesResponse = registerProperty<Response<List<INote>>?>("notesResponse", true)
     val allNotesResponse: LiveData<Response<List<INote>>?> = _notesResponse
 
-    val filter = MutableLiveData(NoteFilter())
+    val filter = registerProperty("filter", true, NoteFilter())
     val filteredNotesResponse: LiveData<Response<List<INote>>?>
         get() = filter.switchMap { filter ->
             when (filter) {
                 null -> allNotesResponse
                 else -> allNotesResponse.switchMap { response ->
-                    val filtered = MutableLiveData<Response<List<INote>>?>()
+                    val filtered = registerProperty<Response<List<INote>>?>("filtered", true)
                     filtered.value = response?.smartMap { filter.apply(it) }
                     filtered
                 }
             }
         }
 
-    private val _editResponse = MutableLiveData<Response<INote>?>()
+    private val _editResponse = registerProperty<Response<INote>?>("editResponse", true)
     val editResponse: LiveData<Response<INote>?> = _editResponse
 
-    private val _deleteResponse = MutableLiveData<Response<INote>?>()
+    private val _deleteResponse = registerProperty<Response<INote>?>("deleteResponse", true)
     val deleteResponse: LiveData<Response<INote>?> = _deleteResponse
 
-    private val _batchDeleteResponse = MutableLiveData<List<Response<INote>>?>()
+    private val _batchDeleteResponse = registerProperty<List<Response<INote>>?>("batchDeleteResponse", true)
     val batchDeleteResponse: LiveData<List<Response<INote>>?> = _batchDeleteResponse
 
     fun loadNotes(apiContext: IApiContext) {
@@ -114,11 +114,4 @@ class NotesViewModel @Inject constructor(private val savedStateHandle: SavedStat
         _batchDeleteResponse.value = null
     }
 
-    override fun resetScopedData() {
-        _notesResponse.value = null
-        _editResponse.value = null
-        _deleteResponse.value = null
-        _batchDeleteResponse.value = null
-        filter.value = NoteFilter()
-    }
 }

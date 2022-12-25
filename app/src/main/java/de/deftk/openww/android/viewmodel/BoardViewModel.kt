@@ -1,6 +1,9 @@
 package de.deftk.openww.android.viewmodel
 
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.switchMap
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.filter.BoardNotificationFilter
@@ -15,29 +18,29 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStateHandle, private val boardRepository: BoardRepository): ScopedViewModel() {
+class BoardViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val boardRepository: BoardRepository): ScopedViewModel(savedStateHandle) {
 
-    private val _notificationsResponse = MutableLiveData<Response<List<Pair<IBoardNotification, IGroup>>>?>()
+    private val _notificationsResponse = registerProperty<Response<List<Pair<IBoardNotification, IGroup>>>?>("notificationsResponse", true)
     val allNotificationsResponse: LiveData<Response<List<Pair<IBoardNotification, IGroup>>>?> = _notificationsResponse
 
-    val filter = MutableLiveData(BoardNotificationFilter())
+    val filter = registerProperty("filter", true, BoardNotificationFilter())
 
     val filteredNotificationResponse: LiveData<Response<List<Pair<IBoardNotification, IGroup>>>?>
         get() = filter.switchMap { filter ->
             when (filter) {
                 null -> allNotificationsResponse
                 else -> allNotificationsResponse.switchMap { response ->
-                    val filtered = MutableLiveData<Response<List<Pair<IBoardNotification, IGroup>>>?>()
+                    val filtered = registerProperty<Response<List<Pair<IBoardNotification, IGroup>>>?>("filtered", true)
                     filtered.value = response?.smartMap { filter.apply(it) }
                     filtered
                 }
             }
         }
 
-    private val _postResponse = MutableLiveData<Response<IBoardNotification?>?>()
+    private val _postResponse = registerProperty<Response<IBoardNotification?>?>("postResponse", true)
     val postResponse: LiveData<Response<IBoardNotification?>?> = _postResponse
 
-    private val _batchDeleteResponse = MutableLiveData<List<Response<Pair<IBoardNotification, IGroup>>>?>()
+    private val _batchDeleteResponse = registerProperty<List<Response<Pair<IBoardNotification, IGroup>>>?>("batchDeleteResponse", true)
     val batchDeleteResponse: LiveData<List<Response<Pair<IBoardNotification, IGroup>>>?> = _batchDeleteResponse
 
     fun loadBoardNotifications(apiContext: IApiContext) {
@@ -124,10 +127,4 @@ class BoardViewModel @Inject constructor(private val savedStateHandle: SavedStat
         _batchDeleteResponse.value = null
     }
 
-    override fun resetScopedData() {
-        _notificationsResponse.value = null
-        _batchDeleteResponse.value = null
-        _postResponse.value = null
-        filter.value = BoardNotificationFilter()
-    }
 }
