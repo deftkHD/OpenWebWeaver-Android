@@ -2,9 +2,11 @@ package de.deftk.openww.android.viewmodel
 
 import android.accounts.Account
 import android.accounts.AccountManager
+import android.app.Application
 import android.content.Context
 import android.os.Build
 import androidx.lifecycle.*
+import androidx.preference.PreferenceManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
@@ -32,7 +34,7 @@ import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
-class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val userRepository: UserRepository) : ScopedViewModel(savedStateHandle) {
+class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val application: Application, private val userRepository: UserRepository) : ScopedViewModel(savedStateHandle) {
 
     private val _loginResponse = registerProperty<Response<IApiContext>?>("loginResponse", true)
     val loginResponse: LiveData<Response<IApiContext>?> = _loginResponse
@@ -241,11 +243,12 @@ class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, priv
     }
 
     suspend fun handleNewApiResponse(request: ApiRequest, response: ApiResponse) {
-        //TODO check if dev tools are enabled -> reduce overhead
-        val list = _pastRequests.value ?: mutableListOf()
-        list.add(PastRequest(nextRequestId++, request, response, Date()))
-        withContext(Dispatchers.Main) {
-            _pastRequests.value = list
+        if (PreferenceManager.getDefaultSharedPreferences(application).getBoolean("show_devtools", false)) {
+            val list = _pastRequests.value ?: mutableListOf()
+            list.add(PastRequest(nextRequestId++, request, response, Date()))
+            withContext(Dispatchers.Main) {
+                _pastRequests.value = list
+            }
         }
     }
 
