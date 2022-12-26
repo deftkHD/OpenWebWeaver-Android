@@ -45,6 +45,7 @@ class ExceptionFragment : AbstractFragment(true) {
             binding.exceptionDate.text = "Exception at " + DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.LONG).format(report.date)
             binding.exceptionName.text = report.getTitle()
             binding.exceptionDetail.text = report.exception?.stackTraceToString() ?: report.stackTrace.joinToString("\n") { "\tat $it" }
+            binding.exceptionSource.text = "Source: " + report.source.toString()
 
             binding.fabCopyExceptionData.isEnabled = true
         }
@@ -53,8 +54,10 @@ class ExceptionFragment : AbstractFragment(true) {
             val clipboard = requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clipObj = buildJsonObject {
                 put("exceptionId", report.id)
+                put("name", report.getTitle())
                 put("date", report.date.time)
-                put("stacktrace", report.exception?.stackTraceToString() ?: report.stackTrace.toString())
+                put("source", report.source.toString())
+                put("stacktrace", report.exception?.stackTraceToString() ?: report.stackTrace.joinToString("\n") { "\tat $it" })
             }
             clipboard.setPrimaryClip(ClipData.newPlainText("Exception", WebWeaverClient.json.encodeToString(clipObj)))
         }
