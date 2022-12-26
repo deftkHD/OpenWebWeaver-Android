@@ -26,16 +26,14 @@ import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.databinding.ActivityMainBinding
 import de.deftk.openww.android.feature.AppFeature
 import de.deftk.openww.android.feature.LaunchMode
+import de.deftk.openww.android.utils.FileUtil
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.*
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.Permission
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmentCompat.OnPreferenceStartFragmentCallback, MenuHost {
@@ -153,6 +151,12 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_logout_failed, response.exception, this)
             }
+        }
+
+        val job = Job()
+        val coroutine = CoroutineScope(Dispatchers.Main + job)
+        coroutine.launch {
+            FileUtil.cleanupCache(this@MainActivity)
         }
     }
 

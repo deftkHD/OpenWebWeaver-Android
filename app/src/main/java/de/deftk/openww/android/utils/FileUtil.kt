@@ -15,6 +15,8 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
 import de.deftk.openww.android.feature.filestorage.DownloadOpenWorker
 import de.deftk.openww.api.model.feature.FileUrl
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 object FileUtil {
@@ -114,6 +116,13 @@ object FileUtil {
                 val errorMessage = workInfo.outputData.getString(AbstractNotifyingWorker.DATA_ERROR_MESSAGE) ?: "Unknown"
                 Reporter.reportException(R.string.error_download_worker_failed, errorMessage, activity)
             }
+        }
+    }
+
+    suspend fun cleanupCache(context: Context) {
+        withContext(Dispatchers.IO) {
+            File(context.cacheDir, "filestorage").deleteRecursively()
+            File(context.cacheDir, "attachments").deleteRecursively()
         }
     }
 
