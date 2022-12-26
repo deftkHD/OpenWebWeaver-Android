@@ -16,8 +16,6 @@ import kotlinx.coroutines.*
 
 class DevToolsFragment : AbstractFragment(true) {
 
-    //TODO list with recent exceptions (capture inside Reporter class)
-
     private val userViewModel by activityViewModels<UserViewModel>()
     private val navController by lazy { findNavController() }
 
@@ -51,6 +49,10 @@ class DevToolsFragment : AbstractFragment(true) {
 
         binding.showPastRequests.setOnClickListener {
             navController.navigate(DevToolsFragmentDirections.actionDevToolsFragmentToPastRequestsFragment())
+        }
+
+        binding.showExceptions.setOnClickListener {
+            navController.navigate(DevToolsFragmentDirections.actionDevToolsFragmentToExceptionsFragment())
         }
 
         return binding.root

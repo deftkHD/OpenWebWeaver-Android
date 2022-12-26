@@ -6,7 +6,6 @@ import android.app.Application
 import android.content.Context
 import android.os.Build
 import androidx.lifecycle.*
-import androidx.preference.PreferenceManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
@@ -15,6 +14,7 @@ import de.deftk.openww.android.feature.devtools.PastRequest
 import de.deftk.openww.android.feature.overview.AbstractOverviewElement
 import de.deftk.openww.android.filter.SystemNotificationFilter
 import de.deftk.openww.android.repository.UserRepository
+import de.deftk.openww.android.utils.DebugUtil
 import de.deftk.openww.api.auth.Credentials
 import de.deftk.openww.api.implementation.ApiContext
 import de.deftk.openww.api.model.IApiContext
@@ -54,7 +54,7 @@ class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, priv
 
     val systemNotificationFilter = registerProperty<SystemNotificationFilter>("systemNotificationFilter", true)
 
-    val _systemNotificationSettingsResponse = registerProperty<Response<List<INotificationSetting>>?>("systemNotificationSettingsResponse", true)
+    private val _systemNotificationSettingsResponse = registerProperty<Response<List<INotificationSetting>>?>("systemNotificationSettingsResponse", true)
     val systemNotificationSettingsResponse: LiveData<Response<List<INotificationSetting>>?> = _systemNotificationSettingsResponse
 
     val filteredSystemNotificationResponse: LiveData<Response<List<ISystemNotification>>?>
@@ -243,7 +243,7 @@ class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, priv
     }
 
     suspend fun handleNewApiResponse(request: ApiRequest, response: ApiResponse) {
-        if (PreferenceManager.getDefaultSharedPreferences(application).getBoolean("show_devtools", false)) {
+        if (DebugUtil.areDevToolsEnabled(application)) {
             val list = _pastRequests.value ?: mutableListOf()
             list.add(PastRequest(nextRequestId++, request, response, Date()))
             withContext(Dispatchers.Main) {

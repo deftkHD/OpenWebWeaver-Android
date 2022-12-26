@@ -599,6 +599,9 @@
         <action
             android:id="@+id/action_devToolsFragment_to_pastRequestsFragment"
             app:destination="@id/pastRequestsFragment" />
+        <action
+            android:id="@+id/action_devToolsFragment_to_exceptionsFragment"
+            app:destination="@id/exceptionsFragment" />
     </fragment>
     <fragment
         android:id="@+id/pastRequestsFragment"
@@ -617,5 +620,23 @@
         <argument
             android:name="request_id"
             app:argType="integer" />
+    </fragment>
+    <fragment
+        android:id="@+id/exceptionFragment"
+        android:name="de.deftk.openww.android.fragments.devtools.ExceptionFragment"
+        android:label="@string/exception_detail"
+        tools:layout="@layout/fragment_exception">
+        <argument
+            android:name="exception_id"
+            app:argType="integer" />
+    </fragment>
+    <fragment
+        android:id="@+id/exceptionsFragment"
+        android:name="de.deftk.openww.android.fragments.devtools.ExceptionsFragment"
+        android:label="@string/exceptions"
+        tools:layout="@layout/fragment_exceptions">
+        <action
+            android:id="@+id/action_exceptionsFragment_to_exceptionFragment"
+            app:destination="@id/exceptionFragment" />
     </fragment>
 </navigation>
