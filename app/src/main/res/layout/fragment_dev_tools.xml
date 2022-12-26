@@ -3,34 +3,43 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragments.devtools.DevToolsFragment"
-    android:padding="16dp">
+    android:padding="16dp"
+    tools:context=".fragments.devtools.DevToolsFragment">
 
     <Button
         android:id="@+id/show_past_requests"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:text="@string/show_past_requests" />
 
     <Button
         android:id="@+id/show_exceptions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/show_past_requests"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_below="@id/show_past_requests"
         android:text="@string/show_exceptions" />
 
     <Button
         android:id="@+id/force_invalidate_session"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/show_exceptions"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_below="@+id/show_exceptions"
         android:text="@string/force_invalidate_session" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/handle_uncaught_exceptions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/force_invalidate_session"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:text="@string/handle_uncaught_exceptions" />
 
 </RelativeLayout>

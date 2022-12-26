@@ -350,5 +350,7 @@
     <string name="exceptions_empty" translatable="false">No exceptions</string>
     <string name="show_exceptions" translatable="false">Show exceptions</string>
     <string name="uncaught_exception" translatable="false">Uncaught exception: %s</string>
+    <string name="handle_uncaught_exceptions" translatable="false">Handle uncaught exceptions</string>
+    <string name="action_requires_restart" translatable="false">This action requires restarting the app!</string>
 
 </resources>

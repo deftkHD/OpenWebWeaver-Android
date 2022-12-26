@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.preference.PreferenceManager
 import de.deftk.openww.android.R
 import de.deftk.openww.android.databinding.FragmentDevToolsBinding
 import de.deftk.openww.android.fragments.AbstractFragment
@@ -53,6 +54,13 @@ class DevToolsFragment : AbstractFragment(true) {
 
         binding.showExceptions.setOnClickListener {
             navController.navigate(DevToolsFragmentDirections.actionDevToolsFragmentToExceptionsFragment())
+        }
+
+        val preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
+        binding.handleUncaughtExceptions.isChecked = preferences.getBoolean("devtools_uncaught_exception_handling", false)
+        binding.handleUncaughtExceptions.setOnCheckedChangeListener { _, isChecked ->
+            preferences.edit().putBoolean("devtools_uncaught_exception_handling", isChecked).apply()
+            Toast.makeText(requireContext(), R.string.action_requires_restart, Toast.LENGTH_SHORT).show()
         }
 
         return binding.root
