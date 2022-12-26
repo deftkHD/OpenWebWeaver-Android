@@ -288,6 +288,8 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     }
 
     private fun getProviderFile(): FileCacheElement? {
+        if (scope == null)
+            return null
         return fileStorageViewModel.getAllFiles(scope!!).value?.valueOrNull()?.firstOrNull { it.file.id == folderId || (it.file.id == "" && folderId == "/") }
     }
 
