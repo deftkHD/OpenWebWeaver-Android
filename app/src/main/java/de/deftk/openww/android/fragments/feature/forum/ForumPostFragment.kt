@@ -115,7 +115,7 @@ class ForumPostFragment : AbstractFragment(true) {
                             binding.forumPostCommentList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
                             binding.forumPostCommentList.adapter = adapter
-                            adapter.submitList(comments.sortedBy { it.created.date.time })
+                            adapter.submitList(comments.sortedBy { it.created.date?.time })
                             binding.forumPostNoComments.isVisible = comments.isEmpty()
 
                             setUIState(UIState.READY)

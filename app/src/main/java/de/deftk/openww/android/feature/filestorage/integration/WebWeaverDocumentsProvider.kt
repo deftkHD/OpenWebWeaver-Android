@@ -473,7 +473,8 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
             } else {
                 add(Document.COLUMN_MIME_TYPE, Document.MIME_TYPE_DIR)
             }
-            add(Document.COLUMN_LAST_MODIFIED, file.modified.date.time)
+            if (file.modified.date != null)
+                add(Document.COLUMN_LAST_MODIFIED, file.modified.date!!.time)
             add(Document.COLUMN_FLAGS, flags)
             add(Document.COLUMN_ICON, R.drawable.ic_launcher_foreground)
         }

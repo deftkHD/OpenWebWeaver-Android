@@ -71,7 +71,7 @@ class FileAdapter(
             binding.scope = scope
             binding.file = file
             binding.readable = file.effectiveRead == true
-            val recentlyCreated = Date().time - file.created.date.time <= 259200000 // 3 days
+            val recentlyCreated = Date().time - (file.created.date?.time ?: 0L) <= 259200000 // 3 days
             binding.recentlyCreated = recentlyCreated
             if (file.type == FileType.FOLDER && !recentlyCreated) {
                 val recentlyAdded = file.aggregation?.newestFile?.created?.date?.time

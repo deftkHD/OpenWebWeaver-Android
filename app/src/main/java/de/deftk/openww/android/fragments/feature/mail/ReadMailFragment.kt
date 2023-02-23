@@ -68,7 +68,8 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
                     binding.mailSubject.text = email.subject
                     binding.mailAuthor.text = (email.from ?: emptyList()).firstOrNull()?.name ?: ""
                     binding.mailAuthorAddress.text = (email.from ?: emptyList()).firstOrNull()?.address ?: ""
-                    binding.mailDate.text = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.DEFAULT).format(email.date)
+                    if (email.date != null)
+                        binding.mailDate.text = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.DEFAULT).format(email.date!!)
                     val text = email.text ?: email.plainBody
                     binding.mailMessage.text = TextUtils.parseMultipleQuotes(TextUtils.parseInternalReferences(TextUtils.parseHtml(text), null, navController))
                     binding.mailMessage.movementMethod = LinkMovementMethod.getInstance()

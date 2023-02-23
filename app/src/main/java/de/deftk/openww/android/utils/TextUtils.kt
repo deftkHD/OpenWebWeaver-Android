@@ -18,7 +18,9 @@ import java.util.*
 
 object TextUtils {
 
-    fun parseShortDate(date: Date): String {
+    fun parseShortDate(date: Date?): String {
+        if (date == null)
+            return ""
         return if (DateUtils.isToday(date.time)) {
             DateFormat.getTimeInstance(DateFormat.SHORT).format(date)
         } else {

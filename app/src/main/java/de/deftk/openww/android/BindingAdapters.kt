@@ -107,7 +107,7 @@ object BindingAdapters {
 
     @JvmStatic
     @BindingAdapter("dateText")
-    fun dateText(view: TextView, date: Date) {
+    fun dateText(view: TextView, date: Date?) {
         view.text = TextUtils.parseShortDate(date)
     }
 

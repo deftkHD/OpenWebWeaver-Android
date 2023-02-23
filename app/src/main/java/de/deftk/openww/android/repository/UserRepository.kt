@@ -63,7 +63,7 @@ class UserRepository @Inject constructor() : AbstractRepository() {
     }
 
     suspend fun getSystemNotifications(apiContext: IApiContext) = apiCall {
-        apiContext.user.getSystemNotifications(apiContext.user.getRequestContext(apiContext)).sortedByDescending { it.date.time }
+        apiContext.user.getSystemNotifications(apiContext.user.getRequestContext(apiContext)).sortedByDescending { it.date?.time }
     }
 
     suspend fun deleteSystemNotification(systemNotification: ISystemNotification, apiContext: IApiContext) = apiCall {

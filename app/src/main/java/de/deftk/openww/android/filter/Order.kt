@@ -148,13 +148,13 @@ sealed class TaskOrder(@StringRes nameRes: Int) : ScopedOrder<ITask, IOperatingS
 
     object ByGivenAsc : TaskOrder(0) {
         override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
-            return items.sortedBy { it.first.startDate?.time ?: it.first.created.date.time }
+            return items.sortedBy { it.first.startDate?.time ?: it.first.created.date?.time }
         }
     }
 
     object ByGivenDesc : TaskOrder(0) {
         override fun sort(items: List<Pair<ITask, IOperatingScope>>): List<Pair<ITask, IOperatingScope>> {
-            return items.sortedByDescending { it.first.startDate?.time ?: it.first.created.date.time }
+            return items.sortedByDescending { it.first.startDate?.time ?: it.first.created.date?.time }
         }
     }
 
@@ -176,13 +176,13 @@ sealed class BoardNotificationOrder(@StringRes nameRes: Int) : ScopedOrder<IBoar
 
     object ByCreatedAsc : BoardNotificationOrder(0) {
         override fun sort(items: List<Pair<IBoardNotification, IGroup>>): List<Pair<IBoardNotification, IGroup>> {
-            return items.sortedBy { it.first.created.date.time }
+            return items.sortedBy { it.first.created.date?.time }
         }
     }
 
     object ByCreatedDesc : BoardNotificationOrder(0) {
         override fun sort(items: List<Pair<IBoardNotification, IGroup>>): List<Pair<IBoardNotification, IGroup>> {
-            return items.sortedByDescending { it.first.created.date.time }
+            return items.sortedByDescending { it.first.created.date?.time }
         }
     }
 
@@ -204,13 +204,13 @@ sealed class SystemNotificationOrder(@StringRes nameRes: Int): Order<ISystemNoti
 
     object ByDateAsc : SystemNotificationOrder(0) {
         override fun sort(items: List<ISystemNotification>): List<ISystemNotification> {
-            return items.sortedBy { it.date.time }
+            return items.sortedBy { it.date?.time }
         }
     }
 
     object ByDateDesc : SystemNotificationOrder(0) {
         override fun sort(items: List<ISystemNotification>): List<ISystemNotification> {
-            return items.sortedByDescending { it.date.time }
+            return items.sortedByDescending { it.date?.time }
         }
     }
 
@@ -240,13 +240,13 @@ sealed class NoteOrder(@StringRes nameRes: Int): Order<INote>(nameRes) {
 
     object ByDateCreatedAsc : NoteOrder(0) {
         override fun sort(items: List<INote>): List<INote> {
-            return items.sortedBy { it.created.date.time }
+            return items.sortedBy { it.created.date?.time }
         }
     }
 
     object ByDateCreatedDesc : NoteOrder(0) {
         override fun sort(items: List<INote>): List<INote> {
-            return items.sortedByDescending { it.created.date.time }
+            return items.sortedByDescending { it.created.date?.time }
         }
     }
 
@@ -272,13 +272,13 @@ sealed class MailOrder(@StringRes nameRes: Int): Order<IEmail>(nameRes) {
 
     object ByDateAsc : MailOrder(0) {
         override fun sort(items: List<IEmail>): List<IEmail> {
-            return items.sortedBy { it.date.time }
+            return items.sortedBy { it.date?.time }
         }
     }
 
     object ByDateDesc : MailOrder(0) {
         override fun sort(items: List<IEmail>): List<IEmail> {
-            return items.sortedByDescending { it.date.time }
+            return items.sortedByDescending { it.date?.time }
         }
     }
 
