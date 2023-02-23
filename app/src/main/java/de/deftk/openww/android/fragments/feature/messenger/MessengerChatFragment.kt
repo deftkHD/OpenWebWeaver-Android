@@ -41,13 +41,14 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
         binding.chatsSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
                 messengerViewModel.loadHistory(args.user, false, apiContext)
+                setUIState(UIState.LOADING)
             }
         }
 
         binding.btnSend.setOnClickListener {
             userViewModel.apiContext.value?.also { apiContext ->
                 messengerViewModel.sendMessage(args.user, binding.txtMessage.text.toString(), null, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             }
         }
 
@@ -56,8 +57,10 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
                 binding.txtMessage.text = null
                 userViewModel.apiContext.value?.also { apiContext ->
                     messengerViewModel.loadHistory(args.user, true, apiContext)
+                    setUIState(UIState.LOADING)
                 }
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_send_message_failed, response.exception, requireContext())
             }
         }
@@ -67,19 +70,19 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
                 val messages = response.value.first
                 if ((adapter.itemCount != messages.size && response.value.second) || !response.value.second)
                     adapter.submitList(messages)
-                binding.chatsEmpty.isVisible = messages.isEmpty()
+                setUIState(if (messages.isEmpty()) UIState.EMPTY else UIState.READY)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_messages_failed, response.exception, requireContext())
             }
-            enableUI(true)
-            binding.chatsSwipeRefresh.isRefreshing = false
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                messengerViewModel.loadHistory(args.user, false, apiContext)
-                if (messengerViewModel.getAllMessagesResponse(args.user).value == null)
-                    enableUI(false)
+                if (messengerViewModel.getAllMessagesResponse(args.user).value == null) {
+                    messengerViewModel.loadHistory(args.user, false, apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
                 //TODO implement
                 findNavController().popBackStack(R.id.chatsFragment, false)
@@ -120,7 +123,7 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
             R.id.messenger_options_item_delete_saved_chat -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     messengerViewModel.clearChat(args.user, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> return false
@@ -138,11 +141,13 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.btnSend.isEnabled = enabled
-        binding.txtMessage.isEnabled = enabled
-        binding.chatsSwipeRefresh.isEnabled = enabled
-        binding.chatList.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.btnSend.isEnabled = newState == UIState.READY
+        binding.txtMessage.isEnabled = newState == UIState.READY
+        binding.chatsSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.chatsSwipeRefresh.isRefreshing = newState.refreshing
+        binding.chatList.isEnabled = newState.listEnabled
+        binding.chatsEmpty.isVisible = newState.showEmptyIndicator
     }
 }
 

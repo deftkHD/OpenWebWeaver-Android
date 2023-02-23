@@ -23,7 +23,7 @@ class LoginFragment : AbstractFragment(false) {
     private val navController by lazy { findNavController() }
     private val args: LoginFragmentArgs by navArgs()
 
-    private var actionPerformed = false
+    private var loginActionPerformed = false
 
     private lateinit var binding: FragmentLoginBinding
 
@@ -40,7 +40,7 @@ class LoginFragment : AbstractFragment(false) {
         binding.chbStayLoggedIn.isChecked = forceRemember
 
         userViewModel.loginToken.observe(viewLifecycleOwner) { response ->
-            if (response is Response.Success && actionPerformed) {
+            if (response is Response.Success && loginActionPerformed) {
                 AccountManager.get(requireContext()).addAccountExplicitly(
                     Account(response.value.first, getString(R.string.account_type)),
                     response.value.second,
@@ -50,8 +50,9 @@ class LoginFragment : AbstractFragment(false) {
         }
 
         userViewModel.loginResponse.observe(viewLifecycleOwner) { response ->
-            if (actionPerformed) {
+            if (loginActionPerformed) {
                 if (response is Response.Success) {
+                    setUIState(UIState.READY)
                     if (authenticatorResponse != null) {
                         val bundle = Bundle()
                         bundle.putString(AccountManager.KEY_ACCOUNT_NAME, response.value.user.login)
@@ -67,8 +68,9 @@ class LoginFragment : AbstractFragment(false) {
                         navController.navigate(LoginFragmentDirections.actionLoginFragmentToOverviewFragment())
                     }
                 } else if (response is Response.Failure) {
+                    setUIState(UIState.READY) // don't set it to error so the user can try again
                     response.exception.printStackTrace()
-                    actionPerformed = false
+                    loginActionPerformed = false
                     if (authenticatorResponse != null) {
                         val bundle = Bundle()
                         bundle.putString(AccountManager.KEY_ERROR_MESSAGE, response.exception.message ?: response.exception.toString())
@@ -78,7 +80,6 @@ class LoginFragment : AbstractFragment(false) {
                     }
                     Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
                 }
-                enableUI(true)
             }
         }
 
@@ -87,9 +88,9 @@ class LoginFragment : AbstractFragment(false) {
         }
 
         binding.btnLogin.setOnClickListener {
-            if (uiEnabled) {
-                actionPerformed = true
-                enableUI(false)
+            if (currentUIState == UIState.READY) {
+                loginActionPerformed = true
+                setUIState(UIState.LOADING)
                 val username = binding.txtEmail.text.toString()
                 val password = binding.txtPassword.text.toString()
                 val generateToken = binding.chbStayLoggedIn.isChecked
@@ -104,10 +105,11 @@ class LoginFragment : AbstractFragment(false) {
         return binding.root
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.btnLogin.isEnabled = enabled
-        binding.chbStayLoggedIn.isEnabled = enabled
-        binding.txtEmail.isEnabled = enabled
-        binding.txtPassword.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.btnLogin.isEnabled = newState == UIState.READY
+        binding.chbStayLoggedIn.isEnabled = newState == UIState.READY
+        binding.txtEmail.isEnabled = newState == UIState.READY
+        binding.txtPassword.isEnabled = newState == UIState.READY
+        binding.tokenLogin.isEnabled = !newState.refreshing
     }
 }

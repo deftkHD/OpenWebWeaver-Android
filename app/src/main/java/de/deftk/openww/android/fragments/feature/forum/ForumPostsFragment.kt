@@ -44,28 +44,32 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         binding.forumSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
                 forumViewModel.loadForumPosts(group!!, null, apiContext)
+                setUIState(UIState.LOADING)
             }
         }
 
         forumViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 forumViewModel.resetDeleteResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
+            } else if (response is Response.Success) {
+                setUIState(UIState.READY)
             }
         }
 
         forumViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 forumViewModel.resetBatchDeleteResponse()
-            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
             } else {
+                setUIState(UIState.READY)
                 actionMode?.finish()
             }
         }
@@ -97,21 +101,21 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
                     if (response is Response.Success) {
                         val posts = forumViewModel.filterRootPosts(response.value)
                         adapter.submitList(posts)
-                        binding.forumEmpty.isVisible = posts.isEmpty()
+                        setUIState(if (posts.isEmpty()) UIState.EMPTY else UIState.READY)
                     } else if (response is Response.Failure) {
+                        setUIState(UIState.ERROR)
                         Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
                     }
-                    enableUI(true)
                     binding.forumSwipeRefresh.isRefreshing = false
                 }
 
-                forumViewModel.loadForumPosts(group!!, null, apiContext)
-                if (forumViewModel.getAllForumPosts(group!!).value == null)
-                    enableUI(false)
+                if (forumViewModel.getAllForumPosts(group!!).value == null) {
+                    forumViewModel.loadForumPosts(group!!, null, apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
-                binding.forumEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
@@ -138,6 +142,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
             R.id.forum_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.batchDelete(adapter.selectedItems.map { it.binding.post!! }, group!!, apiContext)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> return false
@@ -160,6 +165,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
                 val comment = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.deletePost(comment, null, group!!, apiContext)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> super.onContextItemSelected(item)
@@ -197,8 +203,10 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.forumSwipeRefresh.isEnabled = enabled
-        binding.forumList.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.forumSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.forumSwipeRefresh.isRefreshing = newState.refreshing
+        binding.forumList.isEnabled = newState.listEnabled
+        binding.forumEmpty.isVisible = newState.showEmptyIndicator
     }
 }

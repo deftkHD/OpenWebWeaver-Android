@@ -2,20 +2,16 @@ package de.deftk.openww.android.fragments.devtools
 
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.view.ActionMode
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
-import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 import de.deftk.openww.android.adapter.recycler.RequestAdapter
 import de.deftk.openww.android.databinding.FragmentPastRequestsBinding
-import de.deftk.openww.android.feature.devtools.PastRequest
 import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.fragments.ActionModeClickListener
-import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.viewmodel.UserViewModel
 
 class PastRequestsFragment : AbstractFragment(true), ActionModeClickListener<RequestAdapter.RequestViewHolder> {
@@ -34,14 +30,20 @@ class PastRequestsFragment : AbstractFragment(true), ActionModeClickListener<Req
 
         userViewModel.pastRequests.observe(viewLifecycleOwner) { pastRequests ->
             adapter.submitList(pastRequests)
+            if (pastRequests.isNotEmpty()) {
+                setUIState(UIState.READY)
+            } else {
+                setUIState(UIState.EMPTY)
+            }
         }
 
         registerForContextMenu(binding.pastRequestsList)
         return binding.root
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.pastRequestsList.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.pastRequestsList.isEnabled = newState.listEnabled
+        binding.pastRequestsEmpty.isVisible = newState.showEmptyIndicator
     }
 
     override fun onClick(view: View, viewHolder: RequestAdapter.RequestViewHolder) {

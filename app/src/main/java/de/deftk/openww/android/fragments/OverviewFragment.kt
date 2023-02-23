@@ -38,6 +38,7 @@ class OverviewFragment: AbstractFragment(true) {
             binding.overviewList.adapter = null
             userViewModel.apiContext.value?.also { apiContext ->
                 userViewModel.loadOverview(getOverviewFeatures(), apiContext)
+                setUIState(UIState.LOADING)
             }
         }
         binding.overviewList.setOnItemClickListener { _, _, position, _ ->
@@ -51,29 +52,32 @@ class OverviewFragment: AbstractFragment(true) {
             if (response is Response.Success) {
                 binding.overviewList.adapter = OverviewAdapter(requireContext(), response.value)
                 Log.i(LOG_TAG, "Initialized ${response.value.size} overview elements")
-                binding.overviewSwipeRefresh.isRefreshing = false
+                setUIState(UIState.READY)
+
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_overview_request_failed, response.exception, requireContext())
+                setUIState(UIState.ERROR)
             }
-            enableUI(true)
         }
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             binding.overviewSwipeRefresh.isEnabled = apiContext != null
             if (apiContext != null) {
-                userViewModel.loadOverview(getOverviewFeatures(), apiContext)
-                if (userViewModel.overviewResponse.value == null)
-                    enableUI(false)
+                if (userViewModel.overviewResponse.value == null) {
+                    userViewModel.loadOverview(getOverviewFeatures(), apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
                 binding.overviewList.adapter = null
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
         return binding.root
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.overviewSwipeRefresh.isEnabled = enabled
-        binding.overviewList.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.overviewSwipeRefresh.isRefreshing = newState.refreshing
+        binding.overviewSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.overviewList.isEnabled = newState.listEnabled
     }
 
     private fun getOverviewFeatures(): List<AppFeature> {

@@ -53,6 +53,7 @@ class TokenLoginFragment : AbstractFragment(false) {
         userViewModel.loginResponse.observe(viewLifecycleOwner) { response ->
             if (actionPerformed) {
                 if (response is Response.Success) {
+                    setUIState(UIState.READY)
                     if (authenticatorResponse != null) {
                         val bundle = Bundle()
                         bundle.putString(AccountManager.KEY_ACCOUNT_NAME, response.value.user.login)
@@ -68,6 +69,7 @@ class TokenLoginFragment : AbstractFragment(false) {
                         navController.navigate(LoginFragmentDirections.actionLoginFragmentToOverviewFragment())
                     }
                 } else if (response is Response.Failure) {
+                    setUIState(UIState.READY)
                     response.exception.printStackTrace()
                     actionPerformed = false
                     if (authenticatorResponse != null) {
@@ -79,7 +81,6 @@ class TokenLoginFragment : AbstractFragment(false) {
                     }
                     Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
                 }
-                enableUI(true)
             }
         }
 
@@ -88,9 +89,9 @@ class TokenLoginFragment : AbstractFragment(false) {
         }
 
         binding.btnLogin.setOnClickListener {
-            if (uiEnabled) {
+            if (currentUIState == UIState.READY) {
                 actionPerformed = true
-                enableUI(false)
+                setUIState(UIState.LOADING)
                 val username = binding.txtEmail.text.toString()
                 val token = binding.txtToken.text.toString()
                 userViewModel.loginToken(username, token)
@@ -100,10 +101,11 @@ class TokenLoginFragment : AbstractFragment(false) {
         return binding.root
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.btnLogin.isEnabled = enabled
-        binding.chbRememberToken.isEnabled = enabled
-        binding.txtEmail.isEnabled = enabled
-        binding.txtToken.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.btnLogin.isEnabled = newState == UIState.READY
+        binding.chbRememberToken.isEnabled = newState == UIState.READY
+        binding.txtEmail.isEnabled = newState == UIState.READY
+        binding.txtToken.isEnabled = newState == UIState.READY
+        binding.passwordLogin.isEnabled = !newState.refreshing
     }
 }

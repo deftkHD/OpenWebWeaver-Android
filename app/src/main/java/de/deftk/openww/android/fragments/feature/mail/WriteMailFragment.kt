@@ -50,8 +50,8 @@ class WriteMailFragment : AbstractFragment(true) {
         }
 
         mailboxViewModel.emailSendResponse.observe(viewLifecycleOwner) { response ->
-            enableUI(true)
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 Toast.makeText(requireContext(), R.string.email_sent, Toast.LENGTH_LONG).show()
                 if (launchMode == LaunchMode.DEFAULT) {
                     findNavController().popBackStack()
@@ -59,6 +59,7 @@ class WriteMailFragment : AbstractFragment(true) {
                     requireActivity().finish()
                 }
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_send_email_failed, response.exception, requireContext())
             }
         }
@@ -81,7 +82,7 @@ class WriteMailFragment : AbstractFragment(true) {
                 Toast.makeText(requireContext(), R.string.mail_no_to, Toast.LENGTH_LONG).show()
                 return@setOnClickListener
             }
-            enableUI(false)
+            setUIState(UIState.LOADING)
             userViewModel.apiContext.value?.also { apiContext ->
                 mailboxViewModel.sendEmail(
                     to,
@@ -110,19 +111,19 @@ class WriteMailFragment : AbstractFragment(true) {
                 binding.fabSendMail.isEnabled = true
             } else {
                 binding.fabSendMail.isEnabled = false
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
         return binding.root
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.fabSendMail.isEnabled = enabled
-        binding.mailMessage.isEnabled = enabled
-        binding.mailSubject.isEnabled = enabled
-        binding.mailToAddress.isEnabled = enabled
-        binding.mailToAddressCc.isEnabled = enabled
-        binding.mailToAddressBcc.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.fabSendMail.isEnabled = newState == UIState.READY
+        binding.mailMessage.isEnabled = newState == UIState.READY
+        binding.mailSubject.isEnabled = newState == UIState.READY
+        binding.mailToAddress.isEnabled = newState == UIState.READY
+        binding.mailToAddressCc.isEnabled = newState == UIState.READY
+        binding.mailToAddressBcc.isEnabled = newState == UIState.READY
     }
 }

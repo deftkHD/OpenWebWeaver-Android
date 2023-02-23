@@ -42,12 +42,11 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         tasksViewModel.filteredTasksResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value)
-                binding.tasksEmpty.isVisible = response.value.isEmpty()
+                setUIState(if (response.value.isEmpty()) UIState.EMPTY else UIState.READY)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
             }
-            enableUI(true)
-            binding.tasksSwipeRefresh.isRefreshing = false
         }
 
         binding.tasksSwipeRefresh.setOnRefreshListener {
@@ -69,9 +68,10 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
                     return@observe
                 }
 
-                tasksViewModel.loadTasks(true, apiContext)
-                if (tasksViewModel.allTasksResponse.value == null)
-                    enableUI(false)
+                if (tasksViewModel.allTasksResponse.value == null) {
+                    tasksViewModel.loadTasks(true, apiContext)
+                    setUIState(UIState.LOADING)
+                }
                 binding.fabAddTask.isVisible = apiContext.user.getGroups().any { it.effectiveRights.contains(Permission.TASKS_WRITE) } || apiContext.user.getGroups().any { it.effectiveRights.contains(Permission.TASKS_ADMIN) }
                 tasksViewModel.setFilter { filter ->
                     filter.account = apiContext.user.login
@@ -80,19 +80,20 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
                 binding.fabAddTask.isVisible = false
                 binding.tasksEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
         tasksViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 tasksViewModel.resetBatchDeleteResponse()
-            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
             } else {
+                setUIState(UIState.READY)
                 actionMode?.finish()
             }
         }
@@ -100,10 +101,12 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 tasksViewModel.resetPostResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
+            } else if (response is Response.Success) {
+                setUIState(UIState.READY)
             }
         }
 
@@ -189,20 +192,21 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             R.id.tasks_action_item_ignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
                 mode.finish()
             }
             R.id.tasks_action_item_unignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.unignoreTasks(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
+                    setUIState(UIState.LOADING)
                 }
                 mode.finish()
             }
             R.id.tasks_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.batchDelete(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
                 mode.finish()
             }
@@ -234,13 +238,13 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             R.id.tasks_context_item_ignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(listOf(adapter.getItem(menuInfo.position)), apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             R.id.tasks_context_item_unignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.unignoreTasks(listOf(adapter.getItem(menuInfo.position)), apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             R.id.tasks_context_item_import_in_calendar -> {
@@ -256,16 +260,18 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
                 val (task, scope) = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 tasksViewModel.deleteTask(task, scope, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             }
             else -> return super.onContextItemSelected(item)
         }
         return true
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.tasksSwipeRefresh.isEnabled = enabled
-        binding.tasksList.isEnabled = enabled
-        binding.fabAddTask.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.tasksSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.tasksSwipeRefresh.isRefreshing = newState.refreshing
+        binding.tasksList.isEnabled = newState.listEnabled
+        binding.tasksEmpty.isVisible = newState.showEmptyIndicator
+        binding.fabAddTask.isEnabled = newState == UIState.READY
     }
 }

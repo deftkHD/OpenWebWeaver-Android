@@ -39,11 +39,11 @@ class ReadNotificationFragment : AbstractFragment(true) {
         binding = FragmentReadNotificationBinding.inflate(inflater, container, false)
 
         boardViewModel.allNotificationsResponse.observe(viewLifecycleOwner) { response ->
-            enableUI(true)
             if (deleted)
                 return@observe
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 val searched = response.value.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }
                 if (searched == null) {
                     Reporter.reportException(R.string.error_notification_not_found, args.notificationId, requireContext())
@@ -64,6 +64,7 @@ class ReadNotificationFragment : AbstractFragment(true) {
 
                 binding.fabEditNotification.isVisible = group.effectiveRights.contains(Permission.BOARD_ADMIN)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
                 navController.popBackStack()
                 return@observe
@@ -76,12 +77,13 @@ class ReadNotificationFragment : AbstractFragment(true) {
         boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 boardViewModel.resetPostResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 deleted = true
                 navController.popBackStack()
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
@@ -92,17 +94,17 @@ class ReadNotificationFragment : AbstractFragment(true) {
                     navController.popBackStack()
                     return@observe
                 }
-                boardViewModel.loadBoardNotifications(apiContext)
-                if (boardViewModel.allNotificationsResponse.value == null)
-                    enableUI(false)
+                if (boardViewModel.allNotificationsResponse.value == null) {
+                    boardViewModel.loadBoardNotifications(apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
                 binding.notificationTitle.text = ""
                 binding.notificationAuthor.text = ""
                 binding.notificationGroup.text = ""
                 binding.notificationDate.text = ""
                 binding.notificationText.text = ""
-                binding.fabEditNotification.isVisible = false
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
@@ -124,14 +126,14 @@ class ReadNotificationFragment : AbstractFragment(true) {
             R.id.board_context_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 boardViewModel.deleteBoardNotification(notification, group, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
                 true
             }
             else -> false
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.fabEditNotification.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.fabEditNotification.isEnabled = newState == UIState.READY
     }
 }

@@ -8,8 +8,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import de.deftk.openww.android.R
 import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.adapter.recycler.OperatingScopeAdapter
@@ -30,7 +28,7 @@ abstract class AbstractGroupFragment : AbstractFragment(true), IOperatingScopeCl
     protected val navController by lazy { findNavController() }
 
     abstract val scopePredicate: (T : IOperatingScope) -> Boolean
-    open val adapter: ListAdapter<IOperatingScope, RecyclerView.ViewHolder> by lazy { OperatingScopeAdapter(this) }
+    open val adapter by lazy { OperatingScopeAdapter(this) }
 
     private var filter = ScopeFilter(ScopeOrder.ByOperatorDefault)
 
@@ -51,10 +49,8 @@ abstract class AbstractGroupFragment : AbstractFragment(true), IOperatingScopeCl
             if (apiContext != null) {
                 updateGroups(apiContext)
             } else {
-                binding.groupsEmpty.isVisible = false
-                enableUI(false)
-                binding.groupsSwipeRefresh.isRefreshing = false
                 adapter.submitList(emptyList())
+                setUIState(UIState.EMPTY)
             }
         }
 
@@ -62,14 +58,17 @@ abstract class AbstractGroupFragment : AbstractFragment(true), IOperatingScopeCl
     }
 
     protected fun updateGroups(apiContext: IApiContext) {
+        setUIState(UIState.LOADING)
         var scopes: MutableList<IOperatingScope> = apiContext.user.getGroups().filter { scopePredicate(it) }.toMutableList()
         if (scopePredicate(apiContext.user))
             scopes.add(0, apiContext.user)
         scopes = (filter.apply(scopes).filterIsInstance<IOperatingScope>()).toMutableList()
         adapter.submitList(scopes)
-        binding.groupsEmpty.isVisible = scopes.isEmpty()
-        enableUI(true)
-        binding.groupsSwipeRefresh.isRefreshing = false
+        if (scopes.isEmpty()) {
+            setUIState(UIState.EMPTY)
+        } else {
+            setUIState(UIState.READY)
+        }
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -105,8 +104,10 @@ abstract class AbstractGroupFragment : AbstractFragment(true), IOperatingScopeCl
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.groupsSwipeRefresh.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.groupsSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.groupsEmpty.isVisible = newState.showEmptyIndicator
+        binding.groupsSwipeRefresh.isRefreshing = newState.refreshing
     }
 }
 

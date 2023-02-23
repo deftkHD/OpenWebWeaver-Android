@@ -49,9 +49,9 @@ class ForumPostFragment : AbstractFragment(true) {
         forumViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 forumViewModel.resetDeleteResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 if (response.value == post) {
                     // self deleted
                     deleted = true
@@ -64,6 +64,7 @@ class ForumPostFragment : AbstractFragment(true) {
                     (binding.forumPostCommentList.adapter as ForumPostCommentAdapter).submitList(comments)
                 }
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
@@ -92,7 +93,6 @@ class ForumPostFragment : AbstractFragment(true) {
                 binding.forumPostCommentList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
                 forumViewModel.getAllForumPosts(group).observe(viewLifecycleOwner) posts@ { response ->
-                    enableUI(true)
                     if (deleted)
                         return@posts
 
@@ -116,26 +116,30 @@ class ForumPostFragment : AbstractFragment(true) {
 
                             binding.forumPostCommentList.adapter = adapter
                             adapter.submitList(comments.sortedBy { it.created.date.time })
+                            binding.forumPostNoComments.isVisible = comments.isEmpty()
 
+                            setUIState(UIState.READY)
                         } else {
+                            setUIState(UIState.ERROR)
                             Reporter.reportException(R.string.error_post_not_found, args.postId, requireContext())
                             navController.popBackStack()
                             return@posts
                         }
                     } else if (response is Response.Failure) {
+                        setUIState(UIState.ERROR)
                         Reporter.reportException(R.string.error_get_posts_failed, response.exception, requireContext())
                         navController.popBackStack()
                         return@posts
                     }
                 }
 
-                forumViewModel.loadForumPosts(group, null, apiContext)
-                if (forumViewModel.getAllForumPosts(group).value == null)
-                    enableUI(false)
+                if (forumViewModel.getAllForumPosts(group).value == null) {
+                    forumViewModel.loadForumPosts(group, null, apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
-                binding.forumPostNoComments.isVisible = false
                 adapter.submitList(emptyList())
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
         registerForContextMenu(binding.forumPostCommentList)
@@ -153,7 +157,7 @@ class ForumPostFragment : AbstractFragment(true) {
             R.id.forum_context_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.deletePost(post, parent, group!!, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> return false
@@ -176,7 +180,7 @@ class ForumPostFragment : AbstractFragment(true) {
                 val comment = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.deletePost(comment, post, group!!, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> super.onContextItemSelected(item)
@@ -184,7 +188,7 @@ class ForumPostFragment : AbstractFragment(true) {
         return true
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.forumPostCommentList.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.forumPostCommentList.isEnabled = newState.listEnabled
     }
 }

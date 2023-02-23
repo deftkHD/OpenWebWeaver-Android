@@ -37,11 +37,11 @@ class ReadNoteFragment : AbstractFragment(true) {
         binding = FragmentReadNoteBinding.inflate(inflater, container, false)
 
         notesViewModel.allNotesResponse.observe(viewLifecycleOwner) { response ->
-            enableUI(true)
             if (deleted)
                 return@observe
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 val searched = response.value.firstOrNull { it.id == args.noteId }
                 if (searched == null) {
                     Reporter.reportException(R.string.error_note_not_found, args.noteId, requireContext())
@@ -56,6 +56,7 @@ class ReadNoteFragment : AbstractFragment(true) {
                 binding.noteText.movementMethod = LinkMovementMethod.getInstance()
                 binding.noteText.transformationMethod = CustomTabTransformationMethod(binding.noteText.autoLinkMask)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_notes_failed, response.exception, requireContext())
                 navController.popBackStack()
                 return@observe
@@ -70,27 +71,29 @@ class ReadNoteFragment : AbstractFragment(true) {
                     return@observe
                 }
                 binding.fabEditNote.isVisible = apiContext.user.effectiveRights.contains(Permission.NOTES_WRITE) || apiContext.user.effectiveRights.contains(Permission.NOTES_ADMIN)
-                notesViewModel.loadNotes(apiContext)
-                if (notesViewModel.allNotesResponse.value == null)
-                    enableUI(false)
+                if (notesViewModel.allNotesResponse.value == null) {
+                    notesViewModel.loadNotes(apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
                 binding.noteTitle.text = ""
                 binding.noteText.text = ""
                 binding.noteDate.text = ""
                 binding.fabEditNote.isVisible = false
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
         notesViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 notesViewModel.resetDeleteResponse()
-            enableUI(true)
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 deleted = true
                 navController.popBackStack()
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
@@ -118,14 +121,14 @@ class ReadNoteFragment : AbstractFragment(true) {
             R.id.notes_context_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 notesViewModel.deleteNote(note, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
                 true
             }
             else -> false
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.fabEditNote.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.fabEditNote.isEnabled = newState == UIState.READY
     }
 }

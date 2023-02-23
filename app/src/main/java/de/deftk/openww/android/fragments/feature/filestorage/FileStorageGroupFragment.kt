@@ -36,12 +36,11 @@ class FileStorageGroupFragment : AbstractFragment(true), ISearchProvider {
         fileStorageViewModel.filteredQuotasResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value.toList())
-                binding.fileEmpty.isVisible = response.value.isEmpty()
+                setUIState(if (response.value.isEmpty()) UIState.EMPTY else UIState.READY)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_quotas_failed, response.exception, requireContext())
             }
-            enableUI(true)
-            binding.fileStorageSwipeRefresh.isRefreshing = false
         }
 
         binding.fileStorageSwipeRefresh.setOnRefreshListener {
@@ -52,13 +51,13 @@ class FileStorageGroupFragment : AbstractFragment(true), ISearchProvider {
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                fileStorageViewModel.loadQuotas(apiContext)
-                if (fileStorageViewModel.allQuotasResponse.value == null)
-                    enableUI(false)
+                if (fileStorageViewModel.allQuotasResponse.value == null) {
+                    fileStorageViewModel.loadQuotas(apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
-                binding.fileEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
@@ -95,8 +94,10 @@ class FileStorageGroupFragment : AbstractFragment(true), ISearchProvider {
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.fileStorageSwipeRefresh.isEnabled = enabled
-        binding.fileList.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.fileStorageSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.fileStorageSwipeRefresh.isRefreshing = newState.refreshing
+        binding.fileList.isEnabled = newState.listEnabled
+        binding.fileEmpty.isVisible = newState.showEmptyIndicator
     }
 }

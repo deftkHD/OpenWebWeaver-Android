@@ -52,17 +52,18 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
         binding = FragmentReadMailBinding.inflate(inflater, container, false)
 
         mailboxViewModel.emailReadPostResponse.observe(viewLifecycleOwner) { response ->
-            enableUI(true)
             if (response != null)
                 mailboxViewModel.resetReadPostResponse() // mark as handled
             if (deleted)
                 return@observe
 
             if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_read_email_failed, response.exception, requireContext())
                 navController.popBackStack()
                 return@observe
             } else if (response is Response.Success) {
+                setUIState(UIState.READY)
                 response.value?.also { email ->
                     binding.mailSubject.text = email.subject
                     binding.mailAuthor.text = (email.from ?: emptyList()).firstOrNull()?.name ?: ""
@@ -109,6 +110,7 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
 
                 val mailResponse = mailboxViewModel.getCachedResponse(emailFolder)
                 if (mailResponse is Response.Success) {
+                    setUIState(UIState.READY)
                     val foundEmail = mailResponse.value.firstOrNull { it.id == args.mailId }
                     if (foundEmail == null) {
                         Reporter.reportException(R.string.error_email_not_found, args.mailId.toString(), requireContext())
@@ -118,12 +120,14 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
                     email = foundEmail
                     userViewModel.apiContext.value?.apply {
                         mailboxViewModel.readEmail(email, emailFolder, this)
-                        enableUI(false)
+                        setUIState(UIState.LOADING)
                     }
                 } else if (mailResponse is Response.Failure) {
+                    setUIState(UIState.ERROR)
                     Reporter.reportException(R.string.error_get_emails_failed, mailResponse.exception, requireContext())
                 }
             } else if (folderResponse is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_folders_failed, folderResponse.exception, requireContext())
             }
         }
@@ -196,7 +200,7 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
             R.id.mail_context_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.deleteEmail(email, emailFolder, true, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
                 true
             }
@@ -204,7 +208,10 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {}
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.attachmentList.isVisible = newState.listEnabled
+        binding.btnAttachments.isVisible = newState == UIState.READY
+    }
 
     override fun onSaveAttachment(attachment: IAttachment) {
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)

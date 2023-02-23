@@ -36,35 +36,37 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
         userViewModel.filteredSystemNotificationResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value)
-                binding.systemNotificationsEmpty.isVisible = response.value.isEmpty()
+                setUIState(if (response.value.isEmpty()) UIState.EMPTY else UIState.READY)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 binding.systemNotificationsEmpty.isVisible = false
                 Reporter.reportException(R.string.error_get_system_notifications_failed, response.exception, requireContext())
             }
-            enableUI(true)
-            binding.systemNotificationsSwipeRefresh.isRefreshing = false
         }
         binding.systemNotificationList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
         userViewModel.systemNotificationDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 userViewModel.resetDeleteResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
+            } else if (response is Response.Success) {
+                setUIState(UIState.READY)
             }
         }
 
         userViewModel.systemNotificationBatchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 userViewModel.resetBatchDeleteResponse()
-            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
             } else {
+                setUIState(UIState.READY)
                 actionMode?.finish()
             }
         }
@@ -72,18 +74,20 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
         binding.systemNotificationsSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
                 userViewModel.loadSystemNotifications(apiContext)
+                setUIState(UIState.LOADING)
             }
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                userViewModel.loadSystemNotifications(apiContext)
-                if (userViewModel.allSystemNotificationsResponse.value == null)
-                    enableUI(false)
+                if (userViewModel.allSystemNotificationsResponse.value == null) {
+                    userViewModel.loadSystemNotifications(apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
                 binding.systemNotificationsEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
@@ -107,7 +111,7 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
             R.id.system_notification_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     userViewModel.batchDeleteSystemNotifications(adapter.selectedItems.map { it.binding.notification!! }, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> return false
@@ -166,15 +170,17 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
                 val notification = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 userViewModel.deleteSystemNotification(notification, apiContext)
-                enableUI(true)
+                setUIState(UIState.LOADING)
             }
             else -> return false
         }
         return true
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.systemNotificationsSwipeRefresh.isEnabled = enabled
-        binding.systemNotificationList.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.systemNotificationsEmpty.isVisible = newState.showEmptyIndicator
+        binding.systemNotificationList.isEnabled = newState.listEnabled
+        binding.systemNotificationsSwipeRefresh.isRefreshing = newState.refreshing
+        binding.systemNotificationsSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
     }
 }

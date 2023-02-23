@@ -34,10 +34,9 @@ class PastRequestFragment : AbstractFragment(true) {
         binding = FragmentPastRequestBinding.inflate(inflater, container, false)
 
         userViewModel.pastRequests.observe(viewLifecycleOwner) { responses ->
-            enableUI(true)
-
             val resp = responses.singleOrNull { it.id == args.requestId }
             if (resp == null) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(0, args.requestId.toString(), requireContext())
                 navController.popBackStack()
                 return@observe
@@ -50,7 +49,7 @@ class PastRequestFragment : AbstractFragment(true) {
             binding.requestText.text = "[\n${response.request.requests.joinToString(",\n") { it.toString() }}\n]"
             binding.responseText.text = response.response.text
 
-            binding.fabCopyRequestData.isEnabled = true
+            setUIState(UIState.READY)
         }
 
         binding.fabCopyRequestData.setOnClickListener {
@@ -67,7 +66,7 @@ class PastRequestFragment : AbstractFragment(true) {
         return binding.root
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.fabCopyRequestData.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.fabCopyRequestData.isEnabled = newState == UIState.READY
     }
 }

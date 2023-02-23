@@ -94,12 +94,13 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         fileStorageViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 fileStorageViewModel.resetBatchDeleteResponse()
-            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
             } else {
+                setUIState(UIState.READY)
                 actionMode?.finish()
             }
         }
@@ -110,8 +111,10 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
             val response = data?.first
             if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_import_session_file_failed, response.exception, requireContext())
             } else if (response is Response.Success) {
+                setUIState(UIState.READY)
                 val receiveDownloadNotification = data.second
                 if (receiveDownloadNotification) {
                     userViewModel.apiContext.value?.apply {
@@ -121,26 +124,29 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                     return@observe
                 }
             }
-            enableUI(true)
         }
 
         fileStorageViewModel.editFileResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 fileStorageViewModel.resetEditFileResponse()
-            enableUI(true)
 
             if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_edit_file_failed, response.exception, requireContext())
+            } else if (response is Response.Success) {
+                setUIState(UIState.READY)
             }
         }
 
         fileStorageViewModel.addFolderResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 fileStorageViewModel.resetAddFolderResponse()
-            enableUI(true)
 
             if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_add_folder_failed, response.exception, requireContext())
+            } else if (response is Response.Success) {
+                setUIState(UIState.READY)
             }
         }
 
@@ -185,6 +191,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 }
                 fileStorageViewModel.getFilteredFiles(scope!!).observe(viewLifecycleOwner) filtered@ { response ->
                     if (response is Response.Success) {
+                        setUIState(UIState.READY)
                         if (args.folderNameId != null && folderId == null) {
                             folderId = fileStorageViewModel.resolveNameTree(scope!!, args.folderNameId!!)
                             if (folderId != null) {
@@ -208,25 +215,23 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                             }
                         }
                     } else if (response is Response.Failure) {
+                        setUIState(UIState.ERROR)
                         Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())
                     }
-                    enableUI(true)
-                    binding.fileStorageSwipeRefresh.isRefreshing = false
                 }
 
-                if (args.folderNameId != null) {
-                    fileStorageViewModel.loadChildrenNameTree(scope!!, args.folderNameId!!, false, apiContext)
-                    updateUploadFab()
-                    enableUI(false)
-                } else {
-                    if (fileStorageViewModel.getAllFiles(scope!!).value?.valueOrNull()?.any { it.file.parentId == folderId } == true) {
-                        fileStorageViewModel.loadChildren(scope!!, folderId!!, false, apiContext)
+                if (fileStorageViewModel.getAllFiles(scope!!).value == null) {
+                    if (args.folderNameId != null) {
+                        fileStorageViewModel.loadChildrenNameTree(scope!!, args.folderNameId!!, false, apiContext)
                     } else {
-                        fileStorageViewModel.loadChildrenTree(scope!!, folderId!!, false, apiContext)
+                        if (fileStorageViewModel.getAllFiles(scope!!).value?.valueOrNull()?.any { it.file.parentId == folderId } == true) {
+                            fileStorageViewModel.loadChildren(scope!!, folderId!!, false, apiContext)
+                        } else {
+                            fileStorageViewModel.loadChildrenTree(scope!!, folderId!!, false, apiContext)
+                        }
                     }
                     updateUploadFab()
-                    if (fileStorageViewModel.getCachedChildren(scope!!, folderId!!).isEmpty())
-                        enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             } else {
                 binding.fabUploadFile.isVisible = false
@@ -440,7 +445,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 builder.setPositiveButton(R.string.confirm) { _, _ ->
                     userViewModel.apiContext.value?.apply {
                         fileStorageViewModel.addFolder(input.text.toString(), getProviderFile()!!.file, scope!!, this)
-                        enableUI(false)
+                        setUIState(UIState.LOADING)
                     }
                 }
                 builder.setNegativeButton(R.string.cancel) { dialog, _ ->
@@ -524,7 +529,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             R.id.filestorage_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     fileStorageViewModel.batchDelete(adapter.selectedItems.map { it.binding.file!! }, scope!!, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> return false
@@ -573,10 +578,12 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         dialog.show()
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.fileStorageSwipeRefresh.isEnabled = enabled
-        binding.fileList.isEnabled = enabled
-        binding.fabUploadFile.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.fileStorageSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.fileStorageSwipeRefresh.isRefreshing = newState.refreshing
+        binding.fileList.isEnabled = newState.listEnabled
+        binding.fileEmpty.isVisible = newState.showEmptyIndicator
+        binding.fabUploadFile.isEnabled = newState == UIState.READY
     }
 }
 

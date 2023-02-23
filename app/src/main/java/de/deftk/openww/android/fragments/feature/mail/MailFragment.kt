@@ -52,8 +52,8 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                 val folder = toolbarSpinner.getItemAtPosition(position) as IEmailFolder
                 if (folder.id != mailboxViewModel.currentFolder.value?.id) {
                     userViewModel.apiContext.value?.also { apiContext ->
-                        enableUI(false)
                         mailboxViewModel.selectFolder(folder, apiContext)
+                        setUIState(UIState.LOADING)
                     }
                 }
             }
@@ -66,30 +66,31 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         mailboxViewModel.currentFilteredMails.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value.map { it to mailboxViewModel.currentFolder.value!! })
-                binding.mailEmpty.isVisible = response.value.isEmpty()
+                setUIState(if (response.value.isEmpty()) UIState.EMPTY else UIState.READY)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_emails_failed, response.exception, requireContext())
             }
-            enableUI(true)
-            binding.mailSwipeRefresh.isRefreshing = false
         }
 
         binding.mailSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
-                mailboxViewModel.cleanCache()
+                mailboxViewModel.resetScopedData()
                 mailboxViewModel.loadFolders(apiContext)
+                setUIState(UIState.LOADING)
             }
         }
 
         mailboxViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 mailboxViewModel.resetBatchDeleteResponse()
-            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
             } else {
+                setUIState(UIState.READY)
                 actionMode?.finish()
             }
         }
@@ -97,12 +98,13 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         mailboxViewModel.batchMoveResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 mailboxViewModel.resetBatchMoveResponse()
-            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_move_failed, failure.first().exception, requireContext())
             } else {
+                setUIState(UIState.READY)
                 actionMode?.finish()
             }
         }
@@ -110,17 +112,18 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         mailboxViewModel.batchEmailSetResponse.observe(viewLifecycleOwner) { responses ->
             if (responses != null)
                 mailboxViewModel.resetEmailSetResponse()
-            enableUI(true)
 
             responses?.forEach { response ->
                 if (response is Response.Success) {
                     val index = adapter.currentList.indexOfFirst { it.first.id == response.value.id }
                     adapter.notifyItemChanged(index)
                 } else if (response is Response.Failure) {
+                    setUIState(UIState.ERROR)
                     Reporter.reportException(R.string.error_set_email_failed, response.exception, requireContext())
                     return@forEach
                 }
             }
+            setUIState(UIState.READY)
             actionMode?.finish()
         }
 
@@ -132,11 +135,11 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                     binding.mailSwipeRefresh.isRefreshing = false
                 }
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_folders_failed, response.exception, requireContext())
                 toolbarSpinner.adapter = null
                 binding.mailSwipeRefresh.isRefreshing = false
             }
-            enableUI(true)
         }
 
         mailboxViewModel.currentFolder.observe(viewLifecycleOwner) { folder ->
@@ -145,7 +148,6 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             if (index != -1) {
                 toolbarSpinner.setSelection(index)
             }
-            enableUI(true)
         }
 
         binding.fabMailAdd.setOnClickListener {
@@ -162,29 +164,31 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                     return@observe
                 }
                 (adapter as MailAdapter).user = apiContext.user
-                mailboxViewModel.cleanCache()
-                mailboxViewModel.loadFolders(apiContext)
-                if (mailboxViewModel.foldersResponse.value == null)
-                    enableUI(false)
+                if (mailboxViewModel.foldersResponse.value == null) {
+                    mailboxViewModel.cleanCache()
+                    mailboxViewModel.loadFolders(apiContext)
+                    setUIState(UIState.LOADING)
+                }
 
                 //TODO not sure about this permissions
                 binding.fabMailAdd.isVisible = apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)
             } else {
                 binding.fabMailAdd.isVisible = false
-                binding.mailEmpty.isVisible = false
                 toolbarSpinner.adapter = null
                 adapter.submitList(emptyList())
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
         mailboxViewModel.folderPostResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 mailboxViewModel.resetPostResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
+            } else if (response is Response.Success) {
+                setUIState(UIState.READY)
             }
         }
 
@@ -221,7 +225,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                     .setAdapter(MailFolderAdapter(requireContext(), folders)) { _, which ->
                         userViewModel.apiContext.value?.also { apiContext ->
                             mailboxViewModel.batchMove(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, folders[which], apiContext)
-                            enableUI(false)
+                            setUIState(UIState.LOADING)
                         }
                     }
                     .create()
@@ -230,19 +234,19 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             R.id.mail_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.batchDelete(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             R.id.mail_action_item_set_read -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.batchSetEmails(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, null, false, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             R.id.mail_action_item_set_unread -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.batchSetEmails(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, null, true, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> return false
@@ -284,7 +288,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             builder.setPositiveButton(R.string.confirm) { _, _ ->
                 userViewModel.apiContext.value?.apply {
                     mailboxViewModel.addFolder(input.text.toString(), this)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             builder.setNegativeButton(R.string.cancel) { dialog, _ ->
@@ -336,7 +340,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                     .setAdapter(MailFolderAdapter(requireContext(), folders)) { _, which ->
                         userViewModel.apiContext.value?.also { apiContext ->
                             mailboxViewModel.moveEmail(mailItem.first, mailItem.second, folders[which], apiContext)
-                            enableUI(false)
+                            setUIState(UIState.LOADING)
                         }
                     }
                     .create()
@@ -346,21 +350,21 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                 val mailItem = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.deleteEmail(mailItem.first, mailItem.second, true, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             R.id.mail_context_item_set_read -> {
                 val mailItem = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.batchSetEmails(listOf(mailItem.first), mailItem.second, null, false, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             R.id.mail_context_item_set_unread -> {
                 val mailItem = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.batchSetEmails(listOf(mailItem.first), mailItem.second, null, true, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> return false
@@ -378,9 +382,11 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         super.onStop()
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.mailSwipeRefresh.isEnabled = enabled
-        binding.mailList.isEnabled = enabled
-        binding.fabMailAdd.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.fabMailAdd.isEnabled = newState == UIState.READY
+        binding.mailList.isEnabled = newState.listEnabled
+        binding.mailEmpty.isVisible = newState.showEmptyIndicator
+        binding.mailSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.mailSwipeRefresh.isRefreshing = newState.refreshing
     }
 }

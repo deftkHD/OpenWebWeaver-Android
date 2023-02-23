@@ -39,41 +39,6 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
 
         binding.notificationList.adapter = adapter
         binding.notificationList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-        boardViewModel.filteredNotificationResponse.observe(viewLifecycleOwner) { response ->
-            if (response is Response.Success) {
-                adapter.submitList(response.value)
-                binding.notificationsEmpty.isVisible = response.value.isEmpty()
-            } else if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
-                binding.notificationsEmpty.isVisible = false
-            }
-            enableUI(true)
-            binding.notificationsSwipeRefresh.isRefreshing = false
-        }
-
-        boardViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
-            if (response != null)
-                boardViewModel.resetBatchDeleteResponse()
-            enableUI(true)
-
-            val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
-            if (failure.isNotEmpty()) {
-                Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
-            } else {
-                actionMode?.finish()
-            }
-        }
-
-        binding.notificationsSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
-                boardViewModel.loadBoardNotifications(apiContext)
-            }
-        }
-
-        binding.fabAddNotification.setOnClickListener {
-            val action = NotificationsFragmentDirections.actionNotificationsFragmentToEditNotificationFragment(null, null, getString(R.string.new_notification))
-            navController.navigate(action)
-        }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
@@ -82,25 +47,63 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
                     navController.popBackStack()
                     return@observe
                 }
-                boardViewModel.loadBoardNotifications(apiContext)
-                if (boardViewModel.allNotificationsResponse.value == null)
-                    enableUI(false)
+                if (boardViewModel.allNotificationsResponse.value == null) {
+                    boardViewModel.loadBoardNotifications(apiContext)
+                    setUIState(UIState.LOADING)
+                }
                 binding.fabAddNotification.isVisible = apiContext.user.getGroups().any { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) }
             } else {
-                binding.fabAddNotification.isVisible = false
-                binding.notificationsEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
+        }
+
+        boardViewModel.filteredNotificationResponse.observe(viewLifecycleOwner) { response ->
+            if (response is Response.Success) {
+                adapter.submitList(response.value)
+                setUIState(if (response.value.isEmpty()) UIState.EMPTY else UIState.READY)
+            } else if (response is Response.Failure) {
+                Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
+                setUIState(UIState.ERROR)
+            }
+        }
+
+        boardViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
+            if (response != null) {
+                boardViewModel.resetBatchDeleteResponse()
+            }
+
+            val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
+            if (failure.isNotEmpty()) {
+                Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
+                setUIState(UIState.ERROR)
+            } else {
+                actionMode?.finish()
+                setUIState(UIState.READY)
+            }
+        }
+
+        binding.notificationsSwipeRefresh.setOnRefreshListener {
+            userViewModel.apiContext.value?.also { apiContext ->
+                boardViewModel.loadBoardNotifications(apiContext)
+                setUIState(UIState.LOADING)
+            }
+        }
+
+        binding.fabAddNotification.setOnClickListener {
+            val action = NotificationsFragmentDirections.actionNotificationsFragmentToEditNotificationFragment(null, null, getString(R.string.new_notification))
+            navController.navigate(action)
         }
 
         boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 boardViewModel.resetPostResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
+                setUIState(UIState.ERROR)
+            } else if (response is Response.Success) {
+                setUIState(UIState.READY)
             }
         }
 
@@ -123,7 +126,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
             R.id.board_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     boardViewModel.batchDelete(adapter.selectedItems.map { it.binding.group!! to it.binding.notification!! }, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> return false
@@ -189,17 +192,18 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
                 val (notification, group) = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 boardViewModel.deleteBoardNotification(notification, group, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
                 true
             }
             else -> false
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.notificationsSwipeRefresh.isEnabled = enabled
-        binding.notificationList.isEnabled = enabled
-        binding.fabAddNotification.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.notificationsSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.notificationsSwipeRefresh.isRefreshing = newState.refreshing
+        binding.notificationList.isEnabled = newState.listEnabled
+        binding.notificationsEmpty.isVisible = newState.showEmptyIndicator
+        binding.fabAddNotification.isEnabled = newState == UIState.READY
     }
-
 }

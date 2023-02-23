@@ -50,6 +50,7 @@ class MembersFragment : AbstractFragment(true), ISearchProvider {
         binding.membersSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
                 groupViewModel.loadMembers(group!!, false, apiContext)
+                setUIState(UIState.LOADING)
             }
         }
 
@@ -72,20 +73,20 @@ class MembersFragment : AbstractFragment(true), ISearchProvider {
                 groupViewModel.getFilteredGroupMembers(group!!).observe(viewLifecycleOwner) { response ->
                     if (response is Response.Success) {
                         adapter.submitList(response.value)
-                        binding.membersEmpty.isVisible = response.value.isEmpty()
+                        setUIState(if (response.value.isEmpty()) UIState.EMPTY else UIState.READY)
                     } else if (response is Response.Failure) {
+                        setUIState(UIState.ERROR)
                         Reporter.reportException(R.string.error_get_members_failed, response.exception, requireContext())
                     }
-                    binding.membersSwipeRefresh.isRefreshing = false
-                    enableUI(true)
                 }
-                groupViewModel.loadMembers(group!!, false, apiContext)
-                if (groupViewModel.getAllGroupMembers(group!!).value == null)
-                    enableUI(false)
+                if (groupViewModel.getAllGroupMembers(group!!).value == null) {
+                    groupViewModel.loadMembers(group!!, false, apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
                 adapter.submitList(emptyList())
                 binding.membersEmpty.isVisible = false
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
@@ -154,8 +155,10 @@ class MembersFragment : AbstractFragment(true), ISearchProvider {
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.membersSwipeRefresh.isEnabled = enabled
-        binding.memberList.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.memberList.isEnabled = newState.listEnabled
+        binding.membersEmpty.isVisible = newState.showEmptyIndicator
+        binding.membersSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.membersSwipeRefresh.isRefreshing = newState.refreshing
     }
 }

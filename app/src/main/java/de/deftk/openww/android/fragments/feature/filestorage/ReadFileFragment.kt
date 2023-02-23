@@ -85,11 +85,12 @@ class ReadFileFragment : AbstractFragment(true) {
                 binding.fileDownloadNotificationListDescription.isVisible = file.file.downloadNotification?.users?.isNotEmpty() == true
                 binding.fileDownloadNotificationList.text = file.file.downloadNotification?.users?.joinToString("\n") { it.alias ?: it.name } ?: ""
                 binding.fileDescription.text = file.file.description ?: ""
+                setUIState(UIState.READY)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())
                 navController.popBackStack()
             }
-            enableUI(true)
         }
 
         binding.fabEditFile.setOnClickListener {
@@ -100,6 +101,7 @@ class ReadFileFragment : AbstractFragment(true) {
             if (apiContext != null) {
                 binding.fabEditFile.isVisible = file.file.effectiveModify == true
             } else {
+                setUIState(UIState.DISABLED)
                 navController.popBackStack()
             }
         }
@@ -107,7 +109,7 @@ class ReadFileFragment : AbstractFragment(true) {
         return binding.root
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.fabEditFile.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.fabEditFile.isEnabled = newState == UIState.READY
     }
 }

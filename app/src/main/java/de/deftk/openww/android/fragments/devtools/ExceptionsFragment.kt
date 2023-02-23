@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.adapter.recycler.ExceptionAdapter
@@ -21,20 +22,25 @@ class ExceptionsFragment : AbstractFragment(true), ActionModeClickListener<Excep
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentExceptionsBinding.inflate(inflater, container, false)
-
         binding.exceptionList.adapter = adapter
         binding.exceptionList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
         DebugUtil.exceptions.observe(viewLifecycleOwner) { exceptions ->
             adapter.submitList(exceptions)
+            if (exceptions.isNotEmpty()) {
+                setUIState(UIState.READY)
+            } else {
+                setUIState(UIState.EMPTY)
+            }
         }
 
         registerForContextMenu(binding.exceptionList)
         return binding.root
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.exceptionList.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.exceptionList.isEnabled = newState.listEnabled
+        binding.exceptionsEmpty.isVisible = newState.showEmptyIndicator
     }
 
     override fun onClick(view: View, viewHolder: ExceptionAdapter.ReportViewHolder) {

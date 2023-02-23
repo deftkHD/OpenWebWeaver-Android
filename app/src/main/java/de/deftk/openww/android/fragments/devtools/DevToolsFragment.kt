@@ -27,7 +27,7 @@ class DevToolsFragment : AbstractFragment(true) {
 
         binding.forceInvalidateSession.setOnClickListener {
             userViewModel.apiContext.value?.also { apiContext ->
-                enableUI(false)
+                setUIState(UIState.LOADING)
                 val job = Job()
                 val coroutine = CoroutineScope(Dispatchers.Main + job)
                 coroutine.launch(Dispatchers.IO) {
@@ -41,7 +41,7 @@ class DevToolsFragment : AbstractFragment(true) {
                         e.printStackTrace()
                     } finally {
                         withContext(Dispatchers.Main) {
-                            enableUI(true)
+                            setUIState(UIState.READY) // no need to set to error because it can be ignored
                         }
                     }
                 }
@@ -66,8 +66,10 @@ class DevToolsFragment : AbstractFragment(true) {
         return binding.root
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.showPastRequests.isEnabled = enabled
-        binding.forceInvalidateSession.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.showPastRequests.isEnabled = newState == UIState.READY
+        binding.forceInvalidateSession.isEnabled = newState == UIState.READY
+        binding.showExceptions.isEnabled = newState == UIState.READY
+        binding.handleUncaughtExceptions.isEnabled = newState == UIState.READY
     }
 }

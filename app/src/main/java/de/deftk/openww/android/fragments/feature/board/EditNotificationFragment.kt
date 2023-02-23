@@ -42,7 +42,6 @@ class EditNotificationFragment : AbstractFragment(true) {
         binding = FragmentEditNotificationBinding.inflate(inflater, container, false)
 
         boardViewModel.allNotificationsResponse.observe(viewLifecycleOwner) { response ->
-            enableUI(true)
             if (response is Response.Success) {
                 if (args.notificationId != null && args.groupId != null) {
                     // edit existing
@@ -69,7 +68,9 @@ class EditNotificationFragment : AbstractFragment(true) {
                     editMode = false
                     binding.notificationGroup.isEnabled = true
                 }
+                setUIState(UIState.READY)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
                 navController.popBackStack()
             }
@@ -89,29 +90,30 @@ class EditNotificationFragment : AbstractFragment(true) {
                 colors = BoardNotificationColors.values()
                 binding.notificationAccent.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, colors!!.map { getString(it.text) })
 
-                boardViewModel.loadBoardNotifications(apiContext)
-                if (boardViewModel.allNotificationsResponse.value == null)
-                    enableUI(false)
+                if (boardViewModel.allNotificationsResponse.value == null) {
+                    boardViewModel.loadBoardNotifications(apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
                 binding.notificationTitle.setText("")
                 binding.notificationGroup.adapter = null
-                binding.notificationGroup.isEnabled = false
                 binding.notificationAccent.adapter = null
                 binding.notificationText.setText("")
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
         boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 boardViewModel.resetPostResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 AndroidUtil.hideKeyboard(requireActivity(), requireView())
                 navController.popBackStack()
             } else if (response is Response.Failure) {
                 Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
+                setUIState(UIState.ERROR)
             }
         }
 
@@ -133,22 +135,22 @@ class EditNotificationFragment : AbstractFragment(true) {
 
             if (editMode) {
                 boardViewModel.editBoardNotification(notification, title, text, color, null, group, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             } else {
                 group = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup } ?: return false
                 boardViewModel.addBoardNotification(title, text, color, null, group, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             }
             return true
         }
         return false
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.notificationAccent.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.notificationAccent.isEnabled = newState == UIState.READY
         if (!editMode)
-            binding.notificationGroup.isEnabled = enabled
-        binding.notificationText.isEnabled = enabled
-        binding.notificationTitle.isEnabled = enabled
+            binding.notificationGroup.isEnabled = newState == UIState.READY
+        binding.notificationText.isEnabled = newState == UIState.READY
+        binding.notificationTitle.isEnabled = newState == UIState.READY
     }
 }

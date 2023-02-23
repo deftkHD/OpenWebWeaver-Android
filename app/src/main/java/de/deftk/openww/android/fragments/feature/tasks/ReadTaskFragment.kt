@@ -40,11 +40,11 @@ class ReadTaskFragment : AbstractFragment(true) {
         binding = FragmentReadTaskBinding.inflate(inflater, container, false)
 
         tasksViewModel.allTasksResponse.observe(viewLifecycleOwner) { response ->
-            enableUI(true)
-                if (deleted)
+            if (deleted)
                 return@observe
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 val foundTask = response.value.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }
                 if (foundTask == null) {
                     Reporter.reportException(R.string.error_task_not_found, args.taskId, requireContext())
@@ -66,6 +66,7 @@ class ReadTaskFragment : AbstractFragment(true) {
 
                 binding.fabEditTask.isVisible = scope.effectiveRights.contains(Permission.TASKS_WRITE) || scope.effectiveRights.contains(Permission.TASKS_ADMIN)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
                 navController.popBackStack()
                 return@observe
@@ -74,12 +75,13 @@ class ReadTaskFragment : AbstractFragment(true) {
         tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 tasksViewModel.resetPostResponse() // mark as handled
-            enableUI(true)
 
-                if (response is Response.Success) {
+            if (response is Response.Success) {
+                setUIState(UIState.READY)
                 deleted = true
                 navController.popBackStack()
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
@@ -94,9 +96,10 @@ class ReadTaskFragment : AbstractFragment(true) {
                     navController.popBackStack()
                     return@observe
                 }
-                tasksViewModel.loadTasks(true, apiContext)
-                if (tasksViewModel.allTasksResponse.value == null)
-                    enableUI(false)
+                if (tasksViewModel.allTasksResponse.value == null) {
+                    tasksViewModel.loadTasks(true, apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
                 binding.taskTitle.text = ""
                 binding.taskAuthor.text = ""
@@ -105,7 +108,7 @@ class ReadTaskFragment : AbstractFragment(true) {
                 binding.taskDue.text = ""
                 binding.taskGroup.text = ""
                 binding.fabEditTask.isVisible = false
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
@@ -124,13 +127,13 @@ class ReadTaskFragment : AbstractFragment(true) {
             R.id.tasks_context_item_ignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(listOf(task to scope), apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             R.id.tasks_context_item_unignore -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.unignoreTasks(listOf(task to scope), apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             R.id.tasks_context_item_import_in_calendar -> {
@@ -143,7 +146,7 @@ class ReadTaskFragment : AbstractFragment(true) {
             R.id.tasks_context_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 tasksViewModel.deleteTask(task, scope, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             }
             else -> return false
         }
@@ -158,7 +161,7 @@ class ReadTaskFragment : AbstractFragment(true) {
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.fabEditTask.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.fabEditTask.isEnabled = newState == UIState.READY
     }
 }

@@ -44,12 +44,13 @@ class ReadContactFragment : AbstractFragment(true) {
         contactsViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 contactsViewModel.resetDeleteResponse()
-            enableUI(true)
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 deleted = true
                 navController.popBackStack()
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
@@ -75,11 +76,11 @@ class ReadContactFragment : AbstractFragment(true) {
                     contactsViewModel.getFilteredContactsLiveData(scope!!).removeObservers(viewLifecycleOwner)
                 scope = foundScope
                 contactsViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) filtered@ { response ->
-                    enableUI(true)
                     if (deleted)
                         return@filtered
 
                     if (response is Response.Success) {
+                        setUIState(UIState.READY)
                         val queried = response.value.firstOrNull { it.id.toString() == args.contactId }
                         if (queried != null) {
                             contact = queried
@@ -90,19 +91,21 @@ class ReadContactFragment : AbstractFragment(true) {
                         }
                         adapter.submitList(ContactUtil.extractContactDetails(contact))
                     } else if (response is Response.Failure) {
+                        setUIState(UIState.ERROR)
                         Reporter.reportException(R.string.error_get_contacts_failed, response.exception, requireContext())
                         navController.popBackStack()
                         return@filtered
                     }
                 }
-                contactsViewModel.loadContacts(scope!!, apiContext)
-                if (contactsViewModel.getAllContactsLiveData(scope!!).value == null)
-                    enableUI(false)
+                if (contactsViewModel.getAllContactsLiveData(scope!!).value == null) {
+                    contactsViewModel.loadContacts(scope!!, apiContext)
+                    setUIState(UIState.LOADING)
+                }
                 binding.fabEditContact.isVisible = scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN)
             } else {
                 adapter.submitList(emptyList())
                 binding.fabEditContact.isVisible = false
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
@@ -124,15 +127,15 @@ class ReadContactFragment : AbstractFragment(true) {
             R.id.contacts_context_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 contactsViewModel.deleteContact(contact, scope!!, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
                 true
             }
             else -> false
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.contactDetailList.isEnabled = enabled
-        binding.fabEditContact.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.contactDetailList.isEnabled = newState.listEnabled
+        binding.fabEditContact.isEnabled = newState == UIState.READY
     }
 }

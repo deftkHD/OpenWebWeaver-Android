@@ -89,11 +89,12 @@ class EditFileFragment : AbstractFragment(true) {
                 binding.fileDownloadNotificationListDescription.isVisible = file.file.downloadNotification?.users?.isNotEmpty() == true
                 binding.fileDownloadNotificationList.text = file.file.downloadNotification?.users?.joinToString("\n") { it.alias ?: it.name } ?: ""
                 binding.fileDescription.setText(file.file.description ?: "")
+                setUIState(UIState.READY)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_files_failed, response.exception, requireContext())
                 navController.popBackStack()
             }
-            enableUI(true)
         }
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
@@ -120,19 +121,20 @@ class EditFileFragment : AbstractFragment(true) {
                 binding.fileName.setText("")
                 binding.fileCreatedDate.text = ""
                 binding.fileSize.text = ""
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
         fileStorageViewModel.editFileResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 fileStorageViewModel.resetEditFileResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 AndroidUtil.hideKeyboard(requireActivity(), requireView())
                 navController.popBackStack()
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
             }
         }
@@ -157,16 +159,16 @@ class EditFileFragment : AbstractFragment(true) {
                 //TODO upload notifications (folders)
                 FileType.FOLDER -> fileStorageViewModel.editFolder(file.file, binding.fileName.text.toString(), binding.fileDescription.text.toString(), binding.filePermissionReadable.isChecked, binding.filePermissionWritable.isChecked, null, scope, apiContext)
             }
-            enableUI(false)
+            setUIState(UIState.LOADING)
         }
         return false
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.fileName.isEnabled = enabled
-        binding.fileDescription.isEnabled = enabled
-        binding.filePermissionReadable.isEnabled = enabled && file.file.type == FileType.FOLDER
-        binding.filePermissionWritable.isEnabled = enabled && file.file.type == FileType.FOLDER
-        binding.fileSelfDownloadNotification.isEnabled = enabled && file.file.type == FileType.FILE
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.fileName.isEnabled = newState == UIState.READY
+        binding.fileDescription.isEnabled = newState == UIState.READY
+        binding.filePermissionReadable.isEnabled = newState == UIState.READY && file.file.type == FileType.FOLDER
+        binding.filePermissionWritable.isEnabled = newState == UIState.READY && file.file.type == FileType.FOLDER
+        binding.fileSelfDownloadNotification.isEnabled = newState == UIState.READY && file.file.type == FileType.FILE
     }
 }

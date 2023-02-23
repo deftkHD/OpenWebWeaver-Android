@@ -44,12 +44,13 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
         contactsViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 contactsViewModel.resetBatchDeleteResponse()
-            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
             } else {
+                setUIState(UIState.READY)
                 actionMode?.finish()
             }
         }
@@ -57,16 +58,19 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
         contactsViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 contactsViewModel.resetDeleteResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
+            } else if (response is Response.Success) {
+                setUIState(UIState.READY)
             }
         }
 
         binding.contactsSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
                 contactsViewModel.loadContacts(scope!!, apiContext)
+                setUIState(UIState.LOADING)
             }
         }
 
@@ -101,20 +105,21 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
                     if (response is Response.Success) {
                         adapter.submitList(response.value)
                         binding.contactsEmpty.isVisible = response.value.isEmpty()
+                        setUIState(UIState.READY)
                     } else if (response is Response.Failure) {
+                        setUIState(UIState.ERROR)
                         Reporter.reportException(R.string.error_get_contacts_failed, response.exception, requireContext())
                     }
-                    enableUI(true)
                     binding.contactsSwipeRefresh.isRefreshing = false
                 }
 
-                contactsViewModel.loadContacts(scope!!, apiContext)
-                if (contactsViewModel.getAllContactsLiveData(scope!!).value == null)
-                    enableUI(false)
+                if (contactsViewModel.getAllContactsLiveData(scope!!).value == null) {
+                    contactsViewModel.loadContacts(scope!!, apiContext)
+                    setUIState(UIState.LOADING)
+                }
                 binding.fabAddContact.isVisible = scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN)
             } else {
-                binding.contactsEmpty.isVisible = false
-                enableUI(false)
+                setUIState(UIState.DISABLED)
                 binding.fabAddContact.isVisible = false
                 adapter.submitList(emptyList())
             }
@@ -143,7 +148,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
             R.id.contacts_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     contactsViewModel.batchDelete(adapter.selectedItems.map { it.binding.scope!! to it.binding.contact!! }, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> return false
@@ -204,15 +209,18 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
                 val contact = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 contactsViewModel.deleteContact(contact, scope!!, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
                 true
             }
             else -> false
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.contactsSwipeRefresh.isEnabled = enabled
-        binding.contactList.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.contactsSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.contactsSwipeRefresh.isRefreshing = newState.refreshing
+        binding.contactList.isEnabled = newState.listEnabled
+        binding.contactsEmpty.isVisible = newState.showEmptyIndicator
+        binding.fabAddContact.isEnabled = newState == UIState.READY
     }
 }

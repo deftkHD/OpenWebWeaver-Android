@@ -33,11 +33,11 @@ class SystemNotificationFragment : AbstractFragment(true) {
         binding = FragmentSystemNotificationBinding.inflate(inflater, container, false)
 
         userViewModel.allSystemNotificationsResponse.observe(viewLifecycleOwner) { response ->
-            enableUI(true)
             if (deleted)
                 return@observe
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 val foundSystemNotification = response.value.firstOrNull { it.id == args.systemNotificationId }
                 if (foundSystemNotification == null) {
                     Reporter.reportException(R.string.error_system_notification_not_found, args.systemNotificationId, requireContext())
@@ -56,18 +56,20 @@ class SystemNotificationFragment : AbstractFragment(true) {
                 binding.systemNotificationMessage.movementMethod = LinkMovementMethod.getInstance()
                 binding.systemNotificationMessage.transformationMethod = CustomTabTransformationMethod(binding.systemNotificationMessage.autoLinkMask)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_system_notifications_failed, response.exception, requireContext())
             }
         }
         userViewModel.systemNotificationDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 userViewModel.resetDeleteResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 deleted = true
                 navController.popBackStack()
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
@@ -89,12 +91,13 @@ class SystemNotificationFragment : AbstractFragment(true) {
             R.id.system_notification_context_item_delete -> {
                 val apiContext = userViewModel.apiContext.value ?: return false
                 userViewModel.deleteSystemNotification(systemNotification, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             }
             else -> return false
         }
         return true
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {}
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {}
+
 }

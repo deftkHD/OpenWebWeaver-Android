@@ -42,23 +42,23 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
         notesViewModel.filteredNotesResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value)
-                binding.notesEmpty.isVisible = response.value.isEmpty()
+                setUIState(if (response.value.isEmpty()) UIState.EMPTY else UIState.READY)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_notes_failed, response.exception, requireContext())
             }
-            enableUI(true)
-            binding.notesSwipeRefresh.isRefreshing = false
         }
 
         notesViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 notesViewModel.resetBatchDeleteResponse()
-            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
             } else {
+                setUIState(UIState.READY)
                 actionMode?.finish()
             }
         }
@@ -66,10 +66,12 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
         notesViewModel.deleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 notesViewModel.resetDeleteResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
+            } else if (response is Response.Success) {
+                setUIState(UIState.READY)
             }
         }
 
@@ -92,14 +94,15 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
                 }
                 (adapter as NoteAdapter).user = apiContext.user
                 binding.fabAddNote.isVisible = apiContext.user.effectiveRights.contains(Permission.NOTES_WRITE) || apiContext.user.effectiveRights.contains(Permission.NOTES_ADMIN)
-                notesViewModel.loadNotes(apiContext)
-                if (notesViewModel.allNotesResponse.value == null)
-                    enableUI(false)
+                if (notesViewModel.allNotesResponse.value == null) {
+                    notesViewModel.loadNotes(apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
                 binding.notesEmpty.isVisible = false
                 adapter.submitList(emptyList())
                 binding.fabAddNote.isVisible = false
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
@@ -127,7 +130,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
             R.id.notes_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     notesViewModel.batchDelete(adapter.selectedItems.map { it.binding.note!! }, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> return false
@@ -189,16 +192,18 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
                 val note = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 notesViewModel.deleteNote(note, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
                 true
             }
             else -> false
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.notesSwipeRefresh.isEnabled = enabled
-        binding.notesList.isEnabled = enabled
-        binding.fabAddNote.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.notesSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.notesSwipeRefresh.isRefreshing = newState.refreshing
+        binding.notesList.isEnabled = newState.listEnabled
+        binding.notesEmpty.isVisible = newState.showEmptyIndicator
+        binding.fabAddNote.isEnabled = newState == UIState.READY
     }
 }

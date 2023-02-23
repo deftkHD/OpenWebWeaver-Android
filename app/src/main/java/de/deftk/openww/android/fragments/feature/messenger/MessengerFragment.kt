@@ -44,27 +44,29 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
         binding.chatsSwipeRefresh.setOnRefreshListener {
             userViewModel.apiContext.value?.also { apiContext ->
                 messengerViewModel.loadChats(apiContext)
+                setUIState(UIState.LOADING)
             }
         }
 
         messengerViewModel.filteredUsersResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 adapter.submitList(response.value)
-                binding.chatsEmpty.isVisible = response.value.isEmpty()
+                setUIState(if (response.value.isEmpty()) UIState.EMPTY else UIState.READY)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_users_failed, response.exception, requireContext())
             }
-            enableUI(true)
-            binding.chatsSwipeRefresh.isRefreshing = false
         }
 
         messengerViewModel.addChatResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 messengerViewModel.resetAddChatResponse()
 
-            enableUI(true)
             if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_add_chat_failed, response.exception, requireContext())
+            } else if (response is Response.Success) {
+                setUIState(UIState.READY)
             }
         }
 
@@ -72,21 +74,24 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
             if (response != null)
                 messengerViewModel.resetRemoveChatResponse()
 
-            enableUI(true)
             if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_remove_chat_failed, response.exception, requireContext())
+            } else if (response is Response.Success) {
+                setUIState(UIState.READY)
             }
         }
 
         messengerViewModel.batchDeleteResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 messengerViewModel.resetBatchDeleteResponse()
-            enableUI(true)
 
             val failure = response?.filterIsInstance<Response.Failure>() ?: return@observe
             if (failure.isNotEmpty()) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_delete_failed, failure.first().exception, requireContext())
             } else {
+                setUIState(UIState.READY)
                 actionMode?.finish()
             }
         }
@@ -107,7 +112,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
                         targetUser = "$targetUser@${this.user.login.split("@")[1]}"
                     }
                     messengerViewModel.addChat(targetUser, this)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             builder.setNegativeButton(R.string.cancel) { dialog, _ ->
@@ -124,13 +129,14 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
                     navController.popBackStack()
                     return@observe
                 }
-                messengerViewModel.loadChats(apiContext)
-                if (messengerViewModel.allUsersResponse.value == null)
-                    enableUI(false)
+                if (messengerViewModel.allUsersResponse.value == null) {
+                    messengerViewModel.loadChats(apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
                 binding.chatsEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
@@ -151,7 +157,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
             R.id.chat_action_item_delete -> {
                 userViewModel.apiContext.value?.also { apiContext ->
                     messengerViewModel.batchDelete(adapter.selectedItems.map { it.binding.chatContact!! }, apiContext)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
             }
             else -> return false
@@ -178,7 +184,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
                 val user = adapter.getItem(menuInfo.position)
                 userViewModel.apiContext.value?.apply {
                     messengerViewModel.addChat(user.user.login, this)
-                    enableUI(false)
+                    setUIState(UIState.LOADING)
                 }
                 true
             }
@@ -186,7 +192,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
                 val user = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 messengerViewModel.removeChat(user, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
                 true
             }
             else -> false
@@ -224,9 +230,11 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
         }
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.chatsSwipeRefresh.isEnabled = enabled
-        binding.chatList.isEnabled = enabled
-        binding.fabAddChat.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.chatsSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.chatsSwipeRefresh.isRefreshing = newState.refreshing
+        binding.fabAddChat.isEnabled = newState == UIState.READY
+        binding.chatList.isEnabled = newState.listEnabled
+        binding.chatsEmpty.isVisible = newState.showEmptyIndicator
     }
 }

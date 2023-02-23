@@ -31,11 +31,12 @@ class SystemNotificationSettingsFragment : AbstractFragment(true) {
             if (response is Response.Success) {
                 adapter.submitList(response.value)
                 binding.systemNotificationSettingsEmpty.isVisible = response.value.isEmpty()
+                setUIState(if (response.value.isEmpty()) UIState.EMPTY else UIState.READY)
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 binding.systemNotificationSettingsEmpty.isVisible = false
                 Reporter.reportException(R.string.error_get_system_notification_settings, response.exception, requireContext())
             }
-            enableUI(true)
             binding.systemNotificationSettingsSwipeRefresh.isRefreshing = false
         }
         binding.systemNotificationSettingList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
@@ -48,13 +49,14 @@ class SystemNotificationSettingsFragment : AbstractFragment(true) {
 
         userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                userViewModel.loadSystemNotificationSettings(apiContext)
-                if (userViewModel.systemNotificationSettingsResponse.value == null)
-                    enableUI(false)
+                if (userViewModel.systemNotificationSettingsResponse.value == null) {
+                    userViewModel.loadSystemNotificationSettings(apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
                 binding.systemNotificationSettingsEmpty.isVisible = false
                 adapter.submitList(emptyList())
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
@@ -74,21 +76,23 @@ class SystemNotificationSettingsFragment : AbstractFragment(true) {
                 val notificationSetting = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 userViewModel.enableAllSystemNotificationSettingFacilities(notificationSetting, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             }
             R.id.system_notification_setting_disable_all -> {
                 val notificationSetting = adapter.getItem(menuInfo.position)
                 val apiContext = userViewModel.apiContext.value ?: return false
                 userViewModel.disableAllSystemNotificationSettingFacilities(notificationSetting, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             }
             else -> return false
         }
         return true
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.systemNotificationSettingsSwipeRefresh.isEnabled = enabled
-        binding.systemNotificationSettingList.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.systemNotificationSettingsSwipeRefresh.isEnabled = newState.swipeRefreshEnabled
+        binding.systemNotificationSettingsSwipeRefresh.isRefreshing = newState.refreshing
+        binding.systemNotificationSettingList.isEnabled = newState.listEnabled
+        binding.systemNotificationSettingsEmpty.isVisible = newState.showEmptyIndicator
     }
 }

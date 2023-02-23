@@ -69,8 +69,8 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
                     contactViewModel.getFilteredContactsLiveData(scope!!).removeObservers(viewLifecycleOwner)
                 scope = foundScope
                 contactViewModel.getFilteredContactsLiveData(scope!!).observe(viewLifecycleOwner) filtered@ { response ->
-                    enableUI(true)
                     if (response is Response.Success) {
+                        setUIState(UIState.READY)
                         if (args.contactId != null) {
                             // edit existing
                             editMode = true
@@ -89,18 +89,19 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
                             contact.value = Contact(-1, _modified = modification, created = modification)
                         }
                     } else if (response is Response.Failure) {
+                        setUIState(UIState.ERROR)
                         Reporter.reportException(R.string.error_get_members_failed, response.exception, requireContext())
                     }
                 }
 
-                contactViewModel.loadContacts(scope!!, apiContext)
-                if (contactViewModel.getAllContactsLiveData(scope!!).value == null)
-                    enableUI(false)
+                if (contactViewModel.getAllContactsLiveData(scope!!).value == null) {
+                    contactViewModel.loadContacts(scope!!, apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
-                binding.contactDetailsEmpty.isVisible = false
                 adapter.submitList(emptyList())
                 binding.fabAddContactDetail.isVisible = false
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
@@ -185,12 +186,13 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
         contactViewModel.editResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 contactViewModel.resetEditResponse()
-            enableUI(true)
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 AndroidUtil.hideKeyboard(requireActivity(), requireView())
                 navController.popBackStack()
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
             }
         }
@@ -246,10 +248,10 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
 
             if (editMode) {
                 contactViewModel.editContact(contact.value!!, scope!!, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             } else {
                 contactViewModel.addContact(contact.value!!, scope!!, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             }
 
             return true
@@ -265,8 +267,9 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
         return builder
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.contactDetailList.isEnabled = enabled
-        binding.fabAddContactDetail.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.contactDetailList.isEnabled = newState.listEnabled
+        binding.contactDetailsEmpty.isVisible = newState.showEmptyIndicator
+        binding.fabAddContactDetail.isEnabled = newState == UIState.READY
     }
 }

@@ -37,8 +37,8 @@ class EditNoteFragment : AbstractFragment(true) {
         binding = FragmentEditNoteBinding.inflate(inflater, container, false)
 
         notesViewModel.allNotesResponse.observe(viewLifecycleOwner) { response ->
-            enableUI(true)
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 if (args.noteId != null) {
                     val foundNote = response.value.firstOrNull { it.id == args.noteId }
                     if (foundNote == null) {
@@ -59,6 +59,7 @@ class EditNoteFragment : AbstractFragment(true) {
                     editMode = false
                 }
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
                 navController.popBackStack()
                 return@observe
@@ -74,26 +75,28 @@ class EditNoteFragment : AbstractFragment(true) {
                 }
                 binding.noteColor.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, NoteColors.values().map { getString(it.text) })
 
-                notesViewModel.loadNotes(apiContext)
-                if (notesViewModel.allNotesResponse.value == null)
-                    enableUI(false)
+                if (notesViewModel.allNotesResponse.value == null) {
+                    notesViewModel.loadNotes(apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
                 binding.noteTitle.setText("")
                 binding.noteText.setText("")
                 binding.noteColor.adapter = null
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
         notesViewModel.editResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 notesViewModel.resetEditResponse()
-            enableUI(true)
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 AndroidUtil.hideKeyboard(requireActivity(), requireView())
                 navController.popBackStack()
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
             }
         }
@@ -111,19 +114,20 @@ class EditNoteFragment : AbstractFragment(true) {
             val color = NoteColor.values()[binding.noteColor.selectedItemPosition]
             if (editMode) {
                 notesViewModel.editNote(note, binding.noteTitle.text.toString(), binding.noteText.text.toString(), color, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             } else {
                 notesViewModel.addNote(binding.noteTitle.text.toString(), binding.noteText.text.toString(), color, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             }
             return true
         }
         return false
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.noteColor.isEnabled = enabled
-        binding.noteText.isEnabled = enabled
-        binding.noteTitle.isEnabled = enabled
+
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.noteColor.isEnabled = newState == UIState.READY
+        binding.noteText.isEnabled = newState == UIState.READY
+        binding.noteTitle.isEnabled = newState == UIState.READY
     }
 }

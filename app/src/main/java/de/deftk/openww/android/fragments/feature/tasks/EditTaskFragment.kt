@@ -48,8 +48,8 @@ class EditTaskFragment : AbstractFragment(true) {
         binding = FragmentEditTaskBinding.inflate(inflater, container, false)
 
         tasksViewModel.allTasksResponse.observe(viewLifecycleOwner) { response ->
-            enableUI(true)
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 if (args.groupId != null && args.taskId != null) {
                     // edit existing
                     editMode = true
@@ -82,6 +82,7 @@ class EditTaskFragment : AbstractFragment(true) {
                     binding.taskGroup.isEnabled = true
                 }
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
                 navController.popBackStack()
                 return@observe
@@ -100,8 +101,7 @@ class EditTaskFragment : AbstractFragment(true) {
                 binding.taskGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups!!.map { it.login })
 
                 tasksViewModel.loadTasks(true, apiContext)
-                if (tasksViewModel.allTasksResponse.value == null)
-                    enableUI(false)
+                setUIState(UIState.LOADING)
             } else {
                 binding.taskTitle.setText("")
                 binding.taskGroup.adapter = null
@@ -111,19 +111,20 @@ class EditTaskFragment : AbstractFragment(true) {
                 startDate = null
                 binding.taskDue.setText("")
                 dueDate = null
-                enableUI(false)
+                setUIState(UIState.DISABLED)
             }
         }
 
         tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
                 tasksViewModel.resetPostResponse() // mark as handled
-            enableUI(true)
 
             if (response is Response.Success) {
+                setUIState(UIState.READY)
                 AndroidUtil.hideKeyboard(requireActivity(), requireView())
                 navController.popBackStack()
             } else if (response is Response.Failure) {
+                setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
             }
         }
@@ -193,24 +194,24 @@ class EditTaskFragment : AbstractFragment(true) {
 
             if (editMode) {
                 tasksViewModel.editTask(task, title, description, completed, startDate, dueDate, scope, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             } else {
                 scope = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup } ?: return false
                 tasksViewModel.addTask(title, description, completed, startDate, dueDate, scope, apiContext)
-                enableUI(false)
+                setUIState(UIState.LOADING)
             }
             return true
         }
         return false
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.taskCompleted.isEnabled = enabled
-        binding.taskDue.isEnabled = enabled
-        binding.taskGroup.isEnabled = enabled
-        binding.taskStart.isEnabled = enabled
-        binding.taskText.isEnabled = enabled
-        binding.taskTitle.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.taskCompleted.isEnabled = newState == UIState.READY
+        binding.taskDue.isEnabled = newState == UIState.READY
+        binding.taskGroup.isEnabled = newState == UIState.READY
+        binding.taskStart.isEnabled = newState == UIState.READY
+        binding.taskText.isEnabled = newState == UIState.READY
+        binding.taskTitle.isEnabled = newState == UIState.READY
     }
 }
 

@@ -32,11 +32,10 @@ class ExceptionFragment : AbstractFragment(true) {
         binding = FragmentExceptionBinding.inflate(inflater, container, false)
 
         DebugUtil.exceptions.observe(viewLifecycleOwner) { responses ->
-            enableUI(true)
-
             val rep = responses.singleOrNull { it.id == args.exceptionId }
             if (rep == null) {
-                Reporter.reportException(0, args.exceptionId.toString(), requireContext())
+                setUIState(UIState.ERROR)
+                Reporter.reportException(TODO("fill exception str"), args.exceptionId.toString(), requireContext())
                 navController.popBackStack()
                 return@observe
             }
@@ -48,6 +47,8 @@ class ExceptionFragment : AbstractFragment(true) {
             binding.exceptionSource.text = "Source: " + report.source.toString()
 
             binding.fabCopyExceptionData.isEnabled = true
+
+            setUIState(UIState.READY)
         }
 
         binding.fabCopyExceptionData.setOnClickListener {
@@ -65,8 +66,7 @@ class ExceptionFragment : AbstractFragment(true) {
         return binding.root
     }
 
-    override fun onUIStateChanged(enabled: Boolean) {
-        binding.fabCopyExceptionData.isEnabled = enabled
+    override fun onUIStateChanged(newState: UIState, oldState: UIState) {
+        binding.fabCopyExceptionData.isEnabled = newState == UIState.READY
     }
-
 }
