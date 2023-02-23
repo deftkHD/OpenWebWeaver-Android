@@ -14,10 +14,10 @@ import javax.inject.Inject
 @HiltViewModel
 class ForumViewModel @Inject constructor(savedStateHandle: SavedStateHandle, private val forumRepository: ForumRepository) : ScopedViewModel(savedStateHandle) {
 
-    private val postsResponses = mutableMapOf<IGroup, MutableLiveData<Response<List<IForumPost>>>>()
+    private val postsResponses = mutableMapOf<IGroup, MutableLiveData<Response<List<IForumPost>>?>>()
 
     val filter = registerProperty("filter", true, ForumPostFilter())
-    private val filteredPostResponses = mutableMapOf<IGroup, LiveData<Response<List<IForumPost>>>>()
+    private val filteredPostResponses = mutableMapOf<IGroup, LiveData<Response<List<IForumPost>>?>>()
 
     private val _deleteResponse = registerProperty<Response<IForumPost>?>("deleteResponse", true)
     val deleteResponse: LiveData<Response<IForumPost>?> = _deleteResponse
@@ -25,18 +25,18 @@ class ForumViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
     private val _batchDeleteResponse = registerProperty<List<Response<IForumPost>>?>("batchDeleteResponse", true)
     val batchDeleteResponse: LiveData<List<Response<IForumPost>>?> = _batchDeleteResponse
 
-    fun getAllForumPosts(group: IGroup): LiveData<Response<List<IForumPost>>> {
+    fun getAllForumPosts(group: IGroup): LiveData<Response<List<IForumPost>>?> {
         return postsResponses.getOrPut(group) { registerProperty("posts", true) }
     }
 
-    fun getFilteredForumPosts(group: IGroup): LiveData<Response<List<IForumPost>>> {
+    fun getFilteredForumPosts(group: IGroup): LiveData<Response<List<IForumPost>>?> {
         return filteredPostResponses.getOrPut(group) {
             filter.switchMap { filter ->
                 when (filter) {
                     null -> getAllForumPosts(group)
                     else -> getAllForumPosts(group).switchMap { response ->
                         val filtered = registerProperty<Response<List<IForumPost>>>("filtered", true)
-                        filtered.value = response.smartMap { filter.apply(it) }
+                        filtered.value = response?.smartMap { filter.apply(it) }
                         filtered
                     }
                 }
