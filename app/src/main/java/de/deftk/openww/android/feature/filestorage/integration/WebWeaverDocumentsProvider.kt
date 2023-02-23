@@ -34,7 +34,6 @@ import java.net.URL
 
 class WebWeaverDocumentsProvider: DocumentsProvider() {
 
-    //TODO implement sorting
     //TODO implement refreshing only one directory
     //TODO implement write actions
 
@@ -251,6 +250,7 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
 
     override fun openDocumentThumbnail(documentId: String, sizeHint: Point?, signal: CancellationSignal?): AssetFileDescriptor? {
         Log.i(TAG, "openDocumentThumbnail(documentId=$documentId, sizeHint=$sizeHint, signal=$signal)")
+        //TODO image is not allowed to be larger then 2 * sizeHint
 
         val provider = getCachedProvider(documentId)
         val file = provider?.provider as? RemoteFile?
@@ -408,7 +408,7 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
     private fun includeAccount(cursor: MatrixCursor, account: Account) {
         with(cursor.newRow()) {
             add(Document.COLUMN_DOCUMENT_ID, account.name)
-            add(Document.COLUMN_DISPLAY_NAME, account.name.split("@")[0])
+            add(Document.COLUMN_DISPLAY_NAME, account.name)
             add(Document.COLUMN_SIZE, -1)
             add(Document.COLUMN_MIME_TYPE, Document.MIME_TYPE_DIR)
             add(Document.COLUMN_LAST_MODIFIED, 0)
@@ -427,14 +427,16 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
         if (scope.effectiveRights.contains(Permission.FILES_WRITE) || scope.effectiveRights.contains(Permission.FILES_ADMIN)) {
             flags = flags or Document.FLAG_DIR_SUPPORTS_CREATE
         }
+        if (shouldShowThumbnail()) {
+            flags = flags or Document.FLAG_DIR_PREFERS_GRID // enable more space for larger thumbnails (if enabled)
+        }
 
-        //TODO try to include more data
         with(cursor.newRow()) {
             add(Document.COLUMN_DOCUMENT_ID, scope.name)
             add(Document.COLUMN_DISPLAY_NAME, scope.name)
-            add(Document.COLUMN_SIZE, -1)
+            add(Document.COLUMN_SIZE, -1) //TODO display quota
             add(Document.COLUMN_MIME_TYPE, Document.MIME_TYPE_DIR)
-            add(Document.COLUMN_LAST_MODIFIED, 0)
+            add(Document.COLUMN_LAST_MODIFIED, 0) //TODO display aggregation of root file
             add(Document.COLUMN_FLAGS, flags)
             add(Document.COLUMN_ICON, R.drawable.ic_launcher_foreground)
         }
@@ -473,10 +475,16 @@ class WebWeaverDocumentsProvider: DocumentsProvider() {
             } else {
                 add(Document.COLUMN_MIME_TYPE, Document.MIME_TYPE_DIR)
             }
-            if (file.modified.date != null)
+            if (file.modified.date != null) {
                 add(Document.COLUMN_LAST_MODIFIED, file.modified.date!!.time)
+            } else if (file.aggregation != null) {
+                val date = file.aggregation?.newestFile?.created?.date
+                if (date != null) {
+                    add(Document.COLUMN_LAST_MODIFIED, date.time)
+                }
+            }
             add(Document.COLUMN_FLAGS, flags)
-            add(Document.COLUMN_ICON, R.drawable.ic_launcher_foreground)
+            //add(Document.COLUMN_ICON, R.drawable.ic_launcher_foreground)
         }
     }
 
