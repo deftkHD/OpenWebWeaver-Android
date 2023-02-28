@@ -15,7 +15,7 @@ import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 import kotlinx.coroutines.*
 
-class DevToolsFragment : AbstractFragment(true) {
+class DevToolsFragment : AbstractFragment(true, false) {
 
     private val userViewModel by activityViewModels<UserViewModel>()
     private val navController by lazy { findNavController() }
@@ -55,6 +55,9 @@ class DevToolsFragment : AbstractFragment(true) {
         binding.showExceptions.setOnClickListener {
             navController.navigate(DevToolsFragmentDirections.actionDevToolsFragmentToExceptionsFragment())
         }
+        binding.showPermissions.setOnClickListener {
+            navController.navigate(R.id.permissionScopesFragment)
+        }
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
         binding.handleUncaughtExceptions.isChecked = preferences.getBoolean("devtools_uncaught_exception_handling", false)
@@ -71,5 +74,6 @@ class DevToolsFragment : AbstractFragment(true) {
         binding.forceInvalidateSession.isEnabled = newState == UIState.READY
         binding.showExceptions.isEnabled = newState == UIState.READY
         binding.handleUncaughtExceptions.isEnabled = newState == UIState.READY
+        binding.showPermissions.isEnabled = newState == UIState.READY
     }
 }

@@ -25,6 +25,7 @@ import de.deftk.openww.android.utils.UIUtil
 import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.IScope
 import de.deftk.openww.api.model.IUser
+import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.RemoteScope
 import de.deftk.openww.api.model.feature.Quota
 import de.deftk.openww.api.model.feature.contacts.IContact
@@ -294,6 +295,13 @@ object BindingAdapters {
         var name = notificationSetting.name
         name = name.substring(name.indexOf(':') + 2)
         view.text = name
+    }
+
+    @JvmStatic
+    @BindingAdapter("permissionIcon")
+    fun permissionIcon(view: ImageView, permission: Permission) {
+        view.setImageResource(R.drawable.ic_person_24)
+        //TODO display different icon based on functionality
     }
 
 }

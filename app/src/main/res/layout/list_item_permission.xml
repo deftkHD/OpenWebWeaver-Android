@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="permission"
+            type="de.deftk.openww.api.model.Permission" />
+
+        <variable
+            name="description"
+            type="String" />
+
+    </data>
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:padding="@dimen/list_item_padding">
+
+        <ImageView
+            android:id="@+id/member_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="2dp"
+            permissionIcon="@{permission}"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_person_24" />
+
+        <TextView
+            android:id="@+id/member_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/member_image"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@{permission.name}"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="20sp"
+            tools:text="Permission name" />
+
+        <TextView
+            android:id="@+id/permission_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/member_name"
+            android:layout_alignParentEnd="true"
+            android:layout_marginStart="5dp"
+            android:layout_toEndOf="@+id/member_image"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@{description}"
+            tools:text="Permission description" />
+
+    </RelativeLayout>
+
+</layout>

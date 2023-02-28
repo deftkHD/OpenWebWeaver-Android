@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment
 import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.utils.ISearchProvider
 
-abstract class AbstractFragment(private val hasActionBar: Boolean) : Fragment(), MenuProvider {
+abstract class AbstractFragment(private val hasActionBar: Boolean, private val requiresLoadingAtStart: Boolean = true) : Fragment(), MenuProvider {
 
     protected var currentUIState = UIState.EMPTY
         private set
@@ -26,7 +26,11 @@ abstract class AbstractFragment(private val hasActionBar: Boolean) : Fragment(),
         getMainActivity().addMenuProvider(this, viewLifecycleOwner)
         if (this is ISearchProvider)
             getMainActivity().searchProvider = this
-        setUIState(UIState.LOADING)
+        if (requiresLoadingAtStart) {
+            setUIState(UIState.LOADING)
+        } else {
+            setUIState(UIState.READY)
+        }
     }
 
     private fun getMainActivity(): MainActivity {

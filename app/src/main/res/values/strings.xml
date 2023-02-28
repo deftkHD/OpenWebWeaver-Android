@@ -336,21 +336,39 @@
     <string name="devtools_teaser">To be continued</string>
     <string name="devtools">DevTools</string>
     <string name="devtools_summary">Caution! Only enable it if you know what you are doing</string>
-    <string name="force_invalidate_session" translatable="false">Force invalidate session</string>
-    <string name="show_past_requests" translatable="false">Show past requests</string>
-    <string name="session_invalidated" translatable="false">Session invalidated!</string>
-    <string name="past_requests_empty" translatable="false">No past requests</string>
-    <string name="copy_to_clipboard" translatable="false">Copy to clipboard</string>
-    <string name="fragment_past_requests_title" translatable="false">Past requests</string>
-    <string name="fragment_past_request" translatable="false">Request details</string>
-    <string name="warning_contains_sensitive_data" translatable="false">WARNING: The data shown here contains sensitive information which can be used to impersonate you! DON\'T share it with someone you don\'t trust!</string>
-    <string name="error_session_invalidation_failed" translatable="false">Failed to invalidate session: %s</string>
-    <string name="exceptions" translatable="false">Exceptions</string>
-    <string name="exception_detail" translatable="false">Exception details</string>
-    <string name="exceptions_empty" translatable="false">No exceptions</string>
-    <string name="show_exceptions" translatable="false">Show exceptions</string>
-    <string name="uncaught_exception" translatable="false">Uncaught exception: %s</string>
-    <string name="handle_uncaught_exceptions" translatable="false">Handle uncaught exceptions</string>
-    <string name="action_requires_restart" translatable="false">This action requires restarting the app!</string>
+    <string name="force_invalidate_session">Force invalidate session</string>
+    <string name="show_past_requests">Show past requests</string>
+    <string name="session_invalidated">Session invalidated!</string>
+    <string name="past_requests_empty">No past requests</string>
+    <string name="copy_to_clipboard">Copy to clipboard</string>
+    <string name="fragment_past_requests_title">Past requests</string>
+    <string name="fragment_past_request">Request details</string>
+    <string name="warning_contains_sensitive_data">WARNING: The data shown here contains sensitive information which can be used to impersonate you! DON\'T share it with someone you don\'t trust!</string>
+    <string name="error_session_invalidation_failed">Failed to invalidate session: %s</string>
+    <string name="exceptions">Exceptions</string>
+    <string name="exception_detail">Exception details</string>
+    <string name="exceptions_empty">No exceptions</string>
+    <string name="show_exceptions">Show exceptions</string>
+    <string name="uncaught_exception">Uncaught exception: %s</string>
+    <string name="handle_uncaught_exceptions">Handle uncaught exceptions</string>
+    <string name="action_requires_restart">This action requires restarting the app!</string>
+    <string name="permissions">Permissions</string>
+    <string name="permissions_empty">No permissions</string>
+    <plurals name="base_permissions_num" translatable="false">
+        <item quantity="one">%d base permission</item>
+        <item quantity="other">%d base permissions</item>
+    </plurals>
+    <plurals name="effective_permissions_num" translatable="false">
+        <item quantity="one">%d effective permission</item>
+        <item quantity="other">%d effective permissions</item>
+    </plurals>
+    <plurals name="member_permissions_num" translatable="false">
+        <item quantity="one">%d member permission</item>
+        <item quantity="other">%d member permissions</item>
+    </plurals>
+    <plurals name="reduced_permissions_num" translatable="false">
+        <item quantity="one">%d reduced permission</item>
+        <item quantity="other">%d reduced permissions</item>
+    </plurals>
 
 </resources>

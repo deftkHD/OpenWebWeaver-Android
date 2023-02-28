@@ -334,4 +334,22 @@
     <string name="devtools">DevTools</string>
     <string name="devtools_summary">Vorsicht! Nur aktivieren, wenn du weißt was du tust</string>
     <string name="devtools_teaser">To be continued</string>
+    <string name="force_invalidate_session">Session ungültig machen</string>
+    <string name="show_past_requests">Alte Anfragen anzeigen</string>
+    <string name="session_invalidated">Session ungültig gemacht!</string>
+    <string name="past_requests_empty">Keine alten Anfragen vorhanden</string>
+    <string name="copy_to_clipboard">In Zwischenablage kopieren</string>
+    <string name="fragment_past_requests_title">Alte Anfragen</string>
+    <string name="fragment_past_request">Anfragedetails</string>
+    <string name="warning_contains_sensitive_data">ACHTUNG! Die hier angezeigten Daten enthalten sensible Information, die für den Identitätsdiebstahl benutzt werden können! Teile diese Daten nicht mit jemandem, dem du nicht voll vertraust!</string>
+    <string name="error_session_invalidation_failed">Könnte Session nicht ungültig machen: %s</string>
+    <string name="exceptions">Fehlermeldungen</string>
+    <string name="exception_detail">Fehlerdetails</string>
+    <string name="exceptions_empty">Keine Fehlermeldungen</string>
+    <string name="show_exceptions">Fehlermeldungen anzeigen</string>
+    <string name="uncaught_exception">Unerwarteter Fehler: %s</string>
+    <string name="handle_uncaught_exceptions">Unerwartete Fehler abfrangen</string>
+    <string name="action_requires_restart">Diese Operation erfordert einen Neustart der App!</string>
+    <string name="permissions">Berechtigungen</string>
+    <string name="permissions_empty">Keine Berechtigungen</string>
 </resources>

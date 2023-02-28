@@ -602,6 +602,9 @@
         <action
             android:id="@+id/action_devToolsFragment_to_exceptionsFragment"
             app:destination="@id/exceptionsFragment" />
+        <action
+            android:id="@+id/action_devToolsFragment_to_permissionScopesFragment"
+            app:destination="@id/permissionScopesFragment" />
     </fragment>
     <fragment
         android:id="@+id/pastRequestsFragment"
@@ -638,5 +641,22 @@
         <action
             android:id="@+id/action_exceptionsFragment_to_exceptionFragment"
             app:destination="@id/exceptionFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/permissionScopesFragment"
+        android:name="de.deftk.openww.android.fragments.devtools.permission.PermissionScopesFragment"
+        android:label="@string/permissions">
+        <action
+            android:id="@+id/action_permissionScopesFragment_to_permissionsFragment"
+            app:destination="@id/permissionsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/permissionsFragment"
+        android:name="de.deftk.openww.android.fragments.devtools.permission.PermissionsFragment"
+        android:label="@string/permissions"
+        tools:layout="@layout/fragment_permissions">
+        <argument
+            android:name="scope"
+            app:argType="string" />
     </fragment>
 </navigation>
