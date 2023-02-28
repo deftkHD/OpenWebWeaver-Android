@@ -39,6 +39,7 @@ class SessionFileUploadWorker(context: Context, params: WorkerParameters) : Abst
         private const val DATA_CONTEXT_LOGIN = "data_context_login"
         private const val DATA_CONTEXT_SESSION_ID = "data_session_id"
         private const val DATA_CONTEXT_REQUEST_URL = "data_context_request_url"
+        private const val DATA_POST_MAX_SIZE = "data_post_max_size"
 
         // output
         const val DATA_SESSION_FILE = "data_session_file"
@@ -51,7 +52,8 @@ class SessionFileUploadWorker(context: Context, params: WorkerParameters) : Abst
                         DATA_FILE_NAME to fileName,
                         DATA_CONTEXT_LOGIN to requestContext.login,
                         DATA_CONTEXT_REQUEST_URL to requestContext.requestUrl,
-                        DATA_CONTEXT_SESSION_ID to requestContext.sessionId
+                        DATA_CONTEXT_SESSION_ID to requestContext.sessionId,
+                        DATA_POST_MAX_SIZE to requestContext.postMaxSize
                     )
                 )
                 .build()
@@ -64,7 +66,11 @@ class SessionFileUploadWorker(context: Context, params: WorkerParameters) : Abst
         val login = inputData.getString(DATA_CONTEXT_LOGIN) ?: return exceptionResult(IllegalArgumentException("No login"))
         val sessionId = inputData.getString(DATA_CONTEXT_SESSION_ID) ?: return exceptionResult(IllegalArgumentException("No session id"))
         val requestUrl = inputData.getString(DATA_CONTEXT_REQUEST_URL) ?: return exceptionResult(IllegalArgumentException("No request url"))
-        val requestContext = RequestContext(login, sessionId, requestUrl, DefaultRequestHandler())
+        val postMaxSize = inputData.getInt(DATA_POST_MAX_SIZE, -1)
+        if (postMaxSize < 1) {
+            return exceptionResult(IllegalArgumentException("Invalid max request size"))
+        }
+        val requestContext = RequestContext(login, sessionId, postMaxSize, requestUrl, DefaultRequestHandler()) //FIXME this bypasses autologin and devtools
 
         setForeground(createForegroundInfo(fileName))
 
@@ -74,12 +80,12 @@ class SessionFileUploadWorker(context: Context, params: WorkerParameters) : Abst
                 val inputStream = applicationContext.contentResolver.openInputStream(uri) ?: return@withContext exceptionResult(IllegalStateException("Failed to open file input stream"))
                 val sessionFile = addSessionFile(fileName, requestContext)
 
-                val buffer = ByteArray(1024 * 64)
+                val buffer = ByteArray(1024 * 64) //TODO consider postMaxSize!
                 var writtenBytes = 0
                 while (!isStopped) {
                     val read = inputStream.read(buffer)
                     if (read <= 0) break
-                    if (read != buffer.size) {
+                    if (read != buffer.size) { // remove nulls at end of buffer
                         val newBuffer = ByteArray(read)
                         System.arraycopy(buffer, 0, newBuffer, 0, read)
                         sessionFile.append(newBuffer, requestContext)
@@ -105,7 +111,7 @@ class SessionFileUploadWorker(context: Context, params: WorkerParameters) : Abst
 
     private suspend fun addSessionFile(name: String, requestContext: IRequestContext): SessionFile {
         val request = UserApiRequest(requestContext)
-        val id = request.addAddSessionFileRequest(name, byteArrayOf())[1]
+        val id = request.addAddSessionFileRequest(name, byteArrayOf())
         val response = request.fireRequest()
         val subResponse = ResponseUtil.getSubResponseResult(response.toJson(), id)
         return WebWeaverClient.json.decodeFromJsonElement(subResponse["file"]!!)

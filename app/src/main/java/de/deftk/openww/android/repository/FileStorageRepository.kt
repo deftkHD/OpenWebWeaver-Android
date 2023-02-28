@@ -37,7 +37,7 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
             getFolders = true,
             getFolder = getSelf,
             recursive = false
-        )[1]
+        )
         val response = request.fireRequest()
         val subResponse = ResponseUtil.getSubResponseResult(response.toJson(), id)
         subResponse["entries"]!!.jsonArray.map { WebWeaverClient.json.decodeFromJsonElement<RemoteFile>(it) }
@@ -57,7 +57,7 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         }
 
         val request = OperatingScopeApiRequest(scope.getRequestContext(apiContext))
-        request.addSetFocusRequest(Focusable.FILES, scope.login)
+        request.ensureFocus(Focusable.FILES, scope.login)
         val ids = parts.map { part ->
             val requestParams = buildJsonObject {
                 put("folder_id", part)
@@ -132,26 +132,33 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
     private fun UserApiRequest.addGetAllFileStorageQuotasRequest(user: IUser): List<Int> {
         val ids = mutableListOf<Int>()
         if (Feature.FILES.isAvailable(user.effectiveRights))
-            ids.addAll(addGetFileStorageStateRequest())
+            ids.add(addGetFileStorageStateRequest())
         user.getGroups().filter { Feature.FILES.isAvailable(it.effectiveRights) }.forEach { group ->
-            ids.addAll(addGetFileStorageStateRequest(group.login))
+            ids.add(addGetFileStorageStateRequest(group.login))
         }
         return ids
     }
 
     private suspend fun IUser.getAllFileStorageQuotas(apiContext: IApiContext): Map<IOperatingScope, Quota> {
         val request = UserApiRequest(getRequestContext(apiContext))
-        val requestIds = request.addGetAllFileStorageQuotasRequest(apiContext.user)
-        val response = request.fireRequest().toJson().jsonArray
+        val quotaIds = request.addGetAllFileStorageQuotasRequest(apiContext.user)
+
+        val response = request.fireRequest().toJson()
+        ResponseUtil.checkSuccess(response)
+        val responses = response.jsonArray.map { it.jsonObject }
         val quotas = mutableMapOf<IOperatingScope, Quota>()
-        val responses = response.filter { requestIds.contains(it.jsonObject["id"]!!.jsonPrimitive.int) }.map { it.jsonObject }
-        responses.withIndex().forEach { (index, subResponse) ->
-            if (index % 2 == 1) {
-                val focus = responses[index - 1]["result"]!!.jsonObject
-                check(focus["method"]?.jsonPrimitive?.content == "set_focus")
-                val memberLogin = focus["user"]!!.jsonObject["login"]!!.jsonPrimitive.content
-                val scope = apiContext.findOperatingScope(memberLogin)!!
-                quotas[scope] = WebWeaverClient.json.decodeFromJsonElement(subResponse["result"]!!.jsonObject["quota"]!!.jsonObject)
+
+        var scopeName: String? = null
+        responses.forEach { subResponse ->
+            val result = subResponse["result"]?.jsonObject ?: error("Response has no result")
+            val method = result["method"]?.jsonPrimitive?.content
+            val id = subResponse["id"]?.jsonPrimitive?.int
+            if (method == "set_focus") {
+                scopeName = result["user"]!!.jsonObject["login"]!!.jsonPrimitive.content
+            } else if (quotaIds.contains(id)) {
+                assert(scopeName != null) { "Quota request can't be performed outside a scope" }
+                val scope = apiContext.findOperatingScope(scopeName!!) ?: error("Invalid scope: \"$scopeName\"")
+                quotas[scope] = WebWeaverClient.json.decodeFromJsonElement(result["quota"]!!.jsonObject)
             }
         }
         return quotas
@@ -165,9 +172,8 @@ class FileStorageRepository @Inject constructor() : AbstractRepository() {
         files.forEach { file ->
             if (file.preview == true) {
                 val req = request.addGetPreviewDownloadUrlRequest(file.id)
-                check(req.size == 2)
-                requestIds.addAll(req)
-                idMap[req[1]] = file.id
+                requestIds.add(req)
+                idMap[req] = file.id
             }
         }
 
