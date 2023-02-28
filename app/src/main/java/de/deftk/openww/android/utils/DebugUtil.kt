@@ -12,7 +12,7 @@ import java.util.*
 object DebugUtil {
 
     private var nextId = 0
-    private val _exceptions = MutableLiveData<MutableList<ExceptionReport>>()
+    private val _exceptions = MutableLiveData<MutableList<ExceptionReport>>(mutableListOf())
     val exceptions: LiveData<MutableList<ExceptionReport>> = _exceptions
 
     fun reportException(source: ExceptionSource, stackTrace: Array<StackTraceElement>, exception: Throwable?, message: String?) {
@@ -23,7 +23,7 @@ object DebugUtil {
         val report = ExceptionReport(nextId++, source, Date(), trace, exception, message)
         val list = _exceptions.value ?: mutableListOf()
         list.add(report)
-        _exceptions.value = list
+        _exceptions.value = list.toMutableList()
     }
 
     fun areDevToolsEnabled(context: Context): Boolean {
