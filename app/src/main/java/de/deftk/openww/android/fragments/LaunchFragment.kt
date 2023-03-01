@@ -3,6 +3,7 @@ package de.deftk.openww.android.fragments
 import android.accounts.Account
 import android.accounts.AccountAuthenticatorResponse
 import android.accounts.AccountManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -72,7 +73,13 @@ class LaunchFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val authenticatorResponse: AccountAuthenticatorResponse? = requireActivity().intent?.getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
+        val authenticatorResponse = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().intent?.getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, AccountAuthenticatorResponse::class.java)
+        } else {
+            @Suppress("DEPRECATION") // already got ya backs
+            requireActivity().intent?.getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
+        }
+
         if (authenticatorResponse != null) {
             authenticatorResponse.onRequestContinued()
             navController.navigate(R.id.loginFragment, Bundle().apply { putBoolean("only_add", true) })
@@ -108,11 +115,10 @@ class LaunchFragment : Fragment() {
                 AuthHelper.AuthState.ADD_NEW -> {
                     if (launchMode == LaunchMode.DEFAULT) {
                         navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToLoginFragment(false, null))
-                    } else if (launchMode == LaunchMode.EMAIL) {
-                        Reporter.reportException(R.string.error_login_failed, "no api context", requireContext())
+                    } else {
+                        Reporter.reportException(R.string.error_login_failed, "no user available", requireContext())
                         requireActivity().finish()
                     }
-
                 }
             }
         }
