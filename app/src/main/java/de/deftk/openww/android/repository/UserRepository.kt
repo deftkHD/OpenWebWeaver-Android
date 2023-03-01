@@ -1,9 +1,7 @@
 package de.deftk.openww.android.repository
 
-import android.os.Build
 import de.deftk.openww.android.feature.AppFeature
 import de.deftk.openww.android.feature.overview.AbstractOverviewElement
-import de.deftk.openww.api.WebWeaverClient
 import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.feature.systemnotification.INotificationSetting
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
@@ -15,34 +13,6 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class UserRepository @Inject constructor() : AbstractRepository() {
-
-    suspend fun loginPassword(username: String, password: String) = apiCall {
-        WebWeaverClient.login(username, password)
-    }
-
-    suspend fun loginPasswordCreateToken(username: String, password: String) = apiCall {
-        WebWeaverClient.loginCreateToken(
-            username,
-            password,
-            "OpenWebWeaver",
-            "${Build.BRAND} ${Build.MODEL}"
-        )
-    }
-
-    suspend fun loginToken(username: String, token: String) = apiCall {
-        WebWeaverClient.loginToken(username, token)
-    }
-
-    suspend fun logout(apiContext: IApiContext) = apiCall {
-        apiContext.user.logout(apiContext.user.getRequestContext(apiContext))
-    }
-
-    suspend fun logoutDestroyToken(token: String, apiContext: IApiContext) = apiCall {
-        apiContext.user.logoutDestroyToken(
-            token,
-            apiContext.user.getRequestContext(apiContext)
-        )
-    }
 
     suspend fun getOverviewElements(features: List<AppFeature>, apiContext: IApiContext) = apiCall {
         val elements = mutableListOf<AbstractOverviewElement>()

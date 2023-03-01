@@ -12,15 +12,13 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentFileStorageBinding
 import de.deftk.openww.android.feature.LaunchMode
 import de.deftk.openww.android.filter.FileStorageQuotaFilter
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 
-class FileStorageGroupFragment : AbstractFragment(true), ISearchProvider {
+class FileStorageGroupFragment : ContextualFragment(true), ISearchProvider {
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val fileStorageViewModel: FileStorageViewModel by activityViewModels()
 
     private lateinit var binding: FragmentFileStorageBinding
@@ -44,12 +42,12 @@ class FileStorageGroupFragment : AbstractFragment(true), ISearchProvider {
         }
 
         binding.fileStorageSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 fileStorageViewModel.loadQuotas(apiContext)
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (fileStorageViewModel.allQuotasResponse.value == null) {
                     fileStorageViewModel.loadQuotas(apiContext)

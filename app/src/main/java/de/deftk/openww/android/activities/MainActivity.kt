@@ -53,6 +53,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
     private val notesViewModel: NotesViewModel by viewModels()
     private val tasksViewModel: TasksViewModel by viewModels()
     private val userViewModel: UserViewModel by viewModels()
+    private val loginViewModel: LoginViewModel by viewModels()
 
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(this) }
     private val launchMode by lazy { LaunchMode.getLaunchMode(intent) }
@@ -97,7 +98,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
                 R.id.drawer_item_open_website -> openWebsite()
                 R.id.drawer_item_add_account -> addAccount()
                 R.id.drawer_item_switch_account -> switchAccount()
-                R.id.drawer_item_logout -> userViewModel.logout(userViewModel.apiContext.value!!.user.login, this)
+                R.id.drawer_item_logout -> loginViewModel.logout(loginViewModel.apiContext.value!!.user.login, this)
                 else -> return@setNavigationItemSelectedListener false
             }
             item.isChecked = false
@@ -113,7 +114,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
             }
         }
 
-        userViewModel.apiContext.observe(this) { apiContext ->
+        loginViewModel.apiContext.observe(this) { apiContext ->
             // allow or disallow switching accounts
             binding.navView.menu.findItem(R.id.drawer_item_switch_account).isVisible = AuthHelper.findAccounts(null, this).size > 1
 
@@ -145,7 +146,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
             }
         }
 
-        userViewModel.logoutResponse.observe(this) { response ->
+        loginViewModel.logoutResponse.observe(this) { response ->
             if (response is Response.Success) {
                 navController.navigate(R.id.launchFragment)
             } else if (response is Response.Failure) {
@@ -172,8 +173,8 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
     private fun openWebsite() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val user = userViewModel.apiContext.value?.user ?: return@launch
-                val uri = Uri.parse(user.getAutoLoginUrl(context = user.getRequestContext(userViewModel.apiContext.value!!)))
+                val user = loginViewModel.apiContext.value?.user ?: return@launch
+                val uri = Uri.parse(user.getAutoLoginUrl(context = user.getRequestContext(loginViewModel.apiContext.value!!)))
                 if (preferences.getBoolean("open_link_external", false)) {
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.data = uri
@@ -223,6 +224,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
         notesViewModel.resetScopedData()
         tasksViewModel.resetScopedData()
         userViewModel.resetScopedData()
+        loginViewModel.resetScopedData()
     }
 
     override fun onSupportNavigateUp(): Boolean {

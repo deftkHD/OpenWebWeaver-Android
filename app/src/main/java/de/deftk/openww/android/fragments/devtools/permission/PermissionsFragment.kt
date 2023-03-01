@@ -1,7 +1,9 @@
 package de.deftk.openww.android.fragments.devtools.permission
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -12,13 +14,13 @@ import de.deftk.openww.android.adapter.recycler.PermissionAdapter
 import de.deftk.openww.android.databinding.FragmentPermissionsBinding
 import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.Reporter
-import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.android.viewmodel.LoginViewModel
 import de.deftk.openww.api.model.IGroup
 
 class PermissionsFragment : AbstractFragment(true) {
 
     private val args: PermissionsFragmentArgs by navArgs()
-    private val userViewModel: UserViewModel by activityViewModels()
+    private val loginViewModel by activityViewModels<LoginViewModel>()
     private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentPermissionsBinding
@@ -34,7 +36,7 @@ class PermissionsFragment : AbstractFragment(true) {
         binding.basePermissionList.adapter = basePermissionAdapter
         binding.effectivePermissionList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 val scope = apiContext.findOperatingScope(args.scope)
                 if (scope == null) {

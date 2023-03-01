@@ -11,17 +11,17 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.AccountAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.utils.Reporter
-import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.android.viewmodel.LoginViewModel
 
 class ChooseAccountDialogFragment : DialogFragment() {
 
-    private val userViewModel: UserViewModel by activityViewModels()
+    private val loginViewModel by activityViewModels<LoginViewModel>()
     private val navController by lazy { findNavController() }
 
     private var actionPerformed = false
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        userViewModel.loginResponse.observe(this) { response ->
+        loginViewModel.loginResponse.observe(this) { response ->
             if (actionPerformed) {
                 if (response is Response.Success) {
                     navController.navigate(ChooseAccountDialogFragmentDirections.actionChooseAccountDialogFragmentToOverviewFragment())
@@ -37,11 +37,11 @@ class ChooseAccountDialogFragment : DialogFragment() {
         val builder = AlertDialog.Builder(requireContext())
         builder.setTitle(R.string.choose_account)
         builder.setIcon(R.drawable.ic_account_circle_24)
-        val accountAdapter = AccountAdapter(requireContext(), accounts.toList(), userViewModel)
+        val accountAdapter = AccountAdapter(requireContext(), accounts.toList(), loginViewModel)
         builder.setAdapter(accountAdapter) { _, which ->
             actionPerformed = true
             val account = accounts[which]
-            userViewModel.loginAccount(account, accountManager.getPassword(account))
+            loginViewModel.loginAccount(account, accountManager.getPassword(account))
         }
         return builder.create()
     }

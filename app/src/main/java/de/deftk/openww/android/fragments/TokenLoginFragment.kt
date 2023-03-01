@@ -15,12 +15,12 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentTokenLoginBinding
 import de.deftk.openww.android.utils.Reporter
-import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.android.viewmodel.LoginViewModel
 
 
 class TokenLoginFragment : AbstractFragment(false) {
 
-    private val userViewModel: UserViewModel by activityViewModels()
+    private val loginViewModel by activityViewModels<LoginViewModel>()
     private val navController by lazy { findNavController() }
     private val args: TokenLoginFragmentArgs by navArgs()
 
@@ -31,6 +31,7 @@ class TokenLoginFragment : AbstractFragment(false) {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentTokenLoginBinding.inflate(inflater, container, false)
 
+        //TODO fix deprecation just as in LaunchFragment
         val authenticatorResponse: AccountAuthenticatorResponse? = requireActivity().intent?.getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
         authenticatorResponse?.onRequestContinued()
         val forceRemember = args.onlyAdd || authenticatorResponse != null
@@ -40,7 +41,7 @@ class TokenLoginFragment : AbstractFragment(false) {
         binding.chbRememberToken.isVisible = !forceRemember
         binding.chbRememberToken.isChecked = forceRemember
 
-        userViewModel.loginToken.observe(viewLifecycleOwner) { response ->
+        loginViewModel.loginToken.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success && actionPerformed && binding.chbRememberToken.isChecked) {
                 AccountManager.get(requireContext()).addAccountExplicitly(
                     Account(response.value.first, getString(R.string.account_type)),
@@ -50,7 +51,7 @@ class TokenLoginFragment : AbstractFragment(false) {
             }
         }
 
-        userViewModel.loginResponse.observe(viewLifecycleOwner) { response ->
+        loginViewModel.loginResponse.observe(viewLifecycleOwner) { response ->
             if (actionPerformed) {
                 if (response is Response.Success) {
                     setUIState(UIState.READY)
@@ -94,7 +95,7 @@ class TokenLoginFragment : AbstractFragment(false) {
                 setUIState(UIState.LOADING)
                 val username = binding.txtEmail.text.toString()
                 val token = binding.txtToken.text.toString()
-                userViewModel.loginToken(username, token)
+                loginViewModel.loginToken(username, token)
             }
         }
 

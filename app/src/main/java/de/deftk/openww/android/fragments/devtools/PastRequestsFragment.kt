@@ -12,11 +12,11 @@ import de.deftk.openww.android.adapter.recycler.RequestAdapter
 import de.deftk.openww.android.databinding.FragmentPastRequestsBinding
 import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.fragments.ActionModeClickListener
-import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.android.viewmodel.LoginViewModel
 
 class PastRequestsFragment : AbstractFragment(true), ActionModeClickListener<RequestAdapter.RequestViewHolder> {
 
-    private val userViewModel by activityViewModels<UserViewModel>()
+    private val loginViewModel by activityViewModels<LoginViewModel>()
     private val navController by lazy { findNavController() }
     private val adapter by lazy { RequestAdapter(this) }
 
@@ -28,7 +28,7 @@ class PastRequestsFragment : AbstractFragment(true), ActionModeClickListener<Req
         binding.pastRequestsList.adapter = adapter
         binding.pastRequestsList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
-        userViewModel.pastRequests.observe(viewLifecycleOwner) { pastRequests ->
+        loginViewModel.pastRequests.observe(viewLifecycleOwner) { pastRequests ->
             adapter.submitList(pastRequests)
             if (pastRequests.isNotEmpty()) {
                 setUIState(UIState.READY)

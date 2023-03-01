@@ -11,8 +11,6 @@ import android.widget.Spinner
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.NavController
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.MailFolderAdapter
@@ -26,7 +24,6 @@ import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MailboxViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.mailbox.IEmail
@@ -34,9 +31,7 @@ import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 
 class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.MailViewHolder>(R.menu.mail_actionmode_menu), ISearchProvider {
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val mailboxViewModel: MailboxViewModel by activityViewModels()
-    private val navController: NavController by lazy { findNavController() }
 
     private lateinit var binding: FragmentMailBinding
     private lateinit var toolbarSpinner: Spinner
@@ -51,7 +46,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val folder = toolbarSpinner.getItemAtPosition(position) as IEmailFolder
                 if (folder.id != mailboxViewModel.currentFolder.value?.id) {
-                    userViewModel.apiContext.value?.also { apiContext ->
+                    loginViewModel.apiContext.value?.also { apiContext ->
                         mailboxViewModel.selectFolder(folder, apiContext)
                         setUIState(UIState.LOADING)
                     }
@@ -74,7 +69,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         }
 
         binding.mailSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 mailboxViewModel.resetScopedData()
                 mailboxViewModel.loadFolders(apiContext)
                 setUIState(UIState.LOADING)
@@ -156,7 +151,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             toolbarSpinner.adapter = null
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (!Feature.MAILBOX.isAvailable(apiContext.user.effectiveRights)) {
                     Reporter.reportFeatureNotAvailable(requireContext())
@@ -197,7 +192,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
     }
 
     override fun createAdapter(): ActionModeAdapter<Pair<IEmail, IEmailFolder>, MailAdapter.MailViewHolder> {
-        return MailAdapter(this, userViewModel.apiContext.value!!.user)
+        return MailAdapter(this, loginViewModel.apiContext.value!!.user)
     }
 
     override fun onItemClick(view: View, viewHolder: MailAdapter.MailViewHolder) {
@@ -205,7 +200,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
     }
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-        val user = userViewModel.apiContext.value?.user
+        val user = loginViewModel.apiContext.value?.user
         val canModify = user?.effectiveRights?.contains(Permission.MAILBOX_WRITE) == true || user?.effectiveRights?.contains(Permission.MAILBOX_ADMIN) == true
         menu.findItem(R.id.mail_action_item_move).isEnabled = canModify
         menu.findItem(R.id.mail_action_item_delete).isEnabled = canModify
@@ -223,7 +218,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                         dialog.dismiss()
                     }
                     .setAdapter(MailFolderAdapter(requireContext(), folders)) { _, which ->
-                        userViewModel.apiContext.value?.also { apiContext ->
+                        loginViewModel.apiContext.value?.also { apiContext ->
                             mailboxViewModel.batchMove(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, folders[which], apiContext)
                             setUIState(UIState.LOADING)
                         }
@@ -232,19 +227,19 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                     .show()
             }
             R.id.mail_action_item_delete -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.batchDelete(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, apiContext)
                     setUIState(UIState.LOADING)
                 }
             }
             R.id.mail_action_item_set_read -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.batchSetEmails(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, null, false, apiContext)
                     setUIState(UIState.LOADING)
                 }
             }
             R.id.mail_action_item_set_unread -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.batchSetEmails(adapter.selectedItems.map { it.binding.email!! }, mailboxViewModel.currentFolder.value!!, null, true, apiContext)
                     setUIState(UIState.LOADING)
                 }
@@ -286,7 +281,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             builder.setView(input)
 
             builder.setPositiveButton(R.string.confirm) { _, _ ->
-                userViewModel.apiContext.value?.apply {
+                loginViewModel.apiContext.value?.apply {
                     mailboxViewModel.addFolder(input.text.toString(), this)
                     setUIState(UIState.LOADING)
                 }
@@ -314,7 +309,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val (email, _) = (binding.mailList.adapter as MailAdapter).getItem(menuInfo.position)
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 if (apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
                     requireActivity().menuInflater.inflate(R.menu.mail_context_menu, menu)
                     menu.findItem(R.id.mail_context_item_set_unread).isVisible = email.unread == false
@@ -338,7 +333,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
                         dialog.dismiss()
                     }
                     .setAdapter(MailFolderAdapter(requireContext(), folders)) { _, which ->
-                        userViewModel.apiContext.value?.also { apiContext ->
+                        loginViewModel.apiContext.value?.also { apiContext ->
                             mailboxViewModel.moveEmail(mailItem.first, mailItem.second, folders[which], apiContext)
                             setUIState(UIState.LOADING)
                         }
@@ -348,21 +343,21 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             }
             R.id.mail_context_item_delete -> {
                 val mailItem = adapter.getItem(menuInfo.position)
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.deleteEmail(mailItem.first, mailItem.second, true, apiContext)
                     setUIState(UIState.LOADING)
                 }
             }
             R.id.mail_context_item_set_read -> {
                 val mailItem = adapter.getItem(menuInfo.position)
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.batchSetEmails(listOf(mailItem.first), mailItem.second, null, false, apiContext)
                     setUIState(UIState.LOADING)
                 }
             }
             R.id.mail_context_item_set_unread -> {
                 val mailItem = adapter.getItem(menuInfo.position)
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.batchSetEmails(listOf(mailItem.first), mailItem.second, null, true, apiContext)
                     setUIState(UIState.LOADING)
                 }

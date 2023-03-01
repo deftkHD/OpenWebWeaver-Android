@@ -13,18 +13,16 @@ import de.deftk.openww.android.adapter.recycler.ChatMessageAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentMessengerChatBinding
 import de.deftk.openww.android.filter.MessageFilter
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.FileUtil
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MessengerViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.feature.FileUrl
 
 
-class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISearchProvider {
+class MessengerChatFragment : ContextualFragment(true), AttachmentDownloader, ISearchProvider {
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val messengerViewModel: MessengerViewModel by activityViewModels()
     private val args: MessengerChatFragmentArgs by navArgs()
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(requireContext()) }
@@ -35,18 +33,18 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMessengerChatBinding.inflate(inflater, container, false)
 
-        val adapter = ChatMessageAdapter(userViewModel, this, findNavController(), userViewModel.apiContext.value?.user!!)
+        val adapter = ChatMessageAdapter(loginViewModel, this, findNavController(), loginViewModel.apiContext.value?.user!!)
         binding.chatList.adapter = adapter
 
         binding.chatsSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 messengerViewModel.loadHistory(args.user, false, apiContext)
                 setUIState(UIState.LOADING)
             }
         }
 
         binding.btnSend.setOnClickListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 messengerViewModel.sendMessage(args.user, binding.txtMessage.text.toString(), null, apiContext)
                 setUIState(UIState.LOADING)
             }
@@ -55,7 +53,7 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
         messengerViewModel.sendMessageResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 binding.txtMessage.text = null
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     messengerViewModel.loadHistory(args.user, true, apiContext)
                     setUIState(UIState.LOADING)
                 }
@@ -77,7 +75,7 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (messengerViewModel.getAllMessagesResponse(args.user).value == null) {
                     messengerViewModel.loadHistory(args.user, false, apiContext)
@@ -121,7 +119,7 @@ class MessengerChatFragment : AbstractFragment(true), AttachmentDownloader, ISea
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.messenger_options_item_delete_saved_chat -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     messengerViewModel.clearChat(args.user, apiContext)
                     setUIState(UIState.LOADING)
                 }

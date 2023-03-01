@@ -7,14 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadFileBinding
 import de.deftk.openww.android.feature.filestorage.FileCacheElement
 import de.deftk.openww.android.filter.FileStorageFileFilter
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
@@ -22,14 +21,13 @@ import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.filestorage.FileType
 
-class ReadFileFragment : AbstractFragment(true) {
+class ReadFileFragment : ContextualFragment(true) {
 
     //TODO options menu
 
     private val userViewModel: UserViewModel by activityViewModels()
     private val fileStorageViewModel: FileStorageViewModel by activityViewModels()
     private val args: ReadFileFragmentArgs by navArgs()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentReadFileBinding
     private lateinit var scope: IOperatingScope
@@ -37,7 +35,7 @@ class ReadFileFragment : AbstractFragment(true) {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadFileBinding.inflate(inflater, container, false)
-        val foundScope = userViewModel.apiContext.value?.findOperatingScope(args.scope)
+        val foundScope = loginViewModel.apiContext.value?.findOperatingScope(args.scope)
         if (foundScope == null) {
             Reporter.reportException(R.string.error_scope_not_found, args.scope, requireContext())
             navController.popBackStack()
@@ -97,7 +95,7 @@ class ReadFileFragment : AbstractFragment(true) {
             navController.navigate(ReadFileFragmentDirections.actionReadFileFragmentToEditFileFragment(file.file.name, scope.login, file.file.id, file.file.parentId ?: "/"))
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 binding.fabEditFile.isVisible = file.file.effectiveModify == true
             } else {

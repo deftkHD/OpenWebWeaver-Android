@@ -4,29 +4,25 @@ import android.os.Bundle
 import android.view.*
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.ContactDetailAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadContactBinding
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.ContactUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ContactsViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.contacts.IContact
 
-class ReadContactFragment : AbstractFragment(true) {
+class ReadContactFragment : ContextualFragment(true) {
 
     private val args: ReadContactFragmentArgs by navArgs()
-    private val userViewModel: UserViewModel by activityViewModels()
     private val contactsViewModel: ContactsViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
     private val adapter = ContactDetailAdapter(true, null)
 
     private lateinit var binding: FragmentReadContactBinding
@@ -59,9 +55,9 @@ class ReadContactFragment : AbstractFragment(true) {
             navController.navigate(ReadContactFragmentDirections.actionReadContactFragmentToEditContactFragment(scope!!.login, contact.id.toString(), getString(R.string.edit_contact)))
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) apiContext@ { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) apiContext@ { apiContext ->
             if (apiContext != null) {
-                val foundScope = userViewModel.apiContext.value?.findOperatingScope(args.scope)
+                val foundScope = loginViewModel.apiContext.value?.findOperatingScope(args.scope)
                 if (foundScope == null) {
                     Reporter.reportException(R.string.error_scope_not_found, args.scope, requireContext())
                     navController.popBackStack()
@@ -125,7 +121,7 @@ class ReadContactFragment : AbstractFragment(true) {
                 true
             }
             R.id.contacts_context_item_delete -> {
-                val apiContext = userViewModel.apiContext.value ?: return false
+                val apiContext = loginViewModel.apiContext.value ?: return false
                 contactsViewModel.deleteContact(contact, scope!!, apiContext)
                 setUIState(UIState.LOADING)
                 true

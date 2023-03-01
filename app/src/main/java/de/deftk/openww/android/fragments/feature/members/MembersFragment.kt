@@ -8,7 +8,6 @@ import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
@@ -18,20 +17,17 @@ import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.components.ContextMenuRecyclerView
 import de.deftk.openww.android.databinding.FragmentMembersBinding
 import de.deftk.openww.android.filter.ScopeFilter
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.GroupViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IGroup
 
-class MembersFragment : AbstractFragment(true), ISearchProvider {
+class MembersFragment : ContextualFragment(true), ISearchProvider {
 
     private val args: MembersFragmentArgs by navArgs()
-    private val userViewModel: UserViewModel by activityViewModels()
     private val groupViewModel: GroupViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentMembersBinding
     private lateinit var searchView: SearchView
@@ -48,13 +44,13 @@ class MembersFragment : AbstractFragment(true), ISearchProvider {
         binding.memberList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
         binding.membersSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 groupViewModel.loadMembers(group!!, false, apiContext)
                 setUIState(UIState.LOADING)
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 val refreshedGroup = apiContext.user.getGroups().firstOrNull { it.login == args.groupId }
                 if (refreshedGroup == null) {
@@ -128,7 +124,7 @@ class MembersFragment : AbstractFragment(true), ISearchProvider {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val member = (binding.memberList.adapter as MemberAdapter).getItem(menuInfo.position)
-            val apiContext = userViewModel.apiContext.value ?: return
+            val apiContext = loginViewModel.apiContext.value ?: return
             if (member.login != apiContext.user.login) {
                 requireActivity().menuInflater.inflate(R.menu.member_context_menu, menu)
                 menu.findItem(R.id.member_context_item_open_chat).isVisible = Feature.MESSENGER.isAvailable(apiContext.user.effectiveRights)

@@ -5,28 +5,24 @@ import android.text.method.LinkMovementMethod
 import android.view.*
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadNoteBinding
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.NotesViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.notes.INote
 import java.text.DateFormat
 
-class ReadNoteFragment : AbstractFragment(true) {
+class ReadNoteFragment : ContextualFragment(true) {
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val notesViewModel: NotesViewModel by activityViewModels()
     private val args: ReadNoteFragmentArgs by navArgs()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentReadNoteBinding
     private lateinit var note: INote
@@ -52,7 +48,7 @@ class ReadNoteFragment : AbstractFragment(true) {
 
                 binding.noteTitle.text = note.title
                 binding.noteDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(note.created.date)
-                binding.noteText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(note.text), userViewModel.apiContext.value?.user?.login, navController)
+                binding.noteText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(note.text), loginViewModel.apiContext.value?.user?.login, navController)
                 binding.noteText.movementMethod = LinkMovementMethod.getInstance()
                 binding.noteText.transformationMethod = CustomTabTransformationMethod(binding.noteText.autoLinkMask)
             } else if (response is Response.Failure) {
@@ -63,7 +59,7 @@ class ReadNoteFragment : AbstractFragment(true) {
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (!Feature.NOTES.isAvailable(apiContext.user.effectiveRights)) {
                     Reporter.reportFeatureNotAvailable(requireContext())
@@ -106,7 +102,7 @@ class ReadNoteFragment : AbstractFragment(true) {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        val user = userViewModel.apiContext.value?.user ?: return
+        val user = loginViewModel.apiContext.value?.user ?: return
         if (user.effectiveRights.contains(Permission.NOTES_WRITE) || user.effectiveRights.contains(Permission.NOTES_ADMIN))
             menuInflater.inflate(R.menu.notes_context_menu, menu)
     }
@@ -119,7 +115,7 @@ class ReadNoteFragment : AbstractFragment(true) {
                 true
             }
             R.id.notes_context_item_delete -> {
-                val apiContext = userViewModel.apiContext.value ?: return false
+                val apiContext = loginViewModel.apiContext.value ?: return false
                 notesViewModel.deleteNote(note, apiContext)
                 setUIState(UIState.LOADING)
                 true

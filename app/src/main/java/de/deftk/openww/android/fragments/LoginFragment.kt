@@ -15,11 +15,11 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentLoginBinding
 import de.deftk.openww.android.utils.Reporter
-import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.android.viewmodel.LoginViewModel
 
 class LoginFragment : AbstractFragment(false) {
 
-    private val userViewModel: UserViewModel by activityViewModels()
+    private val loginViewModel by activityViewModels<LoginViewModel>()
     private val navController by lazy { findNavController() }
     private val args: LoginFragmentArgs by navArgs()
 
@@ -30,6 +30,7 @@ class LoginFragment : AbstractFragment(false) {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentLoginBinding.inflate(inflater, container, false)
 
+        //TODO fix deprecation just as in LaunchFragment
         val authenticatorResponse: AccountAuthenticatorResponse? = requireActivity().intent?.getParcelableExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE)
         authenticatorResponse?.onRequestContinued()
         val forceRemember = args.onlyAdd || authenticatorResponse != null
@@ -39,7 +40,7 @@ class LoginFragment : AbstractFragment(false) {
         binding.chbStayLoggedIn.isVisible = !forceRemember
         binding.chbStayLoggedIn.isChecked = forceRemember
 
-        userViewModel.loginToken.observe(viewLifecycleOwner) { response ->
+        loginViewModel.loginToken.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success && loginActionPerformed) {
                 AccountManager.get(requireContext()).addAccountExplicitly(
                     Account(response.value.first, getString(R.string.account_type)),
@@ -49,7 +50,7 @@ class LoginFragment : AbstractFragment(false) {
             }
         }
 
-        userViewModel.loginResponse.observe(viewLifecycleOwner) { response ->
+        loginViewModel.loginResponse.observe(viewLifecycleOwner) { response ->
             if (loginActionPerformed) {
                 if (response is Response.Success) {
                     setUIState(UIState.READY)
@@ -95,9 +96,9 @@ class LoginFragment : AbstractFragment(false) {
                 val password = binding.txtPassword.text.toString()
                 val generateToken = binding.chbStayLoggedIn.isChecked
                 if (generateToken) {
-                    userViewModel.loginPasswordCreateToken(username, password)
+                    loginViewModel.loginPasswordCreateToken(username, password)
                 } else {
-                    userViewModel.loginPassword(username, password)
+                    loginViewModel.loginPassword(username, password)
                 }
             }
         }

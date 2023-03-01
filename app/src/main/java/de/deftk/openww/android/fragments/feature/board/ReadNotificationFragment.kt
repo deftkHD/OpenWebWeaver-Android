@@ -5,29 +5,25 @@ import android.text.method.LinkMovementMethod
 import android.view.*
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadNotificationBinding
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.BoardViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.board.IBoardNotification
 import java.text.DateFormat
 
-class ReadNotificationFragment : AbstractFragment(true) {
+class ReadNotificationFragment : ContextualFragment(true) {
 
     private val args: ReadNotificationFragmentArgs by navArgs()
-    private val userViewModel: UserViewModel by activityViewModels()
     private val boardViewModel: BoardViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentReadNotificationBinding
     private lateinit var notification: IBoardNotification
@@ -57,7 +53,7 @@ class ReadNotificationFragment : AbstractFragment(true) {
                 binding.notificationTitle.text = notification.title
                 binding.notificationAuthor.text = notification.created.member.name
                 binding.notificationGroup.text = group.name
-                binding.notificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.created.date)
+                binding.notificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.created.date!!)
                 binding.notificationText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text), group.login, navController)
                 binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
                 binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
@@ -87,7 +83,7 @@ class ReadNotificationFragment : AbstractFragment(true) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (apiContext.user.getGroups().none { Feature.BOARD.isAvailable(it.effectiveRights) }) {
                     Reporter.reportFeatureNotAvailable(requireContext())
@@ -124,7 +120,7 @@ class ReadNotificationFragment : AbstractFragment(true) {
                 true
             }
             R.id.board_context_item_delete -> {
-                val apiContext = userViewModel.apiContext.value ?: return false
+                val apiContext = loginViewModel.apiContext.value ?: return false
                 boardViewModel.deleteBoardNotification(notification, group, apiContext)
                 setUIState(UIState.LOADING)
                 true

@@ -4,12 +4,11 @@ import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.*
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentSystemNotificationBinding
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
@@ -18,11 +17,10 @@ import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 import java.text.DateFormat
 
-class SystemNotificationFragment : AbstractFragment(true) {
+class SystemNotificationFragment : ContextualFragment(true) {
 
     private val args: SystemNotificationFragmentArgs by navArgs()
     private val userViewModel: UserViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentSystemNotificationBinding
     private lateinit var systemNotification: ISystemNotification
@@ -73,7 +71,7 @@ class SystemNotificationFragment : AbstractFragment(true) {
                 Reporter.reportException(R.string.error_delete_failed, response.exception, requireContext())
             }
         }
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext == null) {
                 navController.popBackStack()
             }
@@ -89,7 +87,7 @@ class SystemNotificationFragment : AbstractFragment(true) {
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.system_notification_context_item_delete -> {
-                val apiContext = userViewModel.apiContext.value ?: return false
+                val apiContext = loginViewModel.apiContext.value ?: return false
                 userViewModel.deleteSystemNotification(systemNotification, apiContext)
                 setUIState(UIState.LOADING)
             }

@@ -6,32 +6,28 @@ import android.view.*
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditFileBinding
 import de.deftk.openww.android.feature.filestorage.FileCacheElement
 import de.deftk.openww.android.filter.FileStorageFileFilter
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.AndroidUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.filestorage.FileType
 
-class EditFileFragment : AbstractFragment(true) {
+class EditFileFragment : ContextualFragment(true) {
 
     //TODO options menu
 
     //TODO allow editing notificationLogins (+ also for folders)
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val fileStorageViewModel: FileStorageViewModel by activityViewModels()
     private val args: EditFileFragmentArgs by navArgs()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentEditFileBinding
     private lateinit var scope: IOperatingScope
@@ -40,7 +36,7 @@ class EditFileFragment : AbstractFragment(true) {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEditFileBinding.inflate(inflater, container, false)
 
-        val foundScope = userViewModel.apiContext.value?.findOperatingScope(args.scope)
+        val foundScope = loginViewModel.apiContext.value?.findOperatingScope(args.scope)
         if (foundScope == null) {
             Reporter.reportException(R.string.error_scope_not_found, args.scope, requireContext())
             navController.popBackStack()
@@ -97,7 +93,7 @@ class EditFileFragment : AbstractFragment(true) {
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 //TODO implement
             } else {
@@ -148,7 +144,7 @@ class EditFileFragment : AbstractFragment(true) {
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (menuItem.itemId == R.id.edit_options_item_save) {
-            val apiContext = userViewModel.apiContext.value ?: return false
+            val apiContext = loginViewModel.apiContext.value ?: return false
 
             if (binding.fileName.text.isBlank()) {
                 Toast.makeText(requireContext(), R.string.invalid_file_name, Toast.LENGTH_SHORT).show()

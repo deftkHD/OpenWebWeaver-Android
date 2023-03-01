@@ -6,7 +6,6 @@ import android.widget.SearchView
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
@@ -19,16 +18,13 @@ import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.NotesViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.notes.INote
 
 class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.menu.notes_actionmode_menu), ISearchProvider {
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val notesViewModel: NotesViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentNotesBinding
     private lateinit var searchView: SearchView
@@ -76,7 +72,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
         }
 
         binding.notesSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 notesViewModel.loadNotes(apiContext)
             }
         }
@@ -85,7 +81,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
             navController.navigate(NotesFragmentDirections.actionNotesFragmentToEditNoteFragment(null, getString(R.string.add_note)))
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (!Feature.NOTES.isAvailable(apiContext.user.effectiveRights)) {
                     Reporter.reportFeatureNotAvailable(requireContext())
@@ -111,7 +107,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
     }
 
     override fun createAdapter(): ActionModeAdapter<INote, NoteAdapter.NoteViewHolder> {
-        return NoteAdapter(this, userViewModel.apiContext.value!!.user)
+        return NoteAdapter(this, loginViewModel.apiContext.value!!.user)
     }
 
     override fun onItemClick(view: View, viewHolder: NoteAdapter.NoteViewHolder) {
@@ -119,7 +115,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
     }
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-        val user = userViewModel.apiContext.value?.user
+        val user = loginViewModel.apiContext.value?.user
         val canModify = user?.effectiveRights?.contains(Permission.NOTES_WRITE) == true || user?.effectiveRights?.contains(Permission.NOTES_ADMIN) == true
         menu.findItem(R.id.notes_action_item_delete).isEnabled = canModify
         return super.onPrepareActionMode(mode, menu)
@@ -128,7 +124,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.notes_action_item_delete -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     notesViewModel.batchDelete(adapter.selectedItems.map { it.binding.note!! }, apiContext)
                     setUIState(UIState.LOADING)
                 }
@@ -171,7 +167,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
-            val user = userViewModel.apiContext.value?.user ?: return
+            val user = loginViewModel.apiContext.value?.user ?: return
             if (user.effectiveRights.contains(Permission.NOTES_WRITE) || user.effectiveRights.contains(Permission.NOTES_ADMIN)) {
                 requireActivity().menuInflater.inflate(R.menu.notes_context_menu, menu)
             }
@@ -190,7 +186,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
             }
             R.id.notes_context_item_delete -> {
                 val note = adapter.getItem(menuInfo.position)
-                val apiContext = userViewModel.apiContext.value ?: return false
+                val apiContext = loginViewModel.apiContext.value ?: return false
                 notesViewModel.deleteNote(note, apiContext)
                 setUIState(UIState.LOADING)
                 true

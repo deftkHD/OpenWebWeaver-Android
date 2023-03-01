@@ -12,12 +12,12 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.databinding.FragmentDevToolsBinding
 import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.Reporter
-import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.android.viewmodel.LoginViewModel
 import kotlinx.coroutines.*
 
 class DevToolsFragment : AbstractFragment(true, false) {
 
-    private val userViewModel by activityViewModels<UserViewModel>()
+    private val loginViewModel by activityViewModels<LoginViewModel>()
     private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentDevToolsBinding
@@ -26,7 +26,7 @@ class DevToolsFragment : AbstractFragment(true, false) {
         binding = FragmentDevToolsBinding.inflate(inflater, container, false)
 
         binding.forceInvalidateSession.setOnClickListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 setUIState(UIState.LOADING)
                 val job = Job()
                 val coroutine = CoroutineScope(Dispatchers.Main + job)

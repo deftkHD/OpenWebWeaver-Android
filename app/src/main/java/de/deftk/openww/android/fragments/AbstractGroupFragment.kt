@@ -5,8 +5,6 @@ import android.view.*
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.activities.MainActivity
@@ -15,17 +13,13 @@ import de.deftk.openww.android.databinding.FragmentGroupsBinding
 import de.deftk.openww.android.filter.ScopeFilter
 import de.deftk.openww.android.filter.ScopeOrder
 import de.deftk.openww.android.utils.ISearchProvider
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.IApiContext
 import de.deftk.openww.api.model.IOperatingScope
 
-abstract class AbstractGroupFragment : AbstractFragment(true), IOperatingScopeClickListener, ISearchProvider {
+abstract class AbstractGroupFragment : ContextualFragment(true), IOperatingScopeClickListener, ISearchProvider {
 
     protected lateinit var binding: FragmentGroupsBinding
     private lateinit var searchView: SearchView
-
-    protected val userViewModel: UserViewModel by activityViewModels()
-    protected val navController by lazy { findNavController() }
 
     abstract val scopePredicate: (T : IOperatingScope) -> Boolean
     open val adapter by lazy { OperatingScopeAdapter(this) }
@@ -40,12 +34,12 @@ abstract class AbstractGroupFragment : AbstractFragment(true), IOperatingScopeCl
         binding.groupList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
         binding.groupsSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 updateGroups(apiContext)
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 updateGroups(apiContext)
             } else {
@@ -86,7 +80,7 @@ abstract class AbstractGroupFragment : AbstractFragment(true), IOperatingScopeCl
                 val filter = ScopeFilter(ScopeOrder.ByOperatorDefault)
                 filter.smartSearchCriteria.value = newText
                 this@AbstractGroupFragment.filter = filter
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     updateGroups(apiContext)
                 }
                 return false

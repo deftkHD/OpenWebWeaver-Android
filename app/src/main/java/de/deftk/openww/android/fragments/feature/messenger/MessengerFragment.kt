@@ -9,7 +9,6 @@ import android.widget.SearchView
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
@@ -23,14 +22,11 @@ import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MessengerViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 
 class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHolder>(R.menu.messenger_actionmode_menu), ISearchProvider {
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val messengerViewModel: MessengerViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentMessengerBinding
     private lateinit var searchView: SearchView
@@ -42,7 +38,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
         binding.chatList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
         binding.chatsSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 messengerViewModel.loadChats(apiContext)
                 setUIState(UIState.LOADING)
             }
@@ -106,7 +102,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
             builder.setView(input)
 
             builder.setPositiveButton(R.string.confirm) { _, _ ->
-                userViewModel.apiContext.value?.apply {
+                loginViewModel.apiContext.value?.apply {
                     var targetUser = input.text.toString()
                     if (!targetUser.contains("@")) {
                         targetUser = "$targetUser@${this.user.login.split("@")[1]}"
@@ -122,7 +118,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
             builder.show()
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (!Feature.MESSENGER.isAvailable(apiContext.user.effectiveRights)) {
                     Reporter.reportFeatureNotAvailable(requireContext())
@@ -155,7 +151,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.chat_action_item_delete -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     messengerViewModel.batchDelete(adapter.selectedItems.map { it.binding.chatContact!! }, apiContext)
                     setUIState(UIState.LOADING)
                 }
@@ -182,7 +178,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
         return when (item.itemId) {
             R.id.messenger_context_item_add_chat_contact -> {
                 val user = adapter.getItem(menuInfo.position)
-                userViewModel.apiContext.value?.apply {
+                loginViewModel.apiContext.value?.apply {
                     messengerViewModel.addChat(user.user.login, this)
                     setUIState(UIState.LOADING)
                 }
@@ -190,7 +186,7 @@ class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHo
             }
             R.id.messenger_context_item_delete -> {
                 val user = adapter.getItem(menuInfo.position)
-                val apiContext = userViewModel.apiContext.value ?: return false
+                val apiContext = loginViewModel.apiContext.value ?: return false
                 messengerViewModel.removeChat(user, apiContext)
                 setUIState(UIState.LOADING)
                 true

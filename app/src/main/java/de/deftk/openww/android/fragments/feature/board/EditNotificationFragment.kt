@@ -4,31 +4,27 @@ import android.os.Bundle
 import android.view.*
 import android.widget.ArrayAdapter
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditNotificationBinding
 import de.deftk.openww.android.feature.board.BoardNotificationColors
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.AndroidUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.BoardViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.board.BoardNotificationColor
 import de.deftk.openww.api.model.feature.board.IBoardNotification
 
-class EditNotificationFragment : AbstractFragment(true) {
+class EditNotificationFragment : ContextualFragment(true) {
 
     //TODO implement board type
     //TODO implement kill date
 
     private val args: EditNotificationFragmentArgs by navArgs()
     private val boardViewModel: BoardViewModel by activityViewModels()
-    private val userViewModel: UserViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentEditNotificationBinding
     private lateinit var notification: IBoardNotification
@@ -76,7 +72,7 @@ class EditNotificationFragment : AbstractFragment(true) {
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (apiContext.user.getGroups().none { it.effectiveRights.contains(Permission.BOARD_WRITE) } && apiContext.user.getGroups().none { it.effectiveRights.contains(Permission.BOARD_ADMIN) }) {
                     Reporter.reportFeatureNotAvailable(requireContext())
@@ -126,7 +122,7 @@ class EditNotificationFragment : AbstractFragment(true) {
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (menuItem.itemId == R.id.edit_options_item_save) {
-            val apiContext = userViewModel.apiContext.value ?: return false
+            val apiContext = loginViewModel.apiContext.value ?: return false
 
             val title = binding.notificationTitle.text.toString()
             val selectedGroup = binding.notificationGroup.selectedItem

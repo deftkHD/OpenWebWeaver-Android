@@ -22,7 +22,7 @@ import de.deftk.openww.android.utils.ContactUtil
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.utils.UIUtil
-import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.android.viewmodel.LoginViewModel
 import de.deftk.openww.api.model.IScope
 import de.deftk.openww.api.model.IUser
 import de.deftk.openww.api.model.Permission
@@ -97,8 +97,8 @@ object BindingAdapters {
         if (author == null) {
             val context = view.context
             author = if (context is MainActivity) {
-                val userViewModel by context.viewModels<UserViewModel>()
-                userViewModel.apiContext.value?.user?.name ?: "UNKNOWN"
+                val loginViewModel by context.viewModels<LoginViewModel>()
+                loginViewModel.apiContext.value?.user?.name ?: "UNKNOWN"
             } else {
                 "UNKNOWN"
             }

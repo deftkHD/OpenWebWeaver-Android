@@ -6,7 +6,6 @@ import android.widget.SearchView
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
@@ -19,7 +18,6 @@ import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.BoardViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.Permission
@@ -27,9 +25,7 @@ import de.deftk.openww.api.model.feature.board.IBoardNotification
 
 class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>, BoardNotificationAdapter.BoardNotificationViewHolder>(R.menu.board_actionmode_menu), ISearchProvider {
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val boardViewModel: BoardViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentNotificationsBinding
     private lateinit var searchView: SearchView
@@ -40,7 +36,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
         binding.notificationList.adapter = adapter
         binding.notificationList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (apiContext.user.getGroups().none { Feature.BOARD.isAvailable(it.effectiveRights) }) {
                     Reporter.reportFeatureNotAvailable(requireContext())
@@ -84,7 +80,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
         }
 
         binding.notificationsSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 boardViewModel.loadBoardNotifications(apiContext)
                 setUIState(UIState.LOADING)
             }
@@ -124,7 +120,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.board_action_item_delete -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     boardViewModel.batchDelete(adapter.selectedItems.map { it.binding.group!! to it.binding.notification!! }, apiContext)
                     setUIState(UIState.LOADING)
                 }
@@ -190,7 +186,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
             }
             R.id.board_context_item_delete -> {
                 val (notification, group) = adapter.getItem(menuInfo.position)
-                val apiContext = userViewModel.apiContext.value ?: return false
+                val apiContext = loginViewModel.apiContext.value ?: return false
                 boardViewModel.deleteBoardNotification(notification, group, apiContext)
                 setUIState(UIState.LOADING)
                 true

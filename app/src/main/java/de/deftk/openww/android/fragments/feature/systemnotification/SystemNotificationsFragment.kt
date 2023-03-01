@@ -6,7 +6,6 @@ import android.widget.SearchView
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
@@ -24,7 +23,6 @@ import de.deftk.openww.api.model.feature.systemnotification.ISystemNotification
 class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, SystemNotificationAdapter.SystemNotificationViewHolder>(R.menu.system_notification_actionmode_menu), ISearchProvider {
 
     private val userViewModel: UserViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentSystemNotificationsBinding
     private lateinit var searchView: SearchView
@@ -72,13 +70,13 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
         }
 
         binding.systemNotificationsSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 userViewModel.loadSystemNotifications(apiContext)
                 setUIState(UIState.LOADING)
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (userViewModel.allSystemNotificationsResponse.value == null) {
                     userViewModel.loadSystemNotifications(apiContext)
@@ -109,7 +107,7 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.system_notification_action_item_delete -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     userViewModel.batchDeleteSystemNotifications(adapter.selectedItems.map { it.binding.notification!! }, apiContext)
                     setUIState(UIState.LOADING)
                 }
@@ -168,7 +166,7 @@ class SystemNotificationsFragment: ActionModeFragment<ISystemNotification, Syste
         when (item.itemId) {
             R.id.system_notification_context_item_delete -> {
                 val notification = adapter.getItem(menuInfo.position)
-                val apiContext = userViewModel.apiContext.value ?: return false
+                val apiContext = loginViewModel.apiContext.value ?: return false
                 userViewModel.deleteSystemNotification(notification, apiContext)
                 setUIState(UIState.LOADING)
             }

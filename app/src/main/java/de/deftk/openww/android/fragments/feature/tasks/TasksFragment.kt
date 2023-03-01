@@ -6,7 +6,6 @@ import android.widget.SearchView
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
@@ -19,7 +18,6 @@ import de.deftk.openww.android.utils.CalendarUtil
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.TasksViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.Permission
@@ -27,9 +25,7 @@ import de.deftk.openww.api.model.feature.tasks.ITask
 
 class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdapter.TaskViewHolder>(R.menu.tasks_actionmode_menu), ISearchProvider {
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val tasksViewModel: TasksViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentTasksBinding
     private lateinit var searchView: SearchView
@@ -50,7 +46,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         }
 
         binding.tasksSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 tasksViewModel.loadTasks(true, apiContext)
             }
         }
@@ -60,7 +56,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             navController.navigate(action)
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (apiContext.user.getGroups().none { Feature.TASKS.isAvailable(it.effectiveRights) }) {
                     Reporter.reportFeatureNotAvailable(requireContext())
@@ -173,7 +169,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
     }
 
     override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-        userViewModel.apiContext.value?.also { apiContext ->
+        loginViewModel.apiContext.value?.also { apiContext ->
             val ignored = tasksViewModel.getIgnoredTasksBlocking(apiContext)
             val canIgnore = adapter.selectedItems.none { task -> ignored.any { it.id == task.binding.task!!.id && it.scope == task.binding.scope!!.login } }
             menu.findItem(R.id.tasks_action_item_ignore).isVisible = canIgnore
@@ -190,21 +186,21 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.tasks_action_item_ignore -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
                     setUIState(UIState.LOADING)
                 }
                 mode.finish()
             }
             R.id.tasks_action_item_unignore -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.unignoreTasks(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
                     setUIState(UIState.LOADING)
                 }
                 mode.finish()
             }
             R.id.tasks_action_item_delete -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.batchDelete(adapter.selectedItems.map { it.binding.task!! to it.binding.scope!! }, apiContext)
                     setUIState(UIState.LOADING)
                 }
@@ -220,7 +216,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         if (menuInfo is ContextMenuRecyclerView.RecyclerViewContextMenuInfo) {
             val (task, group) = (binding.tasksList.adapter as TasksAdapter).getItem(menuInfo.position)
             requireActivity().menuInflater.inflate(R.menu.tasks_context_menu, menu)
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 val ignored = tasksViewModel.getIgnoredTasksBlocking(apiContext).any { it.id == task.id && it.scope == group.login }
                 menu.findItem(R.id.tasks_context_item_ignore).isVisible = !ignored
                 menu.findItem(R.id.tasks_context_item_unignore).isVisible = ignored
@@ -236,13 +232,13 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         val adapter = binding.tasksList.adapter as TasksAdapter
         when (item.itemId) {
             R.id.tasks_context_item_ignore -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.ignoreTasks(listOf(adapter.getItem(menuInfo.position)), apiContext)
                     setUIState(UIState.LOADING)
                 }
             }
             R.id.tasks_context_item_unignore -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     tasksViewModel.unignoreTasks(listOf(adapter.getItem(menuInfo.position)), apiContext)
                     setUIState(UIState.LOADING)
                 }
@@ -258,7 +254,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             }
             R.id.tasks_context_item_delete -> {
                 val (task, scope) = adapter.getItem(menuInfo.position)
-                val apiContext = userViewModel.apiContext.value ?: return false
+                val apiContext = loginViewModel.apiContext.value ?: return false
                 tasksViewModel.deleteTask(task, scope, apiContext)
                 setUIState(UIState.LOADING)
             }

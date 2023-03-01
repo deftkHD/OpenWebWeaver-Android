@@ -9,7 +9,7 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
 
-abstract class ActionModeFragment<T, VH : ActionModeAdapter.ActionModeViewHolder>(@MenuRes private val actionModeMenuResource: Int) : AbstractFragment(true), ActionMode.Callback, ActionModeClickListener<VH> {
+abstract class ActionModeFragment<T, VH : ActionModeAdapter.ActionModeViewHolder>(@MenuRes private val actionModeMenuResource: Int) : ContextualFragment(true), ActionMode.Callback, ActionModeClickListener<VH> {
 
     protected val adapter: ActionModeAdapter<T, VH> by lazy { createAdapter() }
 

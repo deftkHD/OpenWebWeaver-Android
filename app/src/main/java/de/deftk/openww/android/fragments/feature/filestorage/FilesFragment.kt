@@ -18,7 +18,6 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -39,7 +38,6 @@ import de.deftk.openww.android.utils.FileUtil
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.WebWeaverClient
 import de.deftk.openww.api.implementation.feature.filestorage.session.SessionFile
 import de.deftk.openww.api.model.Feature
@@ -55,11 +53,9 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     //TODO cancel ongoing network transfers on account switch
 
     private val args: FilesFragmentArgs by navArgs()
-    private val userViewModel: UserViewModel by activityViewModels()
     private val fileStorageViewModel: FileStorageViewModel by activityViewModels()
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(requireContext()) }
     private val workManager by lazy { WorkManager.getInstance(requireContext()) }
-    private val navController by lazy { findNavController() }
 
     private lateinit var downloadSaveLauncher: ActivityResultLauncher<Pair<Intent, IRemoteFile>>
     private lateinit var uploadLauncher: ActivityResultLauncher<Array<String>>
@@ -117,7 +113,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 setUIState(UIState.READY)
                 val receiveDownloadNotification = data.second
                 if (receiveDownloadNotification) {
-                    userViewModel.apiContext.value?.apply {
+                    loginViewModel.apiContext.value?.apply {
                         val file = response.value
                         fileStorageViewModel.editFile(file, file.name, file.description, true, scope!!, this)
                     }
@@ -151,16 +147,16 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         }
 
         binding.fileStorageSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 fileStorageViewModel.cleanCache(scope!!)
                 fileStorageViewModel.loadChildrenTree(scope!!, folderId!!, true, apiContext)
                 adapter.notifyDataSetChanged() // update previews
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) apiContext@ { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) apiContext@ { apiContext ->
             if (apiContext != null) {
-                val newScope = userViewModel.apiContext.value?.findOperatingScope(args.operatorId)
+                val newScope = loginViewModel.apiContext.value?.findOperatingScope(args.operatorId)
                 if (newScope == null) {
                     Reporter.reportException(R.string.error_scope_not_found, args.operatorId, requireContext())
                     navController.popBackStack(R.id.fileStorageGroupFragment, false)
@@ -243,7 +239,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
         downloadSaveLauncher = registerForActivityResult(SaveFileContract()) { (result, file) ->
             val uri = result.data?.data
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 fileStorageViewModel.startSaveDownload(workManager, apiContext, file, scope!!, uri.toString())
             }
         }
@@ -258,6 +254,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             if (args.pasteMode) {
                 //TODO don't rely on intent (functionality should be reused for internal copy-paste/cut operations)
                 val intent = requireActivity().intent
+                //TODO fix deprecation as in LaunchFragment
                 if (intent.action == Intent.ACTION_SEND) {
                     uploadFile(requireActivity().intent.getParcelableExtra(Intent.EXTRA_STREAM)!!)
                 } else if (intent.action == Intent.ACTION_SEND_MULTIPLE) {
@@ -377,7 +374,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                             Toast.makeText(requireContext(), R.string.upload_finished, Toast.LENGTH_LONG).show()
                             fileStorageViewModel.hideNetworkTransfer(transfer, scope!!)
                             val sessionFile = WebWeaverClient.json.decodeFromString<SessionFile>(workInfo.outputData.getString(SessionFileUploadWorker.DATA_SESSION_FILE) ?: "")
-                            userViewModel.apiContext.value?.also { apiContext ->
+                            loginViewModel.apiContext.value?.also { apiContext ->
                                 fileStorageViewModel.importSessionFile(sessionFile, getProviderFile()?.file ?: scope!!, transfer.receiveDownloadNotification, scope!!, apiContext)
                             }
                         }
@@ -443,7 +440,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 builder.setView(input)
 
                 builder.setPositiveButton(R.string.confirm) { _, _ ->
-                    userViewModel.apiContext.value?.apply {
+                    loginViewModel.apiContext.value?.apply {
                         fileStorageViewModel.addFolder(input.text.toString(), getProviderFile()!!.file, scope!!, this)
                         setUIState(UIState.LOADING)
                     }
@@ -491,7 +488,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
         return when (item.itemId) {
             R.id.filestorage_context_item_delete -> {
                 val file = adapter.getItem(menuInfo.position)
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     fileStorageViewModel.batchDelete(listOf(file), scope!!, apiContext)
                 }
                 true
@@ -527,7 +524,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.filestorage_action_item_delete -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     fileStorageViewModel.batchDelete(adapter.selectedItems.map { it.binding.file!! }, scope!!, apiContext)
                     setUIState(UIState.LOADING)
                 }
@@ -552,7 +549,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             if (!tempDir.exists())
                 tempDir.mkdir()
             val tempFile = File(tempDir, FileUtil.escapeFileName(file.name))
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 fileStorageViewModel.startOpenDownload(workManager, apiContext, file, scope!!, tempFile.absolutePath)
             }
         }
@@ -565,7 +562,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             .setView(view)
             .setTitle(R.string.upload)
             .setPositiveButton(R.string.upload) { _, _ ->
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     val name = view.findViewById<EditText>(R.id.file_name).text.toString()
                     val downloadNotification = view.findViewById<CheckBox>(R.id.file_download_notification_me).isChecked
                     fileStorageViewModel.startUpload(workManager, scope!!, apiContext, uri, name, 0, folderId!!, downloadNotification)

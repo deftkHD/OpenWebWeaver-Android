@@ -18,14 +18,13 @@ import de.deftk.openww.android.feature.overview.AbstractOverviewElement
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.UserViewModel
 
-class OverviewFragment: AbstractFragment(true) {
+class OverviewFragment: ContextualFragment(true) {
 
     companion object {
         private const val LOG_TAG = "OverviewFragment"
     }
 
     private val userViewModel: UserViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
     private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(requireContext()) }
 
     private lateinit var binding: FragmentOverviewBinding
@@ -36,7 +35,7 @@ class OverviewFragment: AbstractFragment(true) {
         binding.overviewSwipeRefresh.isEnabled = false // will be enabled when apiContext exists
         binding.overviewSwipeRefresh.setOnRefreshListener {
             binding.overviewList.adapter = null
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 userViewModel.loadOverview(getOverviewFeatures(), apiContext)
                 setUIState(UIState.LOADING)
             }
@@ -59,7 +58,7 @@ class OverviewFragment: AbstractFragment(true) {
                 setUIState(UIState.ERROR)
             }
         }
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             binding.overviewSwipeRefresh.isEnabled = apiContext != null
             if (apiContext != null) {
                 if (userViewModel.overviewResponse.value == null) {

@@ -13,23 +13,20 @@ import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentWriteMailBinding
 import de.deftk.openww.android.feature.LaunchMode
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.MailboxViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Permission
 
-class WriteMailFragment : AbstractFragment(true) {
+class WriteMailFragment : ContextualFragment(true) {
 
     //TODO attachments
     //TODO reply emails
     //TODO forward emails
     //TODO account switch if launchMode == EMAIL
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val mailboxViewModel: MailboxViewModel by activityViewModels()
     private val launchMode by lazy { LaunchMode.getLaunchMode(requireActivity().intent) }
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentWriteMailBinding
 
@@ -83,7 +80,7 @@ class WriteMailFragment : AbstractFragment(true) {
                 return@setOnClickListener
             }
             setUIState(UIState.LOADING)
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 mailboxViewModel.sendEmail(
                     to,
                     subject,
@@ -100,7 +97,7 @@ class WriteMailFragment : AbstractFragment(true) {
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (!apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) && !apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
                     Reporter.reportFeatureNotAvailable(requireContext())

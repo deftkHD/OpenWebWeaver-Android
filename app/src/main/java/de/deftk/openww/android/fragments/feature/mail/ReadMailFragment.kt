@@ -10,7 +10,6 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -20,25 +19,22 @@ import de.deftk.openww.android.adapter.recycler.AttachmentClickListener
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentReadMailBinding
 import de.deftk.openww.android.feature.AbstractNotifyingWorker
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.CustomTabTransformationMethod
 import de.deftk.openww.android.utils.FileUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.MailboxViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.mailbox.IAttachment
 import de.deftk.openww.api.model.feature.mailbox.IEmail
 import de.deftk.openww.api.model.feature.mailbox.IEmailFolder
 import java.text.DateFormat
 
-class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
+class ReadMailFragment : ContextualFragment(true), AttachmentClickListener {
 
     private val args: ReadMailFragmentArgs by navArgs()
-    private val userViewModel: UserViewModel by activityViewModels()
     private val mailboxViewModel: MailboxViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
     private val workManager by lazy { WorkManager.getInstance(requireContext()) }
 
     private lateinit var binding: FragmentReadMailBinding
@@ -119,7 +115,7 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
                         return@observe
                     }
                     email = foundEmail
-                    userViewModel.apiContext.value?.apply {
+                    loginViewModel.apiContext.value?.apply {
                         mailboxViewModel.readEmail(email, emailFolder, this)
                         setUIState(UIState.LOADING)
                     }
@@ -171,12 +167,12 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
 
         downloadSaveLauncher = registerForActivityResult(SaveAttachmentContract()) { (result, attachment) ->
             val uri = result.data?.data
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 mailboxViewModel.startAttachmentSaveDownload(workManager, apiContext, attachment, email, emailFolder, uri.toString())
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext == null) {
                 navController.popBackStack(R.id.mailFragment, false)
             }
@@ -186,7 +182,7 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        userViewModel.apiContext.value?.also { apiContext ->
+        loginViewModel.apiContext.value?.also { apiContext ->
             if (apiContext.user.effectiveRights.contains(Permission.MAILBOX_WRITE) || apiContext.user.effectiveRights.contains(Permission.MAILBOX_ADMIN)) {
                 menuInflater.inflate(R.menu.mail_context_menu, menu)
                 menu.findItem(R.id.mail_context_item_move).isVisible = false
@@ -199,7 +195,7 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             R.id.mail_context_item_delete -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     mailboxViewModel.deleteEmail(email, emailFolder, true, apiContext)
                     setUIState(UIState.LOADING)
                 }
@@ -222,7 +218,7 @@ class ReadMailFragment : AbstractFragment(true), AttachmentClickListener {
     }
 
     override fun onOpenAttachment(attachment: IAttachment) {
-        userViewModel.apiContext.value?.also { apiContext ->
+        loginViewModel.apiContext.value?.also { apiContext ->
             mailboxViewModel.exportAttachment(attachment, email, emailFolder, apiContext)
         }
     }

@@ -14,7 +14,7 @@ import de.deftk.openww.android.databinding.FragmentPastRequestBinding
 import de.deftk.openww.android.feature.devtools.PastRequest
 import de.deftk.openww.android.fragments.AbstractFragment
 import de.deftk.openww.android.utils.Reporter
-import de.deftk.openww.android.viewmodel.UserViewModel
+import de.deftk.openww.android.viewmodel.LoginViewModel
 import de.deftk.openww.api.WebWeaverClient
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.buildJsonObject
@@ -24,7 +24,7 @@ import java.text.DateFormat
 class PastRequestFragment : AbstractFragment(true) {
 
     private val args: PastRequestFragmentArgs by navArgs()
-    private val userViewModel: UserViewModel by activityViewModels()
+    private val loginViewModel by activityViewModels<LoginViewModel>()
     private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentPastRequestBinding
@@ -33,7 +33,7 @@ class PastRequestFragment : AbstractFragment(true) {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentPastRequestBinding.inflate(inflater, container, false)
 
-        userViewModel.pastRequests.observe(viewLifecycleOwner) { responses ->
+        loginViewModel.pastRequests.observe(viewLifecycleOwner) { responses ->
             val resp = responses.singleOrNull { it.id == args.requestId }
             if (resp == null) {
                 setUIState(UIState.ERROR)

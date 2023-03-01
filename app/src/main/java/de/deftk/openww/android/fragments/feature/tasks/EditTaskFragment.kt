@@ -8,16 +8,14 @@ import android.view.*
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditTaskBinding
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.AndroidUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.TasksViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.Permission
@@ -26,14 +24,12 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-class EditTaskFragment : AbstractFragment(true) {
+class EditTaskFragment : ContextualFragment(true) {
 
     //TODO ability to remove start/due date
 
     private val args: EditTaskFragmentArgs by navArgs()
     private val tasksViewModel: TasksViewModel by activityViewModels()
-    private val userViewModel: UserViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentEditTaskBinding
     private lateinit var task: ITask
@@ -89,7 +85,7 @@ class EditTaskFragment : AbstractFragment(true) {
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 if (apiContext.user.getGroups().none { it.effectiveRights.contains(Permission.TASKS_WRITE) } && apiContext.user.getGroups().none { it.effectiveRights.contains(Permission.TASKS_ADMIN) }) {
                     Reporter.reportFeatureNotAvailable(requireContext())
@@ -186,7 +182,7 @@ class EditTaskFragment : AbstractFragment(true) {
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (menuItem.itemId == R.id.edit_options_item_save) {
-            val apiContext = userViewModel.apiContext.value ?: return false
+            val apiContext = loginViewModel.apiContext.value ?: return false
             val title = binding.taskTitle.text.toString()
             val selectedGroup = binding.taskGroup.selectedItem
             val completed = binding.taskCompleted.isChecked

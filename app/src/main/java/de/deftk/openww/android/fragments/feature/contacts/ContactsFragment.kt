@@ -6,7 +6,6 @@ import android.widget.SearchView
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
@@ -20,7 +19,6 @@ import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ContactsViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.Permission
@@ -28,10 +26,8 @@ import de.deftk.openww.api.model.feature.contacts.IContact
 
 class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactViewHolder>(R.menu.contacts_actionmode_menu), ISearchProvider {
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val contactsViewModel: ContactsViewModel by activityViewModels()
     private val args: ContactsFragmentArgs by navArgs()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentContactsBinding
     private lateinit var searchView: SearchView
@@ -68,7 +64,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
         }
 
         binding.contactsSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 contactsViewModel.loadContacts(scope!!, apiContext)
                 setUIState(UIState.LOADING)
             }
@@ -78,9 +74,9 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
             navController.navigate(ContactsFragmentDirections.actionContactsFragmentToEditContactFragment(scope!!.login, null, getString(R.string.add_contact)))
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                val foundScope = userViewModel.apiContext.value?.findOperatingScope(args.login)
+                val foundScope = loginViewModel.apiContext.value?.findOperatingScope(args.login)
                 if (foundScope == null) {
                     Reporter.reportException(R.string.error_scope_not_found, args.login, requireContext())
                     navController.popBackStack()
@@ -146,7 +142,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.contacts_action_item_delete -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     contactsViewModel.batchDelete(adapter.selectedItems.map { it.binding.scope!! to it.binding.contact!! }, apiContext)
                     setUIState(UIState.LOADING)
                 }
@@ -207,7 +203,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
             }
             R.id.contacts_context_item_delete -> {
                 val contact = adapter.getItem(menuInfo.position)
-                val apiContext = userViewModel.apiContext.value ?: return false
+                val apiContext = loginViewModel.apiContext.value ?: return false
                 contactsViewModel.deleteContact(contact, scope!!, apiContext)
                 setUIState(UIState.LOADING)
                 true

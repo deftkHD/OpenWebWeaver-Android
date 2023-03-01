@@ -6,7 +6,6 @@ import android.widget.SearchView
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
@@ -20,7 +19,6 @@ import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.utils.ISearchProvider
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ForumViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.Feature
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.Permission
@@ -29,9 +27,7 @@ import de.deftk.openww.api.model.feature.forum.IForumPost
 class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.ForumPostViewHolder>(R.menu.forum_actionmode_menu), ISearchProvider {
 
     private val args: ForumPostsFragmentArgs by navArgs()
-    private val userViewModel: UserViewModel by activityViewModels()
     private val forumViewModel: ForumViewModel by activityViewModels()
-    private val navController by lazy { findNavController() }
 
     private lateinit var binding: FragmentForumPostsBinding
     private lateinit var searchView: SearchView
@@ -42,7 +38,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         binding = FragmentForumPostsBinding.inflate(inflater, container, false)
 
         binding.forumSwipeRefresh.setOnRefreshListener {
-            userViewModel.apiContext.value?.also { apiContext ->
+            loginViewModel.apiContext.value?.also { apiContext ->
                 forumViewModel.loadForumPosts(group!!, null, apiContext)
                 setUIState(UIState.LOADING)
             }
@@ -74,7 +70,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
             }
         }
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
                 val newGroup = apiContext.user.getGroups().firstOrNull { it.login == args.groupId }
                 if (newGroup == null) {
@@ -140,7 +136,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
     override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.forum_action_item_delete -> {
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.batchDelete(adapter.selectedItems.map { it.binding.post!! }, group!!, apiContext)
                     setUIState(UIState.LOADING)
                 }
@@ -163,7 +159,7 @@ class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.Forum
         when (item.itemId) {
             R.id.forum_context_item_delete -> {
                 val comment = adapter.getItem(menuInfo.position)
-                userViewModel.apiContext.value?.also { apiContext ->
+                loginViewModel.apiContext.value?.also { apiContext ->
                     forumViewModel.deletePost(comment, null, group!!, apiContext)
                     setUIState(UIState.LOADING)
                 }

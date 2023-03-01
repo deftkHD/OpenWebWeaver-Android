@@ -7,7 +7,6 @@ import android.widget.*
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
@@ -18,12 +17,11 @@ import de.deftk.openww.android.databinding.FragmentEditContactBinding
 import de.deftk.openww.android.feature.contacts.ContactDetail
 import de.deftk.openww.android.feature.contacts.ContactDetailType
 import de.deftk.openww.android.feature.contacts.GenderTranslation
-import de.deftk.openww.android.fragments.AbstractFragment
+import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.AndroidUtil
 import de.deftk.openww.android.utils.ContactUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.ContactsViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.implementation.feature.contacts.Contact
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.Permission
@@ -32,12 +30,10 @@ import de.deftk.openww.api.model.feature.Modification
 import de.deftk.openww.api.model.feature.contacts.IContact
 import java.util.*
 
-class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
+class EditContactFragment : ContextualFragment(true), ContactDetailClickListener {
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val contactViewModel: ContactsViewModel by activityViewModels()
     private val args: EditContactFragmentArgs by navArgs()
-    private val navController by lazy { findNavController() }
     private val adapter = ContactDetailAdapter(true, this)
     private val contact = MutableLiveData<IContact>()
 
@@ -52,7 +48,7 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
         binding.contactDetailList.adapter = adapter
         binding.contactDetailList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
-        userViewModel.apiContext.observe(viewLifecycleOwner) apiContext@ { apiContext ->
+        loginViewModel.apiContext.observe(viewLifecycleOwner) apiContext@ { apiContext ->
             if (apiContext != null) {
                 val foundScope = apiContext.findOperatingScope(args.scope)
                 if (foundScope == null) {
@@ -244,7 +240,7 @@ class EditContactFragment : AbstractFragment(true), ContactDetailClickListener {
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (menuItem.itemId == R.id.edit_options_item_save) {
-            val apiContext = userViewModel.apiContext.value ?: return false
+            val apiContext = loginViewModel.apiContext.value ?: return false
 
             if (editMode) {
                 contactViewModel.editContact(contact.value!!, scope!!, apiContext)
