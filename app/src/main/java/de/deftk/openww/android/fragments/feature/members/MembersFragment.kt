@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
@@ -141,7 +142,10 @@ class MembersFragment : ContextualFragment(true), ISearchProvider {
         return when (item.itemId) {
             R.id.member_context_item_open_chat -> {
                 val member = adapter.getItem(menuInfo.position)
-                navController.navigate(MembersFragmentDirections.actionGlobalMessengerChatFragment(member.login, member.name))
+                navController.navigate(R.id.messengerGraph, bundleOf(
+                    "memberLogin" to member.login,
+                    "memberName" to member.name
+                ))
                 true
             }
             R.id.member_context_item_write_mail -> {

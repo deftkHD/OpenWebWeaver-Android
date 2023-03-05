@@ -34,7 +34,7 @@
             android:visible="false" />
 
         <item
-            android:id="@+id/fileStorageGroupFragment"
+            android:id="@+id/fileStorageGraph"
             android:icon="@drawable/ic_file_24"
             android:title="@string/file_storage"
             android:visible="false" />
@@ -46,7 +46,7 @@
             android:visible="false" />
 
         <item
-            android:id="@+id/chatsFragment"
+            android:id="@+id/messengerGraph"
             android:icon="@drawable/ic_chat_24"
             android:title="@string/messenger"
             android:visible="false" />

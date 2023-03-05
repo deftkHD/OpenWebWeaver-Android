@@ -48,7 +48,7 @@ enum class AppFeature(
             return MailOverview(quota, unread)
         }
     }, "overview_show_mail"),
-    FEATURE_FILE_STORAGE(Feature.FILES, R.id.fileStorageGroupFragment, FileStorageOverview::class.java, object: OverviewBuilder {
+    FEATURE_FILE_STORAGE(Feature.FILES, R.id.fileStorageGraph, FileStorageOverview::class.java, object: OverviewBuilder {
         override fun appendRequests(request: UserApiRequest, user: IUser): List<Int> {
             val rid = request.addGetFileStorageStateRequest()
             return listOf(rid)
@@ -98,7 +98,7 @@ enum class AppFeature(
             return SystemNotificationsOverview(systemNotifications.count { it.isUnread })
         }
     }, "overview_show_systemnotifications"),
-    FEATURE_MESSENGER(Feature.MESSENGER, R.id.chatsFragment),
+    FEATURE_MESSENGER(Feature.MESSENGER, R.id.messengerGraph),
     FEATURE_CONTACTS(Feature.ADDRESSES, R.id.contactsGraph),
     FEATURE_NOTES(Feature.NOTES, R.id.notesGraph);
 

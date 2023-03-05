@@ -5,6 +5,7 @@ import android.view.*
 import android.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.FileStorageAdapter
@@ -20,12 +21,24 @@ import de.deftk.openww.android.viewmodel.FileStorageViewModel
 class FileStorageGroupFragment : ContextualFragment(true), ISearchProvider {
 
     private val fileStorageViewModel: FileStorageViewModel by activityViewModels()
+    private val args: FileStorageGroupFragmentArgs by navArgs()
 
     private lateinit var binding: FragmentFileStorageBinding
     private lateinit var searchView: SearchView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFileStorageBinding.inflate(inflater, container, false)
+
+        if (args.folderId != null && args.operatorId != null) {
+            navController.navigate(FileStorageGroupFragmentDirections.actionFileStorageGroupFragmentToFilesFragment(
+                args.folderId!!,
+                args.operatorId!!,
+                args.pasteMode,
+                args.folderNameId,
+                args.highlightFileId,
+                args.highlightFileName
+            ))
+        }
 
         val pasteMode = LaunchMode.getLaunchMode(requireActivity().intent) == LaunchMode.FILE_UPLOAD
         val adapter = FileStorageAdapter(pasteMode)

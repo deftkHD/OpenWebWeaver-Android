@@ -153,7 +153,7 @@ object TextUtils {
                     args.putString("folderNameId", folderId.ifBlank { "/" })
                     args.putString("folderId", "")
                     args.putBoolean("pasteMode", false)
-                    navController?.navigate(R.id.filesFragment, args)
+                    navController?.navigate(R.id.fileStorageGraph, args)
                 }
                 InternalReferenceType.LEANING_PLAN -> {
                     Toast.makeText(

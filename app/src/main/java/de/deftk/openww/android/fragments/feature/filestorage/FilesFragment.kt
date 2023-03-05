@@ -180,13 +180,13 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 if (newScope == null) {
                     setUIState(UIState.DISABLED)
                     Reporter.reportException(R.string.error_scope_not_found, args.operatorId, requireContext())
-                    navController.popBackStack()
+                    navController.popBackStack(R.id.fileStorageGroupFragment, true)
                     return@apiContext
                 }
                 if (!Feature.FILES.isAvailable(newScope.effectiveRights)) {
                     setUIState(UIState.DISABLED)
                     Reporter.reportFeatureNotAvailable(requireContext())
-                    navController.popBackStack()
+                    navController.popBackStack(R.id.fileStorageGroupFragment, true)
                     return@apiContext
                 }
 
@@ -476,7 +476,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     }
 
     override fun onPrepareMenu(menu: Menu) {
-        menu.findItem(R.id.filestorage_option_item_create_folder).isVisible = getProviderFile()?.file?.effectiveCreate == true
+        menu.findItem(R.id.filestorage_option_item_create_folder)?.isVisible = getProviderFile()?.file?.effectiveCreate == true
     }
 
     override fun onSearchBackPressed(): Boolean {

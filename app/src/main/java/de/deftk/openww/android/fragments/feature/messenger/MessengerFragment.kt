@@ -9,6 +9,7 @@ import android.widget.SearchView
 import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.ActionModeAdapter
@@ -27,12 +28,17 @@ import de.deftk.openww.api.model.Feature
 class MessengerFragment : ActionModeFragment<ChatContact, ChatAdapter.ChatViewHolder>(R.menu.messenger_actionmode_menu), ISearchProvider {
 
     private val messengerViewModel: MessengerViewModel by activityViewModels()
+    private val args: MessengerFragmentArgs by navArgs()
 
     private lateinit var binding: FragmentMessengerBinding
     private lateinit var searchView: SearchView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMessengerBinding.inflate(inflater, container, false)
+
+        if (args.memberLogin != null && args.memberName != null) {
+            navController.navigate(MessengerFragmentDirections.actionChatsFragmentToMessengerChatFragment(args.memberLogin!!, args.memberName!!))
+        }
 
         binding.chatList.adapter = adapter
         binding.chatList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
