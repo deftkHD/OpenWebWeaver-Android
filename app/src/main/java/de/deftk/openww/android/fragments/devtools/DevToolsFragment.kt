@@ -56,7 +56,7 @@ class DevToolsFragment : AbstractFragment(true, false) {
             navController.navigate(DevToolsFragmentDirections.actionDevToolsFragmentToExceptionsFragment())
         }
         binding.showPermissions.setOnClickListener {
-            navController.navigate(R.id.permissionScopesFragment)
+            navController.navigate(DevToolsFragmentDirections.actionDevToolsFragmentToPermissionScopesFragment())
         }
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())

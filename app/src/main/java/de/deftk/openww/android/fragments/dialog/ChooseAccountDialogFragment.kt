@@ -28,6 +28,7 @@ class ChooseAccountDialogFragment : DialogFragment() {
                 } else if (response is Response.Failure) {
                     Reporter.reportException(R.string.error_login_failed, response.exception, requireContext())
                     actionPerformed = false
+                    navController.popBackStack()
                 }
             }
         }

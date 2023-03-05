@@ -20,7 +20,7 @@ enum class AppFeature(
     val preferenceName: String? = null
 ) {
 
-    FEATURE_TASKS(Feature.TASKS, R.id.tasksFragment, TasksOverview::class.java, object : OverviewBuilder {
+    FEATURE_TASKS(Feature.TASKS, R.id.tasksGraph, TasksOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest, user: IUser): List<Int> {
             return request.addGetAllTasksRequest(user)
         }
@@ -35,7 +35,7 @@ enum class AppFeature(
             return TasksOverview(tasks.count { it.completed }, tasks.size) //FIXME ignore ignored
         }
     }, "overview_show_tasks"),
-    FEATURE_MAIL(Feature.MAILBOX, R.id.mailFragment, MailOverview::class.java, object: OverviewBuilder {
+    FEATURE_MAIL(Feature.MAILBOX, R.id.mailboxGraph, MailOverview::class.java, object: OverviewBuilder {
         override fun appendRequests(request: UserApiRequest, user: IUser): List<Int> {
             val rid = request.addGetEmailStateRequest()
             return listOf(rid)
@@ -48,7 +48,7 @@ enum class AppFeature(
             return MailOverview(quota, unread)
         }
     }, "overview_show_mail"),
-    FEATURE_FILE_STORAGE(Feature.FILES, R.id.fileStorageGroupFragment, FileStorageOverview::class.java, object: OverviewBuilder {
+    FEATURE_FILE_STORAGE(Feature.FILES, R.id.fileStorageGraph, FileStorageOverview::class.java, object: OverviewBuilder {
         override fun appendRequests(request: UserApiRequest, user: IUser): List<Int> {
             val rid = request.addGetFileStorageStateRequest()
             return listOf(rid)
@@ -60,7 +60,7 @@ enum class AppFeature(
             return FileStorageOverview(quota)
         }
     }, "overview_show_filestorage"),
-    FEATURE_NOTIFICATIONS(Feature.BOARD, R.id.notificationsFragment, NotificationsOverview::class.java, object : OverviewBuilder {
+    FEATURE_NOTIFICATIONS(Feature.BOARD, R.id.boardNotificationsGraph, NotificationsOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest, user: IUser): List<Int> {
             return request.addGetAllBoardNotificationsRequest(user)
         }
@@ -73,7 +73,7 @@ enum class AppFeature(
             return NotificationsOverview(count)
         }
     }, "overview_show_notifications"),
-    FEATURE_FORUM(Feature.FORUM, R.id.forumGroupFragment),
+    FEATURE_FORUM(Feature.FORUM, R.id.forumGraph),
     FEATURE_MEMBERS(Feature.MEMBERS, R.id.membersGroupFragment, GroupsOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest, user: IUser): List<Int> {
             return emptyList() // not needed
@@ -83,7 +83,7 @@ enum class AppFeature(
             return GroupsOverview(apiContext.user.getGroups().size)
         }
     }, "overview_show_groups"),
-    FEATURE_SYSTEM_NOTIFICATIONS(Feature.MESSAGES, R.id.systemNotificationsFragment, SystemNotificationsOverview::class.java, object : OverviewBuilder {
+    FEATURE_SYSTEM_NOTIFICATIONS(Feature.MESSAGES, R.id.systemNotificationsGraph, SystemNotificationsOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest, user: IUser): List<Int> {
             val rid = request.addGetSystemNotificationsRequest()
             return listOf(rid)
@@ -98,9 +98,9 @@ enum class AppFeature(
             return SystemNotificationsOverview(systemNotifications.count { it.isUnread })
         }
     }, "overview_show_systemnotifications"),
-    FEATURE_MESSENGER(Feature.MESSENGER, R.id.chatsFragment),
-    FEATURE_CONTACTS(Feature.ADDRESSES, R.id.contactsGroupFragment),
-    FEATURE_NOTES(Feature.NOTES, R.id.notesFragment);
+    FEATURE_MESSENGER(Feature.MESSENGER, R.id.messengerGraph),
+    FEATURE_CONTACTS(Feature.ADDRESSES, R.id.contactsGraph),
+    FEATURE_NOTES(Feature.NOTES, R.id.notesGraph);
 
     companion object {
         fun getByOverviewClass(overviewClass: Class<out AbstractOverviewElement>): AppFeature? {

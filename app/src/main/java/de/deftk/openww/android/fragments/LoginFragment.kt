@@ -24,6 +24,7 @@ class LoginFragment : AbstractFragment(false) {
     private val args: LoginFragmentArgs by navArgs()
 
     private var loginActionPerformed = false
+    private var tokenLogin = false
 
     private lateinit var binding: FragmentLoginBinding
 
@@ -41,7 +42,7 @@ class LoginFragment : AbstractFragment(false) {
         binding.chbStayLoggedIn.isChecked = forceRemember
 
         loginViewModel.loginToken.observe(viewLifecycleOwner) { response ->
-            if (response is Response.Success && loginActionPerformed) {
+            if (response is Response.Success && loginActionPerformed && binding.chbStayLoggedIn.isChecked) {
                 AccountManager.get(requireContext()).addAccountExplicitly(
                     Account(response.value.first, getString(R.string.account_type)),
                     response.value.second,
@@ -84,21 +85,28 @@ class LoginFragment : AbstractFragment(false) {
             }
         }
 
-        binding.tokenLogin.setOnClickListener {
-            navController.navigate(LoginFragmentDirections.actionLoginFragmentToTokenLoginFragment(binding.txtEmail.text.toString().ifEmpty { null }))
+        binding.switchLoginMethod.setOnClickListener {
+            tokenLogin = !tokenLogin
+            setUIState(UIState.READY)
         }
 
         binding.btnLogin.setOnClickListener {
             if (currentUIState == UIState.READY) {
                 loginActionPerformed = true
                 setUIState(UIState.LOADING)
-                val username = binding.txtEmail.text.toString()
-                val password = binding.txtPassword.text.toString()
-                val generateToken = binding.chbStayLoggedIn.isChecked
-                if (generateToken) {
-                    loginViewModel.loginPasswordCreateToken(username, password)
+                if (tokenLogin) {
+                    val username = binding.txtEmail.text.toString()
+                    val token = binding.txtPassKey.text.toString()
+                    loginViewModel.loginToken(username, token)
                 } else {
-                    loginViewModel.loginPassword(username, password)
+                    val username = binding.txtEmail.text.toString()
+                    val password = binding.txtPassKey.text.toString()
+                    val generateToken = binding.chbStayLoggedIn.isChecked
+                    if (generateToken) {
+                        loginViewModel.loginPasswordCreateToken(username, password)
+                    } else {
+                        loginViewModel.loginPassword(username, password)
+                    }
                 }
             }
         }
@@ -110,7 +118,17 @@ class LoginFragment : AbstractFragment(false) {
         binding.btnLogin.isEnabled = newState == UIState.READY
         binding.chbStayLoggedIn.isEnabled = newState == UIState.READY
         binding.txtEmail.isEnabled = newState == UIState.READY
-        binding.txtPassword.isEnabled = newState == UIState.READY
-        binding.tokenLogin.isEnabled = !newState.refreshing
+        binding.txtPassKey.isEnabled = newState == UIState.READY
+        binding.switchLoginMethod.isEnabled = !newState.refreshing
+
+        if (tokenLogin) {
+            binding.chbStayLoggedIn.setText(R.string.remember_token)
+            binding.txtPassKey.setHint(R.string.token)
+            binding.switchLoginMethod.setText(R.string.password_login_link)
+        } else {
+            binding.chbStayLoggedIn.setText(R.string.stay_logged_in)
+            binding.txtPassKey.setHint(R.string.password)
+            binding.switchLoginMethod.setText(R.string.token_login_link)
+        }
     }
 }

@@ -29,6 +29,7 @@ class LaunchFragment : ContextualFragment(false) {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentLaunchBinding.inflate(inflater, container, false)
+        getMainActivity().supportActionBar?.hide()
         binding.version.text = BuildConfig.VERSION_NAME
         return binding.root
     }
@@ -43,7 +44,7 @@ class LaunchFragment : ContextualFragment(false) {
 
         if (authenticatorResponse != null) {
             authenticatorResponse.onRequestContinued()
-            navController.navigate(R.id.loginFragment, Bundle().apply { putBoolean("only_add", true) })
+            navController.navigate(LaunchFragmentDirections.actionGlobalLoginFragment(true))
             return
         }
 
@@ -65,16 +66,16 @@ class LaunchFragment : ContextualFragment(false) {
                     AuthHelper.AuthState.SINGLE -> {
                         when (launchMode) {
                             LaunchMode.DEFAULT -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToOverviewFragment())
-                            LaunchMode.EMAIL -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToWriteMailFragment())
-                            LaunchMode.FILE_UPLOAD -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToFileStorageGroupFragment())
+                            LaunchMode.EMAIL -> navController.navigate(LaunchFragmentDirections.actionGlobalWriteMailFragment())
+                            LaunchMode.FILE_UPLOAD -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToFileStorageGraph())
                             else -> { /* ignore */ }
                         }
                     }
                     AuthHelper.AuthState.MULTIPLE -> {
                         when (launchMode) {
-                            LaunchMode.DEFAULT -> navController.navigate(R.id.overviewFragment)
-                            LaunchMode.EMAIL -> navController.navigate(R.id.writeMailFragment)
-                            LaunchMode.FILE_UPLOAD -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToFileStorageGroupFragment())
+                            LaunchMode.DEFAULT -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToOverviewFragment())
+                            LaunchMode.EMAIL -> navController.navigate(LaunchFragmentDirections.actionGlobalWriteMailFragment())
+                            LaunchMode.FILE_UPLOAD -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToFileStorageGraph())
                             else -> { /* ignore */ }
                         }
                     }

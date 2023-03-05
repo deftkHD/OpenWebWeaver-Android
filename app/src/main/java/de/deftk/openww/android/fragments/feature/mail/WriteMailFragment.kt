@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import de.deftk.openww.android.R
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentWriteMailBinding
@@ -51,7 +50,7 @@ class WriteMailFragment : ContextualFragment(true) {
                 setUIState(UIState.READY)
                 Toast.makeText(requireContext(), R.string.email_sent, Toast.LENGTH_LONG).show()
                 if (launchMode == LaunchMode.DEFAULT) {
-                    findNavController().popBackStack()
+                    navController.popBackStack()
                 } else if (launchMode == LaunchMode.EMAIL) {
                     requireActivity().finish()
                 }

@@ -7,7 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavOptions
 import androidx.preference.PreferenceManager
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.OverviewAdapter
@@ -43,8 +44,13 @@ class OverviewFragment: ContextualFragment(true) {
         binding.overviewList.setOnItemClickListener { _, _, position, _ ->
             val item = binding.overviewList.getItemAtPosition(position) as AbstractOverviewElement
             val feature = AppFeature.getByOverviewClass(item::class.java)
-            if (feature != null)
-                navController.navigate(feature.fragmentId)
+            if (feature != null) {
+                val options = NavOptions.Builder()
+                options.setLaunchSingleTop(true)
+                options.setRestoreState(true)
+                options.setPopUpTo(navController.graph.findStartDestination().id, inclusive = false, saveState = true)
+                navController.navigate(feature.fragmentId, null, options.build())
+            }
         }
 
         userViewModel.overviewResponse.observe(viewLifecycleOwner) { response ->

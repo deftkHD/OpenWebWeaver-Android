@@ -34,7 +34,7 @@ abstract class AbstractFragment(private val hasActionBar: Boolean, private val r
         }
     }
 
-    private fun getMainActivity(): MainActivity {
+    protected fun getMainActivity(): MainActivity {
         return (requireActivity() as? MainActivity?) ?: error("Invalid fragment scope")
     }
 

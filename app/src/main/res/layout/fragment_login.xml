@@ -41,7 +41,7 @@
             android:inputType="textEmailAddress" />
 
         <EditText
-            android:id="@+id/txtPassword"
+            android:id="@+id/txtPassKey"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/txtEmail"
@@ -58,7 +58,7 @@
             android:id="@+id/chbStayLoggedIn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/txtPassword"
+            android:layout_below="@id/txtPassKey"
             android:layout_alignParentStart="true"
             android:layout_alignParentEnd="true"
             android:layout_marginStart="40dp"
@@ -79,7 +79,7 @@
         android:text="@string/btn_login" />
 
     <TextView
-        android:id="@+id/token_login"
+        android:id="@+id/switch_login_method"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

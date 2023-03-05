@@ -22,61 +22,61 @@
         android:orderInCategory="1">
 
         <item
-            android:id="@+id/tasksFragment"
+            android:id="@+id/tasksGraph"
             android:icon="@drawable/ic_edit_24"
             android:title="@string/tasks"
             android:visible="false" />
 
         <item
-            android:id="@+id/mailFragment"
+            android:id="@+id/mailboxGraph"
             android:icon="@drawable/ic_email_24"
             android:title="@string/mail"
             android:visible="false" />
 
         <item
-            android:id="@+id/fileStorageGroupFragment"
+            android:id="@+id/fileStorageGraph"
             android:icon="@drawable/ic_file_24"
             android:title="@string/file_storage"
             android:visible="false" />
 
         <item
-            android:id="@+id/notificationsFragment"
+            android:id="@+id/boardNotificationsGraph"
             android:icon="@drawable/ic_notifications_24"
             android:title="@string/notifications"
             android:visible="false" />
 
         <item
-            android:id="@+id/chatsFragment"
+            android:id="@+id/messengerGraph"
             android:icon="@drawable/ic_chat_24"
             android:title="@string/messenger"
             android:visible="false" />
 
         <item
-            android:id="@+id/contactsGroupFragment"
+            android:id="@+id/contactsGraph"
             android:icon="@drawable/ic_contacts_24"
             android:title="@string/contacts"
             android:visible="false" />
 
         <item
-            android:id="@+id/forumGroupFragment"
+            android:id="@+id/forumGraph"
             android:icon="@drawable/ic_forum_24"
             android:title="@string/forum"
             android:visible="false" />
 
         <item
-            android:id="@+id/membersGroupFragment"
+            android:id="@+id/membersGraph"
             android:icon="@drawable/ic_people_24"
             android:title="@string/members"
             android:visible="false" />
 
         <item
-            android:id="@+id/notesFragment"
+            android:id="@+id/notesGraph"
             android:icon="@drawable/ic_notes_24"
             android:title="@string/notes"
             android:visible="false" />
 
         <item
-            android:id="@+id/systemNotificationsFragment"
+            android:id="@+id/systemNotificationsGraph"
             android:icon="@drawable/ic_warning_24"
             android:title="@string/system_notifications"
             android:visible="false" />
@@ -96,12 +96,12 @@
             android:checkable="false" />
 
         <item
-            android:id="@+id/settingsFragment"
+            android:id="@+id/settingsGraph"
             android:icon="@drawable/ic_settings_24"
             android:title="@string/settings" />
 
         <item
-            android:id="@+id/devToolsFragment"
+            android:id="@+id/devToolsGraph"
             android:icon="@drawable/ic_bug_report_24"
             android:title="@string/devtools"
             android:visible="false" />

@@ -276,7 +276,7 @@ class MainActivity : AppCompatActivity(), ViewModelStoreOwner, PreferenceFragmen
     }
 
     private fun updateDevToolState() {
-        binding.navView.menu.findItem(R.id.devToolsFragment).isVisible = preferences.getBoolean("show_devtools", false)
+        binding.navView.menu.findItem(R.id.devToolsGraph).isVisible = preferences.getBoolean("show_devtools", false)
     }
 
 }

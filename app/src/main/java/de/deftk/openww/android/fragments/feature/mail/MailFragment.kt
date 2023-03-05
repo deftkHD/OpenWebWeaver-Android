@@ -146,7 +146,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
         }
 
         binding.fabMailAdd.setOnClickListener {
-            navController.navigate(MailFragmentDirections.actionMailFragmentToWriteMailFragment())
+            navController.navigate(MailFragmentDirections.actionGlobalWriteMailFragment())
             toolbarSpinner.isVisible = false
             toolbarSpinner.adapter = null
         }

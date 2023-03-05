@@ -141,7 +141,7 @@ class MembersFragment : ContextualFragment(true), ISearchProvider {
         return when (item.itemId) {
             R.id.member_context_item_open_chat -> {
                 val member = adapter.getItem(menuInfo.position)
-                navController.navigate(MembersFragmentDirections.actionMembersFragmentToMessengerChatFragment(member.login, member.name))
+                navController.navigate(MembersFragmentDirections.actionGlobalMessengerChatFragment(member.login, member.name))
                 true
             }
             R.id.member_context_item_write_mail -> {
