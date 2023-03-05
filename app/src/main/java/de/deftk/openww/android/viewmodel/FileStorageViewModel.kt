@@ -35,7 +35,7 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
                 null -> allQuotasResponse
                 else -> allQuotasResponse.switchMap { response ->
                     val filtered = registerProperty<Response<Map<IOperatingScope, Quota>>?>("filtered", true)
-                    filtered.value = response?.smartMap { filter.apply(it.toList()).toMap() }
+                    filtered.postValue(response?.smartMap { filter.apply(it.toList()).toMap() })
                     filtered
                 }
             }
@@ -61,7 +61,7 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
 
     fun loadQuotas(apiContext: IApiContext) {
         viewModelScope.launch {
-            _quotas.value = fileStorageRepository.getAllFileStorageQuotas(apiContext)
+            _quotas.postValue(fileStorageRepository.getAllFileStorageQuotas(apiContext))
         }
     }
 
@@ -76,7 +76,7 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
                     null -> getAllFiles(scope)
                     else -> getAllFiles(scope).switchMap { response ->
                         val filtered = registerProperty<Response<List<FileCacheElement>>>("files", true)
-                        filtered.value = response?.smartMap { filter.apply(it.map { file -> file to scope }).map { pair -> pair.first } }
+                        filtered.postValue(response?.smartMap { filter.apply(it.map { file -> file to scope }).map { pair -> pair.first } })
                         filtered
                     }
                 }
@@ -88,7 +88,7 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
         viewModelScope.launch {
             val response = fileStorageRepository.getFiles(parentId, true, scope, apiContext)
             val allFiles = getAllFiles(scope) as MutableLiveData
-            allFiles.value = response.smartCoroutineMap(this) { responseValue ->
+            allFiles.postValue(response.smartCoroutineMap(this) { responseValue ->
                 val previewResponse = loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext)
                 val files = responseValue.map { file -> FileCacheElement(file, previewResponse.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl) }
 
@@ -104,7 +104,7 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
                 } else {
                     files
                 }
-            }
+            })
         }
     }
 
@@ -112,7 +112,7 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
         viewModelScope.launch {
             val response = fileStorageRepository.getFileTree(idTree, true, scope, apiContext)
             val allFiles = getAllFiles(scope) as MutableLiveData
-            allFiles.value = response.smartCoroutineMap(this) { responseValue ->
+            allFiles.postValue(response.smartCoroutineMap(this) { responseValue ->
                 val previewResponse = loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext)
                 val files = responseValue.map { file -> FileCacheElement(file, previewResponse.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl) }
 
@@ -128,7 +128,7 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
                 } else {
                     return@smartCoroutineMap files
                 }
-            }
+            })
         }
     }
 
@@ -137,7 +137,7 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
             val responses = fileStorageRepository.getFileNameTree(nameTree, true, scope, apiContext)
             val response = Response.Success(responses.map { it.valueOrNull() ?: emptyList() }.flatten())
             val allFiles = getAllFiles(scope) as MutableLiveData
-            allFiles.value = response.smartCoroutineMap(this) { responseValue ->
+            allFiles.postValue(response.smartCoroutineMap(this) { responseValue ->
                 val previewResponse = loadPreviews(responseValue.filter { it.type == FileType.FILE }, scope, apiContext)
                 val files = responseValue.map { file -> FileCacheElement(file, previewResponse.valueOrNull()?.firstOrNull { it.file.id == file.id }?.previewUrl) }.distinctBy { it.file.id }
 
@@ -153,7 +153,7 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
                 } else {
                     return@smartCoroutineMap files
                 }
-            }
+            })
         }
     }
 
@@ -173,13 +173,13 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
             val response = fileStorageRepository.addFolder(name, "", parent, scope, apiContext)
             if (response is Response.Success) {
                 val allFiles = getAllFiles(scope) as MutableLiveData
-                allFiles.value = allFiles.value?.smartMap { files ->
+                allFiles.postValue(allFiles.value?.smartMap { files ->
                     files.toMutableList().apply {
                         add(FileCacheElement(response.value))
                     }
-                }
+                })
             }
-            _addFolderResponse.value = response
+            _addFolderResponse.postValue(response)
         }
     }
 
@@ -209,12 +209,12 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
         // inject placeholder
         val id = "upload_transfer_${networkTransfers.value?.size ?: 0}"
         val liveData = getAllFiles(scope) as MutableLiveData
-        liveData.value = liveData.value?.smartMap {
+        liveData.postValue(liveData.value?.smartMap {
             it.toMutableList().apply {
                 val userScope = RemoteScope(apiContext.user.login, apiContext.user.name, apiContext.user.type, null, true)
                 add(0, FileCacheElement(RemoteFilePlaceholder(id, fileName, size, parentId, Modification(userScope, Date()))))
             }
-        }
+        })
 
         // start upload
         val workRequest = SessionFileUploadWorker.createRequest(uri, fileName, apiContext.userContext())
@@ -227,7 +227,7 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
             val response = fileStorageRepository.importSessionFile(sessionFile, into, scope, apiContext)
             if (response is Response.Success) {
                 val allFiles = getAllFiles(scope) as MutableLiveData
-                allFiles.value = response.smartCoroutineMap(this) { responseValue ->
+                allFiles.postValue(response.smartCoroutineMap(this) { responseValue ->
                     val previewResponse = loadPreviews(listOf(response.value), scope, apiContext)
                     val files = listOf(FileCacheElement(responseValue, previewResponse.valueOrNull()?.firstOrNull { it.file.id == responseValue.id }?.previewUrl))
 
@@ -240,24 +240,24 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
                     } else {
                         files
                     }
-                }
+                })
             }
-            _importSessionFileResponse.value = response to (receiveDownloadNotification ?: false)
+            _importSessionFileResponse.postValue(response to (receiveDownloadNotification ?: false))
         }
     }
 
     fun editFile(file: IRemoteFile, name: String, description: String?, downloadNotificationMe: Boolean?, scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = fileStorageRepository.editFile(file, name, description, downloadNotificationMe, scope, apiContext)
-            _editFileResponse.value = response
+            _editFileResponse.postValue(response)
             if (response is Response.Success) {
                 val allFiles = getAllFiles(scope) as MutableLiveData
-                allFiles.value = allFiles.value?.smartMap { files ->
+                allFiles.postValue(allFiles.value?.smartMap { files ->
                     files.toMutableList().apply {
                         val orig = first { it.file.id == file.id }
                         set(indexOf(orig), FileCacheElement(file, orig.previewUrl))
                     }
-                }
+                })
             }
         }
     }
@@ -265,42 +265,42 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
     fun editFolder(file: IRemoteFile, name: String, description: String?, readable: Boolean?, writable: Boolean?, uploadNotificationMe: Boolean?, scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = fileStorageRepository.editFolder(file, name, description, readable, writable, uploadNotificationMe, scope, apiContext)
-            _editFileResponse.value = response
+            _editFileResponse.postValue(response)
             if (response is Response.Success) {
                 val allFiles = getAllFiles(scope) as MutableLiveData
-                allFiles.value = allFiles.value?.smartMap { files ->
+                allFiles.postValue(allFiles.value?.smartMap { files ->
                     files.toMutableList().apply {
                         val orig = first { it.file.id == file.id }
                         set(indexOf(orig), FileCacheElement(file, orig.previewUrl))
                     }
-                }
+                })
             }
         }
     }
 
     fun resetImportSessionFileResponse() {
-        _importSessionFileResponse.value = null
+        _importSessionFileResponse.postValue(null)
     }
 
     private fun addNetworkTransfer(networkTransfer: NetworkTransfer) {
         val transfers = (_networkTransfers.value ?: emptyList()).toMutableList()
         transfers.add(networkTransfer)
-        _networkTransfers.value = transfers
+        _networkTransfers.postValue(transfers)
     }
 
     fun hideNetworkTransfer(networkTransfer: NetworkTransfer, scope: IOperatingScope) {
         if (networkTransfer is NetworkTransfer.Upload) {
             val liveData = getAllFiles(scope) as MutableLiveData
-            liveData.value = liveData.value?.smartMap {
+            liveData.postValue(liveData.value?.smartMap {
                 it.toMutableList().apply {
                     removeAll { file -> file.file.id == networkTransfer.id }
                 }
-            }
+            })
         }
 
         val transfers = (_networkTransfers.value ?: emptyList()).toMutableList()
         transfers.remove(networkTransfer)
-        _networkTransfers.value = transfers
+        _networkTransfers.postValue(transfers)
     }
 
     fun batchDelete(files: List<IRemoteFile>, scope: IOperatingScope, apiContext: IApiContext) {
@@ -315,26 +315,26 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
                         currentFiles.removeAll { it.file.id == response.value.id }
                     }
                 }
-                filesLiveData.value = Response.Success(currentFiles)
+                filesLiveData.postValue(Response.Success(currentFiles))
             }
-            _batchDeleteResponse.value = responses
+            _batchDeleteResponse.postValue(responses)
         }
     }
 
     fun resetBatchDeleteResponse() {
-        _batchDeleteResponse.value = null
+        _batchDeleteResponse.postValue(null)
     }
 
     fun resetAddFolderResponse() {
-        _addFolderResponse.value = null
+        _addFolderResponse.postValue(null)
     }
 
     fun resetEditFileResponse() {
-        _editFileResponse.value = null
+        _editFileResponse.postValue(null)
     }
 
     fun cleanCache(scope: IOperatingScope) {
-        _files[scope]?.value = Response.Success(emptyList())
+        _files[scope]?.postValue(Response.Success(emptyList()))
     }
 
     /**

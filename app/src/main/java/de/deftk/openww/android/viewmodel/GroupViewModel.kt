@@ -30,7 +30,7 @@ class GroupViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                     null -> getAllGroupMembers(group)
                     else -> getAllGroupMembers(group).switchMap { response ->
                         val filtered = registerProperty<Response<List<IScope>>?>("filtered", true)
-                        filtered.value = response?.smartMap { filter.apply(it) }
+                        filtered.postValue(response?.smartMap { filter.apply(it) })
                         filtered
                     }
                 }
@@ -40,7 +40,7 @@ class GroupViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
 
     fun loadMembers(group: IGroup, onlineOnly: Boolean, apiContext: IApiContext) {
         viewModelScope.launch {
-            (getAllGroupMembers(group) as MutableLiveData).value = groupRepository.getMembers(group, onlineOnly, apiContext)
+            (getAllGroupMembers(group) as MutableLiveData).postValue(groupRepository.getMembers(group, onlineOnly, apiContext))
         }
     }
 

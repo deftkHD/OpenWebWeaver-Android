@@ -39,7 +39,7 @@ class ContactsViewModel @Inject constructor(savedStateHandle: SavedStateHandle, 
                     null -> getAllContactsLiveData(scope)
                     else -> getAllContactsLiveData(scope).switchMap { response ->
                         val filtered = registerProperty<Response<List<IContact>>?>("filtered", true)
-                        filtered.value = response?.smartMap { filter.apply(it) }
+                        filtered.postValue(response?.smartMap { filter.apply(it) })
                         filtered
                     }
                 }
@@ -56,12 +56,12 @@ class ContactsViewModel @Inject constructor(savedStateHandle: SavedStateHandle, 
     fun addContact(contact: IContact, scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = contactsRepository.addContact(contact, scope, apiContext)
-            _editResponse.value = response
+            _editResponse.postValue(response)
             val contactsResponse = getAllContactsLiveData(scope).value
             if (response is Response.Success && contactsResponse is Response.Success) {
                 val contacts = contactsResponse.value.toMutableList()
                 contacts.add(response.value)
-                (getAllContactsLiveData(scope) as MutableLiveData).value = Response.Success(contacts)
+                (getAllContactsLiveData(scope) as MutableLiveData).postValue(Response.Success(contacts))
             }
         }
     }
@@ -69,12 +69,12 @@ class ContactsViewModel @Inject constructor(savedStateHandle: SavedStateHandle, 
     fun editContact(contact: IContact, scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = contactsRepository.editContact(contact, scope, apiContext)
-            _editResponse.value = response
+            _editResponse.postValue(response)
             val contactsResponse = getAllContactsLiveData(scope).value
             if (response is Response.Success && contactsResponse is Response.Success) {
                 val contacts = contactsResponse.value.toMutableList()
                 contacts[contacts.indexOfFirst { it.id == contact.id }] = contact
-                (getAllContactsLiveData(scope) as MutableLiveData).value = Response.Success(contacts)
+                (getAllContactsLiveData(scope) as MutableLiveData).postValue(Response.Success(contacts))
             }
         }
     }
@@ -82,35 +82,35 @@ class ContactsViewModel @Inject constructor(savedStateHandle: SavedStateHandle, 
     fun deleteContact(contact: IContact, scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = contactsRepository.deleteContact(contact, scope, apiContext)
-            _deleteResponse.value = response
+            _deleteResponse.postValue(response)
             val contactsResponse = getAllContactsLiveData(scope).value
             if (response is Response.Success && contactsResponse is Response.Success) {
                 val contacts = contactsResponse.value.toMutableList()
                 contacts.remove(contact)
-                (getAllContactsLiveData(scope) as MutableLiveData).value = Response.Success(contacts)
+                (getAllContactsLiveData(scope) as MutableLiveData).postValue(Response.Success(contacts))
             }
         }
     }
 
     fun resetEditResponse() {
-        _editResponse.value = null
+        _editResponse.postValue(null)
     }
 
     fun resetDeleteResponse() {
-        _deleteResponse.value = null
+        _deleteResponse.postValue(null)
     }
 
     fun batchDelete(contacts: List<Pair<IOperatingScope, IContact>>, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = contacts.map { contactsRepository.deleteContact(it.second, it.first, apiContext) }
-            _batchDeleteResponse.value = responses
+            _batchDeleteResponse.postValue(responses)
             responses.forEach { response ->
                 if (response is Response.Success) {
                     val liveData = _contactsResponses[response.value.second]
                     if (liveData?.value is Response.Success) {
                         val currentContacts = (liveData.value!! as Response.Success).value.toMutableList()
                         currentContacts.remove(response.value.first)
-                        liveData.value = Response.Success(currentContacts)
+                        liveData.postValue(Response.Success(currentContacts))
                     }
 
                 }
@@ -119,7 +119,7 @@ class ContactsViewModel @Inject constructor(savedStateHandle: SavedStateHandle, 
     }
 
     fun resetBatchDeleteResponse() {
-        _batchDeleteResponse.value = null
+        _batchDeleteResponse.postValue(null)
     }
 
 }

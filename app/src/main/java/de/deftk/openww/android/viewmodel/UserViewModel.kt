@@ -38,7 +38,7 @@ class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, priv
                 null -> allSystemNotificationsResponse
                 else -> allSystemNotificationsResponse.switchMap { response ->
                     val filtered = registerProperty<Response<List<ISystemNotification>>?>("filtered", true)
-                    filtered.value = response?.smartMap { filter.apply(it) }
+                    filtered.postValue(response?.smartMap { filter.apply(it) })
                     filtered
                 }
             }
@@ -53,25 +53,25 @@ class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, priv
     fun loadOverview(features: List<AppFeature>, apiContext: IApiContext) {
         viewModelScope.launch {
             val resource = userRepository.getOverviewElements(features, apiContext)
-            _overviewResponse.value = resource
+            _overviewResponse.postValue(resource)
         }
     }
 
     fun loadSystemNotifications(apiContext: IApiContext) {
         viewModelScope.launch {
             val resource = userRepository.getSystemNotifications(apiContext)
-            _systemNotificationsResponse.value = resource
+            _systemNotificationsResponse.postValue(resource)
         }
     }
 
     fun deleteSystemNotification(systemNotification: ISystemNotification, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = userRepository.deleteSystemNotification(systemNotification, apiContext)
-            _systemNotificationDeleteResponse.value = response
+            _systemNotificationDeleteResponse.postValue(response)
             if (_systemNotificationsResponse.value is Response.Success && response is Response.Success) {
                 val systemNotifications = (_systemNotificationsResponse.value as Response.Success<List<ISystemNotification>>).value.toMutableList()
                 systemNotifications.remove(systemNotification)
-                _systemNotificationsResponse.value = Response.Success(systemNotifications)
+                _systemNotificationsResponse.postValue(Response.Success(systemNotifications))
             }
         }
     }
@@ -79,7 +79,7 @@ class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, priv
     fun batchDeleteSystemNotifications(systemNotifications: List<ISystemNotification>, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = systemNotifications.map { userRepository.deleteSystemNotification(it, apiContext) }
-            _systemNotificationBatchDeleteResponse.value = responses
+            _systemNotificationBatchDeleteResponse.postValue(responses)
             val notifications = allSystemNotificationsResponse.value?.valueOrNull()
             if (notifications != null) {
                 val currentNotifications = notifications.toMutableList()
@@ -88,7 +88,7 @@ class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, priv
                         currentNotifications.remove(response.value)
                     }
                 }
-                _systemNotificationsResponse.value = Response.Success(currentNotifications)
+                _systemNotificationsResponse.postValue(Response.Success(currentNotifications))
             }
         }
     }
@@ -96,7 +96,7 @@ class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, priv
     fun loadSystemNotificationSettings(apiContext: IApiContext) {
         viewModelScope.launch {
             val response = userRepository.getSystemNotificationSettings(apiContext)
-            _systemNotificationSettingsResponse.value = response
+            _systemNotificationSettingsResponse.postValue(response)
         }
     }
 
@@ -110,7 +110,7 @@ class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, priv
                 val newSetting = response.value
                 currentSettings.removeAll { it.type == setting.type }
                 currentSettings.add(newSetting)
-                _systemNotificationSettingsResponse.value = Response.Success(currentSettings)
+                _systemNotificationSettingsResponse.postValue(Response.Success(currentSettings))
             }
         }
     }
@@ -126,15 +126,15 @@ class UserViewModel @Inject constructor(savedStateHandle: SavedStateHandle, priv
     }
 
     fun resetDeleteResponse() {
-        _systemNotificationDeleteResponse.value = null
+        _systemNotificationDeleteResponse.postValue(null)
     }
 
     fun resetBatchDeleteResponse() {
-        _systemNotificationBatchDeleteResponse.value = null
+        _systemNotificationBatchDeleteResponse.postValue(null)
     }
 
     fun resetSystemNotificationSettingsResponse() {
-        _systemNotificationSettingsResponse.value = null
+        _systemNotificationSettingsResponse.postValue(null)
     }
 
 }

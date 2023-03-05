@@ -49,7 +49,7 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
                 null -> allCurrentMails
                 else -> allCurrentMails.switchMap { response ->
                     val filtered = registerProperty<Response<List<IEmail>>?>("filtered", true)
-                    filtered.value = response?.smartMap { filter.apply(it) }
+                    filtered.postValue(response?.smartMap { filter.apply(it) })
                     filtered
                 }
             }
@@ -76,7 +76,7 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
     fun loadFolders(apiContext: IApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.getFolders(apiContext)
-            _foldersResponse.value = response
+            _foldersResponse.postValue(response)
             if (response is Response.Success) {
                 val currentFolder = currentFolder.value
                 if (currentFolder == null || !response.value.contains(currentFolder)) {
@@ -91,7 +91,7 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
     fun addFolder(name: String, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.addFolder(name, apiContext)
-            _folderPostResponse.value = response
+            _folderPostResponse.postValue(response)
             if (_foldersResponse.value is Response.Success && response is Response.Success) {
                 // reload folders because of request not returning any data
                 loadFolders(apiContext)
@@ -100,14 +100,14 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
     }
 
     fun selectFolder(folder: IEmailFolder, apiContext: IApiContext) {
-        _currentFolder.value = folder
+        _currentFolder.postValue(folder)
         if (!emailResponses.containsKey(folder)) {
             viewModelScope.launch {
                 suspendLoadEmails(folder, apiContext)
-                _currentMails.value = emailResponses[folder]?.value ?: Response.Failure(NullPointerException())
+                _currentMails.postValue(emailResponses[folder]?.value ?: Response.Failure(NullPointerException()))
             }
         } else {
-            _currentMails.value = emailResponses[folder]?.value ?: Response.Failure(NullPointerException())
+            _currentMails.postValue(emailResponses[folder]?.value ?: Response.Failure(NullPointerException()))
         }
     }
 
@@ -127,21 +127,21 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
     fun sendEmail(to: String, subject: String, plainBody: String, cc: String? = null, bcc: String? = null, importSessionFiles: List<ISessionFile>? = null, referenceFolderId: String? = null, referenceMessageId: Int? = null, referenceMode: ReferenceMode? = null, text: String? = null, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.sendEmail(to, subject, plainBody, cc, bcc, importSessionFiles, referenceFolderId, referenceMessageId, referenceMode, text, apiContext)
-            _emailSendResponse.value = response
+            _emailSendResponse.postValue(response)
         }
     }
 
     fun readEmail(email: IEmail, folder: IEmailFolder, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.readEmail(email, folder, false, apiContext)
-            _emailReadPostResponse.value = response
+            _emailReadPostResponse.postValue(response)
         }
     }
 
     fun moveEmail(email: IEmail, folder: IEmailFolder, destination: IEmailFolder, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.moveEmail(email, folder, destination, apiContext)
-            _emailPostResponse.value = response
+            _emailPostResponse.postValue(response)
             if (response is Response.Success) {
                 val storedSrc = getCachedResponse(folder)
                 val storedDst = getCachedResponse(destination)
@@ -149,18 +149,18 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
                     val newResponse = Response.Success(storedSrc.value.toMutableList().apply {
                         this.remove(email)
                     })
-                    emailResponses[folder]!!.value = newResponse
+                    emailResponses[folder]!!.postValue(newResponse)
                     if (currentFolder.value == folder) {
-                        _currentMails.value = newResponse
+                        _currentMails.postValue(newResponse)
                     }
                 }
                 if (storedDst is Response.Success) {
                     val newResponse = Response.Success(storedDst.value.toMutableList().apply {
                         this.add(0, email)
                     })
-                    emailResponses[destination]!!.value = newResponse
+                    emailResponses[destination]!!.postValue(newResponse)
                     if (currentFolder.value == destination) {
-                        _currentMails.value = newResponse
+                        _currentMails.postValue(newResponse)
                     }
                 }
             }
@@ -203,16 +203,16 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
     fun exportAttachment(attachment: IAttachment, email: IEmail, folder: IEmailFolder, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = mailboxRepository.exportAttachment(attachment, email, folder, apiContext)
-            _exportSessionFileResponse.value = response
+            _exportSessionFileResponse.postValue(response)
         }
     }
 
     fun resetPostResponse() {
-        _emailPostResponse.value = null
+        _emailPostResponse.postValue(null)
     }
 
     fun resetReadPostResponse() {
-        _emailReadPostResponse.value = null
+        _emailReadPostResponse.postValue(null)
     }
 
     fun batchDelete(selectedEmails: List<IEmail>, folder: IEmailFolder, apiContext: IApiContext) {
@@ -220,15 +220,15 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
         if (folder.isTrash || trash == null) {
             viewModelScope.launch {
                 val responses = selectedEmails.map { mailboxRepository.deleteEmail(it, folder, apiContext) }
-                _batchDeleteResponse.value = responses
+                _batchDeleteResponse.postValue(responses)
                 val stored = getCachedResponse(folder)
                 if (stored is Response.Success) {
                     val newResponse = Response.Success(stored.value.toMutableList().apply {
                         this.removeAll(responses.mapNotNull { it.valueOrNull() })
                     })
-                    emailResponses[folder]!!.value = newResponse
+                    emailResponses[folder]!!.postValue(newResponse)
                     if (currentFolder.value == folder) {
-                        _currentMails.value = newResponse
+                        _currentMails.postValue(newResponse)
                     }
                 }
             }
@@ -238,56 +238,56 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
     }
 
     fun resetBatchDeleteResponse() {
-        _batchDeleteResponse.value = null
+        _batchDeleteResponse.postValue(null)
     }
 
     fun batchMove(selectedEmails: List<IEmail>, from: IEmailFolder, to: IEmailFolder, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = selectedEmails.map { mailboxRepository.moveEmail(it, from, to, apiContext) }
-            _batchMoveResponse.value = responses
+            _batchMoveResponse.postValue(responses)
             val storedSrc = getCachedResponse(from)
             val storedDst = getCachedResponse(to)
             if (storedSrc is Response.Success) {
                 val newResponse = Response.Success(storedSrc.value.toMutableList().apply {
                     this.removeAll(responses.mapNotNull { it.valueOrNull() })
                 })
-                emailResponses[from]!!.value = newResponse
+                emailResponses[from]!!.postValue(newResponse)
                 if (currentFolder.value == from) {
-                    _currentMails.value = newResponse
+                    _currentMails.postValue(newResponse)
                 }
             }
             if (storedDst is Response.Success) {
                 val newResponse = Response.Success(storedDst.value.toMutableList().apply {
                     this.addAll(0, responses.mapNotNull { it.valueOrNull() })
                 })
-                emailResponses[to]!!.value = newResponse
+                emailResponses[to]!!.postValue(newResponse)
                 if (currentFolder.value == to) {
-                    _currentMails.value = newResponse
+                    _currentMails.postValue(newResponse)
                 }
             }
         }
     }
 
     fun resetBatchMoveResponse() {
-        _batchMoveResponse.value = null
+        _batchMoveResponse.postValue(null)
     }
 
     fun batchSetEmails(emails: List<IEmail>, folder: IEmailFolder, flagged: Boolean?, unread: Boolean?, apiContext: IApiContext) {
         viewModelScope.launch {
-            _batchEmailSetResponse.value = emails.map { mailboxRepository.setEmail(it, folder, flagged, unread, apiContext) }
+            _batchEmailSetResponse.postValue(emails.map { mailboxRepository.setEmail(it, folder, flagged, unread, apiContext) })
         }
     }
 
     fun resetDownloadSaveAttachmentWorkerId() {
-        _downloadSaveAttachmentWorkerId.value = null
+        _downloadSaveAttachmentWorkerId.postValue(null)
     }
 
     fun resetEmailSetResponse() {
-        _batchEmailSetResponse.value = null
+        _batchEmailSetResponse.postValue(null)
     }
 
     fun resetExportAttachmentResponse() {
-        _exportSessionFileResponse.value = null
+        _exportSessionFileResponse.postValue(null)
     }
 
     fun startAttachmentSaveDownload(workManager: WorkManager, apiContext: IApiContext, attachment: IAttachment, email: IEmail, folder: IEmailFolder, destinationUrl: String) {
@@ -295,7 +295,7 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
             val response = mailboxRepository.exportAttachment(attachment, email, folder, apiContext)
             if (response is Response.Success) {
                 val workRequest = DownloadSaveWorker.createRequest(destinationUrl, response.value.url, attachment)
-                _downloadSaveAttachmentWorkerId.value = workRequest.id
+                _downloadSaveAttachmentWorkerId.postValue(workRequest.id)
                 workManager.enqueue(workRequest)
             }
         }

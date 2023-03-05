@@ -29,7 +29,7 @@ class MessengerViewModel @Inject constructor(savedStateHandle: SavedStateHandle,
                 null -> allUsersResponse
                 else -> allUsersResponse.switchMap { response ->
                     val filtered = registerProperty<Response<List<ChatContact>>>("filtered", true)
-                    filtered.value = response?.smartMap { filter.apply(it) }
+                    filtered.postValue(response?.smartMap { filter.apply(it) })
                     filtered
                 }
             }
@@ -63,7 +63,7 @@ class MessengerViewModel @Inject constructor(savedStateHandle: SavedStateHandle,
                     null -> getAllMessagesResponse(with)
                     else -> getAllMessagesResponse(with).switchMap { response ->
                         val filtered = registerProperty<Response<Pair<List<IQuickMessage>, Boolean>>?>("filtered", true)
-                        filtered.value = response?.smartMap { filter.apply(it.first) to it.second }
+                        filtered.postValue(response?.smartMap { filter.apply(it.first) to it.second })
                         filtered
                     }
                 }
@@ -74,28 +74,28 @@ class MessengerViewModel @Inject constructor(savedStateHandle: SavedStateHandle,
     fun loadChats(apiContext: IApiContext) {
         viewModelScope.launch {
             val response = messengerRepository.getChats(apiContext)
-            _usersResponse.value = response
+            _usersResponse.postValue(response)
         }
     }
 
     fun loadHistory(with: String, silent: Boolean, apiContext: IApiContext) {
         viewModelScope.launch {
-            _messagesResponse.getOrPut(with) { registerProperty("messagesResponse", true) }.value = messengerRepository.getHistory(with, apiContext).smartMap { it to silent }
+            _messagesResponse.getOrPut(with) { registerProperty("messagesResponse", true) }.postValue(messengerRepository.getHistory(with, apiContext).smartMap { it to silent })
         }
     }
 
     fun addChat(user: String, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = messengerRepository.addChat(user, apiContext)
-            _addChatResponse.value = response
+            _addChatResponse.postValue(response)
             if (response is Response.Success && _usersResponse.value is Response.Success) {
-                _usersResponse.value = _usersResponse.value?.smartMap { value -> value.toMutableList().apply {
+                _usersResponse.postValue(_usersResponse.value?.smartMap { value -> value.toMutableList().apply {
                     if (any { it.user == response.value }) {
                         set(indexOf(first { it.user == response.value }), ChatContact(response.value, false))
                     } else {
                         add(ChatContact(response.value, false))
                     }
-                } }
+                } })
             }
         }
     }
@@ -105,24 +105,24 @@ class MessengerViewModel @Inject constructor(savedStateHandle: SavedStateHandle,
             val localChats = messengerRepository.getLocalChats(apiContext)
             if (!user.isLocal) {
                 val response = messengerRepository.removeChat(user.user.login, apiContext)
-                _removeChatResponse.value = response
+                _removeChatResponse.postValue(response)
                 if (response is Response.Success && _usersResponse.value is Response.Success) {
-                    _usersResponse.value = _usersResponse.value?.smartMap { value -> value.toMutableList().apply {
+                    _usersResponse.postValue(_usersResponse.value?.smartMap { value -> value.toMutableList().apply {
                         if (localChats.any { it.user == user.user }) {
                             set(indexOf(first { it.user == user.user }), localChats.first { it.user == user.user })
                         } else {
                             removeAll { it.user == user.user }
                         }
-                    } }
+                    } })
                 }
             } else {
                 if (_usersResponse.value is Response.Success) {
-                    _usersResponse.value = _usersResponse.value?.smartMap { value -> value.toMutableList().apply {
+                    _usersResponse.postValue(_usersResponse.value?.smartMap { value -> value.toMutableList().apply {
                         removeAll { it == user }
                         runBlocking {
                             messengerRepository.clearChat(user.user.login, apiContext)
                         }
-                    } }
+                    } })
                 }
             }
         }
@@ -130,14 +130,14 @@ class MessengerViewModel @Inject constructor(savedStateHandle: SavedStateHandle,
 
     fun sendMessage(login: String, text: String?, sessionFile: ISessionFile?, apiContext: IApiContext) {
         viewModelScope.launch {
-            _sendMessageResponse.value = messengerRepository.sendMessage(login, sessionFile, text, apiContext)
+            _sendMessageResponse.postValue(messengerRepository.sendMessage(login, sessionFile, text, apiContext))
         }
     }
 
     fun clearChat(user: String, apiContext: IApiContext) {
         viewModelScope.launch {
             messengerRepository.clearChat(user, apiContext)
-            _messagesResponse.getOrPut(user) { registerProperty("messagesResponse", true) }.value = Response.Success(Pair(emptyList(), false))
+            _messagesResponse.getOrPut(user) { registerProperty("messagesResponse", true) }.postValue(Response.Success(Pair(emptyList(), false)))
         }
     }
 
@@ -167,21 +167,21 @@ class MessengerViewModel @Inject constructor(savedStateHandle: SavedStateHandle,
                 }
             }
 
-            _batchDeleteResponse.value = responses
+            _batchDeleteResponse.postValue(responses)
             if (allUsersResponse.value != tmpResponse)
-                _usersResponse.value = tmpResponse
+                _usersResponse.postValue(tmpResponse)
         }
     }
 
     fun resetBatchDeleteResponse() {
-        _batchDeleteResponse.value = null
+        _batchDeleteResponse.postValue(null)
     }
 
     fun resetAddChatResponse() {
-        _addChatResponse.value = null
+        _addChatResponse.postValue(null)
     }
 
     fun resetRemoveChatResponse() {
-        _removeChatResponse.value = null
+        _removeChatResponse.postValue(null)
     }
 }

@@ -36,7 +36,7 @@ class ForumViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                     null -> getAllForumPosts(group)
                     else -> getAllForumPosts(group).switchMap { response ->
                         val filtered = registerProperty<Response<List<IForumPost>>>("filtered", true)
-                        filtered.value = response?.smartMap { filter.apply(it) }
+                        filtered.postValue(response?.smartMap { filter.apply(it) })
                         filtered
                     }
                 }
@@ -46,7 +46,7 @@ class ForumViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
 
     fun loadForumPosts(group: IGroup, parentId: String? = null, apiContext: IApiContext) {
         viewModelScope.launch {
-            (getAllForumPosts(group) as MutableLiveData).value = forumRepository.getPosts(group, parentId, apiContext)
+            (getAllForumPosts(group) as MutableLiveData).postValue(forumRepository.getPosts(group, parentId, apiContext))
         }
     }
 
@@ -61,14 +61,14 @@ class ForumViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
     fun deletePost(post: IForumPost, parent: IForumPost?, group: IGroup, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = forumRepository.deletePost(post, group, apiContext)
-            _deleteResponse.value = response
+            _deleteResponse.postValue(response)
             if (response is Response.Success) {
                 parent?.getComments()?.toMutableList()?.remove(post)
                 val liveData = (getAllForumPosts(group) as MutableLiveData)
                 val posts = liveData.value?.valueOrNull()?.toMutableList()
                 if (posts != null) {
                     deletePostRecursiveLocally(posts, post)
-                    liveData.value = Response.Success(posts)
+                    liveData.postValue(Response.Success(posts))
                 }
             }
         }
@@ -83,7 +83,7 @@ class ForumViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
     }
 
     fun resetDeleteResponse() {
-        _deleteResponse.value = null
+        _deleteResponse.postValue(null)
     }
 
     fun getParentPost(rootPosts: List<IForumPost>, path: MutableList<String>): IForumPost? {
@@ -98,14 +98,14 @@ class ForumViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
     fun batchDelete(selectedPosts: List<IForumPost>, group: IGroup, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = selectedPosts.map { forumRepository.deletePost(it, group, apiContext) }
-            _batchDeleteResponse.value = responses
+            _batchDeleteResponse.postValue(responses)
             responses.forEach { response ->
                 if (response is Response.Success) {
                     val liveData = postsResponses[group]
                     if (liveData?.value is Response.Success) {
                         val posts = (liveData.value!! as Response.Success).value.toMutableList()
                         deletePostRecursiveLocally(posts, response.value)
-                        liveData.value = Response.Success(posts)
+                        liveData.postValue(Response.Success(posts))
                     }
                 }
             }
@@ -113,7 +113,7 @@ class ForumViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
     }
 
     fun resetBatchDeleteResponse() {
-        _batchDeleteResponse.value = null
+        _batchDeleteResponse.postValue(null)
     }
 
 }

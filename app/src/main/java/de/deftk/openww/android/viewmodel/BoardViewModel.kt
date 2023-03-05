@@ -31,7 +31,7 @@ class BoardViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                 null -> allNotificationsResponse
                 else -> allNotificationsResponse.switchMap { response ->
                     val filtered = registerProperty<Response<List<Pair<IBoardNotification, IGroup>>>?>("filtered", true)
-                    filtered.value = response?.smartMap { filter.apply(it) }
+                    filtered.postValue(response?.smartMap { filter.apply(it) })
                     filtered
                 }
             }
@@ -45,7 +45,7 @@ class BoardViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
 
     fun loadBoardNotifications(apiContext: IApiContext) {
         viewModelScope.launch {
-            _notificationsResponse.value = boardRepository.getBoardNotifications(apiContext)
+            _notificationsResponse.postValue(boardRepository.getBoardNotifications(apiContext))
         }
     }
 
@@ -59,12 +59,12 @@ class BoardViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                 group,
                 apiContext
             )
-            _postResponse.value = response
+            _postResponse.postValue(response)
             if (_notificationsResponse.value is Response.Success && response is Response.Success) {
                 // inject new notification into stored livedata
                 val notifications = (_notificationsResponse.value as Response.Success<List<Pair<IBoardNotification, IGroup>>>).value.toMutableList()
                 notifications.add(response.value to group)
-                _notificationsResponse.value = Response.Success(notifications)
+                _notificationsResponse.postValue(Response.Success(notifications))
             }
         }
     }
@@ -80,12 +80,12 @@ class BoardViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                 BoardType.ALL,
                 group.getRequestContext(apiContext)
             )
-            _postResponse.value = response.smartMap { notification }
+            _postResponse.postValue(response.smartMap { notification })
             if (response is Response.Success) {
                 // no need to update items in list because the instance will be the same
 
                 // trigger observers
-                _notificationsResponse.value = _notificationsResponse.value
+                _notificationsResponse.postValue(_notificationsResponse.value)
             }
         }
     }
@@ -93,23 +93,23 @@ class BoardViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
     fun deleteBoardNotification(notification: IBoardNotification, group: IGroup, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = boardRepository.deleteBoardNotification(notification, group, apiContext)
-            _postResponse.value = Response.Success(notification)
+            _postResponse.postValue(Response.Success(notification))
             if (response is Response.Success && _notificationsResponse.value is Response.Success) {
                 val notifications = (_notificationsResponse.value as Response.Success<List<Pair<IBoardNotification, IGroup>>>).value.toMutableList()
                 notifications.remove(Pair(notification, group))
-                _notificationsResponse.value = Response.Success(notifications)
+                _notificationsResponse.postValue(Response.Success(notifications))
             }
         }
     }
 
     fun resetPostResponse() {
-        _postResponse.value = null
+        _postResponse.postValue(null)
     }
 
     fun batchDelete(selectedItems: List<Pair<IGroup, IBoardNotification>>, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = selectedItems.map { boardRepository.deleteBoardNotification(it.second, it.first, apiContext) }
-            _batchDeleteResponse.value = responses
+            _batchDeleteResponse.postValue(responses)
             val notifications = allNotificationsResponse.value?.valueOrNull()
             if (notifications != null) {
                 val currentNotifications = notifications.toMutableList()
@@ -118,13 +118,13 @@ class BoardViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                         currentNotifications.remove(response.value)
                     }
                 }
-                _notificationsResponse.value = Response.Success(currentNotifications)
+                _notificationsResponse.postValue(Response.Success(currentNotifications))
             }
         }
     }
 
     fun resetBatchDeleteResponse() {
-        _batchDeleteResponse.value = null
+        _batchDeleteResponse.postValue(null)
     }
 
 }

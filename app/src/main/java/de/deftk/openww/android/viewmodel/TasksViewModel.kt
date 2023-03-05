@@ -29,7 +29,7 @@ class TasksViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                 null -> allTasksResponse
                 else -> allTasksResponse.switchMap { response ->
                     val filtered = registerProperty<Response<List<Pair<ITask, IOperatingScope>>>?>("filtered", true)
-                    filtered.value = response?.smartMap { filter.apply(it) }
+                    filtered.postValue(response?.smartMap { filter.apply(it) })
                     filtered
                 }
             }
@@ -43,19 +43,19 @@ class TasksViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
 
     fun loadTasks(includeIgnored: Boolean, apiContext: IApiContext) {
         viewModelScope.launch {
-            _tasksResponse.value = tasksRepository.getTasks(includeIgnored, apiContext)
+            _tasksResponse.postValue(tasksRepository.getTasks(includeIgnored, apiContext))
         }
     }
 
     fun addTask(title: String, description: String?, completed: Boolean?, startDate: Date?, dueDate: Date?, scope: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = tasksRepository.addTask(title, completed, description, dueDate?.time, startDate?.time, scope, apiContext)
-            _postResponse.value = response
+            _postResponse.postValue(response)
             if (_tasksResponse.value is Response.Success && response is Response.Success) {
                 // inject new task into stored livedata
                 val tasks = (_tasksResponse.value as Response.Success<List<Pair<ITask, IOperatingScope>>>).value.toMutableList()
                 tasks.add(response.value to scope)
-                _tasksResponse.value = Response.Success(tasks)
+                _tasksResponse.postValue(Response.Success(tasks))
             }
         }
     }
@@ -72,12 +72,12 @@ class TasksViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                 operator,
                 apiContext
             )
-            _postResponse.value = response.smartMap { task }
+            _postResponse.postValue(response.smartMap { task })
             if (response is Response.Success) {
                 // no need to update items in list because the instance will be the same
 
                 // trigger observers
-                _tasksResponse.value = _tasksResponse.value
+                _tasksResponse.postValue(_tasksResponse.value)
             }
         }
     }
@@ -85,23 +85,23 @@ class TasksViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
     fun deleteTask(task: ITask, operator: IOperatingScope, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = tasksRepository.deleteTask(task, operator, apiContext)
-            _postResponse.value = Response.Success(task)
+            _postResponse.postValue(Response.Success(task))
             if (response is Response.Success && _tasksResponse.value is Response.Success) {
                 val tasks = (_tasksResponse.value as Response.Success<List<Pair<ITask, IOperatingScope>>>).value.toMutableList()
                 tasks.remove(Pair(task, operator))
-                _tasksResponse.value = Response.Success(tasks)
+                _tasksResponse.postValue(Response.Success(tasks))
             }
         }
     }
 
     fun resetPostResponse() {
-        _postResponse.value = null
+        _postResponse.postValue(null)
     }
 
     fun batchDelete(selectedTasks: List<Pair<ITask, IOperatingScope>>, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = selectedTasks.map { tasksRepository.deleteTask(it.first, it.second, apiContext) }
-            _batchDeleteResponse.value = responses
+            _batchDeleteResponse.postValue(responses)
             val tasks = _tasksResponse.value?.valueOrNull()
             if (tasks != null) {
                 val currentTasks = tasks.toMutableList()
@@ -110,33 +110,33 @@ class TasksViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                         currentTasks.remove(response.value)
                     }
                 }
-                _tasksResponse.value = Response.Success(currentTasks)
+                _tasksResponse.postValue(Response.Success(currentTasks))
             }
         }
     }
 
     fun resetBatchDeleteResponse() {
-        _batchDeleteResponse.value = null
+        _batchDeleteResponse.postValue(null)
     }
 
     fun ignoreTasks(tasks: List<Pair<ITask, IOperatingScope>>, apiContext: IApiContext) {
         viewModelScope.launch {
             tasksRepository.ignoreTasks(tasks, apiContext)
-            _tasksResponse.value = _tasksResponse.value
+            _tasksResponse.postValue(_tasksResponse.value)
         }
     }
 
     fun unignoreTasks(tasks: List<Pair<ITask, IOperatingScope>>, apiContext: IApiContext) {
         viewModelScope.launch {
             tasksRepository.unignoreTasks(tasks, apiContext)
-            _tasksResponse.value = _tasksResponse.value
+            _tasksResponse.postValue(_tasksResponse.value)
         }
     }
 
     fun setFilter(setFilter: (filter: TaskFilter) -> Unit) {
         val filter = this._filter.value ?: TaskFilter(tasksRepository.ignoredTaskDao)
         setFilter(filter)
-        this._filter.value = filter
+        this._filter.postValue(filter)
     }
 
     fun getIgnoredTasksBlocking(apiContext: IApiContext): List<IgnoredTask> {

@@ -24,7 +24,7 @@ class NotesViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                 null -> allNotesResponse
                 else -> allNotesResponse.switchMap { response ->
                     val filtered = registerProperty<Response<List<INote>>?>("filtered", true)
-                    filtered.value = response?.smartMap { filter.apply(it) }
+                    filtered.postValue(response?.smartMap { filter.apply(it) })
                     filtered
                 }
             }
@@ -41,19 +41,19 @@ class NotesViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
 
     fun loadNotes(apiContext: IApiContext) {
         viewModelScope.launch {
-            _notesResponse.value = notesRepository.getNotes(apiContext)
+            _notesResponse.postValue(notesRepository.getNotes(apiContext))
         }
     }
 
     fun addNote(title: String, text: String, color: NoteColor?, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = notesRepository.addNote(text, title, color, apiContext)
-            _editResponse.value = response
+            _editResponse.postValue(response)
             val notesResponse = allNotesResponse.value
             if (response is Response.Success && notesResponse is Response.Success) {
                 val notes = notesResponse.value.toMutableList()
                 notes.add(response.value)
-                _notesResponse.value = Response.Success(notes)
+                _notesResponse.postValue(Response.Success(notes))
             }
 
         }
@@ -62,12 +62,12 @@ class NotesViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
     fun editNote(note: INote, title: String, text: String, color: NoteColor, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = notesRepository.editNote(note, text, title, color, apiContext)
-            _editResponse.value = response
+            _editResponse.postValue(response)
             val notesResponse = allNotesResponse.value
             if (response is Response.Success && notesResponse is Response.Success) {
                 val notes = notesResponse.value.toMutableList()
                 notes[notes.indexOfFirst { it.id == note.id }] = response.value
-                _notesResponse.value = Response.Success(notes)
+                _notesResponse.postValue(Response.Success(notes))
             }
         }
     }
@@ -75,28 +75,28 @@ class NotesViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
     fun deleteNote(note: INote, apiContext: IApiContext) {
         viewModelScope.launch {
             val response = notesRepository.deleteNote(note, apiContext)
-            _deleteResponse.value = response
+            _deleteResponse.postValue(response)
             val notesResponse = allNotesResponse.value
             if (response is Response.Success && notesResponse is Response.Success) {
                 val notes = notesResponse.value.toMutableList()
                 notes.remove(note)
-                _notesResponse.value = Response.Success(notes)
+                _notesResponse.postValue(Response.Success(notes))
             }
         }
     }
 
     fun resetEditResponse() {
-        _editResponse.value = null
+        _editResponse.postValue(null)
     }
 
     fun resetDeleteResponse() {
-        _deleteResponse.value = null
+        _deleteResponse.postValue(null)
     }
 
     fun batchDelete(selectedTasks: List<INote>, apiContext: IApiContext) {
         viewModelScope.launch {
             val responses = selectedTasks.map { notesRepository.deleteNote(it, apiContext) }
-            _batchDeleteResponse.value = responses
+            _batchDeleteResponse.postValue(responses)
             val tasks = allNotesResponse.value?.valueOrNull()
             if (tasks != null) {
                 val currentTasks = tasks.toMutableList()
@@ -105,13 +105,13 @@ class NotesViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                         currentTasks.remove(response.value)
                     }
                 }
-                _notesResponse.value = Response.Success(currentTasks)
+                _notesResponse.postValue(Response.Success(currentTasks))
             }
         }
     }
 
     fun resetBatchDeleteResponse() {
-        _batchDeleteResponse.value = null
+        _batchDeleteResponse.postValue(null)
     }
 
 }

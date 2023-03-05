@@ -52,7 +52,7 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
             if (resource is Response.Success) {
                 setupApiContext(resource.value, Credentials.fromPassword(username, password))
             }
-            _loginResponse.value = resource
+            _loginResponse.postValue(resource)
         }
     }
 
@@ -62,20 +62,20 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
             if (response is Response.Success) {
                 setupApiContext(response.value.first, Credentials.fromToken(username, response.value.second))
             }
-            _loginToken.value = response.smartMap { it.first.user.login to it.second }
-            _loginResponse.value = response.smartMap { it.first }
+            _loginToken.postValue(response.smartMap { it.first.user.login to it.second })
+            _loginResponse.postValue(response.smartMap { it.first })
         }
     }
 
     fun loginToken(username: String, token: String) {
         viewModelScope.launch {
-            _loginResponse.value = null
+            _loginResponse.postValue(null)
             val resource = loginRepository.loginToken(username, token)
             if (resource is Response.Success) {
                 setupApiContext(resource.value, Credentials.fromToken(username, token))
             }
-            _loginToken.value = resource.smartMap { username to token }
-            _loginResponse.value = resource
+            _loginToken.postValue(resource.smartMap { username to token })
+            _loginResponse.postValue(resource)
         }
     }
 
@@ -90,8 +90,8 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
             viewModelScope.launch {
                 apiContext.value?.also { apiContext ->
                     val response = loginRepository.logout(apiContext)
-                    _logoutResponse.value = response
-                    _loginResponse.value = null
+                    _logoutResponse.postValue(response)
+                    _loginResponse.postValue(null)
                 }
             }
             return
@@ -101,16 +101,13 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                 if (future.isDone) {
                     val bundle = future.result
                     when {
-                        bundle.containsKey(AccountManager.KEY_ERROR_MESSAGE) -> _logoutResponse.value = Response.Failure(IllegalStateException(bundle.getString(
-                            AccountManager.KEY_ERROR_MESSAGE)))
-                        bundle.containsKey(AccountManager.KEY_ERROR_CODE) -> _logoutResponse.value = Response.Failure(IllegalStateException("Code: " + bundle.getInt(
-                            AccountManager.KEY_ERROR_CODE)))
-                        bundle.containsKey(AccountManager.KEY_BOOLEAN_RESULT) -> _logoutResponse.value = if (bundle.getBoolean(
-                                AccountManager.KEY_BOOLEAN_RESULT)) Response.Success(Unit) else Response.Failure(IllegalStateException())
-                        else -> _logoutResponse.value = Response.Failure(IllegalArgumentException())
+                        bundle.containsKey(AccountManager.KEY_ERROR_MESSAGE) -> _logoutResponse.postValue(Response.Failure(IllegalStateException(bundle.getString(AccountManager.KEY_ERROR_MESSAGE))))
+                        bundle.containsKey(AccountManager.KEY_ERROR_CODE) -> _logoutResponse.postValue(Response.Failure(IllegalStateException("Code: " + bundle.getInt(AccountManager.KEY_ERROR_CODE))))
+                        bundle.containsKey(AccountManager.KEY_BOOLEAN_RESULT) -> _logoutResponse.postValue(if (bundle.getBoolean(AccountManager.KEY_BOOLEAN_RESULT)) Response.Success(Unit) else Response.Failure(IllegalStateException()))
+                        else -> _logoutResponse.postValue(Response.Failure(IllegalArgumentException()))
                     }
                     if (_logoutResponse.value is Response.Success) {
-                        _loginResponse.value = null
+                        _loginResponse.postValue(null)
                     }
                 }
             }, null)
@@ -118,9 +115,9 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
             @Suppress("DEPRECATION")
             accountManager.removeAccount(account, { future ->
                 if (future.isDone) {
-                    _logoutResponse.value = if (future.result) Response.Success(Unit) else Response.Failure(IllegalStateException())
+                    _logoutResponse.postValue(if (future.result) Response.Success(Unit) else Response.Failure(IllegalStateException()))
                     if (_logoutResponse.value is Response.Success) {
-                        _loginResponse.value = null
+                        _loginResponse.postValue(null)
                     }
                 }
             }, null)
@@ -133,7 +130,7 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
 
             override suspend fun onLogin(context: ApiContext) {
                 withContext(Dispatchers.Main) {
-                    _loginResponse.value = Response.Success(context)
+                    _loginResponse.postValue(Response.Success(context))
                 }
             }
         }, ApiContext::class.java)
