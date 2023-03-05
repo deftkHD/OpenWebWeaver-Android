@@ -13,8 +13,8 @@
             android:id="@+id/action_overviewFragment_to_notificationsGraph"
             app:destination="@id/boardNotificationsGraph" />
         <action
-            android:id="@+id/action_overviewFragment_to_fileStorageGraph"
-            app:destination="@id/fileStorageGraph" />
+            android:id="@+id/action_overviewFragment_to_fileStorageGroupFragment"
+            app:destination="@id/fileStorageGroupFragment" />
         <action
             android:id="@+id/action_overviewFragment_to_mailboxGraph"
             app:destination="@id/mailboxGraph" />
@@ -36,9 +36,6 @@
         <action
             android:id="@+id/action_overviewFragment_to_chooseAccountDialogFragment"
             app:destination="@id/chooseAccountDialogFragment" />
-        <action
-            android:id="@+id/action_overviewFragment_to_messengerGraph"
-            app:destination="@id/messengerGraph" />
         <action
             android:id="@+id/action_overviewFragment_to_contactsGraph"
             app:destination="@id/contactsGraph" />
@@ -108,8 +105,8 @@
             android:id="@+id/action_launchFragment_to_privacyDialogFragment"
             app:destination="@id/privacyDialogFragment" />
         <action
-            android:id="@+id/action_launchFragment_to_fileStorageGraph"
-            app:destination="@id/fileStorageGraph" />
+            android:id="@+id/action_launchFragment_to_fileStorageGroupFragment"
+            app:destination="@id/fileStorageGroupFragment" />
     </fragment>
     <dialog
         android:id="@+id/betaDisclaimerFragment"
@@ -130,89 +127,89 @@
     <action
         android:id="@+id/action_global_loginFragment"
         app:destination="@id/loginFragment" />
-    <navigation
-        android:id="@+id/fileStorageGraph"
-        app:startDestination="@id/fileStorageGroupFragment">
-        <fragment
-            android:id="@+id/fileStorageGroupFragment"
-            android:name="de.deftk.openww.android.fragments.feature.filestorage.FileStorageGroupFragment"
-            android:label="@string/file_storage">
-            <action
-                android:id="@+id/action_fileStorageGroupFragment_to_filesFragment"
-                app:destination="@id/filesFragment" />
-        </fragment>
-        <fragment
-            android:id="@+id/filesFragment"
-            android:name="de.deftk.openww.android.fragments.feature.filestorage.FilesFragment"
-            android:label="{title}"
-            tools:layout="@layout/fragment_files">
-            <argument
-                android:name="folderId"
-                app:argType="string" />
-            <argument
-                android:name="operatorId"
-                app:argType="string" />
-            <argument
-                android:name="title"
-                app:argType="string" />
-            <action
-                android:id="@+id/action_filesFragment_self"
-                app:destination="@id/filesFragment" />
-            <argument
-                android:name="highlightFileId"
-                android:defaultValue="@null"
-                app:argType="string"
-                app:nullable="true" />
-            <action
-                android:id="@+id/action_filesFragment_to_readFileFragment"
-                app:destination="@id/readFileFragment" />
-            <argument
-                android:name="pasteMode"
-                app:argType="boolean" />
-            <argument
-                android:name="folderNameId"
-                app:argType="string"
-                app:nullable="true" />
-            <action
-                android:id="@+id/action_filesFragment_to_editFileFragment"
-                app:destination="@id/editFileFragment" />
-        </fragment>
-        <fragment
-            android:id="@+id/readFileFragment"
-            android:name="de.deftk.openww.android.fragments.feature.filestorage.ReadFileFragment"
-            android:label="@string/details"
-            tools:layout="@layout/fragment_read_file">
-            <argument
-                android:name="scope"
-                app:argType="string" />
-            <argument
-                android:name="fileId"
-                app:argType="string" />
-            <argument
-                android:name="parentId"
-                app:argType="string" />
-            <action
-                android:id="@+id/action_readFileFragment_to_editFileFragment"
-                app:destination="@id/editFileFragment" />
-        </fragment>
-        <fragment
-            android:id="@+id/editFileFragment"
-            android:name="de.deftk.openww.android.fragments.feature.filestorage.EditFileFragment"
-            android:label="{title}">
-            <argument
-                android:name="title"
-                app:argType="string" />
-            <argument
-                android:name="scope"
-                app:argType="string" />
-            <argument
-                android:name="fileId"
-                app:argType="string" />
-            <argument
-                android:name="parentId"
-                app:argType="string" />
-        </fragment>
-    </navigation>
+    <fragment
+        android:id="@+id/fileStorageGroupFragment"
+        android:name="de.deftk.openww.android.fragments.feature.filestorage.FileStorageGroupFragment"
+        android:label="@string/file_storage">
+        <action
+            android:id="@+id/action_fileStorageGroupFragment_to_filesFragment"
+            app:destination="@id/filesFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/filesFragment"
+        android:name="de.deftk.openww.android.fragments.feature.filestorage.FilesFragment"
+        tools:layout="@layout/fragment_files">
+        <argument
+            android:name="folderId"
+            app:argType="string" />
+        <argument
+            android:name="operatorId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_filesFragment_self"
+            app:destination="@id/filesFragment" />
+        <argument
+            android:name="highlightFileId"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_filesFragment_to_readFileFragment"
+            app:destination="@id/readFileFragment" />
+        <argument
+            android:name="pasteMode"
+            app:argType="boolean" />
+        <argument
+            android:name="folderNameId"
+            app:argType="string"
+            app:nullable="true" />
+        <action
+            android:id="@+id/action_filesFragment_to_editFileFragment"
+            app:destination="@id/editFileFragment" />
+        <argument
+            android:name="highlightFileName"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/readFileFragment"
+        android:name="de.deftk.openww.android.fragments.feature.filestorage.ReadFileFragment"
+        android:label="@string/details"
+        tools:layout="@layout/fragment_read_file">
+        <argument
+            android:name="scope"
+            app:argType="string" />
+        <argument
+            android:name="fileId"
+            app:argType="string" />
+        <argument
+            android:name="parentId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_readFileFragment_to_editFileFragment"
+            app:destination="@id/editFileFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editFileFragment"
+        android:name="de.deftk.openww.android.fragments.feature.filestorage.EditFileFragment"
+        android:label="{title}">
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <argument
+            android:name="scope"
+            app:argType="string" />
+        <argument
+            android:name="fileId"
+            app:argType="string" />
+        <argument
+            android:name="parentId"
+            app:argType="string" />
+    </fragment>
+    <action
+        android:id="@+id/action_global_filesFragment"
+        app:destination="@id/filesFragment" />
     <navigation
         android:id="@+id/boardNotificationsGraph"
         app:startDestination="@id/notificationsFragment">

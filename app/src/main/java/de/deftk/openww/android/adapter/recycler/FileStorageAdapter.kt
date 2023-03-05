@@ -27,7 +27,7 @@ class FileStorageAdapter(private val pasteMode: Boolean) : ListAdapter<Pair<IOpe
 
         init {
             binding.setClickListener { view ->
-                view.findNavController().navigate(FileStorageGroupFragmentDirections.actionFileStorageGroupFragmentToFilesFragment("/", binding.scope!!.login, binding.scope!!.name, pasteMode = pasteMode, folderNameId = null))
+                view.findNavController().navigate(FileStorageGroupFragmentDirections.actionFileStorageGroupFragmentToFilesFragment("/", binding.scope!!.login, pasteMode = pasteMode, folderNameId = null))
             }
         }
 

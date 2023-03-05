@@ -337,6 +337,12 @@ class FileStorageViewModel @Inject constructor(savedStateHandle: SavedStateHandl
         _files[scope]?.value = Response.Success(emptyList())
     }
 
+    /**
+     * Internal references do not specify a path consisting of ids but rather using names.
+     * This helper function converts this path consisting of names into a path consisting of ids.
+     *
+     * Warning: This function heavily relies on the prebuilt cache
+     */
     fun resolveNameTree(scope: IOperatingScope, nameTree: String): String? {
         var lastId = "/"
         val files = _files[scope]?.value?.valueOrNull() ?: return null

@@ -1,9 +1,14 @@
 package de.deftk.openww.android.components
 
+import android.animation.ArgbEvaluator
+import android.animation.ObjectAnimator
 import android.content.Context
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.ContextMenu
 import android.view.View
+import android.widget.Toast
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.RecyclerView
 
 class ContextMenuRecyclerView @JvmOverloads constructor(
@@ -11,6 +16,10 @@ class ContextMenuRecyclerView @JvmOverloads constructor(
 ) : RecyclerView(context, attrs, defStyleAttr) {
 
     private lateinit var contextMenuInfo: RecyclerViewContextMenuInfo
+
+    init {
+        itemAnimator = DefaultItemAnimator()
+    }
 
     override fun getContextMenuInfo(): ContextMenu.ContextMenuInfo {
         return contextMenuInfo
@@ -30,6 +39,18 @@ class ContextMenuRecyclerView @JvmOverloads constructor(
         if (originalView.layoutParams is LayoutParams)
             return originalView
         return getChildView(originalView.parent as View)
+    }
+
+    fun highlightItem(position: Int) {
+        smoothScrollToPosition(position)
+        val vh = findViewHolderForAdapterPosition(position)
+        if (vh != null) {
+            val animator = ObjectAnimator.ofInt(vh.itemView, "backgroundColor", Color.GRAY, Color.TRANSPARENT)
+            animator.duration = 1000
+            animator.startDelay = 500
+            animator.setEvaluator(ArgbEvaluator())
+            animator.start()
+        }
     }
 
     data class RecyclerViewContextMenuInfo(val position: Int, val id: Long) : ContextMenu.ContextMenuInfo

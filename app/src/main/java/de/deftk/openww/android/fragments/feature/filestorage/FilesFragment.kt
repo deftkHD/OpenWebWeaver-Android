@@ -20,6 +20,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import de.deftk.openww.android.R
@@ -65,6 +67,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
     private var scope: IOperatingScope? = null
     private var folderId: String? = null
     private var cachedNetworkTransfers = emptyList<NetworkTransfer>()
+    private var animationShown = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentFilesBinding.inflate(inflater, container, false)
@@ -154,17 +157,36 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
             }
         }
 
+        binding.fileList.layoutManager = object : LinearLayoutManager(requireContext()) {
+            override fun onLayoutCompleted(state: RecyclerView.State?) {
+                super.onLayoutCompleted(state)
+                val items = adapter.currentList
+                if (!animationShown &&  (args.highlightFileId != null || args.highlightFileName != null) && items.isNotEmpty()) {
+                    val file = items.firstOrNull { it.name == args.highlightFileName || it.id == args.highlightFileId }
+                    if (file != null) {
+                        val position = adapter.currentList.indexOf(file)
+                        if (position != -1) {
+                            binding.fileList.highlightItem(position)
+                            animationShown = true
+                        }
+                    }
+                }
+            }
+        }
+
         loginViewModel.apiContext.observe(viewLifecycleOwner) apiContext@ { apiContext ->
             if (apiContext != null) {
                 val newScope = loginViewModel.apiContext.value?.findOperatingScope(args.operatorId)
                 if (newScope == null) {
+                    setUIState(UIState.DISABLED)
                     Reporter.reportException(R.string.error_scope_not_found, args.operatorId, requireContext())
-                    navController.popBackStack(R.id.fileStorageGroupFragment, false)
+                    navController.popBackStack()
                     return@apiContext
                 }
                 if (!Feature.FILES.isAvailable(newScope.effectiveRights)) {
+                    setUIState(UIState.DISABLED)
                     Reporter.reportFeatureNotAvailable(requireContext())
-                    navController.popBackStack(R.id.fileStorageGroupFragment, true)
+                    navController.popBackStack()
                     return@apiContext
                 }
 
@@ -201,14 +223,11 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                         updateUploadFab()
                         requireActivity().invalidateOptionsMenu()
 
-                        if (args.highlightFileId != null && response.value.isNotEmpty()) {
-                            val highlightFileName = args.highlightFileId!!.substring(1)
-                            val file = response.value.firstOrNull { it.file.name == highlightFileName }
-                            if (file != null) {
-                                val position = adapter.currentList.indexOf(file.file)
-                                if (position != -1)
-                                    binding.fileList.smoothScrollToPosition(position)
-                            }
+                        val parent = fileStorageViewModel.getAllFiles(scope!!).value?.valueOrNull()?.singleOrNull { it.file.id == folderId }
+                        if (parent != null) {
+                            setTitle(parent.file.name)
+                        } else if (folderId == "/") {
+                            setTitle(newScope.name)
                         }
                     } else if (response is Response.Failure) {
                         setUIState(UIState.ERROR)
@@ -233,7 +252,8 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
                 binding.fabUploadFile.isVisible = false
                 binding.fileEmpty.isVisible = false
                 binding.fileStorageSwipeRefresh.isRefreshing = false
-                adapter.submitList(emptyList())
+                if (scope != null)
+                    adapter.submitList(emptyList())
             }
         }
 
@@ -536,7 +556,7 @@ class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder
 
     override fun onItemClick(view: View, viewHolder: FileAdapter.FileViewHolder) {
         if (viewHolder.binding.file!!.type == FileType.FOLDER) {
-            val action = FilesFragmentDirections.actionFilesFragmentSelf(viewHolder.binding.file!!.id, viewHolder.binding.scope!!.login, viewHolder.binding.file!!.name, pasteMode = args.pasteMode, folderNameId = null)
+            val action = FilesFragmentDirections.actionFilesFragmentSelf(viewHolder.binding.file!!.id, viewHolder.binding.scope!!.login, pasteMode = args.pasteMode, folderNameId = null)
             navController.navigate(action)
         } else if (viewHolder.binding.file!!.type == FileType.FILE) {
             openFile(viewHolder.binding.file!!)

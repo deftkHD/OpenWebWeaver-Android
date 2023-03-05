@@ -67,7 +67,7 @@ class LaunchFragment : ContextualFragment(false) {
                         when (launchMode) {
                             LaunchMode.DEFAULT -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToOverviewFragment())
                             LaunchMode.EMAIL -> navController.navigate(LaunchFragmentDirections.actionGlobalWriteMailFragment())
-                            LaunchMode.FILE_UPLOAD -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToFileStorageGraph())
+                            LaunchMode.FILE_UPLOAD -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToFileStorageGroupFragment())
                             else -> { /* ignore */ }
                         }
                     }
@@ -75,7 +75,7 @@ class LaunchFragment : ContextualFragment(false) {
                         when (launchMode) {
                             LaunchMode.DEFAULT -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToOverviewFragment())
                             LaunchMode.EMAIL -> navController.navigate(LaunchFragmentDirections.actionGlobalWriteMailFragment())
-                            LaunchMode.FILE_UPLOAD -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToFileStorageGraph())
+                            LaunchMode.FILE_UPLOAD -> navController.navigate(LaunchFragmentDirections.actionLaunchFragmentToFileStorageGroupFragment())
                             else -> { /* ignore */ }
                         }
                     }

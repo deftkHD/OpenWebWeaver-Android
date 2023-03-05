@@ -144,30 +144,12 @@ object TextUtils {
                     }
 
                     val lastSlashIndex = extra.lastIndexOf('/')
-                    val fileId = extra.substring(lastSlashIndex, extra.length) //TODO file revisions
+                    val fileName = extra.substring(lastSlashIndex, extra.length) //TODO file revisions
                     val folderId = extra.substring(0, lastSlashIndex)
-                    val path = mutableListOf<String>()
-                    val pathBuilder = StringBuilder("/")
-                    val splitted = extra.split('/')
-                    splitted.subList(1, splitted.size - 1).forEach { pathSegment ->
-                        pathBuilder.append(pathSegment)
-                        path.add(pathBuilder.toString())
-                        pathBuilder.append("/")
-                    }
-                    if (path.isNotEmpty())
-                        path.removeLast()
-
-                    val folderName = if (extra.count { it == '/' } > 1) {
-                        val split = extra.split("/")
-                        split[split.size - 2]
-                    } else {
-                        scopeId // TODO get name of scope
-                    }
 
                     val args = Bundle()
                     args.putString("operatorId", scopeId)
-                    args.putString("title", folderName)
-                    args.putString("highlightFileId", fileId)
+                    args.putString("highlightFileName", fileName)
                     args.putString("folderNameId", folderId.ifBlank { "/" })
                     args.putString("folderId", "")
                     args.putBoolean("pasteMode", false)
