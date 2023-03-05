@@ -56,7 +56,6 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        binding.mailList.adapter = adapter
         binding.mailList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
         mailboxViewModel.currentFilteredMails.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
@@ -153,6 +152,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
         loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
+                binding.mailList.adapter = adapter
                 if (!Feature.MAILBOX.isAvailable(apiContext.user.effectiveRights)) {
                     Reporter.reportFeatureNotAvailable(requireContext())
                     navController.popBackStack()
@@ -170,7 +170,8 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
             } else {
                 binding.fabMailAdd.isVisible = false
                 toolbarSpinner.adapter = null
-                adapter.submitList(emptyList())
+                if (binding.mailList.adapter != null)
+                    adapter.submitList(emptyList())
                 setUIState(UIState.DISABLED)
             }
         }

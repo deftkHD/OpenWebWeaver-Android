@@ -5,7 +5,6 @@ import android.view.*
 import android.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.ChatMessageAdapter
@@ -24,15 +23,13 @@ class MessengerChatFragment : ContextualFragment(true), AttachmentDownloader, IS
 
     private val messengerViewModel: MessengerViewModel by activityViewModels()
     private val args: MessengerChatFragmentArgs by navArgs()
+    private val adapter by lazy { ChatMessageAdapter(loginViewModel, this, navController, loginViewModel.apiContext.value?.user!!) }
 
     private lateinit var binding: FragmentMessengerChatBinding
     private lateinit var searchView: SearchView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentMessengerChatBinding.inflate(inflater, container, false)
-
-        val adapter = ChatMessageAdapter(loginViewModel, this, findNavController(), loginViewModel.apiContext.value?.user!!)
-        binding.chatList.adapter = adapter
 
         binding.chatsSwipeRefresh.setOnRefreshListener {
             loginViewModel.apiContext.value?.also { apiContext ->
@@ -75,13 +72,14 @@ class MessengerChatFragment : ContextualFragment(true), AttachmentDownloader, IS
 
         loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
+                binding.chatList.adapter = adapter
                 if (messengerViewModel.getAllMessagesResponse(args.user).value == null) {
                     messengerViewModel.loadHistory(args.user, false, apiContext)
                     setUIState(UIState.LOADING)
                 }
             } else {
                 //TODO implement
-                findNavController().popBackStack(R.id.chatsFragment, false)
+                navController.popBackStack(R.id.chatsFragment, false)
             }
         }
 
