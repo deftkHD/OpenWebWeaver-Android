@@ -69,7 +69,7 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
         binding.mailSwipeRefresh.setOnRefreshListener {
             loginViewModel.apiContext.value?.also { apiContext ->
-                mailboxViewModel.resetScopedData()
+                mailboxViewModel.cleanCache()
                 mailboxViewModel.loadFolders(apiContext)
                 setUIState(UIState.LOADING)
             }
@@ -123,16 +123,21 @@ class MailFragment: ActionModeFragment<Pair<IEmail, IEmailFolder>, MailAdapter.M
 
         mailboxViewModel.foldersResponse.observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
-                if ((toolbarSpinner.adapter as? MailFolderAdapter?)?.elements != response.value) {
-                    toolbarSpinner.adapter = MailFolderAdapter(requireContext(), response.value)
+                val adapter = toolbarSpinner.adapter as? MailFolderAdapter?
+                if (adapter?.elements?.equals(response.value) != true) {
+                    if (adapter == null) {
+                        toolbarSpinner.adapter = MailFolderAdapter(requireContext(), response.value)
+                    } else {
+                        adapter.clear()
+                        adapter.addAll(response.value)
+                    }
                 } else {
-                    binding.mailSwipeRefresh.isRefreshing = false
+                    setUIState(UIState.READY)
                 }
             } else if (response is Response.Failure) {
                 setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_folders_failed, response.exception, requireContext())
                 toolbarSpinner.adapter = null
-                binding.mailSwipeRefresh.isRefreshing = false
             }
         }
 

@@ -79,7 +79,7 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
             _foldersResponse.postValue(response)
             if (response is Response.Success) {
                 val currentFolder = currentFolder.value
-                if (currentFolder == null || !response.value.contains(currentFolder)) {
+                if (currentFolder == null || !response.value.any { it.id == currentFolder.id }) {
                     selectFolder(response.value.first { it.isInbox }, apiContext)
                 } else {
                     selectFolder(currentFolder, apiContext)
