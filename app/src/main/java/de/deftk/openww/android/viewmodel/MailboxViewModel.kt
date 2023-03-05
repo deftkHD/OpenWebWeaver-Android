@@ -128,6 +128,13 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
         viewModelScope.launch {
             val response = mailboxRepository.sendEmail(to, subject, plainBody, cc, bcc, importSessionFiles, referenceFolderId, referenceMessageId, referenceMode, text, apiContext)
             _emailSendResponse.postValue(response)
+
+            if (response is Response.Success) {
+                cleanCache() // needs to refresh folder
+                if (currentFolder.value != null) {
+                    selectFolder(currentFolder.value!!, apiContext)
+                }
+            }
         }
     }
 
@@ -135,6 +142,18 @@ class MailboxViewModel @Inject constructor(savedStateHandle: SavedStateHandle, p
         viewModelScope.launch {
             val response = mailboxRepository.readEmail(email, folder, false, apiContext)
             _emailReadPostResponse.postValue(response)
+
+            if (response is Response.Success) {
+                val newResponse = emailResponses[folder]?.value?.smartMap {  elements ->
+                    val list = elements.toMutableList()
+                    list[elements.indexOfFirst { it.id == email.id }] = response.value
+                    list
+                }
+                emailResponses[folder]?.postValue(newResponse)
+                if (currentFolder.value == folder) {
+                    _currentMails.postValue(newResponse)
+                }
+            }
         }
     }
 

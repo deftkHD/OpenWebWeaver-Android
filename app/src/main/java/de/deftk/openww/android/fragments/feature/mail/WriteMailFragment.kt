@@ -55,7 +55,7 @@ class WriteMailFragment : ContextualFragment(true) {
                     requireActivity().finish()
                 }
             } else if (response is Response.Failure) {
-                setUIState(UIState.ERROR)
+                setUIState(UIState.READY) // make sure user can try again
                 Reporter.reportException(R.string.error_send_email_failed, response.exception, requireContext())
             }
         }

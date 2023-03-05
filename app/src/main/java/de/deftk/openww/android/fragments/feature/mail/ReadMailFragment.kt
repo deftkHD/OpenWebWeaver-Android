@@ -110,7 +110,7 @@ class ReadMailFragment : ContextualFragment(true), AttachmentClickListener {
         }
 
         mailboxViewModel.allCurrentMails.observe(viewLifecycleOwner) { currentFolderEmails ->
-            if (currentFolderEmails != null) {
+            if (currentFolderEmails != null && !emailsFound) {
                 emailsFound = true
                 findEmail(currentFolderEmails, emailFolder!!)
             }
