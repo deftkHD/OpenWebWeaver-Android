@@ -105,6 +105,7 @@ class WriteMailFragment : ContextualFragment(true) {
                 }
 
                 binding.fabSendMail.isEnabled = true
+                setUIState(UIState.READY)
             } else {
                 binding.fabSendMail.isEnabled = false
                 setUIState(UIState.DISABLED)

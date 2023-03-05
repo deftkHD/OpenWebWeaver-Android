@@ -639,7 +639,7 @@
     <fragment
         android:id="@+id/writeMailFragment"
         android:name="de.deftk.openww.android.fragments.feature.mail.WriteMailFragment"
-        android:label="fragment_write_mail"
+        android:label="@string/write_mail"
         tools:layout="@layout/fragment_write_mail" />
     <action
         android:id="@+id/action_global_writeMailFragment"
