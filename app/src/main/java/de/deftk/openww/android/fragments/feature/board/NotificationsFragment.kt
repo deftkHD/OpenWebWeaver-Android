@@ -87,7 +87,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
         }
 
         binding.fabAddNotification.setOnClickListener {
-            val action = NotificationsFragmentDirections.actionNotificationsFragmentToEditNotificationFragment(null, null, getString(R.string.new_notification))
+            val action = NotificationsFragmentDirections.actionNotificationsFragmentToEditNotificationFragment(null, null)
             navController.navigate(action)
         }
 
@@ -180,7 +180,7 @@ class NotificationsFragment: ActionModeFragment<Pair<IBoardNotification, IGroup>
         return when (item.itemId) {
             R.id.board_context_item_edit -> {
                 val (notification, group) = adapter.getItem(menuInfo.position)
-                val action = NotificationsFragmentDirections.actionNotificationsFragmentToEditNotificationFragment(notification.id, group.login, getString(R.string.edit_notification))
+                val action = NotificationsFragmentDirections.actionNotificationsFragmentToEditNotificationFragment(notification.id, group.login)
                 navController.navigate(action)
                 true
             }

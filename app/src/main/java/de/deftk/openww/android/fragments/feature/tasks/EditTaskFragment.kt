@@ -32,9 +32,9 @@ class EditTaskFragment : ContextualFragment(true) {
     private val tasksViewModel: TasksViewModel by activityViewModels()
 
     private lateinit var binding: FragmentEditTaskBinding
-    private lateinit var task: ITask
-    private lateinit var scope: IOperatingScope
 
+    private var task: ITask? = null
+    private var scope: IOperatingScope? = null
     private var editMode: Boolean = false
     private var startDate: Date? = null
     private var dueDate: Date? = null
@@ -49,6 +49,7 @@ class EditTaskFragment : ContextualFragment(true) {
                 if (args.groupId != null && args.taskId != null) {
                     // edit existing
                     editMode = true
+                    setTitle(R.string.edit_task)
 
                     val foundTask = tasksViewModel.allTasksResponse.value?.valueOrNull()?.firstOrNull { it.first.id == args.taskId && it.second.login == args.groupId }
                     if (foundTask == null) {
@@ -58,6 +59,7 @@ class EditTaskFragment : ContextualFragment(true) {
                     }
                     task = foundTask.first
                     scope = foundTask.second
+                    val task = foundTask.first
 
                     binding.taskTitle.setText(task.title)
                     if (effectiveGroups != null)
@@ -75,6 +77,7 @@ class EditTaskFragment : ContextualFragment(true) {
                 } else {
                     // add new
                     editMode = false
+                    setTitle(R.string.new_task)
                     binding.taskGroup.isEnabled = true
                 }
             } else if (response is Response.Failure) {
@@ -181,7 +184,7 @@ class EditTaskFragment : ContextualFragment(true) {
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        if (menuItem.itemId == R.id.edit_options_item_save) {
+        if (menuItem.itemId == R.id.edit_options_item_save && task != null && scope != null) {
             val apiContext = loginViewModel.apiContext.value ?: return false
             val title = binding.taskTitle.text.toString()
             val selectedGroup = binding.taskGroup.selectedItem
@@ -189,11 +192,11 @@ class EditTaskFragment : ContextualFragment(true) {
             val description = binding.taskText.text.toString()
 
             if (editMode) {
-                tasksViewModel.editTask(task, title, description, completed, startDate, dueDate, scope, apiContext)
+                tasksViewModel.editTask(task!!, title, description, completed, startDate, dueDate, scope!!, apiContext)
                 setUIState(UIState.LOADING)
             } else {
                 scope = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup } ?: return false
-                tasksViewModel.addTask(title, description, completed, startDate, dueDate, scope, apiContext)
+                tasksViewModel.addTask(title, description, completed, startDate, dueDate, scope!!, apiContext)
                 setUIState(UIState.LOADING)
             }
             return true

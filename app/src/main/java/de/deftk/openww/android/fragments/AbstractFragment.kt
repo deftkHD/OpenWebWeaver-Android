@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.annotation.StringRes
 import androidx.core.view.MenuProvider
 import androidx.core.view.forEach
 import androidx.core.view.isVisible
@@ -35,6 +36,14 @@ abstract class AbstractFragment(private val hasActionBar: Boolean, private val r
 
     private fun getMainActivity(): MainActivity {
         return (requireActivity() as? MainActivity?) ?: error("Invalid fragment scope")
+    }
+
+    protected fun setTitle(title: String) {
+        getMainActivity().supportActionBar?.title = title
+    }
+
+    protected fun setTitle(@StringRes res: Int) {
+        getMainActivity().supportActionBar?.setTitle(res)
     }
 
     protected fun setUIState(newState: UIState) {

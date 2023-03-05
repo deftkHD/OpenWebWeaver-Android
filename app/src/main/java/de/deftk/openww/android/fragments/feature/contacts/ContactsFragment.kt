@@ -71,14 +71,14 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
         }
 
         binding.fabAddContact.setOnClickListener {
-            navController.navigate(ContactsFragmentDirections.actionContactsFragmentToEditContactFragment(scope!!.login, null, getString(R.string.add_contact)))
+            navController.navigate(ContactsFragmentDirections.actionContactsFragmentToEditContactFragment(scope!!.login, null))
         }
 
         loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                val foundScope = loginViewModel.apiContext.value?.findOperatingScope(args.login)
+                val foundScope = loginViewModel.apiContext.value?.findOperatingScope(args.scope)
                 if (foundScope == null) {
-                    Reporter.reportException(R.string.error_scope_not_found, args.login, requireContext())
+                    Reporter.reportException(R.string.error_scope_not_found, args.scope, requireContext())
                     navController.popBackStack()
                     return@observe
                 }
@@ -94,6 +94,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
                 } else {
                     scope = foundScope
                 }
+                setTitle(foundScope.name)
                 binding.contactList.adapter = adapter
                 binding.contactList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
@@ -117,7 +118,8 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
             } else {
                 setUIState(UIState.DISABLED)
                 binding.fabAddContact.isVisible = false
-                adapter.submitList(emptyList())
+                if (scope != null)
+                    adapter.submitList(emptyList())
             }
         }
 
@@ -197,7 +199,7 @@ class ContactsFragment : ActionModeFragment<IContact, ContactAdapter.ContactView
         return when (item.itemId) {
             R.id.contacts_context_item_edit -> {
                 val contact = adapter.getItem(menuInfo.position)
-                val action = ContactsFragmentDirections.actionContactsFragmentToEditContactFragment(scope!!.login, contact.id.toString(), getString(R.string.edit_contact))
+                val action = ContactsFragmentDirections.actionContactsFragmentToEditContactFragment(scope!!.login, contact.id.toString())
                 navController.navigate(action)
                 true
             }

@@ -7,7 +7,6 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.preference.PreferenceManager
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.recycler.ChatMessageAdapter
 import de.deftk.openww.android.api.Response
@@ -25,7 +24,6 @@ class MessengerChatFragment : ContextualFragment(true), AttachmentDownloader, IS
 
     private val messengerViewModel: MessengerViewModel by activityViewModels()
     private val args: MessengerChatFragmentArgs by navArgs()
-    private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(requireContext()) }
 
     private lateinit var binding: FragmentMessengerChatBinding
     private lateinit var searchView: SearchView

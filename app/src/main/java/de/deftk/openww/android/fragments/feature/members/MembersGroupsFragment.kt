@@ -9,6 +9,6 @@ class MembersGroupsFragment : AbstractGroupFragment() {
     override val scopePredicate: (T: IOperatingScope) -> Boolean = { Feature.MEMBERS.isAvailable(it.effectiveRights) }
 
     override fun onOperatingScopeClicked(scope: IOperatingScope) {
-        navController.navigate(MembersGroupsFragmentDirections.actionMembersGroupFragmentToMembersFragment(scope.login, scope.name))
+        navController.navigate(MembersGroupsFragmentDirections.actionMembersGroupFragmentToMembersFragment(scope.login))
     }
 }

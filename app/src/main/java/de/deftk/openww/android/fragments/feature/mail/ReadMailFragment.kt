@@ -38,10 +38,10 @@ class ReadMailFragment : ContextualFragment(true), AttachmentClickListener {
     private val workManager by lazy { WorkManager.getInstance(requireContext()) }
 
     private lateinit var binding: FragmentReadMailBinding
-    private lateinit var email: IEmail
-    private lateinit var emailFolder: IEmailFolder
     private lateinit var downloadSaveLauncher: ActivityResultLauncher<Pair<Intent, IAttachment>>
 
+    private var email: IEmail? = null
+    private var emailFolder: IEmailFolder? = null
     private var deleted = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -101,33 +101,42 @@ class ReadMailFragment : ContextualFragment(true), AttachmentClickListener {
             }
         }
 
-        mailboxViewModel.foldersResponse.observe(viewLifecycleOwner) { folderResponse ->
-            if (folderResponse is Response.Success) {
-                emailFolder = folderResponse.value.first { it.id == args.folderId }
+        var emailsFound = false
 
-                val mailResponse = mailboxViewModel.getCachedResponse(emailFolder)
-                if (mailResponse is Response.Success) {
-                    setUIState(UIState.READY)
-                    val foundEmail = mailResponse.value.firstOrNull { it.id == args.mailId }
-                    if (foundEmail == null) {
-                        Reporter.reportException(R.string.error_email_not_found, args.mailId.toString(), requireContext())
-                        navController.popBackStack()
-                        return@observe
-                    }
-                    email = foundEmail
-                    loginViewModel.apiContext.value?.apply {
-                        mailboxViewModel.readEmail(email, emailFolder, this)
-                        setUIState(UIState.LOADING)
-                    }
-                } else if (mailResponse is Response.Failure) {
-                    setUIState(UIState.ERROR)
-                    Reporter.reportException(R.string.error_get_emails_failed, mailResponse.exception, requireContext())
-                }
-            } else if (folderResponse is Response.Failure) {
-                setUIState(UIState.ERROR)
-                Reporter.reportException(R.string.error_get_folders_failed, folderResponse.exception, requireContext())
+        mailboxViewModel.currentFolder.observe(viewLifecycleOwner) { selectedFolder ->
+            if (selectedFolder?.id == args.folderId && !emailsFound) {
+                emailFolder = selectedFolder
             }
         }
+
+        mailboxViewModel.allCurrentMails.observe(viewLifecycleOwner) { currentFolderEmails ->
+            if (currentFolderEmails != null) {
+                emailsFound = true
+                findEmail(currentFolderEmails, emailFolder!!)
+            }
+        }
+
+        if (!emailsFound) {
+            mailboxViewModel.foldersResponse.observe(viewLifecycleOwner) { folderResponse ->
+                if (folderResponse is Response.Success && !emailsFound) {
+                    emailFolder = folderResponse.value.first { it.id == args.folderId }
+
+                    val mailResponse = mailboxViewModel.getCachedResponse(emailFolder!!)
+                    if (mailResponse == null) {
+                        loginViewModel.apiContext.value?.also { apiContext ->
+                            mailboxViewModel.selectFolder(emailFolder!!, apiContext)
+                        }
+                    } else {
+                        emailsFound = true
+                        findEmail(mailResponse, emailFolder!!)
+                    }
+                } else if (folderResponse is Response.Failure) {
+                    setUIState(UIState.ERROR)
+                    Reporter.reportException(R.string.error_get_folders_failed, folderResponse.exception, requireContext())
+                }
+            }
+        }
+
 
         mailboxViewModel.exportSessionFileResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
@@ -166,19 +175,47 @@ class ReadMailFragment : ContextualFragment(true), AttachmentClickListener {
         }
 
         downloadSaveLauncher = registerForActivityResult(SaveAttachmentContract()) { (result, attachment) ->
-            val uri = result.data?.data
-            loginViewModel.apiContext.value?.also { apiContext ->
-                mailboxViewModel.startAttachmentSaveDownload(workManager, apiContext, attachment, email, emailFolder, uri.toString())
+            if (email != null && emailFolder != null) {
+                val uri = result.data?.data
+                loginViewModel.apiContext.value?.also { apiContext ->
+                    mailboxViewModel.startAttachmentSaveDownload(workManager, apiContext, attachment, email!!, emailFolder!!, uri.toString())
+                }
             }
         }
 
         loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            if (apiContext == null) {
+            if (apiContext != null) {
+                if (mailboxViewModel.foldersResponse.value == null) {
+                    mailboxViewModel.loadFolders(apiContext)
+                    setUIState(UIState.LOADING)
+                }
+            } else {
+                setUIState(UIState.DISABLED)
                 navController.popBackStack(R.id.mailFragment, false)
             }
         }
 
         return binding.root
+    }
+
+    private fun findEmail(mailResponse: Response<List<IEmail>>, folder: IEmailFolder) {
+        if (mailResponse is Response.Success) {
+            setUIState(UIState.READY)
+            val foundEmail = mailResponse.value.firstOrNull { it.id == args.mailId }
+            if (foundEmail == null) {
+                Reporter.reportException(R.string.error_email_not_found, args.mailId.toString(), requireContext())
+                navController.popBackStack()
+                return
+            }
+            email = foundEmail
+            loginViewModel.apiContext.value?.apply {
+                mailboxViewModel.readEmail(foundEmail, folder, this)
+                setUIState(UIState.LOADING)
+            }
+        } else if (mailResponse is Response.Failure) {
+            setUIState(UIState.ERROR)
+            Reporter.reportException(R.string.error_get_emails_failed, mailResponse.exception, requireContext())
+        }
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -195,9 +232,11 @@ class ReadMailFragment : ContextualFragment(true), AttachmentClickListener {
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             R.id.mail_context_item_delete -> {
-                loginViewModel.apiContext.value?.also { apiContext ->
-                    mailboxViewModel.deleteEmail(email, emailFolder, true, apiContext)
-                    setUIState(UIState.LOADING)
+                if (email != null && emailFolder != null) {
+                    loginViewModel.apiContext.value?.also { apiContext ->
+                        mailboxViewModel.deleteEmail(email!!, emailFolder!!, true, apiContext)
+                        setUIState(UIState.LOADING)
+                    }
                 }
                 true
             }
@@ -218,8 +257,10 @@ class ReadMailFragment : ContextualFragment(true), AttachmentClickListener {
     }
 
     override fun onOpenAttachment(attachment: IAttachment) {
-        loginViewModel.apiContext.value?.also { apiContext ->
-            mailboxViewModel.exportAttachment(attachment, email, emailFolder, apiContext)
+        if (email != null && emailFolder != null) {
+            loginViewModel.apiContext.value?.also { apiContext ->
+                mailboxViewModel.exportAttachment(attachment, email!!, emailFolder!!, apiContext)
+            }
         }
     }
 }

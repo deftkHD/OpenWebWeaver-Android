@@ -17,15 +17,15 @@ import de.deftk.openww.android.fragments.ContextualFragment
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.utils.TextUtils
 import de.deftk.openww.android.viewmodel.FileStorageViewModel
-import de.deftk.openww.android.viewmodel.UserViewModel
 import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.feature.filestorage.FileType
 
 class ReadFileFragment : ContextualFragment(true) {
 
+    //TODO needs recode to remove title from navargs and being able to be called by deeplink
+
     //TODO options menu
 
-    private val userViewModel: UserViewModel by activityViewModels()
     private val fileStorageViewModel: FileStorageViewModel by activityViewModels()
     private val args: ReadFileFragmentArgs by navArgs()
 

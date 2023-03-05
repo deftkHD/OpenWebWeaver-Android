@@ -26,8 +26,8 @@ class ReadContactFragment : ContextualFragment(true) {
     private val adapter = ContactDetailAdapter(true, null)
 
     private lateinit var binding: FragmentReadContactBinding
-    private lateinit var contact: IContact
 
+    private var contact: IContact? = null
     private var scope: IOperatingScope? = null
     private var deleted = false
 
@@ -52,7 +52,9 @@ class ReadContactFragment : ContextualFragment(true) {
         }
 
         binding.fabEditContact.setOnClickListener {
-            navController.navigate(ReadContactFragmentDirections.actionReadContactFragmentToEditContactFragment(scope!!.login, contact.id.toString(), getString(R.string.edit_contact)))
+            if (scope != null && contact != null) {
+                navController.navigate(ReadContactFragmentDirections.actionReadContactFragmentToEditContactFragment(scope!!.login, contact!!.id.toString()))
+            }
         }
 
         loginViewModel.apiContext.observe(viewLifecycleOwner) apiContext@ { apiContext ->
@@ -85,13 +87,13 @@ class ReadContactFragment : ContextualFragment(true) {
                             navController.popBackStack()
                             return@filtered
                         }
-                        adapter.submitList(ContactUtil.extractContactDetails(contact))
+                        adapter.submitList(ContactUtil.extractContactDetails(queried))
                     } else if (response is Response.Failure) {
                         setUIState(UIState.ERROR)
                         Reporter.reportException(R.string.error_get_contacts_failed, response.exception, requireContext())
                         navController.popBackStack()
-                        return@filtered
                     }
+                    invalidateOptionsMenu()
                 }
                 if (contactsViewModel.getAllContactsLiveData(scope!!).value == null) {
                     contactsViewModel.loadContacts(scope!!, apiContext)
@@ -109,21 +111,27 @@ class ReadContactFragment : ContextualFragment(true) {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        if (scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN))
-            menuInflater.inflate(R.menu.contacts_context_menu, menu)
+        if (scope != null) {
+            if (scope!!.effectiveRights.contains(Permission.ADDRESSES_WRITE) || scope!!.effectiveRights.contains(Permission.ADDRESSES_ADMIN))
+                menuInflater.inflate(R.menu.contacts_context_menu, menu)
+        }
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             R.id.contacts_context_item_edit -> {
-                val action = ReadContactFragmentDirections.actionReadContactFragmentToEditContactFragment(scope!!.login, contact.id.toString(), getString(R.string.edit_contact))
-                navController.navigate(action)
+                if (scope != null && contact != null) {
+                    val action = ReadContactFragmentDirections.actionReadContactFragmentToEditContactFragment(scope!!.login, contact!!.id.toString())
+                    navController.navigate(action)
+                }
                 true
             }
             R.id.contacts_context_item_delete -> {
-                val apiContext = loginViewModel.apiContext.value ?: return false
-                contactsViewModel.deleteContact(contact, scope!!, apiContext)
-                setUIState(UIState.LOADING)
+                if (contact != null && scope != null) {
+                    val apiContext = loginViewModel.apiContext.value ?: return false
+                    contactsViewModel.deleteContact(contact!!, scope!!, apiContext)
+                    setUIState(UIState.LOADING)
+                }
                 true
             }
             else -> false

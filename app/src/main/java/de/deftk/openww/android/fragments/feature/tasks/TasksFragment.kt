@@ -52,7 +52,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
         }
 
         binding.fabAddTask.setOnClickListener {
-            val action = TasksFragmentDirections.actionTasksFragmentToEditTaskFragment(null, null, getString(R.string.new_task))
+            val action = TasksFragmentDirections.actionTasksFragmentToEditTaskFragment(null, null)
             navController.navigate(action)
         }
 
@@ -249,7 +249,7 @@ class TasksFragment : ActionModeFragment<Pair<ITask, IOperatingScope>, TasksAdap
             }
             R.id.tasks_context_item_edit -> {
                 val (task, scope) = adapter.getItem(menuInfo.position)
-                val action = TasksFragmentDirections.actionTasksFragmentToEditTaskFragment(task.id, scope.login, getString(R.string.edit_task))
+                val action = TasksFragmentDirections.actionTasksFragmentToEditTaskFragment(task.id, scope.login)
                 navController.navigate(action)
             }
             R.id.tasks_context_item_delete -> {

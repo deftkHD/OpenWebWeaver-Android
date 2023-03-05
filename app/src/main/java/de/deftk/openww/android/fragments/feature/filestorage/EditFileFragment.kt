@@ -22,6 +22,8 @@ import de.deftk.openww.api.model.feature.filestorage.FileType
 
 class EditFileFragment : ContextualFragment(true) {
 
+    //TODO needs recode to remove title from navargs and being able to be called by deeplink
+
     //TODO options menu
 
     //TODO allow editing notificationLogins (+ also for folders)

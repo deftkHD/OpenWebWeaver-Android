@@ -44,9 +44,11 @@ class MembersFragment : ContextualFragment(true), ISearchProvider {
         binding.memberList.addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
 
         binding.membersSwipeRefresh.setOnRefreshListener {
-            loginViewModel.apiContext.value?.also { apiContext ->
-                groupViewModel.loadMembers(group!!, false, apiContext)
-                setUIState(UIState.LOADING)
+            if (group != null) {
+                loginViewModel.apiContext.value?.also { apiContext ->
+                    groupViewModel.loadMembers(group!!, false, apiContext)
+                    setUIState(UIState.LOADING)
+                }
             }
         }
 
@@ -64,9 +66,10 @@ class MembersFragment : ContextualFragment(true), ISearchProvider {
                     return@observe
                 }
                 if (group != null)
-                    groupViewModel.getFilteredGroupMembers(group!!).removeObservers(viewLifecycleOwner)
+                    groupViewModel.getFilteredGroupMembers(refreshedGroup).removeObservers(viewLifecycleOwner)
                 group = refreshedGroup
-                groupViewModel.getFilteredGroupMembers(group!!).observe(viewLifecycleOwner) { response ->
+                setTitle(refreshedGroup.name)
+                groupViewModel.getFilteredGroupMembers(refreshedGroup).observe(viewLifecycleOwner) { response ->
                     if (response is Response.Success) {
                         adapter.submitList(response.value)
                         setUIState(if (response.value.isEmpty()) UIState.EMPTY else UIState.READY)
@@ -75,8 +78,8 @@ class MembersFragment : ContextualFragment(true), ISearchProvider {
                         Reporter.reportException(R.string.error_get_members_failed, response.exception, requireContext())
                     }
                 }
-                if (groupViewModel.getAllGroupMembers(group!!).value == null) {
-                    groupViewModel.loadMembers(group!!, false, apiContext)
+                if (groupViewModel.getAllGroupMembers(refreshedGroup).value == null) {
+                    groupViewModel.loadMembers(refreshedGroup, false, apiContext)
                     setUIState(UIState.LOADING)
                 }
             } else {

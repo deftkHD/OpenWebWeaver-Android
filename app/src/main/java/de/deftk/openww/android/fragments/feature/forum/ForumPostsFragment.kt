@@ -26,6 +26,8 @@ import de.deftk.openww.api.model.feature.forum.IForumPost
 
 class ForumPostsFragment : ActionModeFragment<IForumPost, ForumPostAdapter.ForumPostViewHolder>(R.menu.forum_actionmode_menu), ISearchProvider {
 
+    //TODO needs recode to remove title from navargs and being able to be called by deeplink
+
     private val args: ForumPostsFragmentArgs by navArgs()
     private val forumViewModel: ForumViewModel by activityViewModels()
 

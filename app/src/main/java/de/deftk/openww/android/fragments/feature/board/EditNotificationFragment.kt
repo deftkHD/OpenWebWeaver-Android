@@ -42,6 +42,7 @@ class EditNotificationFragment : ContextualFragment(true) {
                 if (args.notificationId != null && args.groupId != null) {
                     // edit existing
                     editMode = true
+                    setTitle(R.string.edit_notification)
                     val searched = response.value.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }
                     if (searched == null) {
                         Reporter.reportException(R.string.error_notification_not_found, args.notificationId!!, requireContext())
@@ -62,6 +63,7 @@ class EditNotificationFragment : ContextualFragment(true) {
                 } else {
                     // add new
                     editMode = false
+                    setTitle(R.string.new_notification)
                     binding.notificationGroup.isEnabled = true
                 }
                 setUIState(UIState.READY)

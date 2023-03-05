@@ -70,17 +70,20 @@ class EditContactFragment : ContextualFragment(true), ContactDetailClickListener
                         if (args.contactId != null) {
                             // edit existing
                             editMode = true
+                            setTitle(R.string.edit_contact)
 
                             val foundContact = contactViewModel.getFilteredContactsLiveData(scope!!).value?.valueOrNull()?.firstOrNull { it.id.toString() == args.contactId }
                             if (foundContact == null) {
                                 Reporter.reportException(R.string.error_contact_not_found, args.contactId!!, requireContext())
                                 navController.popBackStack()
                                 return@filtered
+                            } else {
+                                contact.value = foundContact
                             }
-                            contact.value = foundContact!!
                         } else {
                             // add new
                             editMode = false
+                            setTitle(R.string.add_contact)
                             val modification = Modification(RemoteScope("", "", -1, null, false), Date())
                             contact.value = Contact(-1, _modified = modification, created = modification)
                         }
@@ -96,7 +99,6 @@ class EditContactFragment : ContextualFragment(true), ContactDetailClickListener
                 }
             } else {
                 adapter.submitList(emptyList())
-                binding.fabAddContactDetail.isVisible = false
                 setUIState(UIState.DISABLED)
             }
         }

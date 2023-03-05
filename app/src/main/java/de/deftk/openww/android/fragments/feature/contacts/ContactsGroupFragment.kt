@@ -9,6 +9,6 @@ class ContactsGroupFragment : AbstractGroupFragment() {
     override val scopePredicate: (T: IOperatingScope) -> Boolean = { Feature.ADDRESSES.isAvailable(it.effectiveRights) }
 
     override fun onOperatingScopeClicked(scope: IOperatingScope) {
-        navController.navigate(ContactsGroupFragmentDirections.actionContactsGroupFragmentToContactsFragment(scope.login, scope.name))
+        navController.navigate(ContactsGroupFragmentDirections.actionContactsGroupFragmentToContactsFragment(scope.login))
     }
 }

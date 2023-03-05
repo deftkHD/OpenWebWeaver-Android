@@ -19,7 +19,6 @@ import androidx.appcompat.view.ActionMode
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -50,11 +49,12 @@ import kotlin.math.max
 
 class FilesFragment : ActionModeFragment<IRemoteFile, FileAdapter.FileViewHolder>(R.menu.filestorage_actionmode_menu), ISearchProvider {
 
+    //TODO needs recode to remove title from navargs and being able to be called by deeplink
+
     //TODO cancel ongoing network transfers on account switch
 
     private val args: FilesFragmentArgs by navArgs()
     private val fileStorageViewModel: FileStorageViewModel by activityViewModels()
-    private val preferences by lazy { PreferenceManager.getDefaultSharedPreferences(requireContext()) }
     private val workManager by lazy { WorkManager.getInstance(requireContext()) }
 
     private lateinit var downloadSaveLauncher: ActivityResultLauncher<Pair<Intent, IRemoteFile>>

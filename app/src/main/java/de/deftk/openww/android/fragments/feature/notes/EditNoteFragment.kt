@@ -51,8 +51,10 @@ class EditNoteFragment : ContextualFragment(true) {
                     binding.noteColor.setSelection(note.color?.ordinal ?: 0)
 
                     editMode = true
+                    setTitle(R.string.edit_note)
                 } else {
                     editMode = false
+                    setTitle(R.string.add_note)
                 }
             } else if (response is Response.Failure) {
                 setUIState(UIState.ERROR)

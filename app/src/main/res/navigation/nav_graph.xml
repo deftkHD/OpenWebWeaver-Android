@@ -153,7 +153,6 @@
     <fragment
         android:id="@+id/editNotificationFragment"
         android:name="de.deftk.openww.android.fragments.feature.board.EditNotificationFragment"
-        android:label="{title}"
         tools:layout="@layout/fragment_edit_notification">
         <argument
             android:name="notificationId"
@@ -163,14 +162,10 @@
             android:name="groupId"
             app:argType="string"
             app:nullable="true" />
-        <argument
-            android:name="title"
-            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/editTaskFragment"
         android:name="de.deftk.openww.android.fragments.feature.tasks.EditTaskFragment"
-        android:label="{title}"
         tools:layout="@layout/fragment_edit_task">
         <argument
             android:name="taskId"
@@ -180,9 +175,6 @@
             android:name="groupId"
             app:argType="string"
             app:nullable="true" />
-        <argument
-            android:name="title"
-            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/filesFragment"
@@ -261,13 +253,9 @@
     <fragment
         android:id="@+id/membersFragment"
         android:name="de.deftk.openww.android.fragments.feature.members.MembersFragment"
-        android:label="{title}"
         tools:layout="@layout/fragment_members">
         <argument
             android:name="groupId"
-            app:argType="string" />
-        <argument
-            android:name="title"
             app:argType="string" />
         <action
             android:id="@+id/action_membersFragment_to_messengerChatFragment"
@@ -434,13 +422,9 @@
     </fragment>
     <fragment
         android:id="@+id/contactsFragment"
-        android:name="de.deftk.openww.android.fragments.feature.contacts.ContactsFragment"
-        android:label="{title}">
+        android:name="de.deftk.openww.android.fragments.feature.contacts.ContactsFragment">
         <argument
-            android:name="login"
-            app:argType="string" />
-        <argument
-            android:name="title"
+            android:name="scope"
             app:argType="string" />
         <action
             android:id="@+id/action_contactsFragment_to_readContactFragment"
@@ -467,7 +451,6 @@
     <fragment
         android:id="@+id/editContactFragment"
         android:name="de.deftk.openww.android.fragments.feature.contacts.EditContactFragment"
-        android:label="{title}"
         tools:layout="@layout/fragment_edit_contact">
         <argument
             android:name="scope"
@@ -476,9 +459,6 @@
             android:name="contactId"
             app:argType="string"
             app:nullable="true" />
-        <argument
-            android:name="title"
-            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/notesFragment"
@@ -494,15 +474,11 @@
     <fragment
         android:id="@+id/editNoteFragment"
         android:name="de.deftk.openww.android.fragments.feature.notes.EditNoteFragment"
-        android:label="{title}"
         tools:layout="@layout/fragment_edit_note">
         <argument
             android:name="noteId"
             app:argType="string"
             app:nullable="true" />
-        <argument
-            android:name="title"
-            app:argType="string" />
     </fragment>
     <fragment
         android:id="@+id/readNoteFragment"

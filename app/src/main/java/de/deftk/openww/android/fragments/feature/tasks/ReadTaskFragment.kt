@@ -27,9 +27,9 @@ class ReadTaskFragment : ContextualFragment(true) {
     private val tasksViewModel: TasksViewModel by activityViewModels()
 
     private lateinit var binding: FragmentReadTaskBinding
-    private lateinit var task: ITask
-    private lateinit var scope: IOperatingScope
 
+    private var task: ITask? = null
+    private var scope: IOperatingScope? = null
     private var deleted = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -50,11 +50,17 @@ class ReadTaskFragment : ContextualFragment(true) {
 
                 task = foundTask.first
                 scope = foundTask.second
+                val task = foundTask.first
+                val scope = foundTask.second
 
                 binding.taskTitle.text = task.title
                 binding.taskAuthor.text = task.created.member.name
                 binding.taskGroup.text = scope.name
-                binding.taskCreated.text = String.format(getString(R.string.created_date), DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.created.date))
+                if (task.created.date != null) {
+                    binding.taskCreated.text = String.format(getString(R.string.created_date), DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.created.date!!))
+                } else {
+                    binding.taskCreated.isVisible = false
+                }
                 binding.taskDue.text = String.format(getString(R.string.until_date), if (task.dueDate != null) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(task.dueDate!!) else getString(R.string.not_set))
                 binding.taskDetail.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(task.description), scope.login, navController)
                 binding.taskDetail.movementMethod = LinkMovementMethod.getInstance()
@@ -65,8 +71,8 @@ class ReadTaskFragment : ContextualFragment(true) {
                 setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
                 navController.popBackStack()
-                return@observe
             }
+            invalidateOptionsMenu()
         }
         tasksViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
@@ -82,8 +88,10 @@ class ReadTaskFragment : ContextualFragment(true) {
             }
         }
         binding.fabEditTask.setOnClickListener {
-            val action = ReadTaskFragmentDirections.actionReadTaskFragmentToEditTaskFragment(task.id, scope.login, getString(R.string.edit_task))
-            navController.navigate(action)
+            if (task != null && scope != null) {
+                val action = ReadTaskFragmentDirections.actionReadTaskFragmentToEditTaskFragment(task!!.id, scope!!.login)
+                navController.navigate(action)
+            }
         }
         loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
@@ -112,37 +120,49 @@ class ReadTaskFragment : ContextualFragment(true) {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.tasks_context_menu, menu)
-        val canEdit = scope.effectiveRights.contains(Permission.TASKS_WRITE) || scope.effectiveRights.contains(Permission.TASKS_ADMIN)
-        menu.findItem(R.id.tasks_context_item_edit).isVisible = canEdit
-        menu.findItem(R.id.tasks_context_item_delete).isVisible = canEdit
+        if (scope != null) {
+            menuInflater.inflate(R.menu.tasks_context_menu, menu)
+            val canEdit = scope!!.effectiveRights.contains(Permission.TASKS_WRITE) || scope!!.effectiveRights.contains(Permission.TASKS_ADMIN)
+            menu.findItem(R.id.tasks_context_item_edit).isVisible = canEdit
+            menu.findItem(R.id.tasks_context_item_delete).isVisible = canEdit
+        }
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.tasks_context_item_ignore -> {
-                loginViewModel.apiContext.value?.also { apiContext ->
-                    tasksViewModel.ignoreTasks(listOf(task to scope), apiContext)
-                    setUIState(UIState.LOADING)
+                if (task != null && scope != null) {
+                    loginViewModel.apiContext.value?.also { apiContext ->
+                        tasksViewModel.ignoreTasks(listOf(task!! to scope!!), apiContext)
+                        setUIState(UIState.LOADING)
+                    }
                 }
             }
             R.id.tasks_context_item_unignore -> {
-                loginViewModel.apiContext.value?.also { apiContext ->
-                    tasksViewModel.unignoreTasks(listOf(task to scope), apiContext)
-                    setUIState(UIState.LOADING)
+                if (task != null && scope != null) {
+                    loginViewModel.apiContext.value?.also { apiContext ->
+                        tasksViewModel.unignoreTasks(listOf(task!! to scope!!), apiContext)
+                        setUIState(UIState.LOADING)
+                    }
                 }
             }
             R.id.tasks_context_item_import_in_calendar -> {
-                startActivity(CalendarUtil.importTaskIntoCalendar(task))
+                if (task != null) {
+                    startActivity(CalendarUtil.importTaskIntoCalendar(task!!))
+                }
             }
             R.id.tasks_context_item_edit -> {
-                val action = ReadTaskFragmentDirections.actionReadTaskFragmentToEditTaskFragment(task.id, scope.login, getString(R.string.edit_task))
-                navController.navigate(action)
+                if (task != null && scope != null) {
+                    val action = ReadTaskFragmentDirections.actionReadTaskFragmentToEditTaskFragment(task!!.id, scope!!.login)
+                    navController.navigate(action)
+                }
             }
             R.id.tasks_context_item_delete -> {
-                val apiContext = loginViewModel.apiContext.value ?: return false
-                tasksViewModel.deleteTask(task, scope, apiContext)
-                setUIState(UIState.LOADING)
+                if (task != null && scope != null) {
+                    val apiContext = loginViewModel.apiContext.value ?: return false
+                    tasksViewModel.deleteTask(task!!, scope!!, apiContext)
+                    setUIState(UIState.LOADING)
+                }
             }
             else -> return false
         }
@@ -150,10 +170,12 @@ class ReadTaskFragment : ContextualFragment(true) {
     }
 
     override fun onPrepareMenu(menu: Menu) {
-        loginViewModel.apiContext.value?.also { apiContext ->
-            val ignored = tasksViewModel.getIgnoredTasksBlocking(apiContext).any { it.id == task.id && it.scope == scope.login }
-            menu.findItem(R.id.tasks_context_item_ignore).isVisible = !ignored
-            menu.findItem(R.id.tasks_context_item_unignore).isVisible = ignored
+        if (task != null && scope != null) {
+            loginViewModel.apiContext.value?.also { apiContext ->
+                val ignored = tasksViewModel.getIgnoredTasksBlocking(apiContext).any { it.id == task!!.id && it.scope == scope!!.login }
+                menu.findItem(R.id.tasks_context_item_ignore).isVisible = !ignored
+                menu.findItem(R.id.tasks_context_item_unignore).isVisible = ignored
+            }
         }
     }
 

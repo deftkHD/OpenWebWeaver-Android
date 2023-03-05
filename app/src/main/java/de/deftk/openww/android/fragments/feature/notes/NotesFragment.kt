@@ -78,7 +78,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
         }
 
         binding.fabAddNote.setOnClickListener {
-            navController.navigate(NotesFragmentDirections.actionNotesFragmentToEditNoteFragment(null, getString(R.string.add_note)))
+            navController.navigate(NotesFragmentDirections.actionNotesFragmentToEditNoteFragment(null))
         }
 
         loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
@@ -180,7 +180,7 @@ class NotesFragment : ActionModeFragment<INote, NoteAdapter.NoteViewHolder>(R.me
         return when (item.itemId) {
             R.id.notes_context_item_edit -> {
                 val note = adapter.getItem(menuInfo.position)
-                val action = NotesFragmentDirections.actionNotesFragmentToEditNoteFragment(note.id, getString(R.string.edit_note))
+                val action = NotesFragmentDirections.actionNotesFragmentToEditNoteFragment(note.id)
                 navController.navigate(action)
                 true
             }

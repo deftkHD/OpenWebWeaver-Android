@@ -95,7 +95,7 @@ class ReadNoteFragment : ContextualFragment(true) {
         }
 
         binding.fabEditNote.setOnClickListener {
-            navController.navigate(ReadNoteFragmentDirections.actionReadNoteFragmentToEditNoteFragment(note.id, getString(R.string.edit_note)))
+            navController.navigate(ReadNoteFragmentDirections.actionReadNoteFragmentToEditNoteFragment(note.id))
         }
 
         return binding.root
@@ -110,7 +110,7 @@ class ReadNoteFragment : ContextualFragment(true) {
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             R.id.notes_context_item_edit -> {
-                val action = ReadNoteFragmentDirections.actionReadNoteFragmentToEditNoteFragment(note.id, getString(R.string.edit_note))
+                val action = ReadNoteFragmentDirections.actionReadNoteFragmentToEditNoteFragment(note.id)
                 navController.navigate(action)
                 true
             }

@@ -35,7 +35,7 @@ class MemberAdapter: ListAdapter<IScope, RecyclerView.ViewHolder>(MemberDiffCall
             }
             itemView.setOnClickListener {
                 if (binding.scope is IGroup) {
-                    itemView.findNavController().navigate(MembersGroupsFragmentDirections.actionMembersGroupFragmentToMembersFragment(binding.scope!!.login, binding.scope!!.name))
+                    itemView.findNavController().navigate(MembersGroupsFragmentDirections.actionMembersGroupFragmentToMembersFragment(binding.scope!!.login))
                 } else {
                     itemView.showContextMenu()
                 }

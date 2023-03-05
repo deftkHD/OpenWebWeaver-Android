@@ -26,9 +26,9 @@ class ReadNotificationFragment : ContextualFragment(true) {
     private val boardViewModel: BoardViewModel by activityViewModels()
 
     private lateinit var binding: FragmentReadNotificationBinding
-    private lateinit var notification: IBoardNotification
-    private lateinit var group: IGroup
 
+    private var notification: IBoardNotification? = null
+    private var group: IGroup? = null
     private var deleted = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -49,11 +49,17 @@ class ReadNotificationFragment : ContextualFragment(true) {
 
                 notification = searched.first
                 group = searched.second
+                val notification = searched.first
+                val group = searched.second
 
                 binding.notificationTitle.text = notification.title
                 binding.notificationAuthor.text = notification.created.member.name
                 binding.notificationGroup.text = group.name
-                binding.notificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.created.date!!)
+                if (notification.created.date != null) {
+                    binding.notificationDate.text = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT).format(notification.created.date!!)
+                } else {
+                    binding.notificationDate.isVisible = false
+                }
                 binding.notificationText.text = TextUtils.parseInternalReferences(TextUtils.parseHtml(notification.text), group.login, navController)
                 binding.notificationText.movementMethod = LinkMovementMethod.getInstance()
                 binding.notificationText.transformationMethod = CustomTabTransformationMethod(binding.notificationText.autoLinkMask)
@@ -63,12 +69,14 @@ class ReadNotificationFragment : ContextualFragment(true) {
                 setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
                 navController.popBackStack()
-                return@observe
             }
+            invalidateOptionsMenu()
         }
         binding.fabEditNotification.setOnClickListener {
-            val action = ReadNotificationFragmentDirections.actionReadNotificationFragmentToEditNotificationFragment(notification.id, group.login, getString(R.string.edit_notification))
-            navController.navigate(action)
+            if (notification != null) {
+                val action = ReadNotificationFragmentDirections.actionReadNotificationFragmentToEditNotificationFragment(notification!!.id, group!!.login)
+                navController.navigate(action)
+            }
         }
         boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
             if (response != null)
@@ -108,21 +116,27 @@ class ReadNotificationFragment : ContextualFragment(true) {
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        if (group.effectiveRights.contains(Permission.BOARD_WRITE) || group.effectiveRights.contains(Permission.BOARD_ADMIN))
-            menuInflater.inflate(R.menu.board_context_menu, menu)
+        if (group != null) {
+            if (group!!.effectiveRights.contains(Permission.BOARD_WRITE) || group!!.effectiveRights.contains(Permission.BOARD_ADMIN))
+                menuInflater.inflate(R.menu.board_context_menu, menu)
+        }
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
             R.id.board_context_item_edit -> {
-                val action = ReadNotificationFragmentDirections.actionReadNotificationFragmentToEditNotificationFragment(notification.id, group.login, getString(R.string.edit_notification))
-                navController.navigate(action)
+                if (notification != null && group != null) {
+                    val action = ReadNotificationFragmentDirections.actionReadNotificationFragmentToEditNotificationFragment(notification!!.id, group!!.login)
+                    navController.navigate(action)
+                }
                 true
             }
             R.id.board_context_item_delete -> {
-                val apiContext = loginViewModel.apiContext.value ?: return false
-                boardViewModel.deleteBoardNotification(notification, group, apiContext)
-                setUIState(UIState.LOADING)
+                if (notification != null && group != null) {
+                    val apiContext = loginViewModel.apiContext.value ?: return false
+                    boardViewModel.deleteBoardNotification(notification!!, group!!, apiContext)
+                    setUIState(UIState.LOADING)
+                }
                 true
             }
             else -> false

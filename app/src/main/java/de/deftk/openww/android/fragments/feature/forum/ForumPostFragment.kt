@@ -26,6 +26,8 @@ import java.text.DateFormat
 
 class ForumPostFragment : ContextualFragment(true) {
 
+    //TODO needs recode to remove title from navargs and being able to be called by deeplink
+
     private val args: ForumPostFragmentArgs by navArgs()
     private val forumViewModel: ForumViewModel by activityViewModels()
 
