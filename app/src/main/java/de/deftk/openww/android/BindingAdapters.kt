@@ -94,7 +94,11 @@ object BindingAdapters {
     @BindingAdapter("mailAuthor")
     fun mailAuthor(view: TextView, email: IEmail) {
         var author = email.from?.joinToString(", ") { it.name }
-        if (author == null) {
+        if (author == null) { // email was sent, not received
+            author = email.to?.joinToString(", ") { it.name }
+        }
+
+        /*if (author == null) {
             val context = view.context
             author = if (context is MainActivity) {
                 val loginViewModel by context.viewModels<LoginViewModel>()
@@ -102,7 +106,7 @@ object BindingAdapters {
             } else {
                 "UNKNOWN"
             }
-        }
+        }*/
         view.text = author
     }
 

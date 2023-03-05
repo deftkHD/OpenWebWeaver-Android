@@ -62,8 +62,26 @@ class ReadMailFragment : ContextualFragment(true), AttachmentClickListener {
                 setUIState(UIState.READY)
                 response.value?.also { email ->
                     binding.mailSubject.text = email.subject
-                    binding.mailAuthor.text = (email.from ?: emptyList()).firstOrNull()?.name ?: ""
-                    binding.mailAuthorAddress.text = (email.from ?: emptyList()).firstOrNull()?.address ?: ""
+                    if (emailFolder?.isSent == true) {
+                        val nameStr = (email.to ?: emptyList()).firstOrNull()?.name ?: ""
+                        val addressStr = (email.to ?: emptyList()).firstOrNull()?.address ?: ""
+                        binding.mailAuthor.text = nameStr
+                        if (nameStr != addressStr) {
+                            binding.mailAuthorAddress.text = addressStr
+                        } else {
+                            binding.mailAuthorAddress.isVisible = false
+                        }
+                    } else {
+                        val nameStr = (email.from ?: emptyList()).firstOrNull()?.name ?: ""
+                        val addressStr = (email.from ?: emptyList()).firstOrNull()?.address ?: ""
+                        binding.mailAuthor.text = nameStr
+                        if (nameStr != addressStr) {
+                            binding.mailAuthorAddress.text = addressStr
+                        } else {
+                            binding.mailAuthorAddress.isVisible = false
+                        }
+
+                    }
                     if (email.date != null)
                         binding.mailDate.text = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.DEFAULT).format(email.date!!)
                     val text = email.text ?: email.plainBody
