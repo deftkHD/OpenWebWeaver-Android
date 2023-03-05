@@ -25,8 +25,11 @@ abstract class AbstractFragment(private val hasActionBar: Boolean, private val r
             getMainActivity().supportActionBar?.hide()
         }
         getMainActivity().addMenuProvider(this, viewLifecycleOwner)
-        if (this is ISearchProvider)
+        if (this is ISearchProvider) {
             getMainActivity().searchProvider = this
+        } else {
+            getMainActivity().searchProvider = null
+        }
         if (requiresLoadingAtStart) {
             setUIState(UIState.LOADING)
         } else {
