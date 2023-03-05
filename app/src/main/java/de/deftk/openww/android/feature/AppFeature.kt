@@ -74,7 +74,7 @@ enum class AppFeature(
         }
     }, "overview_show_notifications"),
     FEATURE_FORUM(Feature.FORUM, R.id.forumGraph),
-    FEATURE_MEMBERS(Feature.MEMBERS, R.id.membersGroupFragment, GroupsOverview::class.java, object : OverviewBuilder {
+    FEATURE_MEMBERS(Feature.MEMBERS, R.id.membersGraph, GroupsOverview::class.java, object : OverviewBuilder {
         override fun appendRequests(request: UserApiRequest, user: IUser): List<Int> {
             return emptyList() // not needed
         }
