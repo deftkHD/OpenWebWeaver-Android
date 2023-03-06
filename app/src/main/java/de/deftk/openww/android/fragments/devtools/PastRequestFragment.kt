@@ -1,5 +1,6 @@
 package de.deftk.openww.android.fragments.devtools
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -10,6 +11,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import de.deftk.openww.android.R
 import de.deftk.openww.android.databinding.FragmentPastRequestBinding
 import de.deftk.openww.android.feature.devtools.PastRequest
 import de.deftk.openww.android.fragments.AbstractFragment
@@ -37,15 +39,16 @@ class PastRequestFragment : AbstractFragment(true) {
             val resp = responses.singleOrNull { it.id == args.requestId }
             if (resp == null) {
                 setUIState(UIState.ERROR)
-                Reporter.reportException(0, args.requestId.toString(), requireContext())
+                Reporter.reportException(R.string.error_past_request_not_found, args.requestId.toString(), requireContext())
                 navController.popBackStack()
                 return@observe
             }
             response = resp
 
 
-            binding.requestDate.text = "Response at " + DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.LONG).format(response.responseDate)
+            binding.requestDate.text = getString(R.string.response_at).format(DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.LONG).format(response.responseDate))
             binding.requestTitle.text = response.getTitle()
+            @SuppressLint("SetTextI18n") // it's ok, no need to worry
             binding.requestText.text = "[\n${response.request.requests.joinToString(",\n") { it.toString() }}\n]"
             binding.responseText.text = response.response.text
 

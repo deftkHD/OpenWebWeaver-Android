@@ -370,5 +370,10 @@
         <item quantity="one">%d reduced permission</item>
         <item quantity="other">%d reduced permissions</item>
     </plurals>
+    <string name="error_past_request_not_found">Failed to find past request: %s</string>
+    <string name="response_at">Response at %s</string>
+    <string name="error_exception_not_found">Failed to find exception: %s</string>
+    <string name="exception_at">Exception at %s</string>
+    <string name="source">Source: %s</string>
 
 </resources>

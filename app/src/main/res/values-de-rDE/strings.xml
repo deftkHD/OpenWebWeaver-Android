@@ -332,7 +332,7 @@
     <string name="wall">Pinnwand</string>
     <string name="error_get_system_notification_settings">Abfragen der Systembenachrichtigungseinstellungen fehlgeschlagen: %s</string>
     <string name="devtools">DevTools</string>
-    <string name="devtools_summary">Vorsicht! Nur aktivieren, wenn du weißt was du tust</string>
+    <string name="devtools_summary">Vorsicht! Nur aktivieren, wenn du weißt, was du tust</string>
     <string name="devtools_teaser">To be continued</string>
     <string name="force_invalidate_session">Session ungültig machen</string>
     <string name="show_past_requests">Alte Anfragen anzeigen</string>
@@ -352,4 +352,9 @@
     <string name="action_requires_restart">Diese Operation erfordert einen Neustart der App!</string>
     <string name="permissions">Berechtigungen</string>
     <string name="permissions_empty">Keine Berechtigungen</string>
+    <string name="error_past_request_not_found">Alte Anfrage konnte nicht gefunden werden: %s</string>
+    <string name="response_at">Antwort bei %s</string>
+    <string name="error_exception_not_found">Fehler konnte nicht gefunden werden: %s</string>
+    <string name="exception_at">Fehler um %s</string>
+    <string name="source">Quelle: %s</string>
 </resources>

@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import de.deftk.openww.android.R
 import de.deftk.openww.android.databinding.FragmentExceptionBinding
 import de.deftk.openww.android.feature.devtools.ExceptionReport
 import de.deftk.openww.android.fragments.AbstractFragment
@@ -35,16 +36,16 @@ class ExceptionFragment : AbstractFragment(true) {
             val rep = responses.singleOrNull { it.id == args.exceptionId }
             if (rep == null) {
                 setUIState(UIState.ERROR)
-                Reporter.reportException(TODO("fill exception str"), args.exceptionId.toString(), requireContext())
+                Reporter.reportException(R.string.error_exception_not_found, args.exceptionId.toString(), requireContext())
                 navController.popBackStack()
                 return@observe
             }
             report = rep
 
-            binding.exceptionDate.text = "Exception at " + DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.LONG).format(report.date)
+            binding.exceptionDate.text = getString(R.string.exception_at).format(DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.LONG).format(report.date))
             binding.exceptionName.text = report.getTitle()
             binding.exceptionDetail.text = report.exception?.stackTraceToString() ?: report.stackTrace.joinToString("\n") { "\tat $it" }
-            binding.exceptionSource.text = "Source: " + report.source.toString()
+            binding.exceptionSource.text = getString(R.string.source).format(report.source.toString())
 
             binding.fabCopyExceptionData.isEnabled = true
 
