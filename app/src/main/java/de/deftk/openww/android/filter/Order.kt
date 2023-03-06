@@ -1,6 +1,7 @@
 package de.deftk.openww.android.filter
 
 import androidx.annotation.StringRes
+import de.deftk.openww.android.feature.board.BoardNotification
 import de.deftk.openww.android.feature.filestorage.FileCacheElement
 import de.deftk.openww.android.feature.messenger.ChatContact
 import de.deftk.openww.android.utils.ContactUtil
@@ -160,29 +161,29 @@ sealed class TaskOrder(@StringRes nameRes: Int) : ScopedOrder<ITask, IOperatingS
 
 }
 
-sealed class BoardNotificationOrder(@StringRes nameRes: Int) : ScopedOrder<IBoardNotification, IGroup>(nameRes) {
+sealed class BoardNotificationOrder(@StringRes nameRes: Int) : Order<BoardNotification>(nameRes) {
 
     object ByTitleAsc : BoardNotificationOrder(0) {
-        override fun sort(items: List<Pair<IBoardNotification, IGroup>>): List<Pair<IBoardNotification, IGroup>> {
-            return items.sortedBy { it.first.title }
+        override fun sort(items: List<BoardNotification>): List<BoardNotification> {
+            return items.sortedBy { it.notification.title }
         }
     }
 
     object ByTitleDesc : BoardNotificationOrder(0) {
-        override fun sort(items: List<Pair<IBoardNotification, IGroup>>): List<Pair<IBoardNotification, IGroup>> {
-            return items.sortedByDescending { it.first.title }
+        override fun sort(items: List<BoardNotification>): List<BoardNotification> {
+            return items.sortedByDescending { it.notification.title }
         }
     }
 
     object ByCreatedAsc : BoardNotificationOrder(0) {
-        override fun sort(items: List<Pair<IBoardNotification, IGroup>>): List<Pair<IBoardNotification, IGroup>> {
-            return items.sortedBy { it.first.created.date?.time }
+        override fun sort(items: List<BoardNotification>): List<BoardNotification> {
+            return items.sortedBy { it.notification.created.date?.time }
         }
     }
 
     object ByCreatedDesc : BoardNotificationOrder(0) {
-        override fun sort(items: List<Pair<IBoardNotification, IGroup>>): List<Pair<IBoardNotification, IGroup>> {
-            return items.sortedByDescending { it.first.created.date?.time }
+        override fun sort(items: List<BoardNotification>): List<BoardNotification> {
+            return items.sortedByDescending { it.notification.created.date?.time }
         }
     }
 

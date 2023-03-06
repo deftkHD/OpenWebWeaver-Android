@@ -3,35 +3,36 @@ package de.deftk.openww.android.fragments.feature.board
 import android.os.Bundle
 import android.view.*
 import android.widget.ArrayAdapter
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.navArgs
+import dagger.hilt.android.AndroidEntryPoint
 import de.deftk.openww.android.R
 import de.deftk.openww.android.adapter.ScopeSelectionAdapter
-import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditNotificationBinding
 import de.deftk.openww.android.feature.board.BoardNotificationColors
 import de.deftk.openww.android.fragments.ContextualFragment
-import de.deftk.openww.android.utils.AndroidUtil
-import de.deftk.openww.android.utils.Reporter
-import de.deftk.openww.android.viewmodel.BoardViewModel
+import de.deftk.openww.android.fragments.feature.board.viewmodel.EditNotificationFragmentUIState
+import de.deftk.openww.android.fragments.feature.board.viewmodel.EditNotificationViewModel
 import de.deftk.openww.api.model.IGroup
-import de.deftk.openww.api.model.IOperatingScope
-import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.board.BoardNotificationColor
-import de.deftk.openww.api.model.feature.board.IBoardNotification
+import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class EditNotificationFragment : ContextualFragment(true) {
+
+    //FIXME this whole fragment is broken
 
     //TODO implement board type
     //TODO implement kill date
 
     private val args: EditNotificationFragmentArgs by navArgs()
-    private val boardViewModel: BoardViewModel by activityViewModels()
+    private val viewModel by viewModels<EditNotificationViewModel>()
 
     private lateinit var binding: FragmentEditNotificationBinding
 
-    private var notification: IBoardNotification? = null
-    private var group: IGroup? = null
     private var effectiveGroups: List<IGroup>? = null
     private var colors: Array<BoardNotificationColors>? = null
     private var editMode: Boolean = false
@@ -39,82 +40,48 @@ class EditNotificationFragment : ContextualFragment(true) {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentEditNotificationBinding.inflate(inflater, container, false)
 
-        boardViewModel.allNotificationsResponse.observe(viewLifecycleOwner) { response ->
-            if (response is Response.Success) {
-                if (args.notificationId != null && args.groupId != null) {
-                    // edit existing
-                    editMode = true
-                    setTitle(R.string.edit_notification)
-                    val searched = response.value.firstOrNull { it.first.id == args.notificationId && it.second.login == args.groupId }
-                    if (searched == null) {
-                        Reporter.reportException(R.string.error_notification_not_found, args.notificationId!!, requireContext())
-                        navController.popBackStack()
-                        return@observe
+        if (args.notificationId != null && args.groupId != null) {
+            editMode = true
+            viewModel.setNotification(args.notificationId!!, args.groupId!!)
+            setTitle(R.string.edit_notification)
+        } else {
+            setTitle(R.string.new_notification)
+        }
+
+        lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { uiState ->
+                    when (uiState) {
+                        is EditNotificationFragmentUIState.Loading -> {
+                            setUIState(UIState.LOADING)
+                        }
+                        is EditNotificationFragmentUIState.Success -> {
+                            val notification = uiState.notification?.notification
+
+                            if (notification != null) {
+                                val group = uiState.notification.group
+                                binding.notificationTitle.setText(notification.title)
+                                if (effectiveGroups != null)
+                                    binding.notificationGroup.setSelection(effectiveGroups!!.indexOf(group))
+                                binding.notificationGroup.isEnabled = false
+                                if (colors != null)
+                                    binding.notificationAccent.setSelection(colors!!.indexOf(BoardNotificationColors.getByApiColor(notification.color ?: BoardNotificationColor.BLUE)))
+                                binding.notificationText.setText(notification.text)
+                            }
+
+                            val effectiveGroups = uiState.effectiveGroups
+                            binding.notificationGroup.adapter = ScopeSelectionAdapter(requireContext(), effectiveGroups)
+
+                            val colors = BoardNotificationColors.values()
+                            binding.notificationAccent.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, colors.map { getString(it.text) })
+
+                            setUIState(UIState.READY)
+                        }
+                        is EditNotificationFragmentUIState.Failure -> {
+                            setUIState(UIState.ERROR)
+                        }
                     }
-
-                    notification = searched.first
-                    group = searched.second
-                    val notification = searched.first
-
-                    binding.notificationTitle.setText(notification.title)
-                    if (effectiveGroups != null)
-                        binding.notificationGroup.setSelection(effectiveGroups!!.indexOf(group))
-                    binding.notificationGroup.isEnabled = false
-                    if (colors != null)
-                        binding.notificationAccent.setSelection(colors!!.indexOf(BoardNotificationColors.getByApiColor(notification.color ?: BoardNotificationColor.BLUE)))
-                    binding.notificationText.setText(notification.text)
-                } else {
-                    // add new
-                    editMode = false
-                    setTitle(R.string.new_notification)
-                    binding.notificationGroup.isEnabled = true
                 }
-                setUIState(UIState.READY)
-            } else if (response is Response.Failure) {
-                setUIState(UIState.ERROR)
-                Reporter.reportException(R.string.error_get_notifications_failed, response.exception, requireContext())
-                navController.popBackStack()
-            }
-        }
-
-        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
-            if (apiContext != null) {
-                if (apiContext.user.getGroups().none { it.effectiveRights.contains(Permission.BOARD_WRITE) } && apiContext.user.getGroups().none { it.effectiveRights.contains(Permission.BOARD_ADMIN) }) {
-                    Reporter.reportFeatureNotAvailable(requireContext())
-                    navController.popBackStack()
-                    return@observe
-                }
-
-                effectiveGroups = apiContext.user.getGroups().filter { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) }
-                binding.notificationGroup.adapter = ScopeSelectionAdapter(requireContext(), effectiveGroups!!)
-
-                colors = BoardNotificationColors.values()
-                binding.notificationAccent.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, colors!!.map { getString(it.text) })
-
-                if (boardViewModel.allNotificationsResponse.value == null) {
-                    boardViewModel.loadBoardNotifications(apiContext)
-                    setUIState(UIState.LOADING)
-                }
-            } else {
-                binding.notificationTitle.setText("")
-                binding.notificationGroup.adapter = null
-                binding.notificationAccent.adapter = null
-                binding.notificationText.setText("")
-                setUIState(UIState.DISABLED)
-            }
-        }
-
-        boardViewModel.postResponse.observe(viewLifecycleOwner) { response ->
-            if (response != null)
-                boardViewModel.resetPostResponse() // mark as handled
-
-            if (response is Response.Success) {
-                setUIState(UIState.READY)
-                AndroidUtil.hideKeyboard(requireActivity(), requireView())
-                navController.popBackStack()
-            } else if (response is Response.Failure) {
-                Reporter.reportException(R.string.error_save_changes_failed, response.exception, requireContext())
-                setUIState(UIState.ERROR)
             }
         }
 
@@ -127,22 +94,17 @@ class EditNotificationFragment : ContextualFragment(true) {
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (menuItem.itemId == R.id.edit_options_item_save) {
-            val apiContext = loginViewModel.apiContext.value ?: return false
-
             val title = binding.notificationTitle.text.toString()
-            val selectedGroup = binding.notificationGroup.selectedItem as? IOperatingScope?
             val color = BoardNotificationColors.values()[binding.notificationAccent.selectedItemPosition].apiColor
             val text = binding.notificationText.text.toString()
 
             if (editMode) {
-                if (notification != null && group != null) {
-                    boardViewModel.editBoardNotification(notification!!, title, text, color, null, group!!, apiContext)
-                    setUIState(UIState.LOADING)
-                }
+                viewModel.editNotification(title, text, color, null)
+                setUIState(UIState.LOADING)
             } else {
-                group = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup?.login } ?: return false
-                if (group != null) {
-                    boardViewModel.addBoardNotification(title, text, color, null, group!!, apiContext)
+                val selectedGroup = binding.notificationGroup.selectedItem as? IGroup?
+                if (selectedGroup != null) {
+                    viewModel.addNotification(title, text, color, null, selectedGroup)
                     setUIState(UIState.LOADING)
                 }
             }

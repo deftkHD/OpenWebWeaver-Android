@@ -60,8 +60,8 @@ class LaunchFragment : ContextualFragment(false) {
 
         super.onViewCreated(view, savedInstanceState) // trigger login procedure
 
-        loginViewModel.loginResponse.observe(viewLifecycleOwner) { response ->
-            if (response is Response.Success) {
+        loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
+            if (apiContext != null) {
                 when (AuthHelper.estimateAuthState(requireContext())) {
                     AuthHelper.AuthState.SINGLE -> {
                         when (launchMode) {
@@ -81,10 +81,10 @@ class LaunchFragment : ContextualFragment(false) {
                     }
                     else -> { /* ignore */ }
                 }
-            } else if (response is Response.Failure) {
-                Log.e("LaunchFragment", "Failed to obtain apiContext")
-                Reporter.reportException(R.string.error_other, response.exception, requireContext())
-                requireActivity().finish()
+            } else {
+                /*Log.e("LaunchFragment", "Failed to obtain apiContext")
+                Reporter.reportException(R.string.error_other, "no api context", requireContext())
+                requireActivity().finish()*/
             }
         }
     }

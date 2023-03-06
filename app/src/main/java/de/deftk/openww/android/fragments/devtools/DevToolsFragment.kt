@@ -15,7 +15,7 @@ import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.LoginViewModel
 import kotlinx.coroutines.*
 
-class DevToolsFragment : AbstractFragment(true, false) {
+class DevToolsFragment : AbstractFragment(true) {
 
     private val loginViewModel by activityViewModels<LoginViewModel>()
     private val navController by lazy { findNavController() }

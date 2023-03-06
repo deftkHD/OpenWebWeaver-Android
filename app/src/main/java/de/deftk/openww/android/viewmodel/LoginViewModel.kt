@@ -5,15 +5,12 @@ import android.accounts.AccountManager
 import android.app.Application
 import android.content.Context
 import android.os.Build
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.map
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.feature.devtools.PastRequest
-import de.deftk.openww.android.repository.LoginRepository
+import de.deftk.openww.android.repository.login.LoginRepository
 import de.deftk.openww.android.utils.DebugUtil
 import de.deftk.openww.api.auth.Credentials
 import de.deftk.openww.api.implementation.ApiContext
@@ -34,7 +31,7 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
 
     private val _loginResponse = registerProperty<Response<IApiContext>?>("loginResponse", true)
     val loginResponse: LiveData<Response<IApiContext>?> = _loginResponse
-    val apiContext: LiveData<IApiContext?> = loginResponse.map { if (it is Response.Success) it.value else null }
+    val apiContext: LiveData<IApiContext?> = loginRepository.apiContext.asLiveData()
 
     private val _loginToken = registerProperty<Response<Pair<String, String>>>("loginToken", false)
     val loginToken: LiveData<Response<Pair<String, String>>> = _loginToken
@@ -48,34 +45,37 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
 
     fun loginPassword(username: String, password: String) {
         viewModelScope.launch {
-            val resource = loginRepository.loginPassword(username, password)
+            /*val resource = loginRepository.loginPassword(username, password)
             if (resource is Response.Success) {
                 setupApiContext(resource.value, Credentials.fromPassword(username, password))
             }
-            _loginResponse.postValue(resource)
+            _loginResponse.postValue(resource)*/
         }
     }
 
     fun loginPasswordCreateToken(username: String, password: String) {
         viewModelScope.launch {
-            val response = loginRepository.loginPasswordCreateToken(username, password)
+            /*val response = loginRepository.loginPasswordCreateToken(username, password)
             if (response is Response.Success) {
                 setupApiContext(response.value.first, Credentials.fromToken(username, response.value.second))
             }
             _loginToken.postValue(response.smartMap { it.first.user.login to it.second })
-            _loginResponse.postValue(response.smartMap { it.first })
+            _loginResponse.postValue(response.smartMap { it.first })*/
         }
     }
 
     fun loginToken(username: String, token: String) {
         viewModelScope.launch {
-            _loginResponse.postValue(null)
-            val resource = loginRepository.loginToken(username, token)
+            loginRepository.loginToken(username, token)
+
+
+            /*_loginResponse.postValue(null)
+            val resource = loginRepository.loginTokenOld(username, token)
             if (resource is Response.Success) {
                 setupApiContext(resource.value, Credentials.fromToken(username, token))
             }
             _loginToken.postValue(resource.smartMap { username to token })
-            _loginResponse.postValue(resource)
+            _loginResponse.postValue(resource)*/
         }
     }
 
@@ -84,7 +84,7 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
     }
 
     fun logout(login: String, context: Context) {
-        val accountManager = AccountManager.get(context)
+        /*val accountManager = AccountManager.get(context)
         val account = AuthHelper.findAccounts(login, context).firstOrNull()
         if (account == null) {
             viewModelScope.launch {
@@ -121,7 +121,7 @@ class LoginViewModel @Inject constructor(savedStateHandle: SavedStateHandle, pri
                     }
                 }
             }, null)
-        }
+        }*/
     }
 
     private fun setupApiContext(apiContext: IApiContext, credentials: Credentials) {

@@ -13,7 +13,9 @@ import androidx.fragment.app.Fragment
 import de.deftk.openww.android.activities.MainActivity
 import de.deftk.openww.android.utils.ISearchProvider
 
-abstract class AbstractFragment(private val hasActionBar: Boolean, private val requiresLoadingAtStart: Boolean = true) : Fragment(), MenuProvider {
+abstract class AbstractFragment(private val hasActionBar: Boolean) : Fragment(), MenuProvider {
+
+    private val requiresLoadingAtStart = true
 
     protected var currentUIState = UIState.EMPTY
         private set
@@ -53,8 +55,7 @@ abstract class AbstractFragment(private val hasActionBar: Boolean, private val r
         val oldState = currentUIState
         currentUIState = newState
         getMainActivity().progressIndicator.isVisible = newState == UIState.LOADING
-        if (newState == UIState.ERROR || newState == UIState.LOADING)
-            invalidateOptionsMenu()
+        invalidateOptionsMenu()
         onUIStateChanged(newState, oldState)
     }
 

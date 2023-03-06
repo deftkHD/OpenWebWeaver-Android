@@ -5,12 +5,13 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import de.deftk.openww.android.databinding.ListItemNotificationBinding
+import de.deftk.openww.android.feature.board.BoardNotification
 import de.deftk.openww.android.fragments.ActionModeClickListener
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.board.IBoardNotification
 
-class BoardNotificationAdapter(clickListener: ActionModeClickListener<BoardNotificationViewHolder>) : ActionModeAdapter<Pair<IBoardNotification, IGroup>, BoardNotificationAdapter.BoardNotificationViewHolder>(BoardNotificationDiffCallback(), clickListener) {
+class BoardNotificationAdapter(clickListener: ActionModeClickListener<BoardNotificationViewHolder>) : ActionModeAdapter<BoardNotification, BoardNotificationAdapter.BoardNotificationViewHolder>(BoardNotificationDiffCallback(), clickListener) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BoardNotificationViewHolder {
         val binding = ListItemNotificationBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -53,13 +54,13 @@ class BoardNotificationAdapter(clickListener: ActionModeClickListener<BoardNotif
 
 }
 
-private class BoardNotificationDiffCallback : DiffUtil.ItemCallback<Pair<IBoardNotification, IGroup>>() {
+private class BoardNotificationDiffCallback : DiffUtil.ItemCallback<BoardNotification>() {
 
-    override fun areItemsTheSame(oldItem: Pair<IBoardNotification, IGroup>, newItem: Pair<IBoardNotification, IGroup>): Boolean {
-        return oldItem.first.id == newItem.first.id && oldItem.second.login == newItem.second.login
+    override fun areItemsTheSame(oldItem: BoardNotification, newItem: BoardNotification): Boolean {
+        return oldItem.notification.id == newItem.notification.id && oldItem.group.login == newItem.group.login
     }
 
-    override fun areContentsTheSame(oldItem: Pair<IBoardNotification, IGroup>, newItem: Pair<IBoardNotification, IGroup>): Boolean {
-        return oldItem.first.equals(newItem.first) && oldItem.second.login == newItem.second.login
+    override fun areContentsTheSame(oldItem: BoardNotification, newItem: BoardNotification): Boolean {
+        return oldItem.notification.equals(newItem.notification) && oldItem.group.login == newItem.group.login
     }
 }

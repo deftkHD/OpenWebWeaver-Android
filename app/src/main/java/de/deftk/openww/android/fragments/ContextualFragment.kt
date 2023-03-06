@@ -12,7 +12,7 @@ import de.deftk.openww.android.auth.AuthHelper
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.LoginViewModel
 
-abstract class ContextualFragment(hasActionBar: Boolean, requiresLoadingAtStart: Boolean = true) : AbstractFragment(hasActionBar, requiresLoadingAtStart) {
+abstract class ContextualFragment(hasActionBar: Boolean) : AbstractFragment(hasActionBar) {
 
     // the plan
     // check if api context exists and provide it to the fragment as livedata.

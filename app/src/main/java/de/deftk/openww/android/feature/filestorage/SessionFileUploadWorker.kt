@@ -111,7 +111,7 @@ class SessionFileUploadWorker(context: Context, params: WorkerParameters) : Abst
 
     private suspend fun addSessionFile(name: String, requestContext: IRequestContext): SessionFile {
         val request = UserApiRequest(requestContext)
-        val id = request.addAddSessionFileRequest(name, byteArrayOf())
+        val id = request.addAddSessionFileRequest(name, "")
         val response = request.fireRequest()
         val subResponse = ResponseUtil.getSubResponseResult(response.toJson(), id)
         return WebWeaverClient.json.decodeFromJsonElement(subResponse["file"]!!)

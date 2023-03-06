@@ -18,6 +18,7 @@ abstract class ScopedViewModel(val savedStateHandle: SavedStateHandle): ViewMode
      * @param scoped: Whether the property is bound to a specific user scope and should be reset when the logged in user changes
      * @param initialValue: The initial value of the LiveData
      */
+    @Deprecated("should be handled by repository")
     protected fun <T> registerProperty(name: String, scoped: Boolean, initialValue: T? = null): MutableLiveData<T> {
         val liveData = MutableLiveData<T>(initialValue)
         properties.add(ViewModelProperty(name, false, scoped, liveData, initialValue))
