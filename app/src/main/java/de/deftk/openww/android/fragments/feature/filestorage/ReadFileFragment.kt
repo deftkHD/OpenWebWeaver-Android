@@ -30,8 +30,8 @@ class ReadFileFragment : ContextualFragment(true) {
     private val args: ReadFileFragmentArgs by navArgs()
 
     private lateinit var binding: FragmentReadFileBinding
-    private lateinit var scope: IOperatingScope
-    private lateinit var file: FileCacheElement
+    private var scope: IOperatingScope? = null
+    private var file: FileCacheElement? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentReadFileBinding.inflate(inflater, container, false)
@@ -46,7 +46,7 @@ class ReadFileFragment : ContextualFragment(true) {
         val filter = FileStorageFileFilter()
         filter.parentCriteria.value = args.parentId
         fileStorageViewModel.fileFilter.value = filter
-        fileStorageViewModel.getFilteredFiles(scope).observe(viewLifecycleOwner) { response ->
+        fileStorageViewModel.getFilteredFiles(foundScope).observe(viewLifecycleOwner) { response ->
             if (response is Response.Success) {
                 val foundFile = response.value.firstOrNull { it.file.id == args.fileId }
                 if (foundFile == null) {
@@ -56,33 +56,36 @@ class ReadFileFragment : ContextualFragment(true) {
                 }
                 file = foundFile
 
-                binding.fileName.text = file.file.name
-                binding.fileCreatedAuthor.text = file.file.created.member.name
-                binding.fileCreatedDate.text = getString(R.string.created_date).format(TextUtils.parseShortDate(file.file.created.date))
-                binding.fileModifiedAuthor.text = file.file.modified.member.name
-                binding.fileModifiedAuthor.isVisible = file.file.created.member != file.file.modified.member
-                binding.fileModifiedDate.text = getString(R.string.modified_date).format(TextUtils.parseShortDate(file.file.modified.date))
-                binding.fileModifiedDate.isVisible = file.file.created.date != file.file.modified.date
+                binding.fileName.text = foundFile.file.name
+                binding.fileCreatedAuthor.text = foundFile.file.created.member.name
+                binding.fileCreatedDate.text = getString(R.string.created_date).format(TextUtils.parseShortDate(foundFile.file.created.date))
+                binding.fileModifiedAuthor.text = foundFile.file.modified.member.name
+                binding.fileModifiedAuthor.isVisible = foundFile.file.created.member != foundFile.file.modified.member
+                binding.fileModifiedDate.text = getString(R.string.modified_date).format(TextUtils.parseShortDate(foundFile.file.modified.date))
+                binding.fileModifiedDate.isVisible = foundFile.file.created.date != foundFile.file.modified.date
 
-                when (file.file.type) {
-                    FileType.FILE -> binding.fileSize.text = getString(R.string.size).format(Formatter.formatFileSize(requireContext(), file.file.size))
-                    FileType.FOLDER -> binding.fileSize.text = getString(R.string.children_count).format(fileStorageViewModel.getCachedChildren(scope, file.file.id).size.takeIf { it != 0 }?.toString() ?: getString(R.string.unknown))
+                when (foundFile.file.type) {
+                    FileType.FILE -> binding.fileSize.text = getString(R.string.size).format(Formatter.formatFileSize(requireContext(), foundFile.file.size))
+                    FileType.FOLDER -> binding.fileSize.text = getString(R.string.children_count).format(fileStorageViewModel.getCachedChildren(foundScope, foundFile.file.id).size.takeIf { it != 0 }?.toString() ?: getString(R.string.unknown))
                 }
-                binding.fileIsMine.isChecked = file.file.mine == true
-                binding.fileIsShared.isChecked = file.file.shared == true
-                binding.fileIsSparse.isChecked = file.file.sparse == true
+                binding.fileIsMine.isChecked = foundFile.file.mine == true
+                binding.fileIsShared.isChecked = foundFile.file.shared == true
+                binding.fileIsSparse.isChecked = foundFile.file.sparse == true
 
-                binding.filePermissionReadable.isChecked = file.file.readable == true
-                binding.filePermissionWritable.isChecked = file.file.writable == true
-                binding.filePermissionEffectiveRead.isChecked = file.file.effectiveRead == true
-                binding.filePermissionEffectiveCreate.isChecked = file.file.effectiveCreate == true
-                binding.filePermissionEffectiveModify.isChecked = file.file.effectiveModify == true
-                binding.filePermissionEffectiveDelete.isChecked = file.file.effectiveDelete == true
+                binding.filePermissionReadable.isChecked = foundFile.file.readable == true
+                binding.filePermissionWritable.isChecked = foundFile.file.writable == true
+                binding.filePermissionEffectiveRead.isChecked = foundFile.file.effectiveRead == true
+                binding.filePermissionEffectiveCreate.isChecked = foundFile.file.effectiveCreate == true
+                binding.filePermissionEffectiveModify.isChecked = foundFile.file.effectiveModify == true
+                binding.filePermissionEffectiveDelete.isChecked = foundFile.file.effectiveDelete == true
 
-                binding.fileSelfDownloadNotification.isChecked = file.file.downloadNotification?.me == true
-                binding.fileDownloadNotificationListDescription.isVisible = file.file.downloadNotification?.users?.isNotEmpty() == true
-                binding.fileDownloadNotificationList.text = file.file.downloadNotification?.users?.joinToString("\n") { it.alias ?: it.name } ?: ""
-                binding.fileDescription.text = file.file.description ?: ""
+                binding.fileSelfDownloadNotification.isChecked = foundFile.file.downloadNotification?.me == true
+                binding.fileDownloadNotificationListDescription.isVisible = foundFile.file.downloadNotification?.users?.isNotEmpty() == true
+                binding.fileDownloadNotificationList.text = foundFile.file.downloadNotification?.users?.joinToString("\n") { it.alias ?: it.name } ?: ""
+                binding.fileDescription.text = foundFile.file.description ?: ""
+
+                binding.fabEditFile.isVisible = foundFile.file.effectiveModify == true
+                invalidateOptionsMenu()
                 setUIState(UIState.READY)
             } else if (response is Response.Failure) {
                 setUIState(UIState.ERROR)
@@ -92,12 +95,15 @@ class ReadFileFragment : ContextualFragment(true) {
         }
 
         binding.fabEditFile.setOnClickListener {
-            navController.navigate(ReadFileFragmentDirections.actionReadFileFragmentToEditFileFragment(file.file.name, scope.login, file.file.id, file.file.parentId ?: "/"))
+            if (file != null && scope != null) {
+                navController.navigate(ReadFileFragmentDirections.actionReadFileFragmentToEditFileFragment(file!!.file.name, scope!!.login, file!!.file.id, file!!.file.parentId ?: "/"))
+            }
         }
 
         loginViewModel.apiContext.observe(viewLifecycleOwner) { apiContext ->
             if (apiContext != null) {
-                binding.fabEditFile.isVisible = file.file.effectiveModify == true
+                if (file != null)
+                    binding.fabEditFile.isVisible = file!!.file.effectiveModify == true
             } else {
                 setUIState(UIState.DISABLED)
                 navController.popBackStack()

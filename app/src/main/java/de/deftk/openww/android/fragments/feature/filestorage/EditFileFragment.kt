@@ -87,6 +87,7 @@ class EditFileFragment : ContextualFragment(true) {
                 binding.fileDownloadNotificationListDescription.isVisible = file.file.downloadNotification?.users?.isNotEmpty() == true
                 binding.fileDownloadNotificationList.text = file.file.downloadNotification?.users?.joinToString("\n") { it.alias ?: it.name } ?: ""
                 binding.fileDescription.setText(file.file.description ?: "")
+                invalidateOptionsMenu()
                 setUIState(UIState.READY)
             } else if (response is Response.Failure) {
                 setUIState(UIState.ERROR)
