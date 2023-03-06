@@ -6,6 +6,7 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
+import de.deftk.openww.android.adapter.ScopeSelectionAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditNotificationBinding
 import de.deftk.openww.android.feature.board.BoardNotificationColors
@@ -14,6 +15,7 @@ import de.deftk.openww.android.utils.AndroidUtil
 import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.android.viewmodel.BoardViewModel
 import de.deftk.openww.api.model.IGroup
+import de.deftk.openww.api.model.IOperatingScope
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.board.BoardNotificationColor
 import de.deftk.openww.api.model.feature.board.IBoardNotification
@@ -27,9 +29,9 @@ class EditNotificationFragment : ContextualFragment(true) {
     private val boardViewModel: BoardViewModel by activityViewModels()
 
     private lateinit var binding: FragmentEditNotificationBinding
-    private lateinit var notification: IBoardNotification
-    private lateinit var group: IGroup
 
+    private var notification: IBoardNotification? = null
+    private var group: IGroup? = null
     private var effectiveGroups: List<IGroup>? = null
     private var colors: Array<BoardNotificationColors>? = null
     private var editMode: Boolean = false
@@ -52,6 +54,7 @@ class EditNotificationFragment : ContextualFragment(true) {
 
                     notification = searched.first
                     group = searched.second
+                    val notification = searched.first
 
                     binding.notificationTitle.setText(notification.title)
                     if (effectiveGroups != null)
@@ -83,7 +86,7 @@ class EditNotificationFragment : ContextualFragment(true) {
                 }
 
                 effectiveGroups = apiContext.user.getGroups().filter { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) }
-                binding.notificationGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups!!.map { it.login })
+                binding.notificationGroup.adapter = ScopeSelectionAdapter(requireContext(), effectiveGroups!!)
 
                 colors = BoardNotificationColors.values()
                 binding.notificationAccent.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, colors!!.map { getString(it.text) })
@@ -127,17 +130,21 @@ class EditNotificationFragment : ContextualFragment(true) {
             val apiContext = loginViewModel.apiContext.value ?: return false
 
             val title = binding.notificationTitle.text.toString()
-            val selectedGroup = binding.notificationGroup.selectedItem
+            val selectedGroup = binding.notificationGroup.selectedItem as? IOperatingScope?
             val color = BoardNotificationColors.values()[binding.notificationAccent.selectedItemPosition].apiColor
             val text = binding.notificationText.text.toString()
 
             if (editMode) {
-                boardViewModel.editBoardNotification(notification, title, text, color, null, group, apiContext)
-                setUIState(UIState.LOADING)
+                if (notification != null && group != null) {
+                    boardViewModel.editBoardNotification(notification!!, title, text, color, null, group!!, apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
-                group = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup } ?: return false
-                boardViewModel.addBoardNotification(title, text, color, null, group, apiContext)
-                setUIState(UIState.LOADING)
+                group = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup?.login } ?: return false
+                if (group != null) {
+                    boardViewModel.addBoardNotification(title, text, color, null, group!!, apiContext)
+                    setUIState(UIState.LOADING)
+                }
             }
             return true
         }

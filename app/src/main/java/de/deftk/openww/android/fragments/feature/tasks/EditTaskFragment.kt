@@ -5,11 +5,11 @@ import android.app.TimePickerDialog
 import android.os.Bundle
 import android.text.InputType
 import android.view.*
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.navArgs
 import de.deftk.openww.android.R
+import de.deftk.openww.android.adapter.ScopeSelectionAdapter
 import de.deftk.openww.android.api.Response
 import de.deftk.openww.android.databinding.FragmentEditTaskBinding
 import de.deftk.openww.android.fragments.ContextualFragment
@@ -80,6 +80,7 @@ class EditTaskFragment : ContextualFragment(true) {
                     setTitle(R.string.new_task)
                     binding.taskGroup.isEnabled = true
                 }
+                invalidateOptionsMenu()
             } else if (response is Response.Failure) {
                 setUIState(UIState.ERROR)
                 Reporter.reportException(R.string.error_get_tasks_failed, response.exception, requireContext())
@@ -97,7 +98,7 @@ class EditTaskFragment : ContextualFragment(true) {
                 }
 
                 effectiveGroups = apiContext.user.getGroups().filter { it.effectiveRights.contains(Permission.TASKS_WRITE) || it.effectiveRights.contains(Permission.TASKS_ADMIN) }
-                binding.taskGroup.adapter = ArrayAdapter(requireContext(), R.layout.support_simple_spinner_dropdown_item, effectiveGroups!!.map { it.login })
+                binding.taskGroup.adapter = ScopeSelectionAdapter(requireContext(), effectiveGroups!!)
 
                 tasksViewModel.loadTasks(true, apiContext)
                 setUIState(UIState.LOADING)
@@ -184,20 +185,24 @@ class EditTaskFragment : ContextualFragment(true) {
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        if (menuItem.itemId == R.id.edit_options_item_save && task != null && scope != null) {
-            val apiContext = loginViewModel.apiContext.value ?: return false
+        if (menuItem.itemId == R.id.edit_options_item_save) {
+            val apiContext = loginViewModel.apiContext.value ?: return true
             val title = binding.taskTitle.text.toString()
-            val selectedGroup = binding.taskGroup.selectedItem
+            val selectedGroup = binding.taskGroup.selectedItem as? IOperatingScope?
             val completed = binding.taskCompleted.isChecked
             val description = binding.taskText.text.toString()
 
             if (editMode) {
-                tasksViewModel.editTask(task!!, title, description, completed, startDate, dueDate, scope!!, apiContext)
-                setUIState(UIState.LOADING)
+                if (task != null && scope != null) {
+                    tasksViewModel.editTask(task!!, title, description, completed, startDate, dueDate, scope!!, apiContext)
+                    setUIState(UIState.LOADING)
+                }
             } else {
-                scope = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup } ?: return false
-                tasksViewModel.addTask(title, description, completed, startDate, dueDate, scope!!, apiContext)
-                setUIState(UIState.LOADING)
+                scope = apiContext.user.getGroups().firstOrNull { it.login == selectedGroup?.login } ?: return true
+                if (scope != null) {
+                    tasksViewModel.addTask(title, description, completed, startDate, dueDate, scope!!, apiContext)
+                    setUIState(UIState.LOADING)
+                }
             }
             return true
         }
