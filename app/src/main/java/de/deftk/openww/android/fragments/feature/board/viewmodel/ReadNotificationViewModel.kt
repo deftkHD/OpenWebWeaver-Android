@@ -5,62 +5,60 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.deftk.openww.android.exception.ObjectNotFoundException
 import de.deftk.openww.android.feature.board.BoardNotification
 import de.deftk.openww.android.fragments.feature.board.ReadNotificationFragmentDirections
 import de.deftk.openww.android.repository.board.BoardRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import de.deftk.openww.api.model.Permission
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ReadNotificationViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
+    savedStateHandle: SavedStateHandle,
     private val boardRepository: BoardRepository
 ) : ViewModel() {
 
-    private val notificationId = MutableStateFlow<NotificationId?>(null)
+    val notificationId = savedStateHandle.get<String>("notificationId")
+    private val groupId = savedStateHandle.get<String>("groupId")
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val notification = notificationId.flatMapLatest { notificationId ->
-        boardRepository.notifications.map { notifications ->
-            if (notificationId == null) {
-                null
-            } else {
-                notifications.singleOrNull {
-                    it.notification.id == notificationId.notificationId && it.group.login == notificationId.login
-                }
-            }
+    private var deleted = false
+
+    private val notification = boardRepository.notifications.map { notifications ->
+        if (notifications?.isNotEmpty() == true && !deleted) {
+            notifications.singleOrNull {
+                it.notification.id == notificationId && it.group.login == groupId
+            } ?: throw ObjectNotFoundException("Notification")
+        } else {
+            null
         }
     }
 
     val uiState: StateFlow<ReadNotificationFragmentUIState> = notification
-        .map {
-            if (it == null)
-                ReadNotificationFragmentUIState.Loading
-            else
-                ReadNotificationFragmentUIState.Success(it)
+        .map { notification ->
+            if (notification == null) {
+                if (deleted) {
+                    ReadNotificationFragmentUIState.Closed
+                } else {
+                    ReadNotificationFragmentUIState.Loading
+                }
+            } else {
+                ReadNotificationFragmentUIState.Success(notification)
+            }
         }
-        .catch { ReadNotificationFragmentUIState.Failure(it) }
+        .catch {
+            emit(ReadNotificationFragmentUIState.Failure(it))
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ReadNotificationFragmentUIState.Loading)
 
-    fun setNotification(notificationId: String, login: String) {
-        this.notificationId.update {
-            NotificationId(notificationId, login)
-        }
+    suspend fun canEdit(): Boolean {
+        val notification = notification.first() ?: return false
+        val group = notification.group
+        return group.effectiveRights.contains(Permission.BOARD_WRITE) || group.effectiveRights.contains(Permission.BOARD_ADMIN)
     }
 
-    suspend fun getNotification(): BoardNotification? {
-        return notification.first()
-    }
-
-    fun refreshNotifications() {
-        viewModelScope.launch {
-            boardRepository.refreshNotifications()
-        }
-    }
-
-    fun navigateEditNotification(navController: NavController) {
+    fun editNotification(navController: NavController) {
         viewModelScope.launch {
             notification.collectLatest { notification ->
                 if (notification != null) {
@@ -74,18 +72,18 @@ class ReadNotificationViewModel @Inject constructor(
         viewModelScope.launch {
             notification.collectLatest { notification ->
                 if (notification != null) {
+                    deleted = true
                     boardRepository.deleteBoardNotification(notification)
                 }
             }
         }
     }
 
-    private data class NotificationId(val notificationId: String, val login: String)
-
 }
 
 sealed interface ReadNotificationFragmentUIState {
     object Loading : ReadNotificationFragmentUIState
+    object Closed : ReadNotificationFragmentUIState
     data class Failure(val throwable: Throwable) : ReadNotificationFragmentUIState
     data class Success(val notification: BoardNotification) : ReadNotificationFragmentUIState
 }

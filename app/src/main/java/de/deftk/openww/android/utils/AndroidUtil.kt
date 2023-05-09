@@ -7,6 +7,7 @@ import androidx.core.view.WindowInsetsCompat
 
 object AndroidUtil {
 
+    @Deprecated("use View.clearFocus() instead")
     fun hideKeyboard(activity: Activity, view: View) {
         WindowCompat.getInsetsController(activity.window, view).hide(
             WindowInsetsCompat.Type.ime())

@@ -375,5 +375,6 @@
     <string name="error_exception_not_found">Failed to find exception: %s</string>
     <string name="exception_at">Exception at %s</string>
     <string name="source">Source: %s</string>
+    <string name="error_invalid_scope">Invalid scope</string>
 
 </resources>

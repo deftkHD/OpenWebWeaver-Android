@@ -26,8 +26,8 @@ object Reporter {
         exception.printStackTrace()
     }
 
-    fun reportException(@StringRes message: Int, exception: String, context: Context) {
-        val text = context.getString(message).format(exception)
+    fun reportException(@StringRes message: Int, exception: String?, context: Context) {
+        val text = if (exception != null) context.getString(message).format(exception) else context.getString(message)
         if (DebugUtil.areDevToolsEnabled(context)) {
             DebugUtil.reportException(ExceptionSource.ASSERTION, Thread.currentThread().stackTrace, null, text)
         }

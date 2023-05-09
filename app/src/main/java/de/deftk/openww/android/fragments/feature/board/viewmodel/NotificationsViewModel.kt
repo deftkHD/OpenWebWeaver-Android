@@ -19,24 +19,31 @@ class NotificationsViewModel @Inject constructor(
     private val boardRepository: BoardRepository
 ) : ViewModel() {
 
-    //TODO restore filter from savedStateHandle
+    //TODO restore filter from savedStateHandle (via parcelize)
 
     private val filter = MutableStateFlow(BoardNotificationFilter())
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val filteredNotifications = filter.flatMapLatest { filter ->
         boardRepository.notifications.map { items ->
-            filter.apply(items)
+            if (items == null)
+                null
+            else
+                filter.apply(items)
         }
     }
 
     val uiState: StateFlow<NotificationsFragmentUIState> = filteredNotifications
-        .map {
-            val apiContext = boardRepository.getApiContext()
-            val canAdd = apiContext?.user?.getGroups()?.any { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) } == true
-            NotificationsFragmentUIState.Success(it, canAdd)
+        .map { notifications ->
+            if (notifications == null) {
+                NotificationsFragmentUIState.Loading
+            } else {
+                val apiContext = boardRepository.getApiContext()
+                val canAdd = apiContext?.user?.getGroups()?.any { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) } == true
+                NotificationsFragmentUIState.Success(notifications, canAdd)
+            }
         }
-        .catch { NotificationsFragmentUIState.Failure(it) }
+        .catch { emit(NotificationsFragmentUIState.Failure(it)) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), NotificationsFragmentUIState.Loading)
 
     fun refreshNotifications() {

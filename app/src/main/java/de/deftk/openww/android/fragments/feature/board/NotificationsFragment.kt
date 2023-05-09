@@ -22,6 +22,7 @@ import de.deftk.openww.android.fragments.ActionModeFragment
 import de.deftk.openww.android.fragments.feature.board.viewmodel.NotificationsFragmentUIState
 import de.deftk.openww.android.fragments.feature.board.viewmodel.NotificationsViewModel
 import de.deftk.openww.android.utils.ISearchProvider
+import de.deftk.openww.android.utils.Reporter
 import de.deftk.openww.api.model.Permission
 import kotlinx.coroutines.launch
 
@@ -66,7 +67,7 @@ class NotificationsFragment: ActionModeFragment<BoardNotification, BoardNotifica
                         }
                         is NotificationsFragmentUIState.Failure -> {
                             setUIState(UIState.ERROR)
-                            uiState.throwable.printStackTrace() //TODO handle error
+                            Reporter.reportException(R.string.error_other, uiState.throwable, requireContext())
                         }
                     }
                 }

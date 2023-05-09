@@ -357,4 +357,5 @@
     <string name="error_exception_not_found">Fehler konnte nicht gefunden werden: %s</string>
     <string name="exception_at">Fehler um %s</string>
     <string name="source">Quelle: %s</string>
+    <string name="error_invalid_scope">Ungültiger Gültigkeitsbereich</string>
 </resources>

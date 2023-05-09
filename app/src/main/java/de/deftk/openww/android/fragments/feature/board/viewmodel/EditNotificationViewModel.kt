@@ -4,13 +4,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import de.deftk.openww.android.exception.ObjectNotFoundException
 import de.deftk.openww.android.feature.board.BoardNotification
 import de.deftk.openww.android.repository.board.BoardRepository
 import de.deftk.openww.api.model.IGroup
 import de.deftk.openww.api.model.Permission
 import de.deftk.openww.api.model.feature.board.BoardNotificationColor
 import de.deftk.openww.api.model.feature.board.BoardType
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.*
@@ -22,63 +23,83 @@ class EditNotificationViewModel @Inject constructor(
     private val boardRepository: BoardRepository
 ) : ViewModel() {
 
-    private val notificationId = MutableStateFlow<NotificationId?>(null)
+    val notificationId = savedStateHandle.get<String>("notificationId")
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val notification = notificationId.flatMapLatest { notificationId ->
-        boardRepository.notifications.map { notifications ->
-            if (notificationId == null) {
-                null
-            } else {
-                notifications.singleOrNull {
-                    it.notification.id == notificationId.notificationId && it.group.login == notificationId.login
-                }
-            }
+    var groupId = savedStateHandle.get<String>("groupId")
+        set(value) {
+            savedStateHandle["groupId"] = value
+            field = value
+        }
+
+    var title: String = savedStateHandle.get<String>("title") ?: ""
+        set(value) {
+            savedStateHandle["title"] = value
+            field = value
+        }
+
+    var text: String = savedStateHandle.get<String>("text") ?: ""
+        set(value) {
+            savedStateHandle["text"] = value
+            field = value
+        }
+
+    var color: Int = savedStateHandle.get<Int>("color") ?: 0
+        set(value) {
+            savedStateHandle["color"] = value
+            field = value
+        }
+
+    private val notification = boardRepository.notifications.map { notifications ->
+        if (notifications?.isNotEmpty() == true && notificationId != null && groupId != null) {
+            notifications.singleOrNull {
+                it.notification.id == notificationId && it.group.login == groupId
+            } ?: throw ObjectNotFoundException("Notification")
+        } else {
+            null
         }
     }
 
     val uiState: StateFlow<EditNotificationFragmentUIState> = notification
-        .map {
-            val apiContext = boardRepository.getApiContext()
-            val groups = apiContext?.user?.getGroups()?.filter { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) } ?: emptyList()
-            EditNotificationFragmentUIState.Success(it, groups)
+        .map { notification ->
+            if (notificationId != null && notification == null) {
+                EditNotificationFragmentUIState.Loading
+            } else {
+                val apiContext = boardRepository.getApiContext()
+                val groups = apiContext?.user?.getGroups()?.filter { it.effectiveRights.contains(Permission.BOARD_WRITE) || it.effectiveRights.contains(Permission.BOARD_ADMIN) } ?: emptyList()
+                title = notification?.notification?.title ?: ""
+                text = notification?.notification?.text ?: ""
+                color = notification?.notification?.color?.serialId ?: 0
+                EditNotificationFragmentUIState.Success(notification, groups)
+            }
         }
-        .catch { EditNotificationFragmentUIState.Failure(it) }
+        .catch { emit(EditNotificationFragmentUIState.Failure(it)) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), EditNotificationFragmentUIState.Loading)
 
-    fun setNotification(notificationId: String, login: String) {
-        this.notificationId.update {
-            NotificationId(notificationId, login)
-        }
-    }
+    private val eventChannel = Channel<EditNotificationEvent>()
+    val eventChannelFlow = eventChannel.receiveAsFlow()
 
-    fun addNotification(title: String, text: String, color: BoardNotificationColor?, killDate: Date?, group: IGroup) {
+    fun submitAction(title: String, text: String, color: BoardNotificationColor, killDate: Date?, group: IGroup?) {
+        //TODO text not allowed to be empty
         viewModelScope.launch {
-            boardRepository.addBoardNotification(title, text, color, killDate, group)
-        }
-    }
-
-    fun editNotification(title: String, text: String, color: BoardNotificationColor, killDate: Date?) {
-        viewModelScope.launch {
-            notification.collectLatest { notification ->
-                if (notification != null) {
+            if (notificationId != null && groupId != null) {
+                notification.first()?.also { notification ->
                     boardRepository.editBoardNotification(notification, title, text, color, killDate, BoardType.ALL)
+                    eventChannel.send(EditNotificationEvent.Edited)
                 }
+            } else if (group != null) {
+                boardRepository.addBoardNotification(title, text, color, killDate, group)
+                eventChannel.send(EditNotificationEvent.Added)
+            } else {
+                eventChannel.send(EditNotificationEvent.InvalidGroup)
             }
         }
     }
 
-    fun deleteNotification() {
-        viewModelScope.launch {
-            notification.collectLatest { notification ->
-                if (notification != null) {
-                    boardRepository.deleteBoardNotification(notification)
-                }
-            }
-        }
+    sealed interface EditNotificationEvent {
+        object Added : EditNotificationEvent
+        object Edited : EditNotificationEvent
+        object InvalidGroup : EditNotificationEvent
     }
-
-    private data class NotificationId(val notificationId: String, val login: String)
 
 }
 

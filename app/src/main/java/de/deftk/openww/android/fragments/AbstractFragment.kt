@@ -55,7 +55,11 @@ abstract class AbstractFragment(private val hasActionBar: Boolean) : Fragment(),
         val oldState = currentUIState
         currentUIState = newState
         getMainActivity().progressIndicator.isVisible = newState == UIState.LOADING
-        invalidateOptionsMenu()
+
+        // prevent interrupting the search
+        if (this !is ISearchProvider || newState != oldState || newState != UIState.READY)
+            invalidateOptionsMenu()
+
         onUIStateChanged(newState, oldState)
     }
 
