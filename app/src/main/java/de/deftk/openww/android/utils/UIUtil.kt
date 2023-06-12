@@ -17,18 +17,57 @@ import java.text.DateFormat
 object UIUtil {
 
     private val systemNotificationTranslationMap = mapOf(
+        SystemNotificationType.FOLDER_FILE_UPLOAD to R.string.system_notification_folder_file_upload,
+        SystemNotificationType.NEW_FORUM_COMMENT to R.string.system_notification_new_forum_comment,
+        SystemNotificationType.NEW_COURSE to R.string.system_notification_new_course,
+        // unknown 4
         SystemNotificationType.PASSWORD_CHANGED to R.string.system_notification_password_changed,
+        SystemNotificationType.NEW_FORUM_POST to R.string.system_notification_new_forum_post,
         SystemNotificationType.FILE_UPLOAD to R.string.system_notification_file_upload,
         SystemNotificationType.FILE_DOWNLOAD to R.string.system_notification_file_download,
+        // unknown 9
         SystemNotificationType.ADDED_TO_MESSENGER to R.string.system_notification_added_to_messenger,
+        // unknown 11
+        SystemNotificationType.CALENDAR_REMINDER to R.string.system_notification_calendar_reminder,
+        SystemNotificationType.NEW_MAIL to R.string.new_mail,
+        SystemNotificationType.NEW_GUESTBOOK_ENTRY to R.string.system_notification_new_guestbook_entry,
         SystemNotificationType.REQUEST_PASSWORD_RESET_CODE to R.string.system_notification_request_password_reset_code,
+        // unknown 16
+        // unknown 17
+        // unknown 18
         SystemNotificationType.NEW_POLL to R.string.system_notification_new_poll,
-        SystemNotificationType.NEW_POLL2 to R.string.system_notification_new_poll,
+        // unknown 20
+        SystemNotificationType.RESOURCE_FAULTY to R.string.system_notification_resource_faulty,
+        SystemNotificationType.RESOURCE_REPAIRED to R.string.system_notification_resource_repaired,
+        SystemNotificationType.NEW_BLOG_COMMENT to R.string.system_notification_new_blog_comment,
+        SystemNotificationType.NEW_BLOG_ENTRY to R.string.system_notification_new_blog_entry,
+        SystemNotificationType.NEW_LEARNING_LOG_ENTRY to R.string.system_notification_new_learning_log_entry,
+        SystemNotificationType.NEW_LEARNING_LOG_ENTRY_COMMENT to R.string.system_notification_new_learning_log_entry_comment,
+        SystemNotificationType.NEW_LEARNING_LOG_COMMENT to R.string.system_notification_new_learning_log_comment,
+        SystemNotificationType.NEW_LEARNING_LOG to R.string.system_notification_new_learning_log,
         SystemNotificationType.NEW_NOTIFICATION to R.string.system_notification_new_notification,
         SystemNotificationType.NEW_APPOINTMENT to R.string.system_notification_new_appointment,
+        SystemNotificationType.NEW_POLL2 to R.string.system_notification_new_poll,
+        // unknown 32
         SystemNotificationType.NEW_TRUST to R.string.system_notification_new_trust,
+        // unknown 34
         SystemNotificationType.UNAUTHORIZED_LOGIN_LOCATION to R.string.system_notification_unauthorized_login_location,
-        SystemNotificationType.NEW_TASK to R.string.system_notification_new_task
+        SystemNotificationType.NEW_WALL_ENTRY to R.string.system_notification_new_wall_entry,
+        SystemNotificationType.NEW_WALL_COMMENT to R.string.system_notification_new_wall_comment,
+        SystemNotificationType.NEW_SUBSTITUTION_PLAN to R.string.system_notification_new_subsittution_plan,
+        SystemNotificationType.NEW_TEACHER_NOTIFICATION to R.string.system_notification_new_teacher_notification,
+        SystemNotificationType.NEW_STUDENT_NOTIFICATION to R.string.system_notification_new_student_notification,
+        SystemNotificationType.PENDING_QUICK_MESSAGE to R.string.system_notification_pending_quick_message,
+        SystemNotificationType.COURSELET_CORRECTED to R.string.system_notification_courselet_corrected,
+        SystemNotificationType.NEW_BOOKMARK to R.string.system_notification_new_bookmark,
+        // unknown 44
+        SystemNotificationType.RESOURCE_BOOKED to R.string.system_notification_resource_booked,
+        SystemNotificationType.NEW_TASK to R.string.system_notification_new_task,
+        SystemNotificationType.NEW_FORM_SUBMISSION to R.string.system_notification_new_form_submission,
+        // unknown 48
+        SystemNotificationType.NEW_CONSULTATION_HOUR_BOOKED to R.string.system_notification_new_consultation_hour_booked,
+        SystemNotificationType.NEW_COURSELET to R.string.system_notification_new_courselet,
+        SystemNotificationType.NEW_LEARNING_PLAN to R.string.system_notification_new_learning_plan
     )
 
     @StringRes

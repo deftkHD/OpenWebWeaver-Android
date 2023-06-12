@@ -375,5 +375,33 @@
     <string name="error_exception_not_found">Failed to find exception: %s</string>
     <string name="exception_at">Exception at %s</string>
     <string name="source">Source: %s</string>
+    <string name="system_notification_new_course">New course</string>
+    <string name="system_notification_new_forum_comment">New forum comment</string>
+    <string name="system_notification_folder_file_upload">Folder - New file</string>
+    <string name="system_notification_new_forum_post">New forum post</string>
+    <string name="system_notification_calendar_reminder">Calendar reminder</string>
+    <string name="system_notification_new_mail">New mail</string>
+    <string name="system_notification_new_guestbook_entry">New guestbook entry</string>
+    <string name="system_notification_resource_faulty">Resource faulty</string>
+    <string name="system_notification_resource_repaired">Resource repaired</string>
+    <string name="system_notification_new_blog_comment">New blog comment</string>
+    <string name="system_notification_new_blog_entry">New blog entry</string>
+    <string name="system_notification_new_learning_log_entry">New learning log entry</string>
+    <string name="system_notification_new_learning_log_entry_comment">New learning log entry comment</string>
+    <string name="system_notification_new_learning_log_comment">New learning log comment</string>
+    <string name="system_notification_new_learning_log">New learning log</string>
+    <string name="system_notification_new_wall_entry">New wall entry</string>
+    <string name="system_notification_new_wall_comment">New wall comment</string>
+    <string name="system_notification_new_subsittution_plan">New substitution plan</string>
+    <string name="system_notification_new_teacher_notification">New teacher notification</string>
+    <string name="system_notification_new_student_notification">New student notification</string>
+    <string name="system_notification_pending_quick_message">Pending quick message</string>
+    <string name="system_notification_courselet_corrected">Courselet corrected</string>
+    <string name="system_notification_new_bookmark">New bookmark</string>
+    <string name="system_notification_resource_booked">Resource booked</string>
+    <string name="system_notification_new_form_submission">New form submission</string>
+    <string name="system_notification_new_consultation_hour_booked">New consultation hour booked</string>
+    <string name="system_notification_new_courselet">New courselet</string>
+    <string name="system_notification_new_learning_plan">New learning plan</string>
 
 </resources>
